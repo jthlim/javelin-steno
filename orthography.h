@@ -25,6 +25,8 @@ struct StenoOrthography {
   const StenoOrthographyAlias *aliases;
 
   static const StenoOrthography emptyOrthography;
+
+  void Print() const;
 };
 
 //---------------------------------------------------------------------------

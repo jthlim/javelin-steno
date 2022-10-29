@@ -196,6 +196,9 @@ void StenoEngine::PrintInfo(const StenoConfigBlock *configBlock) const {
     Console::Printf("  Jeff's Modifiers\n");
   }
   dictionary.PrintInfo();
+  Console::Printf("Orthography\n");
+  Console::Printf("  Rules: %zu\n", orthography.ruleCount);
+  Console::Printf("  Aliases: %zu\n", orthography.aliasCount);
 
   Console::Write("\n", 1);
 }
