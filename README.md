@@ -2,8 +2,11 @@
 
 Embedded steno engine.
 
+This repository contains the raw steno engine, without any bindings.
+
+For pico-sdk bindings, see https://github.com/jthlim/javelin-steno-rp2040.
+
 TODO: Update documentation.
-TODO: pico-sdk build instructions.
 
 # Terms
 
