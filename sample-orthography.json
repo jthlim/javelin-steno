@@ -1,0 +1,22 @@
+{
+  "rules": [
+    {
+      "pattern": "^(.*)e \\^ed$",
+      "replacement": "\\1ed"
+    },
+    {
+      "pattern": "^(.*)s \\^s$",
+      "replacement": "\\1les"
+    }
+  ],
+  "aliases": [
+    {
+      "suffix": "age",
+      "alias": "edge"
+    },
+    {
+      "suffix": "ful",
+      "alias": "fill"
+    }
+  ]
+}
