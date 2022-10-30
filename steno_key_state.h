@@ -9,6 +9,10 @@ struct StenoGeminiPacket {
   uint8_t data[6];
 };
 
+struct StenoPloverHidPacket {
+  uint8_t data[8];
+};
+
 //---------------------------------------------------------------------------
 
 enum class StenoKey : int8_t {
@@ -92,6 +96,7 @@ public:
 
   StenoChord ToChord() const;
   StenoGeminiPacket ToGeminiPacket() const;
+  StenoPloverHidPacket ToPloverHidPacket() const;
 
   // Public so that config can overwrite S1 -> NUM1.
   static int8_t CHORD_BIT_INDEX_LOOKUP[];

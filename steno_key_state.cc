@@ -108,6 +108,54 @@ constexpr uint8_t GEMINI_LOOKUP[] = {
 static_assert(sizeof(GEMINI_LOOKUP) == (int)StenoKey::COUNT,
               "Gemini table must be complete");
 
+constexpr uint8_t PLOVER_HID_LOOKUP[] = {
+    7,  // S1
+    7,  // S2
+    6,  // TL
+    5,  // KL
+    4,  // PL
+    3,  // WL
+    2,  // HL
+    1,  // RL
+    0,  // A
+    15, // O
+    14, // STAR1
+    14, // STAR2
+    14, // STAR3
+    14, // STAR4
+    13, // E
+    12, // U
+    11, // FR
+    10, // RR
+    9,  // PR
+    8,  // BR
+    23, // LR
+    22, // GR
+    21, // TR
+    20, // SR
+    19, // DR
+    18, // ZR
+    17, // NUM1
+    17, // NUM2
+    17, // NUM3
+    17, // NUM4
+    17, // NUM5
+    17, // NUM6
+    17, // NUM7
+    17, // NUM8
+    17, // NUM9
+    17, // NUM10
+    17, // NUM11
+    17, // NUM12
+    16, // FUNCTION
+    15, // POWER
+    14, // RES1
+    13, // RES2
+};
+
+static_assert(sizeof(PLOVER_HID_LOOKUP) == (int)StenoKey::COUNT,
+              "Plover HID table must be complete");
+
 //---------------------------------------------------------------------------
 
 void StenoKeyState::Process(StenoKey key, bool isPress) {
@@ -156,6 +204,22 @@ StenoGeminiPacket StenoKeyState::ToGeminiPacket() const {
 
     int byte = geminiIndex / 8;
     int offset = geminiIndex % 8;
+    result.data[byte] |= 1 << offset;
+
+    localKeyState &= localKeyState - 1;
+  }
+  return result;
+}
+
+StenoPloverHidPacket StenoKeyState::ToPloverHidPacket() const {
+  StenoPloverHidPacket result = {};
+  uint64_t localKeyState = keyState;
+  while (localKeyState) {
+    int index = __builtin_ctzll(localKeyState);
+    unsigned int ploverHidIndex = PLOVER_HID_LOOKUP[index];
+
+    int byte = ploverHidIndex / 8;
+    int offset = ploverHidIndex % 8;
     result.data[byte] |= 1 << offset;
 
     localKeyState &= localKeyState - 1;

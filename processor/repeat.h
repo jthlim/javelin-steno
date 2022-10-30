@@ -12,7 +12,7 @@ public:
   void Process(StenoKeyState value, StenoAction action) final;
   void Tick() final;
 
-  static const int FORGET_TIME_SPAN = 100;
+  static const int FORGET_TIME_SPAN = 120;
   static const int INITIAL_REPEAT_DELAY = 200;
   static const int REPEAT_DELAY = 30;
 
