@@ -75,6 +75,11 @@ bool BranchPatternComponent::Match(const char *p, PatternContext &context) {
 }
 
 void BranchPatternComponent::RemoveEpsilon() {
+  if (processed) {
+    return;
+  }
+  processed = true;
+
   while (branch && branch->IsEpsilon()) {
     branch = branch->next;
   }

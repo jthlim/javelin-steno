@@ -73,6 +73,7 @@ public:
 
 private:
   PatternComponent *branch;
+  bool processed = false;
 };
 
 class StartOfLinePatternComponent : public PatternComponent {
