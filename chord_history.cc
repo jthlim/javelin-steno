@@ -47,14 +47,16 @@ StenoSegmentList ChordHistory::CreateSegments(size_t maximumChordCount,
   }
 
   StenoSegmentList result;
-  AddSegments(result, startOffset, maximumChordCount, dictionary);
+  AddSegments(result, startOffset, maximumChordCount, dictionary,
+              dictionary.GetMaximumMatchLength());
+
   return result;
 }
 
 void ChordHistory::AddSegments(StenoSegmentList &list, size_t offset,
                                size_t endOffset,
-                               const StenoDictionary &dictionary) {
-  size_t maximumMatchLength = dictionary.GetMaximumMatchLength();
+                               const StenoDictionary &dictionary,
+                               size_t maximumMatchLength) {
   char buffer[32];
 
   while (offset < endOffset) {
@@ -87,7 +89,7 @@ bool ChordHistory::DirectLookup(StenoSegmentList &list, size_t &offset,
     StenoDictionaryLookup lookup = dictionary.Lookup(chords + offset, length);
     if (lookup.IsValid()) {
       if (strstr(lookup.GetText(), "{*?}")) {
-        HandleRetroactiveInsertSpace(list, dictionary);
+        HandleRetroactiveInsertSpace(list, dictionary, offset);
         lookup.Destroy();
       } else {
         list.Add(StenoSegment(length, states + offset, lookup));
@@ -195,7 +197,8 @@ StenoSegment ChordHistory::AutoSuffixTest(size_t offset, size_t startLength,
 }
 
 void ChordHistory::HandleRetroactiveInsertSpace(
-    StenoSegmentList &list, const StenoDictionary &dictionary) {
+    StenoSegmentList &list, const StenoDictionary &dictionary,
+    size_t currentOffset) {
   // The last element needs to be split up.
   if (list.IsEmpty()) {
     return;
@@ -206,14 +209,25 @@ void ChordHistory::HandleRetroactiveInsertSpace(
     return;
   }
   size_t chordLength = lastSegment.chordLength;
+
+  if (chordLength == 1) {
+    // Put in an extra empty segment to prevent this chord from being recorded.
+    // (See logic at end of StenoEngine::ProcessNormalModeChord).
+    list.Add(StenoSegment(1, states + currentOffset,
+                          StenoDictionaryLookup::CreateStaticString("")));
+    return;
+  }
+
   lastSegment.lookup.Destroy();
 
   size_t offset = lastSegment.state - states;
 
   list.Pop();
 
-  AddSegments(list, offset, offset + chordLength - 1, dictionary);
-  AddSegments(list, offset + chordLength - 1, offset + chordLength, dictionary);
+  AddSegments(list, offset, offset + chordLength - 1, dictionary,
+              dictionary.GetMaximumMatchLength());
+  AddSegments(list, offset + chordLength - 1, offset + chordLength, dictionary,
+              1);
 }
 
 //---------------------------------------------------------------------------

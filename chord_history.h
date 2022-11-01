@@ -59,10 +59,12 @@ private:
   StenoState states[BUFFER_SIZE];
 
   void AddSegments(StenoSegmentList &list, size_t offset, size_t endOffset,
-                   const StenoDictionary &dictionary);
+                   const StenoDictionary &dictionary,
+                   size_t maximumMatchLength);
 
   void HandleRetroactiveInsertSpace(StenoSegmentList &list,
-                                    const StenoDictionary &dictionary);
+                                    const StenoDictionary &dictionary,
+                                    size_t currentOffset);
 
   bool DirectLookup(StenoSegmentList &list, size_t &offset, size_t endOffset,
                     const StenoDictionary &dictionary,
