@@ -12,7 +12,7 @@ constexpr StenoChord StenoJeffShowStrokeDictionary::trigger(ChordMask::SL |
                                                             ChordMask::RL |
                                                             ChordMask::STAR);
 
-constexpr StenoJeffShowStrokeDictionary StenoJeffShowStrokeDictionary::instance;
+const StenoJeffShowStrokeDictionary StenoJeffShowStrokeDictionary::instance;
 
 //---------------------------------------------------------------------------
 
@@ -46,7 +46,7 @@ StenoJeffShowStrokeDictionary::Lookup(const StenoChord *chords,
     if (i != 1) {
       *p++ = '/';
     }
-    p += chords[i].ToString(p);
+    p = chords[i].ToString(p);
   }
   if (closed) {
     p[0] = '`';

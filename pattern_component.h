@@ -17,6 +17,9 @@ struct PatternContext {
 class PatternComponent {
 public:
   virtual bool Match(const char *p, PatternContext &context) = 0;
+  virtual bool IsEpsilon() const { return false; }
+
+  virtual void RemoveEpsilon();
 
 protected:
   bool CallNext(const char *p, PatternContext &context);
@@ -25,12 +28,14 @@ private:
   PatternComponent *next = nullptr;
 
   friend class Pattern;
+  friend class BranchPatternComponent;
   friend class AlternatePatternComponent;
 };
 
 class EpsilonPatternComponent : public PatternComponent {
 public:
   virtual bool Match(const char *p, PatternContext &context);
+  virtual bool IsEpsilon() const { return true; }
 };
 
 class AnyPatternComponent : public PatternComponent {
@@ -64,6 +69,7 @@ class BranchPatternComponent : public PatternComponent {
 public:
   BranchPatternComponent(PatternComponent *branch) : branch(branch) {}
   virtual bool Match(const char *p, PatternContext &context);
+  virtual void RemoveEpsilon() final;
 
 private:
   PatternComponent *branch;
@@ -105,6 +111,7 @@ public:
   ContainerPatternComponent(PatternComponent *initialComponent);
 
   void Add(PatternComponent *component);
+  virtual void RemoveEpsilon() final;
 
 protected:
   size_t componentCount;

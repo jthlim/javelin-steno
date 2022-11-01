@@ -1969,7 +1969,7 @@ const JeffPhrasingEnder *const ENDER_HASH_MAP[] = {
 };
 //---------------------------------------------------------------------------
 
-constexpr JeffPhrasingDictionaryData JeffPhrasingDictionaryData::instance = {
+const JeffPhrasingDictionaryData JeffPhrasingDictionaryData::instance = {
     .simpleStarterCount = sizeof(SIMPLE_STARTERS) / sizeof(*SIMPLE_STARTERS),
     .simpleStarters = SIMPLE_STARTERS,
 

@@ -2,7 +2,7 @@
 
 #include "orthography.h"
 #include "console.h"
-#include "string_util.h"
+#include "str.h"
 
 //---------------------------------------------------------------------------
 
@@ -25,10 +25,10 @@ void StenoOrthography::Print() const {
       Console::Write(",", 1);
     }
     Console::Printf("\n\t\t{\n\t\t\t\"pattern\": \"");
-    char *p = WriteJsonString(buffer, rules[i].testPattern);
+    char *p = Str::WriteJson(buffer, rules[i].testPattern);
     Console::Write(buffer, p - buffer);
     Console::Printf("\",\n\t\t\t\"replacement\": \"");
-    p = WriteJsonString(buffer, rules[i].replacement);
+    p = Str::WriteJson(buffer, rules[i].replacement);
     Console::Write(buffer, p - buffer);
     Console::Printf("\"\n\t\t}");
   }
@@ -39,10 +39,10 @@ void StenoOrthography::Print() const {
       Console::Write(",", 1);
     }
     Console::Printf("\n\t\t{\n\t\t\t\"suffix\": \"");
-    char *p = WriteJsonString(buffer, aliases[i].text);
+    char *p = Str::WriteJson(buffer, aliases[i].text);
     Console::Write(buffer, p - buffer);
     Console::Printf("\",\n\t\t\t\"alias\": \"");
-    p = WriteJsonString(buffer, aliases[i].alias);
+    p = Str::WriteJson(buffer, aliases[i].alias);
     Console::Write(buffer, p - buffer);
     Console::Printf("\"\n\t\t}");
   }

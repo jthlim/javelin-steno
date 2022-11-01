@@ -4,7 +4,7 @@
 #include "../chord.h"
 #include "../console.h"
 #include "../steno_key_code.h"
-#include "../string_util.h"
+#include "../str.h"
 #include <assert.h>
 #include <stdlib.h>
 
@@ -48,7 +48,7 @@ static char *ReplaceSuffix(char *original, size_t length, size_t offset,
                            const char *suffix) {
   assert(offset <= length);
   original[length - offset] = '\0';
-  char *updatedResult = rasprintf("%s%s", original, suffix);
+  char *updatedResult = Str::Asprintf("%s%s", original, suffix);
   free(original);
   return updatedResult;
 }
@@ -74,11 +74,11 @@ StenoJeffNumbersDictionary::Lookup(const StenoChord *chords,
 
     StenoChord control = GetDigits(scratch, chords[i]);
     if (result) {
-      char *updated = rasprintf("%s%s", result, scratch);
+      char *updated = Str::Asprintf("%s%s", result, scratch);
       free(result);
       result = updated;
     } else {
-      result = strdup(scratch);
+      result = Str::Dup(scratch);
     }
 
     const StenoChord RB = ChordMask::RR | ChordMask::BR;
@@ -94,7 +94,7 @@ StenoJeffNumbersDictionary::Lookup(const StenoChord *chords,
         return StenoDictionaryLookup::CreateInvalid();
       }
       control &= ~RB;
-      char *updated = rasprintf("$%s", result);
+      char *updated = Str::Asprintf("$%s", result);
       free(result);
       result = updated;
     } else if ((control & WR) == WR) {
@@ -104,7 +104,7 @@ StenoJeffNumbersDictionary::Lookup(const StenoChord *chords,
         return StenoDictionaryLookup::CreateInvalid();
       }
       control &= ~WR;
-      char *updated = rasprintf("$%s", result);
+      char *updated = Str::Asprintf("$%s", result);
       free(result);
       result = updated;
     } else if ((control & KR) == KR) {
@@ -114,7 +114,7 @@ StenoJeffNumbersDictionary::Lookup(const StenoChord *chords,
         return StenoDictionaryLookup::CreateInvalid();
       }
       control &= ~KR;
-      char *updated = rasprintf("%s%%", result);
+      char *updated = Str::Asprintf("%s%%", result);
       free(result);
       result = updated;
     } else if ((control & RG) == RG) {
@@ -124,7 +124,7 @@ StenoJeffNumbersDictionary::Lookup(const StenoChord *chords,
         return StenoDictionaryLookup::CreateInvalid();
       }
       control &= ~RG;
-      char *updated = rasprintf("%s%%", result);
+      char *updated = Str::Asprintf("%s%%", result);
       free(result);
       result = updated;
     } else if ((control & DZ) == DZ) {
@@ -134,7 +134,7 @@ StenoJeffNumbersDictionary::Lookup(const StenoChord *chords,
         return StenoDictionaryLookup::CreateInvalid();
       }
       control &= ~DZ;
-      char *updated = rasprintf("$%s00", result);
+      char *updated = Str::Asprintf("$%s00", result);
       free(result);
       result = updated;
     } else if ((control & ChordMask::KL).IsNotEmpty() ||
@@ -162,7 +162,7 @@ StenoJeffNumbersDictionary::Lookup(const StenoChord *chords,
         suffix = (control & ChordMask::STAR).IsNotEmpty() ? " p.m." : " a.m.";
       }
 
-      char *updated = rasprintf("%s%s%s", result, minutes, suffix);
+      char *updated = Str::Asprintf("%s%s%s", result, minutes, suffix);
       free(result);
       result = updated;
       control &=
@@ -230,7 +230,7 @@ StenoJeffNumbersDictionary::Lookup(const StenoChord *chords,
         }
       }
 
-      char *updated = rasprintf("%s%s", result, suffix);
+      char *updated = Str::Asprintf("%s%s", result, suffix);
       free(result);
       result = updated;
 
@@ -258,7 +258,7 @@ StenoJeffNumbersDictionary::Lookup(const StenoChord *chords,
         return StenoDictionaryLookup::CreateInvalid();
       }
       ToRoman(scratch, value);
-      result = strdup(scratch);
+      result = Str::Dup(scratch);
       control &= ~(ChordMask::RL | ChordMask::RR);
     }
 
@@ -447,11 +447,11 @@ char *ToWords(char *digits) {
   char *p = digits;
   if (*p == '\0') {
     free(digits);
-    return strdup(NUMBER_WORDS[0]);
+    return Str::Dup(NUMBER_WORDS[0]);
   }
 
   size_t length = strlen(p);
-  char *result = strdup("");
+  char *result = Str::Dup("");
   char *end = p + length;
   bool needsAnd = false;
   bool needsComma = false;
@@ -488,8 +488,8 @@ char *ToWords(char *digits) {
       } else if (digitValues[2] == 0) {
         twoDigitWord = TENS[digitValues[1]];
       } else {
-        twoDigitWord = rasprintf("%s-%s", TENS[digitValues[1]],
-                                 NUMBER_WORDS[digitValues[2]]);
+        twoDigitWord = Str::Asprintf("%s-%s", TENS[digitValues[1]],
+                                     NUMBER_WORDS[digitValues[2]]);
         freeTwoDigitWord = true;
       }
     }
@@ -502,16 +502,17 @@ char *ToWords(char *digits) {
     char *updatedResult;
     if (digitValues[0] != 0) {
       if (twoDigitValue == 0) {
-        updatedResult = rasprintf("%s%s%s%s%s", NUMBER_WORDS[digitValues[0]],
-                                  HUNDRED, *largeSumWord, separator, result);
-      } else {
         updatedResult =
-            rasprintf("%s%s and %s%s%s%s", NUMBER_WORDS[digitValues[0]],
-                      HUNDRED, twoDigitWord, *largeSumWord, separator, result);
+            Str::Asprintf("%s%s%s%s%s", NUMBER_WORDS[digitValues[0]], HUNDRED,
+                          *largeSumWord, separator, result);
+      } else {
+        updatedResult = Str::Asprintf(
+            "%s%s and %s%s%s%s", NUMBER_WORDS[digitValues[0]], HUNDRED,
+            twoDigitWord, *largeSumWord, separator, result);
       }
     } else {
-      updatedResult =
-          rasprintf("%s%s%s%s", twoDigitWord, *largeSumWord, separator, result);
+      updatedResult = Str::Asprintf("%s%s%s%s", twoDigitWord, *largeSumWord,
+                                    separator, result);
     }
     free(result);
     result = updatedResult;
@@ -541,7 +542,7 @@ static void TestLookup(const char *stroke, const char *expected) {
       StenoJeffNumbersDictionary::instance.Lookup(&chord, 1);
   assert(lookup.IsValid());
   const char *text = lookup.GetText();
-  assert(streq(text, expected));
+  assert(Str::Eq(text, expected));
   lookup.Destroy();
 }
 
@@ -551,7 +552,7 @@ static void TestLookup(const StenoChord *chords, size_t length,
       StenoJeffNumbersDictionary::instance.Lookup(chords, length);
   assert(lookup.IsValid());
   const char *text = lookup.GetText();
-  assert(streq(text, expected));
+  assert(Str::Eq(text, expected));
   lookup.Destroy();
 }
 
@@ -666,22 +667,22 @@ TEST_BEGIN("JeffNumbers: Test roman numerals") {
   // spellchecker: disable
   char buffer[16];
   ToRoman(buffer, 1);
-  assert(streq(buffer, "I"));
+  assert(Str::Eq(buffer, "I"));
 
   ToRoman(buffer, 3);
-  assert(streq(buffer, "III"));
+  assert(Str::Eq(buffer, "III"));
 
   ToRoman(buffer, 4);
-  assert(streq(buffer, "IV"));
+  assert(Str::Eq(buffer, "IV"));
 
   ToRoman(buffer, 47);
-  assert(streq(buffer, "XLVII"));
+  assert(Str::Eq(buffer, "XLVII"));
 
   ToRoman(buffer, 1977);
-  assert(streq(buffer, "MCMLXXVII"));
+  assert(Str::Eq(buffer, "MCMLXXVII"));
 
   ToRoman(buffer, 3888);
-  assert(streq(buffer, "MMMDCCCLXXXVIII"));
+  assert(Str::Eq(buffer, "MMMDCCCLXXXVIII"));
 
   TestLookup("#STR", "XII");
   TestLookup("#ST-R", "XII");
@@ -690,12 +691,12 @@ TEST_BEGIN("JeffNumbers: Test roman numerals") {
 TEST_END
 
 static void TestWord(const char *input, const char *expectedOutput) {
-  char *dupedInput = strdup(input);
+  char *dupedInput = Str::Dup(input);
   char *result = ToWords(dupedInput);
 
-  if (!streq(result, expectedOutput)) {
+  if (!Str::Eq(result, expectedOutput)) {
     printf("'%s' gave '%s', expected '%s'\n", input, result, expectedOutput);
-    assert(streq(result, expectedOutput));
+    assert(Str::Eq(result, expectedOutput));
   }
 
   free(result);

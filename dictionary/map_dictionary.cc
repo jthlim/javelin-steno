@@ -2,7 +2,7 @@
 
 #include "map_dictionary.h"
 #include "../console.h"
-#include "../string_util.h"
+#include "../str.h"
 #include "../uint24.h"
 #include "map_dictionary_definition.h"
 
@@ -75,14 +75,14 @@ bool StenoMapDictionaryStrokesDefinition::PrintDictionary(
       if (j != 0) {
         *p++ = '/';
       }
-      p += StenoChord(entry.chords[j].ToUint32()).ToString(p);
+      p = StenoChord(entry.chords[j].ToUint32()).ToString(p);
     }
     *p++ = '\"';
     *p++ = ':';
     *p++ = ' ';
 
     *p++ = '\"';
-    p = WriteJsonString(p, (char *)textBlock + entry.textOffset.ToUint32());
+    p = Str::WriteJson(p, (char *)textBlock + entry.textOffset.ToUint32());
     *p++ = '\"';
     Console::Write(buffer, p - buffer);
   }

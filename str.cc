@@ -1,12 +1,12 @@
 //---------------------------------------------------------------------------
 
-#include "string_util.h"
+#include "str.h"
 #include <stdarg.h>
 #include <stdlib.h>
 
 //---------------------------------------------------------------------------
 
-char *rasprintf(const char *p, ...) {
+char *Str::Asprintf(const char *p, ...) {
   va_list v;
   va_start(v, p);
 
@@ -18,17 +18,24 @@ char *rasprintf(const char *p, ...) {
   return buffer;
 }
 
-__attribute__((weak)) char *strndup(const char *p, size_t length) {
+char *Str::DupN(const char *p, size_t length) {
   char *buffer = (char *)malloc(length + 1);
   buffer[length] = '\0';
   return (char *)memcpy(buffer, p, length);
 }
 
-bool str_has_prefix(const char *p, const char *prefix) {
+char *Str::Dup(const char *p) {
+  size_t length = strlen(p);
+  char *buffer = (char *)malloc(length + 1);
+  buffer[length] = '\0';
+  return (char *)memcpy(buffer, p, length);
+}
+
+bool Str::HasPrefix(const char *p, const char *prefix) {
   return strncmp(prefix, p, strlen(prefix)) == 0;
 }
 
-char *WriteJsonString(char *p, const char *text) {
+char *Str::WriteJson(char *p, const char *text) {
   while (*text) {
     switch (*text) {
     case '\r':

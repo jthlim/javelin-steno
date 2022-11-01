@@ -117,15 +117,15 @@ StenoEngine::UpdateAddTranslationModeTextBuffer(StenoKeyCodeBuffer &buffer) {
     }
 
     char chordBuffer[32];
-    chord.ToString(chordBuffer);
-    buffer.AppendText(chordBuffer, strlen(chordBuffer), StenoCaseMode::NORMAL);
+    char *p = chord.ToString(chordBuffer);
+    buffer.AppendText(chordBuffer, p - chordBuffer, StenoCaseMode::NORMAL);
   }
 
   buffer.AppendText(TRANSLATION_PROMPT, sizeof(TRANSLATION_PROMPT) - 1,
                     StenoCaseMode::NORMAL);
 
-  StenoSegmentList segmentList =
-      addTranslationHistory.CreateSegments(dictionary, 256, i);
+  StenoSegmentList segmentList = addTranslationHistory.CreateSegments(
+      addTranslationHistory.GetCount(), dictionary, 256, i);
   StenoTokenizer *tokenizer = segmentList.CreateTokenizer();
   buffer.Append(tokenizer, *this);
   delete tokenizer;
@@ -146,8 +146,8 @@ void StenoEngine::AddTranslation(size_t newlineIndex) {
   }
 
   nextKeyCodeBuffer.Reset();
-  StenoSegmentList segmentList =
-      addTranslationHistory.CreateSegments(dictionary, 256, newlineIndex + 1);
+  StenoSegmentList segmentList = addTranslationHistory.CreateSegments(
+      addTranslationHistory.GetCount(), dictionary, 256, newlineIndex + 1);
   StenoTokenizer *tokenizer = segmentList.CreateTokenizer();
   nextKeyCodeBuffer.Append(tokenizer, *this);
   delete tokenizer;

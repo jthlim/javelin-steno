@@ -6,7 +6,19 @@
 //---------------------------------------------------------------------------
 
 bool PatternComponent::CallNext(const char *p, PatternContext &context) {
-  return !next || next->Match(p, context);
+  if (!next) {
+    return true;
+  }
+  return next->Match(p, context);
+}
+
+void PatternComponent::RemoveEpsilon() {
+  while (next && next->IsEpsilon()) {
+    next = next->next;
+  }
+  if (next) {
+    next->RemoveEpsilon();
+  }
 }
 
 bool EpsilonPatternComponent::Match(const char *p, PatternContext &context) {
@@ -62,6 +74,17 @@ bool BranchPatternComponent::Match(const char *p, PatternContext &context) {
   return branch->Match(p, context) || CallNext(p, context);
 }
 
+void BranchPatternComponent::RemoveEpsilon() {
+  while (branch && branch->IsEpsilon()) {
+    branch = branch->next;
+  }
+  if (branch) {
+    branch->RemoveEpsilon();
+  }
+
+  PatternComponent::RemoveEpsilon();
+}
+
 bool StartOfLinePatternComponent::Match(const char *p,
                                         PatternContext &context) {
   return (p == context.start) && CallNext(p, context);
@@ -102,15 +125,19 @@ void ContainerPatternComponent::Add(PatternComponent *component) {
   if (componentCount == capacity) {
     PatternComponent **newComponents = new PatternComponent *[capacity + 4];
 
-    // Better to use a memcpy here, but clang starts warning
-    for (size_t i = 0; i < capacity; ++i) {
-      newComponents[i] = components[i];
-    }
+    memcpy(newComponents, components,
+           capacity * sizeof(PatternComponent *)); // NOLINT
 
     delete[] components;
     components = newComponents;
   }
   components[componentCount++] = component;
+}
+
+void ContainerPatternComponent::RemoveEpsilon() {
+  for (size_t i = 0; i < componentCount; ++i) {
+    components[i]->RemoveEpsilon();
+  }
 }
 
 //---------------------------------------------------------------------------

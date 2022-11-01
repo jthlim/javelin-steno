@@ -3,7 +3,7 @@
 #include "emily_symbols_dictionary.h"
 #include "../chord.h"
 #include "../console.h"
-#include "../string_util.h"
+#include "../str.h"
 #include <assert.h>
 
 //---------------------------------------------------------------------------
@@ -34,7 +34,7 @@ struct EmilySymbolData {
   const char *text[4];
 };
 
-constexpr StenoEmilySymbolsDictionary StenoEmilySymbolsDictionary::instance;
+const StenoEmilySymbolsDictionary StenoEmilySymbolsDictionary::instance;
 
 constexpr EmilySymbolData DATA[] = {
     {
@@ -159,7 +159,7 @@ constexpr EmilySymbolData DATA[] = {
     },
     {
         .trigger = StenoChord(ChordMask::FR | ChordMask::BR),
-        .text = {"\\", "Δ", "√", "∞"},
+        .text = {"\\\\", "Δ", "√", "∞"},
     },
     {
         .trigger = StenoChord(ChordMask::RR | ChordMask::PR | ChordMask::GR),
@@ -228,7 +228,7 @@ StenoEmilySymbolsDictionary::Lookup(const StenoChord *chords,
   const char *leftSpace = (c & LEFT_SPACE_MASK).IsNotEmpty() ? "{}" : "{^}";
   const char *rightSpace = (c & RIGHT_SPACE_MASK).IsNotEmpty() ? "{}" : "{^}";
 
-  if (streq(text, "{*!}") || streq(text, "{*?}")) {
+  if (Str::Eq(text, "{*!}") || Str::Eq(text, "{*?}")) {
     leftSpace = "";
     rightSpace = "";
   }
@@ -236,12 +236,45 @@ StenoEmilySymbolsDictionary::Lookup(const StenoChord *chords,
   const char *r1 = (c & REPEAT_EXTRA_1).IsNotEmpty() ? text : "";
   const char *r2 = (c & REPEAT_EXTRA_2).IsNotEmpty() ? text : "";
 
-  return StenoDictionaryLookup::CreateDynamicString(rasprintf(
+  return StenoDictionaryLookup::CreateDynamicString(Str::Asprintf(
       "%s%s%s%s%s%s%s", leftSpace, text, r1, r2, r2, rightSpace, capitalize));
 }
 
 void StenoEmilySymbolsDictionary::PrintInfo() const {
   Console::Printf("  Emily's Symbols\n");
+}
+
+bool StenoEmilySymbolsDictionary::PrintDictionary(bool hasData) const {
+  char chordBuffer[32];
+  char translationBuffer[32];
+  for (size_t i = 0; i < sizeof(DATA) / sizeof(*DATA); ++i) {
+    StenoChord chord = ACTIVATION_MATCH | DATA[i].trigger;
+
+    for (int j = 0; j < 4; ++j) {
+      StenoChord localChord = chord;
+      if (j & 1) {
+        localChord |= VARIANT_1;
+      }
+      if (j & 2) {
+        localChord |= VARIANT_2;
+      }
+
+      localChord.ToString(chordBuffer);
+
+      char *p = Str::WriteJson(translationBuffer, DATA[i].text[j]);
+      *p++ = '\0';
+
+      if (!hasData) {
+        hasData = true;
+        Console::Write("\n\t", 2);
+      } else {
+        Console::Write(",\n\t", 3);
+      }
+
+      Console::Printf("\"%s\": \"%s\"", chordBuffer, translationBuffer);
+    }
+  }
+  return true;
 }
 
 //---------------------------------------------------------------------------
@@ -254,7 +287,7 @@ static void VerifyChord(const char *chord, const char *result) {
 
   auto lookup = StenoEmilySymbolsDictionary::instance.Lookup(&stenoChord, 1);
   assert(lookup.IsValid());
-  assert(streq(lookup.GetText(), result));
+  assert(Str::Eq(lookup.GetText(), result));
   lookup.Destroy();
 }
 

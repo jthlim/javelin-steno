@@ -44,7 +44,8 @@ public:
 
   const StenoState &BackState() const { return states[count - 1]; }
 
-  StenoSegmentList CreateSegments(const StenoDictionary &dictionary,
+  StenoSegmentList CreateSegments(size_t maximumChordCount,
+                                  const StenoDictionary &dictionary,
                                   size_t maximumChordLength,
                                   size_t minimumStartOffset = 0);
 

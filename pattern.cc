@@ -5,7 +5,7 @@
 #include <assert.h>
 
 #include "pattern_component.h"
-#include "string_util.h"
+#include "str.h"
 
 //---------------------------------------------------------------------------
 
@@ -37,6 +37,7 @@ Pattern Pattern::Compile(const char *p) {
 
   // If this assert is hit, then the entire pattern hasn't been processed.
   assert(*context.p == '\0');
+  captureStart->RemoveEpsilon();
 
   return Pattern(captureStart);
 }
@@ -151,7 +152,7 @@ Pattern::BuildResult Pattern::ParseAtom(BuildContext &c) {
     switch (*c.p) {
     case '^':
     case '\\':
-      return BuildResult(new LiteralPatternComponent(strndup(c.p++, 1)));
+      return BuildResult(new LiteralPatternComponent(Str::DupN(c.p++, 1)));
     default:
       assert(!"Unhandled symbol");
     }
@@ -183,7 +184,7 @@ Pattern::BuildResult Pattern::ParseAtom(BuildContext &c) {
     const char *pStart = c.p;
     c.p = FindLiteralEnd(pStart);
     return BuildResult(
-        new LiteralPatternComponent(strndup(pStart, c.p - pStart)));
+        new LiteralPatternComponent(Str::DupN(pStart, c.p - pStart)));
   }
 }
 
@@ -275,12 +276,12 @@ char *Pattern::Replace(char *text, const char *templ) const {
   if (!match.match) {
     return text;
   }
-  char *prefix = strndup(text, match.captures[0] - text);
+  char *prefix = Str::DupN(text, match.captures[0] - text);
   char *suffix =
-      strndup(match.captures[1], text + strlen(text) - match.captures[1]);
+      Str::DupN(match.captures[1], text + strlen(text) - match.captures[1]);
   char *replacement = match.Replace(templ);
 
-  char *result = rasprintf("%s%s%s", prefix, replacement, suffix);
+  char *result = Str::Asprintf("%s%s%s", prefix, replacement, suffix);
   free(prefix);
   free(suffix);
   free(replacement);

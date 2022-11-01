@@ -2,7 +2,7 @@
 
 #include "console.h"
 #include "steno_key_code_emitter.h"
-#include "string_util.h"
+#include "str.h"
 #include <assert.h>
 #include <stdarg.h>
 
@@ -108,7 +108,8 @@ void Console::ProcessLineBuffer() {
 
 const ConsoleCommand *Console::GetCommand() const {
   for (size_t i = 0; i < commandCount; ++i) {
-    if (str_has_prefix(lineBuffer, commands[i].command)) {
+    if (Str::HasPrefix(lineBuffer, commands[i].command) &&
+        IsWhitespace(lineBuffer[strlen(commands[i].command)])) {
       return &commands[i];
     }
   }
@@ -141,8 +142,9 @@ TEST_BEGIN("Console should handle invalid commands") {
   console.HandleInput("asdf\n", 5);
 
   Console::history.push_back(0);
-  assert(streq(&Console::history.front(),
-               "ERR Invalid command. Use \"help\" for a list of commands\n\n"));
+  assert(
+      Str::Eq(&Console::history.front(),
+              "ERR Invalid command. Use \"help\" for a list of commands\n\n"));
 
   Console::history.clear();
 }

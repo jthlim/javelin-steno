@@ -5,7 +5,7 @@
 #include "../console.h"
 #include "../crc32.h"
 #include "../flash.h"
-#include "../string_util.h"
+#include "../str.h"
 #include <assert.h>
 
 //---------------------------------------------------------------------------
@@ -163,7 +163,7 @@ bool StenoUserDictionary::Add(const StenoChord *chords, size_t length,
                               const char *word) {
   // Verify that it doesn't already exist.
   StenoDictionaryLookup lookup = Lookup(chords, length);
-  if (lookup.IsValid() && streq(lookup.GetText(), word)) {
+  if (lookup.IsValid() && Str::Eq(lookup.GetText(), word)) {
     lookup.Destroy();
     return true;
   }
@@ -365,14 +365,14 @@ void StenoUserDictionaryEntry::Print(char *buffer) const {
     if (i != 0) {
       *p++ = '/';
     }
-    p += chords[i].ToString(p);
+    p = chords[i].ToString(p);
   }
   *p++ = '\"';
   *p++ = ':';
   *p++ = ' ';
 
   *p++ = '\"';
-  p = WriteJsonString(p, GetText());
+  p = Str::WriteJson(p, GetText());
   *p++ = '\"';
   Console::Write(buffer, p - buffer);
 }
@@ -401,7 +401,7 @@ void StenoUserDictionary::PrintInfo() const {
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-#include "../string_util.h"
+#include "../str.h"
 #include "../unit_test.h"
 
 static uint8_t userDictionaryBuffer[512 * 1024];
@@ -464,9 +464,9 @@ TEST_BEGIN("StenoUserDictionary add and lookup test") {
   userDictionary.Add(TKOG, 1, "dog");
   userDictionary.Add(KAPBG_RAO, 2, "kangaroo");
 
-  assert(streq(userDictionary.Lookup(KAT, 1).GetText(), "cat"));
-  assert(streq(userDictionary.Lookup(TKOG, 1).GetText(), "dog"));
-  assert(streq(userDictionary.Lookup(KAPBG_RAO, 2).GetText(), "kangaroo"));
+  assert(Str::Eq(userDictionary.Lookup(KAT, 1).GetText(), "cat"));
+  assert(Str::Eq(userDictionary.Lookup(TKOG, 1).GetText(), "dog"));
+  assert(Str::Eq(userDictionary.Lookup(KAPBG_RAO, 2).GetText(), "kangaroo"));
   // spellchecker: enable
 }
 TEST_END
@@ -499,11 +499,11 @@ TEST_BEGIN("StenoUserDictionary will dump Json dictionary") {
 
   userDictionary.PrintJsonDictionary();
   Console::history.push_back(0);
-  assert(streq(&Console::history.front(), "{\n"
-                                          "\t\"KAT\": \"cat\",\n"
-                                          "\t\"TKOG\": \"dog\",\n"
-                                          "\t\"KAPBG/RAO\": \"kangaroo\"\n"
-                                          "}\n\n"));
+  assert(Str::Eq(&Console::history.front(), "{\n"
+                                            "\t\"KAT\": \"cat\",\n"
+                                            "\t\"TKOG\": \"dog\",\n"
+                                            "\t\"KAPBG/RAO\": \"kangaroo\"\n"
+                                            "}\n\n"));
 
   // spellchecker: enable
   Console::history.clear();

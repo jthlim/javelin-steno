@@ -211,11 +211,9 @@ const char *StenoChord::RightStart(const char *p) {
 }
 #endif
 
-size_t StenoChord::ToString(char *buffer) const {
+char *StenoChord::ToString(char *buffer) const {
   // cspell: disable-next-line
   const char *keys = "#STKPWHRAO*EUFRPBLGTSDZ";
-
-  char *start = buffer;
 
   for (int i = 0; i < ChordBitIndex::STAR; ++i) {
     if (keyState & (1UL << i)) {
@@ -246,7 +244,7 @@ size_t StenoChord::ToString(char *buffer) const {
   }
 
   *buffer = '\0';
-  return buffer - start;
+  return buffer;
 }
 
 uint32_t StenoChord::Hash(const StenoChord *chords, size_t length) {

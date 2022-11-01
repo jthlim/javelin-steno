@@ -39,10 +39,12 @@ void StenoDictionaryList::PrintInfo() const {
 }
 
 bool StenoDictionaryList::PrintDictionary(bool hasData) const {
-  for (size_t i = 0; i < count; ++i) {
-    if (dictionaries[i]->PrintDictionary(hasData)) {
-      hasData = true;
-    }
+  // Written in reverse order, so that if there are any conflicts,
+  // higher priority items will occur later in the JSON.
+  for (size_t i = count; i != 0;) {
+    --i;
+    bool result = dictionaries[i]->PrintDictionary(hasData);
+    hasData = hasData | result;
   }
   return hasData;
 }

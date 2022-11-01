@@ -65,6 +65,7 @@ private:
   StenoKeyCodeBuffer nextKeyCodeBuffer;
 
   struct SuffixEntry;
+  struct UpdateNormalModeTextBufferThreadData;
 
   void AddCandidates(List<SuffixEntry> &candidates, const char *word,
                      const char *suffix) const;
@@ -79,7 +80,8 @@ private:
   void DeleteTranslation(size_t newlineIndex);
 
   // Returns the number of segments
-  size_t UpdateNormalModeTextBuffer(StenoKeyCodeBuffer &buffer,
+  size_t UpdateNormalModeTextBuffer(size_t maximumChordCount,
+                                    StenoKeyCodeBuffer &buffer,
                                     size_t chordLength);
 
   size_t UpdateAddTranslationModeTextBuffer(StenoKeyCodeBuffer &buffer);

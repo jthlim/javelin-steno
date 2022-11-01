@@ -4,7 +4,7 @@
 #include "key_code.h"
 #include "macos_us_unicode_data.h"
 #include "steno_key_code.h"
-#include "string_util.h"
+#include "str.h"
 #include "windows_alt_unicode_data.h"
 
 //---------------------------------------------------------------------------
@@ -72,7 +72,7 @@ const char *UnicodeModeName(UnicodeMode mode) {
 
 bool StenoKeyCodeEmitter::SetUnicodeMode(const char *name) {
   for (size_t i = 0; i < (size_t)UnicodeMode::COUNT; ++i) {
-    if (streq(name, StenoKeyCodeEmitter::UNICODE_EMITTER_NAMES[i])) {
+    if (Str::Eq(name, StenoKeyCodeEmitter::UNICODE_EMITTER_NAMES[i])) {
       emitterMode = (UnicodeMode)i;
       return true;
     }
@@ -326,7 +326,8 @@ void StenoKeyCodeEmitter::EmitterContext::EmitUCS2AltHex(uint32_t unicode) {
   }
 }
 
-__attribute__((weak)) void StenoKeyCodeEmitter::EmitterContext::EmitKeyCode(uint32_t keyCode) {
+__attribute__((weak)) void
+StenoKeyCodeEmitter::EmitterContext::EmitKeyCode(uint32_t keyCode) {
   ReleaseModifiers(modifiers & ~keyCode);
   PressModifiers((keyCode & ~modifiers) & MODIFIER_MASK);
   modifiers = keyCode & MODIFIER_MASK;

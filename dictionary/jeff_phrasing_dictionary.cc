@@ -4,7 +4,7 @@
 #include "../chord.h"
 #include "../console.h"
 #include "../pattern.h"
-#include "../string_util.h"
+#include "../str.h"
 #include "dictionary.h"
 #include "jeff_phrasing_dictionary_data.h"
 #include <assert.h>
@@ -290,11 +290,11 @@ void VerifyChord(const char *chord, const char *result) {
 
     assert(lookup.IsValid());
   }
-  if (!streq(lookup.GetText(), result)) {
+  if (!Str::Eq(lookup.GetText(), result)) {
     printf("Lookup for %s expected '%s', got '%s'\n", chord, result,
            lookup.GetText());
 
-    assert(streq(lookup.GetText(), result));
+    assert(Str::Eq(lookup.GetText(), result));
   }
   lookup.Destroy();
 }

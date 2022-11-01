@@ -6,12 +6,8 @@
 #include "key_press_parser.h"
 #include "segment.h"
 #include "state.h"
-#include "string_util.h"
+#include "str.h"
 #include "utf8_pointer.h"
-
-//---------------------------------------------------------------------------
-
-char StenoKeyCodeBuffer::orthographicScratchPad[256];
 
 //---------------------------------------------------------------------------
 
@@ -271,10 +267,10 @@ void StenoKeyCodeBuffer::ProcessCommand(const char *p, StenoEngine &engine) {
     for (;;) {
       char *tokenEnd = (char *)memchr(p, ':', end - p);
       if (tokenEnd == nullptr) {
-        parameters.Add(strndup(p, end - p));
+        parameters.Add(Str::DupN(p, end - p));
         break;
       } else {
-        parameters.Add(strndup(p, tokenEnd - p));
+        parameters.Add(Str::DupN(p, tokenEnd - p));
         p = tokenEnd + 1;
       }
     }
@@ -309,7 +305,8 @@ void StenoKeyCodeBuffer::ProcessCommand(const char *p, StenoEngine &engine) {
 void StenoKeyCodeBuffer::ProcessOrthographicSuffix(const char *text,
                                                    size_t length,
                                                    StenoEngine &engine) {
-  char *suffix = strndup(text, length);
+  char orthographicScratchPad[128];
+  char *suffix = Str::DupN(text, length);
 
   size_t start = count;
   while (start != 0 && count - start < sizeof(orthographicScratchPad) / 4 - 1 &&

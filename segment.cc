@@ -1,7 +1,7 @@
 //---------------------------------------------------------------------------
 
 #include "segment.h"
-#include "string_util.h"
+#include "str.h"
 #include <stdio.h>
 
 //---------------------------------------------------------------------------
@@ -69,7 +69,7 @@ StenoToken StenoSegmentListTokenizer::GetNext() {
       case '\\':
         if (p[1] == '\0') {
           free(scratch);
-          scratch = strndup(start, p - start);
+          scratch = Str::DupN(start, p - start);
           ++p;
           PrepareNextP();
           return StenoToken(scratch, state);
@@ -87,7 +87,7 @@ ReturnSpan:
   const char *result = elementText;
   if (start != elementText || *p != '\0') {
     free(scratch);
-    result = scratch = strndup(start, p - start);
+    result = scratch = Str::DupN(start, p - start);
   }
 
   PrepareNextP();
@@ -123,7 +123,7 @@ StenoTokenizer *StenoSegmentList::CreateTokenizer() {
 #include "chord_history.h"
 #include "dictionary/main_dictionary.h"
 #include "dictionary/map_dictionary.h"
-#include "string_util.h"
+#include "str.h"
 #include "unit_test.h"
 #include <stdio.h>
 
@@ -136,13 +136,14 @@ TEST_BEGIN("Segment tests") {
   history.Add(StenoChord("-G"), StenoState());
   // spellchecker: enable
 
-  StenoSegmentList segmentList = history.CreateSegments(dictionary, 10);
+  StenoSegmentList segmentList =
+      history.CreateSegments(history.GetCount(), dictionary, 10);
   StenoTokenizer *tokenizer = segmentList.CreateTokenizer();
 
   assert(tokenizer->HasMore());
-  assert(streq(tokenizer->GetNext().text, "test"));
+  assert(Str::Eq(tokenizer->GetNext().text, "test"));
   assert(tokenizer->HasMore());
-  assert(streq(tokenizer->GetNext().text, "{^ing}"));
+  assert(Str::Eq(tokenizer->GetNext().text, "{^ing}"));
   assert(!tokenizer->HasMore());
   delete tokenizer;
 }

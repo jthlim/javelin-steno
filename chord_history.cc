@@ -3,7 +3,7 @@
 #include "chord_history.h"
 #include "dictionary/dictionary.h"
 #include "segment.h"
-#include "string_util.h"
+#include "str.h"
 
 //---------------------------------------------------------------------------
 
@@ -20,6 +20,7 @@ constexpr AutoSuffix autoSuffixes[] = {
 };
 const StenoChord suffixKeys(ChordMask::ZR | ChordMask::DR | ChordMask::SR |
                             ChordMask::GR);
+
 //---------------------------------------------------------------------------
 
 void ChordHistory::Shift() {
@@ -33,18 +34,20 @@ void ChordHistory::Shift() {
 
 //---------------------------------------------------------------------------
 
-StenoSegmentList ChordHistory::CreateSegments(const StenoDictionary &dictionary,
+StenoSegmentList ChordHistory::CreateSegments(size_t maximumChordCount,
+                                              const StenoDictionary &dictionary,
                                               size_t maximumChordLength,
                                               size_t minimumStartOffset) {
-  size_t startOffset =
-      count > maximumChordLength ? count - maximumChordLength : 0;
+  size_t startOffset = maximumChordCount > maximumChordLength
+                           ? maximumChordCount - maximumChordLength
+                           : 0;
 
   if (startOffset < minimumStartOffset) {
     startOffset = minimumStartOffset;
   }
 
   StenoSegmentList result;
-  AddSegments(result, startOffset, count, dictionary);
+  AddSegments(result, startOffset, maximumChordCount, dictionary);
   return result;
 }
 
@@ -66,7 +69,7 @@ void ChordHistory::AddSegments(StenoSegmentList &list, size_t offset,
     chords[offset].ToString(buffer);
     list.Add(StenoSegment(
         1, states + offset,
-        StenoDictionaryLookup::CreateDynamicString(strdup(buffer))));
+        StenoDictionaryLookup::CreateDynamicString(Str::Dup(buffer))));
     ++offset;
   }
 }
@@ -180,7 +183,7 @@ StenoSegment ChordHistory::AutoSuffixTest(size_t offset, size_t startLength,
       StenoDictionaryLookup lookup = dictionary.Lookup(localChords, length);
       if (lookup.IsValid()) {
         const char *text = lookup.GetText();
-        const char *result = rasprintf("%s%s", text, suffix.text);
+        const char *result = Str::Asprintf("%s%s", text, suffix.text);
         lookup.Destroy();
         return StenoSegment(length, states + offset,
                             StenoDictionaryLookup::CreateDynamicString(result));
@@ -219,7 +222,7 @@ void ChordHistory::HandleRetroactiveInsertSpace(
 #include "dictionary/emily_symbols_dictionary.h"
 #include "dictionary/main_dictionary.h"
 #include "dictionary/map_dictionary.h"
-#include "string_util.h"
+#include "str.h"
 #include "unit_test.h"
 #include <stdio.h>
 
@@ -236,10 +239,11 @@ TEST_BEGIN("ChordHistory: Test single segment") {
   ChordHistory history;
   history.Add(StenoChord("TEFT"), StenoState());
 
-  StenoSegmentList segmentList = history.CreateSegments(dictionary, 32);
+  StenoSegmentList segmentList =
+      history.CreateSegments(history.GetCount(), dictionary, 32);
 
   assert(segmentList.GetCount() == 1);
-  assert(streq(segmentList[0].lookup.GetText(), "test"));
+  assert(Str::Eq(segmentList[0].lookup.GetText(), "test"));
 }
 TEST_END
 
@@ -251,11 +255,12 @@ TEST_BEGIN("ChordHistory: Test two segments, with multi-stroke") {
   history.Add(StenoChord("-D"), StenoState());
   // spellchecker: enable
 
-  StenoSegmentList segmentList = history.CreateSegments(dictionary, 32);
+  StenoSegmentList segmentList =
+      history.CreateSegments(history.GetCount(), dictionary, 32);
 
   assert(segmentList.GetCount() == 2);
-  assert(streq(segmentList[0].lookup.GetText(), "test"));
-  assert(streq(segmentList[1].lookup.GetText(), "tested"));
+  assert(Str::Eq(segmentList[0].lookup.GetText(), "test"));
+  assert(Str::Eq(segmentList[1].lookup.GetText(), "tested"));
 }
 TEST_END
 
@@ -267,11 +272,12 @@ TEST_BEGIN("ChordHistory: Test *? splits strokes") {
   history.Add(StenoChord("SKWHU"), StenoState());
   // spellchecker: enable
 
-  StenoSegmentList segmentList = history.CreateSegments(dictionary, 32);
+  StenoSegmentList segmentList =
+      history.CreateSegments(history.GetCount(), dictionary, 32);
 
   assert(segmentList.GetCount() == 2);
-  assert(streq(segmentList[0].lookup.GetText(), "test"));
-  assert(streq(segmentList[1].lookup.GetText(), "-D"));
+  assert(Str::Eq(segmentList[0].lookup.GetText(), "test"));
+  assert(Str::Eq(segmentList[1].lookup.GetText(), "-D"));
 }
 TEST_END
 

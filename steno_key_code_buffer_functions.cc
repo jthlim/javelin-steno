@@ -5,7 +5,7 @@
 #include "state.h"
 #include "steno_key_code_buffer.h"
 #include "steno_key_code_emitter.h"
-#include "string_util.h"
+#include "str.h"
 #include "utf8_pointer.h"
 
 //---------------------------------------------------------------------------
@@ -249,7 +249,7 @@ void StenoKeyCodeBuffer::RetroactiveDeleteSpace() {
 
 bool StenoKeyCodeBuffer::ProcessFunction(const List<char *> &parameters) {
   for (const KeyCodeFunctionEntry &entry : HANDLERS) {
-    if (streq(entry.name, parameters[0])) {
+    if (Str::Eq(entry.name, parameters[0])) {
       return (this->*entry.handler)(parameters);
     }
   }

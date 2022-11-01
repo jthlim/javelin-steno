@@ -13,7 +13,7 @@ public:
                                        size_t length) const final;
   virtual unsigned int GetMaximumMatchLength() const final { return 1; }
   virtual void PrintInfo() const final;
-  virtual bool PrintDictionary(bool hasData) const final { return false; }
+  virtual bool PrintDictionary(bool hasData) const final;
 
   static const StenoEmilySymbolsDictionary instance;
 };

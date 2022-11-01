@@ -82,7 +82,7 @@ public:
   bool IsNotEmpty() const { return keyState != 0; }
 
   // Buffer must be at least 26 characters wide.
-  size_t ToString(char *buffer) const;
+  char *ToString(char *buffer) const;
 
   bool operator==(const StenoChord &o) const { return keyState == o.keyState; }
   bool operator!=(const StenoChord &o) const { return keyState != o.keyState; }
@@ -93,7 +93,10 @@ public:
   StenoChord operator|(const StenoChord &o) const {
     return StenoChord(keyState | o.keyState);
   }
+
   void operator&=(const StenoChord &o) { keyState &= o.keyState; }
+  void operator|=(const StenoChord &o) { keyState |= o.keyState; }
+
   StenoChord operator~() const { return StenoChord(~keyState); }
 
   uint32_t GetKeyState() const { return keyState; }

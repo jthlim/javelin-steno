@@ -13,7 +13,7 @@
 #include "pattern.h"
 #include "segment.h"
 #include "steno_key_code_buffer.h"
-#include "string_util.h"
+#include "str.h"
 #include "word_list.h"
 #include <string.h>
 
@@ -95,12 +95,12 @@ char *StenoEngine::AddSuffix(const char *word, const char *suffix) const {
   List<SuffixEntry> candidates;
 
   for (size_t i = 0; i < orthography.aliasCount; ++i) {
-    if (streq(word, orthography.aliases[i].text)) {
+    if (Str::Eq(word, orthography.aliases[i].text)) {
       AddCandidates(candidates, word, orthography.aliases[i].alias);
     }
   }
 
-  char *simple = rasprintf("%s%s", word, suffix);
+  char *simple = Str::Asprintf("%s%s", word, suffix);
   int score = WordList::GetWordRank(simple);
   if (score >= 0) {
     candidates.Add(SuffixEntry(simple, score));
@@ -128,7 +128,7 @@ char *StenoEngine::AddSuffix(const char *word, const char *suffix) const {
     free(candidates[i].text);
   }
 
-  char *text = rasprintf("%s ^%s", word, suffix);
+  char *text = Str::Asprintf("%s ^%s", word, suffix);
   for (size_t i = 0; i < orthography.ruleCount; ++i) {
     const PatternMatch match = patterns[i].Match(text);
     if (!match.match) {
@@ -141,12 +141,12 @@ char *StenoEngine::AddSuffix(const char *word, const char *suffix) const {
   }
 
   free(text);
-  return rasprintf("%s%s", word, suffix);
+  return Str::Asprintf("%s%s", word, suffix);
 }
 
 void StenoEngine::AddCandidates(List<SuffixEntry> &candidates, const char *word,
                                 const char *suffix) const {
-  char *text = rasprintf("%s ^%s", word, suffix);
+  char *text = Str::Asprintf("%s ^%s", word, suffix);
 
   for (size_t i = 0; i < orthography.ruleCount; ++i) {
     const PatternMatch match = patterns[i].Match(text);
@@ -244,9 +244,9 @@ public:
 void StenoEngineTester::VerifyTextBuffer(StenoEngine &engine,
                                          const char *expected) {
   char *p = engine.nextKeyCodeBuffer.ToString();
-  if (!streq(p, expected)) {
+  if (!Str::Eq(p, expected)) {
     printf("Expected: %s\nActual: %s\n", expected, p);
-    assert(streq(p, expected));
+    assert(Str::Eq(p, expected));
   }
   free(p);
 }
@@ -302,6 +302,32 @@ void StenoEngineTester::TestAddTranslation(StenoEngine &engine) {
   VerifyTextBuffer(engine, "test");
   // spellchecker: enable
 }
+
+TEST_BEGIN("Engine: Random spam") {
+  static const StenoDictionary *DICTIONARIES[] = {
+      &StenoJeffShowStrokeDictionary::instance,
+      &StenoJeffPhrasingDictionary::instance,
+      &StenoJeffNumbersDictionary::instance,
+      &StenoEmilySymbolsDictionary::instance,
+      &mainDictionary,
+  };
+
+  static constexpr StenoDictionaryList dictionaryList(
+      DICTIONARIES, sizeof(DICTIONARIES) / sizeof(*DICTIONARIES)); // NOLINT
+
+  StenoEngine engine(dictionaryList, StenoOrthography::emptyOrthography);
+
+  Key::DisableHistory();
+
+  srand(0x1234);
+  for (size_t i = 0; i < 1000; ++i) {
+    StenoChord chord(rand() & ChordMask::ALL);
+    engine.ProcessChord(chord);
+  }
+
+  Key::EnableHistory();
+}
+TEST_END
 
 TEST_BEGIN("Engine: Add Translation Test") {
   StenoEngineTester tester;

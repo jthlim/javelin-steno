@@ -116,7 +116,7 @@ constexpr uint8_t PLOVER_HID_LOOKUP[] = {
     4,  // PL
     3,  // WL
     2,  // HL
-    1,  // RL
+     1,  // RL
     0,  // A
     15, // O
     14, // STAR1

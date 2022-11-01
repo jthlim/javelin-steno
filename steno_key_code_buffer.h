@@ -43,8 +43,6 @@ public:
   // For Debugging
   char *ToString();
 
-  static char orthographicScratchPad[256];
-
   static bool IsGlue(const char *p);
 
   bool ProcessKeyPresses(const char *p, const char *end);
