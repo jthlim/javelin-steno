@@ -2,7 +2,7 @@
 
 #pragma once
 #include "chord_history.h"
-#include "list.h"
+#include "orthography.h"
 #include "processor/processor.h"
 #include "steno_key_code_buffer.h"
 #include "steno_key_code_emitter.h"
@@ -14,7 +14,6 @@ class StenoDictionary;
 class StenoUserDictionary;
 
 struct StenoConfigBlock;
-struct StenoOrthography;
 
 //---------------------------------------------------------------------------
 
@@ -36,16 +35,15 @@ public:
   void PrintInfo(const StenoConfigBlock *configBlock) const;
   void PrintDictionary() const;
 
-  char *AddSuffix(const char *word, const char *suffix) const;
-
 private:
   static const StenoChord UNDO_CHORD;
   static const size_t SEGMENT_CONVERSION_LIMIT = 32;
 
+  StenoEngineMode mode = StenoEngineMode::NORMAL;
+
   uint32_t strokeCount = 0;
   const StenoDictionary &dictionary;
-  const StenoOrthography &orthography;
-  const Pattern *patterns;
+  const StenoCompiledOrthography orthography;
   StenoUserDictionary *userDictionary;
 
   StenoState state = {
@@ -64,11 +62,8 @@ private:
   StenoKeyCodeBuffer previousKeyCodeBuffer;
   StenoKeyCodeBuffer nextKeyCodeBuffer;
 
-  struct SuffixEntry;
   struct UpdateNormalModeTextBufferThreadData;
 
-  void AddCandidates(List<SuffixEntry> &candidates, const char *word,
-                     const char *suffix) const;
   void ProcessNormalModeUndo();
   void ProcessNormalModeChord(StenoChord chord);
   void InitiateAddTranslationMode();
@@ -85,9 +80,6 @@ private:
                                     size_t chordLength);
 
   size_t UpdateAddTranslationModeTextBuffer(StenoKeyCodeBuffer &buffer);
-
-  static const Pattern *CreatePatterns(const StenoOrthography &orthography);
-  static StenoEngineMode mode;
 
   friend class StenoEngineTester;
 };

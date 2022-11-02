@@ -190,9 +190,11 @@ unsigned int StenoMapDictionary::GetMaximumMatchLength() const {
 constexpr StenoMapDictionary mainDictionary(MainDictionary::definition);
 
 TEST_BEGIN("MapDictionary: Single stroke lookup test") {
+  // spellchecker: disable
   const StenoChord chords[1] = {
       StenoChord("TEFT"),
   };
+  // spellchecker: enable
 
   auto lookup = mainDictionary.Lookup(chords, 1);
   assert(lookup.IsValid());

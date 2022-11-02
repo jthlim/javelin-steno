@@ -10,6 +10,12 @@
 class _ListBase {
 public:
   ~_ListBase() { free(buffer); }
+  _ListBase(_ListBase &&other) {
+    buffer = other.buffer;
+    count = other.count;
+    other.buffer = nullptr;
+    other.count = 0;
+  }
 
   bool IsEmpty() const { return count == 0; }
   bool IsNotEmpty() const { return count != 0; }
@@ -29,6 +35,9 @@ protected:
   uint8_t *buffer;
 
   static size_t GetCapacity(size_t count);
+
+private:
+  _ListBase(const _ListBase &) = delete;
 };
 
 //---------------------------------------------------------------------------
@@ -36,7 +45,8 @@ protected:
 // Optimized for code size. Only usable with PODs.
 template <typename T> class List : public _ListBase {
 public:
-  List() {}
+  List() = default;
+  List(List &&other) : _ListBase((_ListBase &&) other) {}
 
   void Add(const T &v) { _ListBase::Add(&v, sizeof(T)); }
 

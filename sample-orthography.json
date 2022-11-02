@@ -18,5 +18,23 @@
       "suffix": "ful",
       "alias": "fill"
     }
+  ],
+  "auto-suffix": [
+    {
+      "key": "-Z",
+      "suffix": "{^s}"
+    },
+    {
+      "key": "-D",
+      "suffix": "{^ed}"
+    },
+    {
+      "key": "-S",
+      "suffix": "{^s}"
+    },
+    {
+      "key": "-G",
+      "suffix": "{^ing}"
+    }
   ]
 }

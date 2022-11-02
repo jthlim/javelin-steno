@@ -4,13 +4,14 @@
 #include <stdlib.h>
 
 #include "list.h"
+#include "orthography.h"
 #include "segment.h"
 #include "state.h"
 #include "steno_key_code.h"
 
 //---------------------------------------------------------------------------
 
-class StenoEngine;
+class StenoCompiledOrthography;
 
 //---------------------------------------------------------------------------
 
@@ -21,8 +22,10 @@ class StenoEngine;
 // applied directly on them.
 class StenoKeyCodeBuffer {
 public:
-  void Populate(StenoTokenizer *tokenizer, StenoEngine &engine);
-  void Append(StenoTokenizer *tokenizer, StenoEngine &engine);
+  void Populate(StenoTokenizer *tokenizer,
+                const StenoCompiledOrthography &orthography);
+  void Append(StenoTokenizer *tokenizer,
+              const StenoCompiledOrthography &orthography);
 
   static const size_t BUFFER_SIZE = 8192;
 
@@ -34,9 +37,10 @@ public:
   void Reset();
 
   void ProcessText(const char *text);
-  void ProcessCommand(const char *command, StenoEngine &engine);
+  void ProcessCommand(const char *command,
+                      const StenoCompiledOrthography &orthography);
   void ProcessOrthographicSuffix(const char *text, size_t length,
-                                 StenoEngine &engine);
+                                 const StenoCompiledOrthography &orthography);
 
   void AppendText(const char *p, size_t n, StenoCaseMode caseMode);
 

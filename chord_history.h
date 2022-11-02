@@ -3,6 +3,7 @@
 #pragma once
 #include "chord.h"
 #include "dictionary/dictionary.h"
+#include "segment.h"
 #include "state.h"
 #include <assert.h>
 #include <string.h>
@@ -10,7 +11,26 @@
 //---------------------------------------------------------------------------
 
 struct StenoSegment;
-class StenoSegmentList;
+class StenoCompiledOrthography;
+
+//---------------------------------------------------------------------------
+
+struct BuildSegmentContext {
+  BuildSegmentContext(StenoSegmentList &segmentList,
+                      const StenoDictionary &dictionary,
+                      size_t maximumMatchLength,
+                      const StenoCompiledOrthography &orthography,
+                      size_t endOffset)
+      : segmentList(segmentList), dictionary(dictionary),
+        maximumMatchLength(maximumMatchLength), orthography(orthography),
+        endOffset(endOffset) {}
+
+  StenoSegmentList &segmentList;
+  const StenoDictionary &dictionary;
+  const size_t maximumMatchLength;
+  const StenoCompiledOrthography &orthography;
+  const size_t endOffset;
+};
 
 //---------------------------------------------------------------------------
 
@@ -44,10 +64,8 @@ public:
 
   const StenoState &BackState() const { return states[count - 1]; }
 
-  StenoSegmentList CreateSegments(size_t maximumChordCount,
-                                  const StenoDictionary &dictionary,
-                                  size_t maximumChordLength,
-                                  size_t minimumStartOffset = 0);
+  void CreateSegments(BuildSegmentContext &context, size_t maximumChordLength,
+                      size_t minimumStartOffset = 0);
 
   const StenoChord &GetChord(size_t i) const { return chords[i]; }
 
@@ -58,29 +76,20 @@ private:
   StenoChord chords[BUFFER_SIZE];
   StenoState states[BUFFER_SIZE];
 
-  void AddSegments(StenoSegmentList &list, size_t offset, size_t endOffset,
-                   const StenoDictionary &dictionary,
-                   size_t maximumMatchLength);
+  void AddSegments(BuildSegmentContext &context, size_t offset);
 
-  void HandleRetroactiveInsertSpace(StenoSegmentList &list,
-                                    const StenoDictionary &dictionary,
+  void HandleRetroactiveInsertSpace(BuildSegmentContext &context,
                                     size_t currentOffset);
 
-  bool DirectLookup(StenoSegmentList &list, size_t &offset, size_t endOffset,
-                    const StenoDictionary &dictionary,
-                    size_t maximumMatchLength);
+  bool DirectLookup(BuildSegmentContext &context, size_t &offset);
 
-  bool AutoSuffixLookup(StenoSegmentList &list, size_t &offset,
-                        size_t endOffset, const StenoDictionary &dictionary,
-                        size_t maximumMatchLength);
+  bool AutoSuffixLookup(BuildSegmentContext &context, size_t &offset);
 
-  StenoSegment AutoSuffixTest(size_t offset, size_t startLength,
-                              size_t minimumLength,
-                              const StenoDictionary &dictionary);
+  StenoSegment AutoSuffixTest(BuildSegmentContext &context, size_t offset,
+                              size_t startLength, size_t minimumLength);
 
-  StenoSegment AutoSuffixTest(const StenoSegment &segment, size_t offset,
-                              const StenoDictionary &dictionary,
-                              size_t maximumMatchLength);
+  StenoSegment AutoSuffixTest(BuildSegmentContext &context,
+                              const StenoSegment &segment, size_t offset);
 };
 
 //---------------------------------------------------------------------------

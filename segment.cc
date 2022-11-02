@@ -123,6 +123,7 @@ StenoTokenizer *StenoSegmentList::CreateTokenizer() {
 #include "chord_history.h"
 #include "dictionary/main_dictionary.h"
 #include "dictionary/map_dictionary.h"
+#include "orthography.h"
 #include "str.h"
 #include "unit_test.h"
 #include <stdio.h>
@@ -136,8 +137,14 @@ TEST_BEGIN("Segment tests") {
   history.Add(StenoChord("-G"), StenoState());
   // spellchecker: enable
 
-  StenoSegmentList segmentList =
-      history.CreateSegments(history.GetCount(), dictionary, 10);
+  StenoSegmentList segmentList;
+  BuildSegmentContext context(
+      segmentList, dictionary, dictionary.GetMaximumMatchLength(),
+      StenoCompiledOrthography(StenoOrthography::emptyOrthography),
+      history.GetCount());
+
+  history.CreateSegments(context, 10);
+
   StenoTokenizer *tokenizer = segmentList.CreateTokenizer();
 
   assert(tokenizer->HasMore());

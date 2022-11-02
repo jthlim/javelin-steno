@@ -114,10 +114,15 @@ void StenoEngine::ProcessNormalModeUndo() {
 size_t StenoEngine::UpdateNormalModeTextBuffer(size_t maximumChordCount,
                                                StenoKeyCodeBuffer &buffer,
                                                size_t chordLength) {
-  StenoSegmentList segmentList =
-      history.CreateSegments(maximumChordCount, dictionary, chordLength);
+  StenoSegmentList segmentList;
+  BuildSegmentContext context(segmentList, dictionary,
+                              dictionary.GetMaximumMatchLength(), orthography,
+                              maximumChordCount);
+
+  history.CreateSegments(context, chordLength);
+
   StenoTokenizer *tokenizer = segmentList.CreateTokenizer();
-  buffer.Populate(tokenizer, *this);
+  buffer.Populate(tokenizer, orthography);
   delete tokenizer;
   return segmentList.GetCount();
 }

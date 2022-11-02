@@ -124,10 +124,15 @@ StenoEngine::UpdateAddTranslationModeTextBuffer(StenoKeyCodeBuffer &buffer) {
   buffer.AppendText(TRANSLATION_PROMPT, sizeof(TRANSLATION_PROMPT) - 1,
                     StenoCaseMode::NORMAL);
 
-  StenoSegmentList segmentList = addTranslationHistory.CreateSegments(
-      addTranslationHistory.GetCount(), dictionary, 256, i);
+  StenoSegmentList segmentList;
+  BuildSegmentContext context(segmentList, dictionary,
+                              dictionary.GetMaximumMatchLength(), orthography,
+                              addTranslationHistory.GetCount());
+
+  addTranslationHistory.CreateSegments(context, 256, i);
+
   StenoTokenizer *tokenizer = segmentList.CreateTokenizer();
-  buffer.Append(tokenizer, *this);
+  buffer.Append(tokenizer, orthography);
   delete tokenizer;
   return i + segmentList.GetCount();
 }
@@ -146,10 +151,16 @@ void StenoEngine::AddTranslation(size_t newlineIndex) {
   }
 
   nextKeyCodeBuffer.Reset();
-  StenoSegmentList segmentList = addTranslationHistory.CreateSegments(
-      addTranslationHistory.GetCount(), dictionary, 256, newlineIndex + 1);
+
+  StenoSegmentList segmentList;
+  BuildSegmentContext context(segmentList, dictionary,
+                              dictionary.GetMaximumMatchLength(), orthography,
+                              addTranslationHistory.GetCount());
+
+  addTranslationHistory.CreateSegments(context, 256, newlineIndex + 1);
+
   StenoTokenizer *tokenizer = segmentList.CreateTokenizer();
-  nextKeyCodeBuffer.Append(tokenizer, *this);
+  nextKeyCodeBuffer.Append(tokenizer, orthography);
   delete tokenizer;
 
   char *word = nextKeyCodeBuffer.ToString();

@@ -51,6 +51,9 @@ public:
 
 class StenoSegmentList : public List<StenoSegment> {
 public:
+  StenoSegmentList() = default;
+  StenoSegmentList(StenoSegmentList &&other)
+      : List((List<StenoSegment> &&) other) {}
   ~StenoSegmentList();
 
   StenoTokenizer *CreateTokenizer();
