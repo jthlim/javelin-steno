@@ -32,7 +32,7 @@ struct StenoOrthography {
   size_t aliasCount;
   const StenoOrthographyAlias *aliases;
 
-  StenoChord suffixMask;
+  StenoChord autoSuffixMask;
   size_t autoSuffixCount;
   const StenoOrthographyAutoSuffix *autoSuffixes;
 

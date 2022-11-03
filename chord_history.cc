@@ -129,9 +129,10 @@ StenoSegment ChordHistory::AutoSuffixTest(BuildSegmentContext &context,
                                           const StenoSegment &segment,
                                           size_t offset) {
   size_t lastChordOffset = segment.state - states;
-  size_t startLength = count - lastChordOffset > context.maximumMatchLength
-                           ? context.maximumMatchLength
-                           : count - lastChordOffset;
+  size_t startLength =
+      context.endOffset - lastChordOffset > context.maximumMatchLength
+          ? context.maximumMatchLength
+          : context.endOffset - lastChordOffset;
   size_t minimumLength = offset - lastChordOffset + 1;
   return AutoSuffixTest(context, lastChordOffset, startLength, minimumLength);
 }
@@ -146,7 +147,7 @@ StenoSegment ChordHistory::AutoSuffixTest(BuildSegmentContext &context,
   const StenoOrthography &orthography = context.orthography.orthography;
 
   for (size_t length = startLength; length >= minimumLength; --length) {
-    if ((chords[offset + length - 1] & orthography.suffixMask).IsEmpty()) {
+    if ((chords[offset + length - 1] & orthography.autoSuffixMask).IsEmpty()) {
       continue;
     }
 
