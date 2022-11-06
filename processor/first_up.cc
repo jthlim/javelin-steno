@@ -1,6 +1,7 @@
 //---------------------------------------------------------------------------
 
 #include "first_up.h"
+#include "../console.h"
 
 //---------------------------------------------------------------------------
 
@@ -30,11 +31,16 @@ void StenoFirstUp::Process(StenoKeyState value, StenoAction action) {
   }
 }
 
+void StenoFirstUp::PrintInfo() const {
+  Console::Printf("  FirstUp\n");
+  nextProcessor.PrintInfo();
+}
+
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-#include "fake_processor.h"
 #include "../unit_test.h"
+#include "fake_processor.h"
 
 TEST_BEGIN("FirstUp tests") {
   FakeStenoProcessor fakeProcessor;

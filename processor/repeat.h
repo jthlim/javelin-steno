@@ -11,6 +11,7 @@ public:
 
   void Process(StenoKeyState value, StenoAction action) final;
   void Tick() final;
+  void PrintInfo() const final;
 
   static const int FORGET_TIME_SPAN = 120;
   static const int INITIAL_REPEAT_DELAY = 200;

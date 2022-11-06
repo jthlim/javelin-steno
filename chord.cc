@@ -3,7 +3,6 @@
 #include "chord.h"
 #include "crc32.h"
 #include <assert.h>
-#include <stdio.h>
 #include <string.h>
 
 //---------------------------------------------------------------------------

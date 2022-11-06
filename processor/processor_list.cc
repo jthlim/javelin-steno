@@ -16,4 +16,10 @@ void StenoProcessorList::Tick() {
   }
 }
 
+void StenoProcessorList::PrintInfo() const {
+  for (size_t i = 0; i < processorCount; ++i) {
+    processors[i]->PrintInfo();
+  }
+}
+
 //---------------------------------------------------------------------------

@@ -15,6 +15,7 @@ public:
 
   void Process(StenoKeyState value, StenoAction action) final;
   void Tick() { nextProcessor.Tick(); }
+  void PrintInfo() const final;
 
   static const StenoChord TRIGGER_CHORD;
   static const StenoChord TRIGGER_MASK;

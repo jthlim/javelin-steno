@@ -8,6 +8,7 @@
 #include "console.h"
 #include "dictionary/user_dictionary.h"
 #include "flash.h"
+#include "key_code.h"
 #include "list.h"
 #include "orthography.h"
 #include "pattern.h"
@@ -70,38 +71,16 @@ void StenoEngine::ProcessUndo() {
 
 //---------------------------------------------------------------------------
 
-void StenoEngine::PrintInfo(const StenoConfigBlock *configBlock) const {
-  uint32_t uptime = Clock::GetCurrentTime();
-  uint32_t microseconds = uptime % 1000;
-  uint32_t totalSeconds = uptime / 1000;
-  uint32_t seconds = totalSeconds % 60;
-  uint32_t totalMinutes = totalSeconds / 60;
-  uint32_t minutes = totalMinutes % 60;
-  uint32_t totalHours = totalMinutes / 60;
-  uint32_t hours = totalHours % 24;
-  uint32_t days = totalHours / 24;
+void StenoEngine::PrintInfo() const {
+  Console::Printf("  Javelin Steno Engine\n");
+  Console::Printf("    Strokes: %u\n", strokeCount);
+  Console::Printf("    Unicode mode: %s\n", emitter.GetUnicodeModeName());
+  Console::Printf("    Keyboard layout: %s\n", Key::GetKeyboardLayoutName());
 
-  Console::Printf("Uptime: %ud %uh %um %0u.%03us\n", days, hours, minutes,
-                  seconds, microseconds);
-  Console::Printf("Strokes: %u\n", strokeCount);
-
-  Console::Printf("Options\n");
-  Console::Printf("  Unicode mode: %s\n", emitter.GetUnicodeModeName());
-  if (configBlock) {
-    Console::Printf("  First Up: %s\n", configBlock->useFirstUp ? "on" : "off");
-    Console::Printf("  Repeat: %s\n", configBlock->useRepeat ? "on" : "off");
-  }
-
-  Flash::PrintInfo();
   orthography.PrintInfo();
 
-  Console::Printf("Dictionaries\n");
-  if (configBlock && configBlock->useJeffModifiers) {
-    Console::Printf("  Jeff's Modifiers\n");
-  }
+  Console::Printf("    Dictionaries\n");
   dictionary.PrintInfo();
-
-  Console::Write("\n", 1);
 }
 
 void StenoEngine::PrintDictionary() const {

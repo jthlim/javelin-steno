@@ -241,7 +241,7 @@ StenoEmilySymbolsDictionary::Lookup(const StenoChord *chords,
 }
 
 void StenoEmilySymbolsDictionary::PrintInfo() const {
-  Console::Printf("  Emily's Symbols\n");
+  Console::Printf("      Emily's Symbols\n");
 }
 
 bool StenoEmilySymbolsDictionary::PrintDictionary(bool hasData) const {

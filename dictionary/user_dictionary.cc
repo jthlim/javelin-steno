@@ -390,11 +390,11 @@ void StenoUserDictionary::PrintInfo() const {
     }
   }
 
-  Console::Printf("  User Dictionary\n");
-  Console::Printf("    Format version: %u\n", USER_DICTIONARY_VERSION);
-  Console::Printf("    Hash table usage: %zu/%zu\n", hashTableUsed,
+  Console::Printf("      User Dictionary\n");
+  Console::Printf("        Format version: %u\n", USER_DICTIONARY_VERSION);
+  Console::Printf("        Hash table usage: %zu/%zu\n", hashTableUsed,
                   activeDescriptor->data.hashTableSize);
-  Console::Printf("    Data block usage: %zu/%zu\n",
+  Console::Printf("        Data block usage: %zu/%zu\n",
                   activeDescriptor->data.dataBlockSize, layout.dataBlockSize);
 }
 

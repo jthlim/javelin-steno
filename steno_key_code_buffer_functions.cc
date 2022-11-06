@@ -1,6 +1,7 @@
 //---------------------------------------------------------------------------
 
 #include "engine.h"
+#include "key_code.h"
 #include "segment.h"
 #include "state.h"
 #include "steno_key_code_buffer.h"
@@ -23,6 +24,7 @@ constexpr KeyCodeFunctionEntry HANDLERS[] = {
     {"retro_single_quotes", &StenoKeyCodeBuffer::RetroSingleQuotesFunction},
     {"retro_double_quotes", &StenoKeyCodeBuffer::RetroDoubleQuotesFunction},
     {"unicode", &StenoKeyCodeBuffer::UnicodeFunction},
+    {"keyboard_layout", &StenoKeyCodeBuffer::KeyboardLayoutFunction},
 };
 
 //---------------------------------------------------------------------------
@@ -354,6 +356,15 @@ bool StenoKeyCodeBuffer::UnicodeFunction(const List<char *> &parameters) {
   }
 
   return StenoKeyCodeEmitter::SetUnicodeMode(parameters[1]);
+}
+
+bool StenoKeyCodeBuffer::KeyboardLayoutFunction(
+    const List<char *> &parameters) {
+  if (parameters.GetCount() != 2) {
+    return false;
+  }
+
+  return Key::SetKeyboardLayout(parameters[1]);
 }
 
 //---------------------------------------------------------------------------

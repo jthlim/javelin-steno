@@ -14,6 +14,7 @@ public:
 
   void Process(StenoKeyState value, StenoAction action);
   void Tick() { nextProcessor.Tick(); }
+  void PrintInfo() const final;
 
 private:
   StenoKeyState pressedKeyState;

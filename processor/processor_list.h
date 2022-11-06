@@ -12,6 +12,7 @@ public:
 
   void Process(StenoKeyState value, StenoAction action) final;
   void Tick();
+  void PrintInfo() const final;
 
 private:
   StenoProcessorElement *const *processors;

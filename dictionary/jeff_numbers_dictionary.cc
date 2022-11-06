@@ -273,7 +273,7 @@ StenoJeffNumbersDictionary::Lookup(const StenoChord *chords,
 }
 
 void StenoJeffNumbersDictionary::PrintInfo() const {
-  Console::Printf("  Jeff's Numbers\n");
+  Console::Printf("      Jeff's Numbers\n");
 }
 
 StenoChord StenoJeffNumbersDictionary::GetDigits(char *p,
@@ -534,7 +534,6 @@ char *ToWords(char *digits) {
 
 #include "../unit_test.h"
 #include <assert.h>
-#include <stdio.h>
 
 static void TestLookup(const char *stroke, const char *expected) {
   StenoChord chord(stroke);

@@ -14,6 +14,7 @@ public:
 
   void Process(StenoKeyState value, StenoAction action) final;
   void Tick() final { nextProcessor.Tick(); }
+  void PrintInfo() const final;
 
 private:
   bool wasLastEventAPress = false;

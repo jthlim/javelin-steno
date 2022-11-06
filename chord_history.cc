@@ -222,7 +222,6 @@ void ChordHistory::HandleRetroactiveInsertSpace(BuildSegmentContext &context,
 #include "orthography.h"
 #include "str.h"
 #include "unit_test.h"
-#include <stdio.h>
 
 constexpr StenoMapDictionary mainDictionary(MainDictionary::definition);
 

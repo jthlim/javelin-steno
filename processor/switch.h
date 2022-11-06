@@ -15,6 +15,7 @@ public:
 
   void Process(StenoKeyState value, StenoAction action) final;
   void Tick() final;
+  void PrintInfo() const final;
 
 private:
   bool useDefault = true;

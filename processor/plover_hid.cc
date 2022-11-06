@@ -1,6 +1,7 @@
 //---------------------------------------------------------------------------
 
 #include "plover_hid.h"
+#include "../console.h"
 
 //---------------------------------------------------------------------------
 
@@ -13,8 +14,13 @@ void StenoPloverHid::Process(StenoKeyState value, StenoAction action) {
   case StenoAction::PRESS:
   case StenoAction::RELEASE:
     StenoPloverHidPacket packet = value.ToPloverHidPacket();
+    ++counter;
     SendPacket(packet);
   }
+}
+
+void StenoPloverHid::PrintInfo() const {
+  Console::Printf("  Plover HID: %zu packets\n", counter);
 }
 
 //---------------------------------------------------------------------------

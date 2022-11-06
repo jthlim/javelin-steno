@@ -20,6 +20,7 @@ public:
 
   virtual void Process(StenoKeyState value, StenoAction action) = 0;
   virtual void Tick() = 0;
+  virtual void PrintInfo() const = 0;
 
 private:
   // Disable copy and assignment, to ensure code isn't accidentally copying
@@ -37,6 +38,7 @@ public:
   void Process(StenoKey key, bool isPress);
   void Process(StenoKeyState newState);
   void Tick() { next.Tick(); }
+  void PrintInfo() const;
 
   const StenoKeyState &GetCurrentKeyState() const { return state; }
 

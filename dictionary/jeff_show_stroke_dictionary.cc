@@ -57,7 +57,7 @@ StenoJeffShowStrokeDictionary::Lookup(const StenoChord *chords,
 }
 
 void StenoJeffShowStrokeDictionary::PrintInfo() const {
-  Console::Printf("  Jeff's Show Stroke\n");
+  Console::Printf("      Jeff's Show Stroke\n");
 }
 
 //---------------------------------------------------------------------------
@@ -65,7 +65,6 @@ void StenoJeffShowStrokeDictionary::PrintInfo() const {
 #include "../unit_test.h"
 
 #include <assert.h>
-#include <stdio.h>
 
 // cSpell:ignore TKOG
 TEST_BEGIN("JeffShowStroke: Non-quoted test") {

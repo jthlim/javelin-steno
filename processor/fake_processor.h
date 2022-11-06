@@ -8,7 +8,8 @@
 class FakeStenoProcessor : public StenoProcessorElement {
 public:
   void Process(StenoKeyState value, StenoAction action) final;
-  void Tick() { }
+  void Tick() {}
+  void PrintInfo() const final {}
 
   struct ProcessArguments {
     StenoKeyState chord;

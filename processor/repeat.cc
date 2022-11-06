@@ -2,6 +2,7 @@
 
 #include "repeat.h"
 #include "../clock.h"
+#include "../console.h"
 
 //---------------------------------------------------------------------------
 
@@ -59,6 +60,11 @@ void StenoRepeat::Tick() {
 
   nextTriggerTime = now + REPEAT_DELAY;
   nextProcessor.Process(pressedKeyState, StenoAction::TRIGGER);
+}
+
+void StenoRepeat::PrintInfo() const {
+  Console::Printf("  Repeat\n");
+  nextProcessor.PrintInfo();
 }
 
 //---------------------------------------------------------------------------

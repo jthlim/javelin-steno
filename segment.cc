@@ -2,7 +2,6 @@
 
 #include "segment.h"
 #include "str.h"
-#include <stdio.h>
 
 //---------------------------------------------------------------------------
 
@@ -126,7 +125,6 @@ StenoTokenizer *StenoSegmentList::CreateTokenizer() {
 #include "orthography.h"
 #include "str.h"
 #include "unit_test.h"
-#include <stdio.h>
 
 constexpr StenoMapDictionary dictionary(MainDictionary::definition);
 

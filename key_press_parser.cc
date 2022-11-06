@@ -311,7 +311,6 @@ void StenoKeyPressTokenizer::ProcessNextToken() {
 
 #include "unit_test.h"
 #include <assert.h>
-#include <stdio.h>
 
 TEST_BEGIN("KeyPressParser tests") {
   assert(GetKeyCodeName("escape")->keyCode == KeyCode::ESC);

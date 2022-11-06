@@ -1,6 +1,7 @@
 //---------------------------------------------------------------------------
 
 #include "all_up.h"
+#include "../console.h"
 
 //---------------------------------------------------------------------------
 
@@ -28,11 +29,16 @@ void StenoAllUp::Process(StenoKeyState value, StenoAction action) {
   }
 }
 
+void StenoAllUp::PrintInfo() const {
+  Console::Printf("  AllUp\n");
+  nextProcessor.PrintInfo();
+}
+
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-#include "fake_processor.h"
 #include "../unit_test.h"
+#include "fake_processor.h"
 
 TEST_BEGIN("AllUp tests") {
   FakeStenoProcessor fakeProcessor;

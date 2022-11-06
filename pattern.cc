@@ -325,7 +325,6 @@ char *PatternMatch::Replace(const char *s) const {
 //---------------------------------------------------------------------------
 
 #include "unit_test.h"
-#include <stdio.h>
 
 // spellchecker: disable
 TEST_BEGIN("Pattern: Simple test") {

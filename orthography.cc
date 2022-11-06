@@ -157,9 +157,9 @@ void StenoCompiledOrthography::AddCandidates(List<SuffixEntry> &candidates,
 //---------------------------------------------------------------------------
 
 void StenoCompiledOrthography::PrintInfo() const {
-  Console::Printf("Orthography\n");
-  Console::Printf("  Rules: %zu\n", orthography.ruleCount);
-  Console::Printf("  Aliases: %zu\n", orthography.aliasCount);
+  Console::Printf("    Orthography\n");
+  Console::Printf("      Rules: %zu\n", orthography.ruleCount);
+  Console::Printf("      Aliases: %zu\n", orthography.aliasCount);
 }
 
 //---------------------------------------------------------------------------

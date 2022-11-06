@@ -131,7 +131,7 @@ StenoMapDictionary::PrintStrokeInfo() const {
     const StenoMapDictionaryStrokesDefinition &strokes = definition.strokes[i];
     size_t entryCount = strokes.GetEntryCount();
     result.entryCount += entryCount;
-    Console::Printf("    %zu-stroke entries: %zu\n", i + 1, entryCount);
+    Console::Printf("        %zu-stroke entries: %zu\n", i + 1, entryCount);
 
     for (size_t j = 0; j < entryCount; ++j) {
       size_t dataIndex = 3 * j * (2 + i);
@@ -148,17 +148,17 @@ StenoMapDictionary::PrintStrokeInfo() const {
 }
 
 void StenoMapDictionary::PrintInfo() const {
-  Console::Printf("  Dictionary\n");
+  Console::Printf("      Lookup Dictionary\n");
   DictionaryStats stats = PrintStrokeInfo();
-  Console::Printf("    Total entries: %zu\n", stats.entryCount);
+  Console::Printf("        Total entries: %zu\n", stats.entryCount);
   const char *lastTextBlockDefinition =
       (const char *)definition.textBlock + stats.maxTextOffset;
   const char *end =
       lastTextBlockDefinition + strlen(lastTextBlockDefinition) + 1;
   size_t textBlockSize = intptr_t(end) - intptr_t(definition.textBlock);
-  Console::Printf("    Text block size: %zu bytes\n", textBlockSize);
+  Console::Printf("        Text block size: %zu bytes\n", textBlockSize);
   size_t totalSize = intptr_t(end) - intptr_t(&definition);
-  Console::Printf("    Dictionary size: %zu bytes\n", totalSize);
+  Console::Printf("        Dictionary size: %zu bytes\n", totalSize);
 }
 
 bool StenoMapDictionary::PrintDictionary(bool hasData) const {
@@ -185,7 +185,6 @@ unsigned int StenoMapDictionary::GetMaximumMatchLength() const {
 #include "../unit_test.h"
 #include "main_dictionary.h"
 #include <assert.h>
-#include <stdio.h>
 
 constexpr StenoMapDictionary mainDictionary(MainDictionary::definition);
 

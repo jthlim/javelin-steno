@@ -1,6 +1,7 @@
 //---------------------------------------------------------------------------
 
 #include "processor.h"
+#include "../console.h"
 
 //---------------------------------------------------------------------------
 
@@ -20,6 +21,11 @@ void StenoProcessor::Process(StenoKeyState newState) {
   }
 
   state = newState;
+}
+
+void StenoProcessor::PrintInfo() const {
+  Console::Printf("Processing chain\n");
+  next.PrintInfo();
 }
 
 //---------------------------------------------------------------------------

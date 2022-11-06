@@ -13,8 +13,6 @@ class Pattern;
 class StenoDictionary;
 class StenoUserDictionary;
 
-struct StenoConfigBlock;
-
 //---------------------------------------------------------------------------
 
 enum StenoEngineMode { NORMAL, ADD_TRANSLATION };
@@ -32,7 +30,7 @@ public:
   void ProcessChord(StenoChord chord);
   void Tick() final {}
 
-  void PrintInfo(const StenoConfigBlock *configBlock) const;
+  void PrintInfo() const;
   void PrintDictionary() const;
 
 private:

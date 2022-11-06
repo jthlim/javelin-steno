@@ -358,7 +358,6 @@ void StenoKeyCodeEmitter::EmitterContext::ReleaseModifiers(uint32_t modifiers) {
 #ifdef RUN_TESTS
 
 #include "unit_test.h"
-#include <stdio.h>
 
 #define assert_begin() size_t index = 0
 

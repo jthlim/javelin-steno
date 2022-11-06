@@ -1,12 +1,14 @@
 //---------------------------------------------------------------------------
 
+#ifdef RUN_TESTS
+
+//---------------------------------------------------------------------------
+
 #include "unit_test.h"
 #include "key_code.h"
 #include <stdio.h>
 
 //---------------------------------------------------------------------------
-
-#ifdef RUN_TESTS
 
 std::vector<const UnitTest *> &UnitTest::GetTests() {
   static std::vector<const UnitTest *> tests;
@@ -37,6 +39,8 @@ __attribute__((weak)) int main(int argc, const char **argv) {
   UnitTest::main();
   return 0;
 }
+
+//---------------------------------------------------------------------------
 
 #endif
 

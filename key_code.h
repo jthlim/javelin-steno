@@ -199,6 +199,15 @@ struct KeyCode {
 #include <vector>
 #endif
 
+enum class KeyboardLayout : uint8_t {
+  US,
+  DVORAK,
+  COLEMAK,
+  COUNT,
+};
+
+const char *KeyboardLayoutName(KeyboardLayout layout);
+
 class Key {
 public:
   struct HistoryEntry {
@@ -210,19 +219,34 @@ public:
     bool isPress;
   };
 
+  static void PressRaw(uint8_t key);
+  static void ReleaseRaw(uint8_t key);
+
   static void Press(uint8_t key);
   static void Release(uint8_t key);
 
   static bool IsNumLockOn();
+  static void SetIsNumLockOn(bool value);
 
   static void EnableHistory() { historyEnabled = true; }
   static void DisableHistory() { historyEnabled = false; }
+
+  static KeyboardLayout GetKeyboardLayout();
+  static const char *GetKeyboardLayoutName() {
+    return KeyboardLayoutName(GetKeyboardLayout());
+  }
+  static bool SetKeyboardLayout(const char *name);
+  static void SetKeyboardLayout(KeyboardLayout layout);
+  static uint8_t TranslateKey(uint8_t key);
 
   static bool historyEnabled;
 
 #if RUN_TESTS
   static std::vector<HistoryEntry> history;
 #endif
+private:
+  static bool isNumLockOn;
+  static const uint8_t *layoutTable;
 };
 
 //---------------------------------------------------------------------------

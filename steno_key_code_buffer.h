@@ -68,6 +68,7 @@ public:
   bool RetroSingleQuotesFunction(const List<char *> &parameters);
   bool RetroDoubleQuotesFunction(const List<char *> &parameters);
   bool UnicodeFunction(const List<char *> &parameters);
+  bool KeyboardLayoutFunction(const List<char *> &parameters);
 
   void operator=(const StenoKeyCodeBuffer &o);
 

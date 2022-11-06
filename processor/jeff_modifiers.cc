@@ -1,6 +1,7 @@
 //---------------------------------------------------------------------------
 
 #include "jeff_modifiers.h"
+#include "../console.h"
 #include "../key_code.h"
 #include <stdlib.h>
 
@@ -495,6 +496,11 @@ void JeffModifiers::Process(StenoKeyState value, StenoAction action) {
     break;
   }
   nextProcessor.Process(value, action);
+}
+
+void JeffModifiers::PrintInfo() const {
+  Console::Printf("  Jeff's Modifiers\n");
+  nextProcessor.PrintInfo();
 }
 
 void JeffModifiers::UpdateModifiers(StenoChord chord) {

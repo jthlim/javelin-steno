@@ -272,7 +272,7 @@ char *PhrasingParts::CreatePhrase() const {
 }
 
 void StenoJeffPhrasingDictionary::PrintInfo() const {
-  Console::Printf("  Jeff's Phrasing\n");
+  Console::Printf("      Jeff's Phrasing\n");
 }
 
 //---------------------------------------------------------------------------
