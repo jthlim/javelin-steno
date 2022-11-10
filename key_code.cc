@@ -34,7 +34,7 @@ void Key::ReleaseRaw(uint8_t key) {
 //---------------------------------------------------------------------------
 
 const char *const KEYBOARD_LAYOUT_NAMES[] = {
-    "us",
+    "qwerty",
     "dvorak",
     "colemak",
 };
@@ -142,7 +142,7 @@ KeyboardLayout Key::GetKeyboardLayout() {
       return (KeyboardLayout)i;
     }
   }
-  return KeyboardLayout::US;
+  return KeyboardLayout::QWERTY;
 }
 
 bool Key::SetKeyboardLayout(const char *name) {

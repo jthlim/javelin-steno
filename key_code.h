@@ -200,7 +200,7 @@ struct KeyCode {
 #endif
 
 enum class KeyboardLayout : uint8_t {
-  US,
+  QWERTY,
   DVORAK,
   COLEMAK,
   COUNT,

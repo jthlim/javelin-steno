@@ -4,7 +4,6 @@
 
 #include "chord.h"
 #include "clock.h"
-#include "config_block.h"
 #include "console.h"
 #include "dictionary/user_dictionary.h"
 #include "flash.h"
@@ -199,7 +198,7 @@ TEST_BEGIN("Engine: Random spam") {
   Key::DisableHistory();
 
   srand(0x1234);
-  for (size_t i = 0; i < 1000; ++i) {
+  for (size_t i = 0; i < 10000; ++i) {
     StenoChord chord(rand() & ChordMask::ALL);
     engine.ProcessChord(chord);
   }

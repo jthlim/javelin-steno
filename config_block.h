@@ -17,11 +17,12 @@ struct StenoConfigBlock {
   bool useJeffPhrasing;
   UnicodeMode unicodeMode;
   KeyboardLayout keyboardLayout;
+  bool hidCompatibilityMode;
 
   int8_t keyMap[(int)StenoKey::COUNT];
 };
 
-static_assert(sizeof(StenoConfigBlock) == 51,
+static_assert(sizeof(StenoConfigBlock) == 52,
               "Config block is of unexpected size");
 
 //---------------------------------------------------------------------------
