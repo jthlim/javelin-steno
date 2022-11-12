@@ -21,21 +21,19 @@ void StenoKeyCodeBuffer::Reset() {
   state.spaceCharacter = " ";
 }
 
-void StenoKeyCodeBuffer::Populate(StenoTokenizer *tokenizer,
-                                  const StenoCompiledOrthography &orthography) {
+void StenoKeyCodeBuffer::Populate(StenoTokenizer *tokenizer) {
   Reset();
-  Append(tokenizer, orthography);
+  Append(tokenizer);
 }
 
-void StenoKeyCodeBuffer::Append(StenoTokenizer *tokenizer,
-                                const StenoCompiledOrthography &orthography) {
+void StenoKeyCodeBuffer::Append(StenoTokenizer *tokenizer) {
   while (tokenizer->HasMore()) {
     StenoToken token = tokenizer->GetNext();
     if (token.state != nullptr) {
       state = *token.state;
     }
     if (token.text[0] == '{') {
-      ProcessCommand(token.text, orthography);
+      ProcessCommand(token.text);
     } else {
       ProcessText(token.text);
     }
@@ -110,8 +108,7 @@ bool StenoKeyCodeBuffer::IsGlue(const char *p) {
 
 //---------------------------------------------------------------------------
 
-void StenoKeyCodeBuffer::ProcessCommand(
-    const char *p, const StenoCompiledOrthography &orthography) {
+void StenoKeyCodeBuffer::ProcessCommand(const char *p) {
   const char *end = p + strlen(p);
 
   assert(*p == '{');
@@ -153,7 +150,7 @@ void StenoKeyCodeBuffer::ProcessCommand(
     }
 
     // Orthographic prefix.
-    ProcessOrthographicSuffix(p, end - p, orthography);
+    ProcessOrthographicSuffix(p, end - p);
     if (caseMode != StenoCaseMode::UNSPECIFIED) {
       state.caseMode = caseMode;
     }
@@ -290,22 +287,14 @@ void StenoKeyCodeBuffer::ProcessCommand(
     }
   }
 
-  static const char ADD_TRANSLATION[] = "JAVELIN:ADD_TRANSLATION";
-  if (p + sizeof(ADD_TRANSLATION) == end &&
-      memcmp(p + 1, ADD_TRANSLATION, sizeof(ADD_TRANSLATION) - 1) == 0) {
-    ++addTranslationCount;
-    return;
-  }
-
   /// Just display the unhandled command.
   AppendText(p, end + 1 - p, StenoCaseMode::NORMAL);
 }
 
 //---------------------------------------------------------------------------
 
-void StenoKeyCodeBuffer::ProcessOrthographicSuffix(
-    const char *text, size_t length,
-    const StenoCompiledOrthography &orthography) {
+void StenoKeyCodeBuffer::ProcessOrthographicSuffix(const char *text,
+                                                   size_t length) {
   char orthographicScratchPad[128];
   char *suffix = Str::DupN(text, length);
 
@@ -321,7 +310,7 @@ void StenoKeyCodeBuffer::ProcessOrthographicSuffix(
   }
   utf8p.Set(0);
 
-  char *word = orthography.AddSuffix(orthographicScratchPad, suffix);
+  char *word = orthography->AddSuffix(orthographicScratchPad, suffix);
 
   count = start;
 

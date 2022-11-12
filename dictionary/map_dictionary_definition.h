@@ -54,13 +54,23 @@ struct StenoMapDictionaryStrokesDefinition {
 
 //---------------------------------------------------------------------------
 
-constexpr uint32_t STENO_MAP_DICTIONARY_MAGIC = 0x3244534a; // 'JSD2'
-
 struct StenoMapDictionaryDefinition {
-  uint32_t magic;
-  unsigned int maximumStrokeCount;
+  bool defaultEnabled;
+  uint8_t maximumStrokeCount;
+  uint16_t _padding2;
+  const char *name;
   const uint8_t *textBlock;
   const StenoMapDictionaryStrokesDefinition *strokes;
+};
+
+//---------------------------------------------------------------------------
+
+constexpr uint32_t STENO_MAP_DICTIONARY_COLLECTION_MAGIC = 0x3243534a; // 'JSC1'
+
+struct StenoMapDictionaryCollection {
+  uint32_t magic;
+  size_t dictionaryCount;
+  const StenoMapDictionaryDefinition *const dictionaries[];
 };
 
 //---------------------------------------------------------------------------

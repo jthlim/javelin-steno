@@ -3,6 +3,7 @@
 #pragma once
 #include <stdlib.h>
 
+#include "dictionary/dictionary.h"
 #include "list.h"
 #include "orthography.h"
 #include "segment.h"
@@ -22,12 +23,13 @@ class StenoCompiledOrthography;
 // applied directly on them.
 class StenoKeyCodeBuffer {
 public:
-  void Populate(StenoTokenizer *tokenizer,
-                const StenoCompiledOrthography &orthography);
-  void Append(StenoTokenizer *tokenizer,
-              const StenoCompiledOrthography &orthography);
+  void Populate(StenoTokenizer *tokenizer);
+  void Append(StenoTokenizer *tokenizer);
 
   static const size_t BUFFER_SIZE = 8192;
+
+  const StenoCompiledOrthography *orthography;
+  StenoDictionary *rootDictionary;
 
   size_t count = 0;
   size_t addTranslationCount = 0;
@@ -37,10 +39,8 @@ public:
   void Reset();
 
   void ProcessText(const char *text);
-  void ProcessCommand(const char *command,
-                      const StenoCompiledOrthography &orthography);
-  void ProcessOrthographicSuffix(const char *text, size_t length,
-                                 const StenoCompiledOrthography &orthography);
+  void ProcessCommand(const char *command);
+  void ProcessOrthographicSuffix(const char *text, size_t length);
 
   void AppendText(const char *p, size_t n, StenoCaseMode caseMode);
 
@@ -60,6 +60,11 @@ public:
   void RetroactiveDeleteSpace();
 
   // parameters[0] == function name.
+  bool AddTranslationFunction(const List<char *> &parameters);
+  bool EnableDictionaryFunction(const List<char *> &parameters);
+  bool DisableDictionaryFunction(const List<char *> &parameters);
+  bool ToggleDictionaryFunction(const List<char *> &parameters);
+  bool KeyboardLayoutFunction(const List<char *> &parameters);
   bool ProcessFunction(const List<char *> &parameters);
   bool RetroCapitalizeFunction(const List<char *> &parameters);
   bool RetroTitleCaseFunction(const List<char *> &parameters);
@@ -68,7 +73,6 @@ public:
   bool RetroSingleQuotesFunction(const List<char *> &parameters);
   bool RetroDoubleQuotesFunction(const List<char *> &parameters);
   bool UnicodeFunction(const List<char *> &parameters);
-  bool KeyboardLayoutFunction(const List<char *> &parameters);
 
   void operator=(const StenoKeyCodeBuffer &o);
 

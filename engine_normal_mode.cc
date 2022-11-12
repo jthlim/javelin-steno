@@ -122,7 +122,7 @@ size_t StenoEngine::UpdateNormalModeTextBuffer(size_t maximumChordCount,
   history.CreateSegments(context, chordLength);
 
   StenoTokenizer *tokenizer = segmentList.CreateTokenizer();
-  buffer.Populate(tokenizer, orthography);
+  buffer.Populate(tokenizer);
   delete tokenizer;
   return segmentList.GetCount();
 }

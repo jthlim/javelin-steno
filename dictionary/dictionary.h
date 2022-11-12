@@ -1,6 +1,7 @@
 //---------------------------------------------------------------------------
 
 #pragma once
+#include "../chord.h"
 #include <stdint.h>
 #include <stdlib.h>
 
@@ -12,7 +13,7 @@ class StenoChord;
 
 // A class to wrap dictionary lookups, avoiding memory allocations in most
 // situations.
-struct StenoDictionaryLookup {
+struct StenoDictionaryLookupResult {
   bool IsValid() const { return GetTextMethod != nullptr; }
 
   const char *GetText() const { return GetTextMethod(this); }
@@ -22,39 +23,71 @@ struct StenoDictionaryLookup {
     }
   }
 
-  const char *(*GetTextMethod)(const StenoDictionaryLookup *);
-  void (*DestroyMethod)(StenoDictionaryLookup *);
+  const char *(*GetTextMethod)(const StenoDictionaryLookupResult *);
+  void (*DestroyMethod)(StenoDictionaryLookupResult *);
   const void *context;
 
-  static StenoDictionaryLookup CreateInvalid() {
-    StenoDictionaryLookup result = {
+  static StenoDictionaryLookupResult CreateInvalid() {
+    StenoDictionaryLookupResult result = {
         .GetTextMethod = nullptr,
         .DestroyMethod = nullptr,
     };
     return result;
   }
 
-  static StenoDictionaryLookup CreateStaticString(const uint8_t *p) {
+  static StenoDictionaryLookupResult CreateStaticString(const uint8_t *p) {
     return CreateStaticString((const char *)p);
   }
-  static StenoDictionaryLookup CreateStaticString(const char *p);
+  static StenoDictionaryLookupResult CreateStaticString(const char *p);
 
   // string will be free() when the Lookup is destroyed.
-  static StenoDictionaryLookup CreateDynamicString(const uint8_t *p) {
+  static StenoDictionaryLookupResult CreateDynamicString(const uint8_t *p) {
     return CreateDynamicString((const char *)p);
   }
-  static StenoDictionaryLookup CreateDynamicString(const char *p);
+  static StenoDictionaryLookupResult CreateDynamicString(const char *p);
+};
+
+//---------------------------------------------------------------------------
+
+struct StenoDictionaryLookup {
+  StenoDictionaryLookup(const StenoChord *chords, size_t length)
+      : chords(chords), length(length), hash(StenoChord::Hash(chords, length)) {
+  }
+
+  const StenoChord *chords;
+  size_t length;
+  uint32_t hash;
 };
 
 //---------------------------------------------------------------------------
 
 class StenoDictionary {
 public:
-  virtual StenoDictionaryLookup Lookup(const StenoChord *chords,
-                                       size_t length) const = 0;
+  virtual StenoDictionaryLookupResult
+  Lookup(const StenoDictionaryLookup &lookup) const = 0;
+
+  inline StenoDictionaryLookupResult Lookup(const StenoChord *chords,
+                                            size_t length) const {
+    return Lookup(StenoDictionaryLookup(chords, length));
+  }
+
   virtual unsigned int GetMaximumMatchLength() const = 0;
-  virtual void PrintInfo() const = 0;
+  virtual const char *GetName() const = 0;
+
+  virtual void PrintInfo(int depth) const;
   virtual bool PrintDictionary(bool hasData) const = 0;
+
+  virtual void ListDictionaries() const {}
+  virtual bool EnableDictionary(const char *name) { return false; }
+  virtual bool DisableDictionary(const char *name) { return false; }
+  virtual bool ToggleDictionary(const char *name) { return false; }
+
+protected:
+  static const char *Spaces(int count) { return SPACES + SPACES_COUNT - count; }
+
+private:
+  static const size_t SPACES_COUNT = 16;
+  static const char SPACES[];
 };
 
 //---------------------------------------------------------------------------

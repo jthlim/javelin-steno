@@ -220,17 +220,16 @@ PhrasingParts DetermineParts(StenoChord chord) {
   return PhrasingParts::CreateInvalid();
 }
 
-StenoDictionaryLookup
-StenoJeffPhrasingDictionary::Lookup(const StenoChord *chords,
-                                    size_t length) const {
-  assert(length == 1);
+StenoDictionaryLookupResult
+StenoJeffPhrasingDictionary::Lookup(const StenoDictionaryLookup &lookup) const {
+  assert(lookup.length == 1);
 
-  PhrasingParts parts = DetermineParts(chords[0]);
+  PhrasingParts parts = DetermineParts(lookup.chords[0]);
   if (!parts.IsValid()) {
-    return StenoDictionaryLookup::CreateInvalid();
+    return StenoDictionaryLookupResult::CreateInvalid();
   }
 
-  return StenoDictionaryLookup::CreateDynamicString(parts.CreatePhrase());
+  return StenoDictionaryLookupResult::CreateDynamicString(parts.CreatePhrase());
 }
 
 char *PhrasingParts::CreatePhrase() const {
@@ -271,8 +270,8 @@ char *PhrasingParts::CreatePhrase() const {
   return match.Replace(structureText);
 }
 
-void StenoJeffPhrasingDictionary::PrintInfo() const {
-  Console::Printf("      Jeff's Phrasing\n");
+const char *StenoJeffPhrasingDictionary::GetName() const {
+  return "jeff_phrasing";
 }
 
 //---------------------------------------------------------------------------

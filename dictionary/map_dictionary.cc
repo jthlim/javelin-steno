@@ -20,8 +20,8 @@ struct StenoMapDictionaryDataEntry {
   bool Equals(const StenoChord *chord, size_t length) const;
 };
 
-bool StenoMapDictionaryDataEntry::Equals(const StenoChord *chords,
-                                         size_t length) const {
+inline bool StenoMapDictionaryDataEntry::Equals(const StenoChord *chords,
+                                                size_t length) const {
   for (size_t i = 0; i < length; ++i) {
     if (chords[i] != this->chords[i].ToUint32()) {
       return false;
@@ -91,75 +91,36 @@ bool StenoMapDictionaryStrokesDefinition::PrintDictionary(
 
 //---------------------------------------------------------------------------
 
-StenoDictionaryLookup StenoMapDictionary::Lookup(const StenoChord *chords,
-                                                 size_t length) const {
-  if (definition.magic != STENO_MAP_DICTIONARY_MAGIC) {
-    return StenoDictionaryLookup::CreateStaticString(MISMATCHED_MAGIC_ERROR);
-  }
-
+StenoDictionaryLookupResult
+StenoMapDictionary::Lookup(const StenoDictionaryLookup &lookup) const {
   const StenoMapDictionaryStrokesDefinition &strokesDefinition =
-      definition.strokes[length - 1];
+      definition.strokes[lookup.length - 1];
   if (strokesDefinition.hashMapSize == 0) {
-    return StenoDictionaryLookup::CreateInvalid();
+    return StenoDictionaryLookupResult::CreateInvalid();
   }
 
-  size_t entryIndex = StenoChord::Hash(chords, length);
+  size_t entryIndex = lookup.hash;
   for (;;) {
     entryIndex = entryIndex & (strokesDefinition.hashMapSize - 1);
 
     size_t offset = strokesDefinition.GetOffset(entryIndex);
     if (offset == 0) {
-      return StenoDictionaryLookup::CreateInvalid();
+      return StenoDictionaryLookupResult::CreateInvalid();
     }
 
-    size_t dataIndex = 3 * (offset - 1) * (1 + length);
+    size_t dataIndex = 3 * (offset - 1) * (1 + lookup.length);
     const StenoMapDictionaryDataEntry &entry =
         (const StenoMapDictionaryDataEntry &)strokesDefinition.data[dataIndex];
 
-    if (entry.Equals(chords, length)) {
+    if (entry.Equals(lookup.chords, lookup.length)) {
       const uint8_t *text = definition.textBlock + entry.textOffset.ToUint32();
-      return StenoDictionaryLookup::CreateStaticString(text);
+      return StenoDictionaryLookupResult::CreateStaticString(text);
     }
     ++entryIndex;
   }
 }
 
-StenoMapDictionary::DictionaryStats
-StenoMapDictionary::PrintStrokeInfo() const {
-  DictionaryStats result = {0, 0};
-  for (size_t i = 0; i < definition.maximumStrokeCount; ++i) {
-    const StenoMapDictionaryStrokesDefinition &strokes = definition.strokes[i];
-    size_t entryCount = strokes.GetEntryCount();
-    result.entryCount += entryCount;
-    Console::Printf("        %zu-stroke entries: %zu\n", i + 1, entryCount);
-
-    for (size_t j = 0; j < entryCount; ++j) {
-      size_t dataIndex = 3 * j * (2 + i);
-      const StenoMapDictionaryDataEntry &entry =
-          (const StenoMapDictionaryDataEntry &)strokes.data[dataIndex];
-      uint32_t textOffset = entry.textOffset.ToUint32();
-      if (textOffset > result.maxTextOffset) {
-        result.maxTextOffset = textOffset;
-      }
-    }
-  }
-
-  return result;
-}
-
-void StenoMapDictionary::PrintInfo() const {
-  Console::Printf("      Lookup Dictionary\n");
-  DictionaryStats stats = PrintStrokeInfo();
-  Console::Printf("        Total entries: %zu\n", stats.entryCount);
-  const char *lastTextBlockDefinition =
-      (const char *)definition.textBlock + stats.maxTextOffset;
-  const char *end =
-      lastTextBlockDefinition + strlen(lastTextBlockDefinition) + 1;
-  size_t textBlockSize = intptr_t(end) - intptr_t(definition.textBlock);
-  Console::Printf("        Text block size: %zu bytes\n", textBlockSize);
-  size_t totalSize = intptr_t(end) - intptr_t(&definition);
-  Console::Printf("        Dictionary size: %zu bytes\n", totalSize);
-}
+const char *StenoMapDictionary::GetName() const { return definition.name; }
 
 bool StenoMapDictionary::PrintDictionary(bool hasData) const {
   char *buffer = (char *)malloc(2048);

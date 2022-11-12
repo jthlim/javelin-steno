@@ -14,11 +14,13 @@ public:
   constexpr StenoMapDictionary(const StenoMapDictionaryDefinition &definition)
       : definition(definition) {}
 
-  virtual StenoDictionaryLookup Lookup(const StenoChord *chords,
-                                       size_t length) const final;
-  virtual unsigned int GetMaximumMatchLength() const final;
-  virtual void PrintInfo() const final;
-  virtual bool PrintDictionary(bool hasData) const final;
+  virtual StenoDictionaryLookupResult
+  Lookup(const StenoDictionaryLookup &lookup) const;
+  using StenoDictionary::Lookup;
+
+  virtual unsigned int GetMaximumMatchLength() const;
+  virtual const char *GetName() const;
+  virtual bool PrintDictionary(bool hasData) const;
 
 private:
   const StenoMapDictionaryDefinition &definition;
@@ -27,8 +29,6 @@ private:
     size_t entryCount;
     uint32_t maxTextOffset;
   };
-
-  DictionaryStats PrintStrokeInfo() const;
 };
 
 //---------------------------------------------------------------------------

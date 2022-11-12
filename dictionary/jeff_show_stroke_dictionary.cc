@@ -16,18 +16,21 @@ const StenoJeffShowStrokeDictionary StenoJeffShowStrokeDictionary::instance;
 
 //---------------------------------------------------------------------------
 
-StenoDictionaryLookup
-StenoJeffShowStrokeDictionary::Lookup(const StenoChord *chords,
-                                      size_t length) const {
+StenoDictionaryLookupResult StenoJeffShowStrokeDictionary::Lookup(
+    const StenoDictionaryLookup &lookup) const {
+
+  const StenoChord *chords = lookup.chords;
   if (chords[0] != trigger) {
-    return StenoDictionaryLookup::CreateInvalid();
+    return StenoDictionaryLookupResult::CreateInvalid();
   }
+
+  size_t length = lookup.length;
   if (length == 1) {
-    return StenoDictionaryLookup::CreateStaticString("`");
+    return StenoDictionaryLookupResult::CreateStaticString("`");
   }
   for (size_t i = 1; i < length - 1; ++i) {
     if (chords[i] == trigger) {
-      return StenoDictionaryLookup::CreateInvalid();
+      return StenoDictionaryLookupResult::CreateInvalid();
     }
   }
 
@@ -53,11 +56,11 @@ StenoJeffShowStrokeDictionary::Lookup(const StenoChord *chords,
     p[1] = '\0';
   }
 
-  return StenoDictionaryLookup::CreateDynamicString(base);
+  return StenoDictionaryLookupResult::CreateDynamicString(base);
 }
 
-void StenoJeffShowStrokeDictionary::PrintInfo() const {
-  Console::Printf("      Jeff's Show Stroke\n");
+const char *StenoJeffShowStrokeDictionary::GetName() const {
+  return "jeff_show_stroke";
 }
 
 //---------------------------------------------------------------------------

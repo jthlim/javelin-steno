@@ -23,11 +23,17 @@ constexpr StenoChord StenoEngine::UNDO_CHORD(ChordMask::STAR);
 
 //---------------------------------------------------------------------------
 
-StenoEngine::StenoEngine(const StenoDictionary &dictionary,
+StenoEngine::StenoEngine(StenoDictionary &dictionary,
                          const StenoOrthography &orthography,
                          StenoUserDictionary *userDictionary)
     : dictionary(dictionary), orthography(orthography),
-      userDictionary(userDictionary) {}
+      userDictionary(userDictionary) {
+
+  previousKeyCodeBuffer.orthography = &this->orthography;
+  previousKeyCodeBuffer.rootDictionary = &this->dictionary;
+  nextKeyCodeBuffer.orthography = &this->orthography;
+  nextKeyCodeBuffer.rootDictionary = &this->dictionary;
+}
 
 //---------------------------------------------------------------------------
 
@@ -79,13 +85,27 @@ void StenoEngine::PrintInfo() const {
   orthography.PrintInfo();
 
   Console::Printf("    Dictionaries\n");
-  dictionary.PrintInfo();
+  dictionary.PrintInfo(4);
 }
 
 void StenoEngine::PrintDictionary() const {
   Console::Write("{", 1);
   dictionary.PrintDictionary(false);
   Console::Write("\n}\n\n", 4);
+}
+
+void StenoEngine::ListDictionaries() { dictionary.ListDictionaries(); }
+
+bool StenoEngine::EnableDictionary(const char *name) {
+  return dictionary.EnableDictionary(name);
+}
+
+bool StenoEngine::DisableDictionary(const char *name) {
+  return dictionary.DisableDictionary(name);
+}
+
+bool StenoEngine::ToggleDictionary(const char *name) {
+  return dictionary.ToggleDictionary(name);
 }
 
 //---------------------------------------------------------------------------
@@ -108,8 +128,6 @@ const StenoDictionary *const DICTIONARIES[] = {
     &StenoEmilySymbolsDictionary::instance,
     &mainDictionary,
 };
-
-constexpr StenoDictionaryList dictionary(DICTIONARIES, 2);
 
 class StenoEngineTester {
 public:
@@ -147,6 +165,8 @@ void StenoEngineTester::TestSymbols(StenoEngine &engine) {
 }
 
 TEST_BEGIN("Engine: Test symbols") {
+  StenoDictionaryList dictionary(DICTIONARIES, 2);
+
   StenoEngine engine(dictionary, StenoOrthography::emptyOrthography);
   StenoEngineTester::TestSymbols(engine);
 }
@@ -190,7 +210,7 @@ TEST_BEGIN("Engine: Random spam") {
       &mainDictionary,
   };
 
-  static constexpr StenoDictionaryList dictionaryList(
+  StenoDictionaryList dictionaryList(
       DICTIONARIES, sizeof(DICTIONARIES) / sizeof(*DICTIONARIES)); // NOLINT
 
   StenoEngine engine(dictionaryList, StenoOrthography::emptyOrthography);
@@ -218,7 +238,7 @@ TEST_BEGIN("Engine: Add Translation Test") {
       &mainDictionary,
   };
 
-  static constexpr StenoDictionaryList dictionaryList(
+  StenoDictionaryList dictionaryList(
       dictionaries, sizeof(dictionaries) / sizeof(*dictionaries)); // NOLINT
   StenoEngine engine(dictionaryList, StenoOrthography::emptyOrthography,
                      userDictionary);

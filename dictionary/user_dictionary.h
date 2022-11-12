@@ -48,10 +48,13 @@ class StenoUserDictionary final : public StenoDictionary {
 public:
   StenoUserDictionary(const StenoUserDictionaryData &layout);
 
-  virtual StenoDictionaryLookup Lookup(const StenoChord *chords,
-                                       size_t length) const final;
+  virtual StenoDictionaryLookupResult
+  Lookup(const StenoDictionaryLookup &lookup) const final;
+  using StenoDictionary::Lookup;
+
   virtual unsigned int GetMaximumMatchLength() const final;
-  virtual void PrintInfo() const final;
+  virtual const char *GetName() const final;
+  virtual void PrintInfo(int depth) const final;
   virtual bool PrintDictionary(bool hasData) const final;
 
   void RegisterConsoleCommands(Console &console);

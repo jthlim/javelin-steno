@@ -6,6 +6,7 @@
 #include "state.h"
 #include "steno_key_code_buffer.h"
 #include "steno_key_code_emitter.h"
+#include "steno_key_state.h"
 #include "str.h"
 #include "utf8_pointer.h"
 
@@ -17,14 +18,18 @@ struct KeyCodeFunctionEntry {
 };
 
 constexpr KeyCodeFunctionEntry HANDLERS[] = {
+    {"add_translation", &StenoKeyCodeBuffer::AddTranslationFunction},
+    {"disable_dictionary", &StenoKeyCodeBuffer::DisableDictionaryFunction},
+    {"enable_dictionary", &StenoKeyCodeBuffer::EnableDictionaryFunction},
+    {"keyboard_layout", &StenoKeyCodeBuffer::KeyboardLayoutFunction},
     {"retro_capitalise", &StenoKeyCodeBuffer::RetroCapitalizeFunction},
     {"retro_title", &StenoKeyCodeBuffer::RetroTitleCaseFunction},
     {"retro_upper", &StenoKeyCodeBuffer::RetroUpperCaseFunction},
     {"retro_lower", &StenoKeyCodeBuffer::RetroLowerCaseFunction},
     {"retro_single_quotes", &StenoKeyCodeBuffer::RetroSingleQuotesFunction},
     {"retro_double_quotes", &StenoKeyCodeBuffer::RetroDoubleQuotesFunction},
+    {"toggle_dictionary", &StenoKeyCodeBuffer::ToggleDictionaryFunction},
     {"unicode", &StenoKeyCodeBuffer::UnicodeFunction},
-    {"keyboard_layout", &StenoKeyCodeBuffer::KeyboardLayoutFunction},
 };
 
 //---------------------------------------------------------------------------
@@ -256,6 +261,39 @@ bool StenoKeyCodeBuffer::ProcessFunction(const List<char *> &parameters) {
     }
   }
   return false;
+}
+
+//---------------------------------------------------------------------------
+
+bool StenoKeyCodeBuffer::AddTranslationFunction(const List<char *> &) {
+  addTranslationCount++;
+  return true;
+}
+
+bool StenoKeyCodeBuffer::EnableDictionaryFunction(
+    const List<char *> &parameters) {
+  if (parameters.GetCount() != 2) {
+    return false;
+  }
+
+  return rootDictionary->EnableDictionary(parameters[1]);
+}
+
+bool StenoKeyCodeBuffer::DisableDictionaryFunction(
+    const List<char *> &parameters) {
+  if (parameters.GetCount() != 2) {
+    return false;
+  }
+
+  return rootDictionary->DisableDictionary(parameters[1]);
+}
+bool StenoKeyCodeBuffer::ToggleDictionaryFunction(
+    const List<char *> &parameters) {
+  if (parameters.GetCount() != 2) {
+    return false;
+  }
+
+  return rootDictionary->ToggleDictionary(parameters[1]);
 }
 
 bool StenoKeyCodeBuffer::RetroCapitalizeFunction(

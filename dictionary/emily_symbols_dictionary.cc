@@ -201,18 +201,17 @@ static const EmilySymbolData *LookupDataChord(StenoChord chord) {
 
 //---------------------------------------------------------------------------
 
-StenoDictionaryLookup
-StenoEmilySymbolsDictionary::Lookup(const StenoChord *chords,
-                                    size_t length) const {
-  assert(length == 1);
-  const StenoChord c = chords[0];
+StenoDictionaryLookupResult
+StenoEmilySymbolsDictionary::Lookup(const StenoDictionaryLookup &lookup) const {
+  assert(lookup.length == 1);
+  const StenoChord c = lookup.chords[0];
   if ((c & ACTIVATION_MASK) != ACTIVATION_MATCH) {
-    return StenoDictionaryLookup::CreateInvalid();
+    return StenoDictionaryLookupResult::CreateInvalid();
   }
 
   const EmilySymbolData *data = LookupDataChord(c & DATA_MASK);
   if (data == nullptr) {
-    return StenoDictionaryLookup::CreateInvalid();
+    return StenoDictionaryLookupResult::CreateInvalid();
   }
 
   int variant = 0;
@@ -236,12 +235,12 @@ StenoEmilySymbolsDictionary::Lookup(const StenoChord *chords,
   const char *r1 = (c & REPEAT_EXTRA_1).IsNotEmpty() ? text : "";
   const char *r2 = (c & REPEAT_EXTRA_2).IsNotEmpty() ? text : "";
 
-  return StenoDictionaryLookup::CreateDynamicString(Str::Asprintf(
+  return StenoDictionaryLookupResult::CreateDynamicString(Str::Asprintf(
       "%s%s%s%s%s%s%s", leftSpace, text, r1, r2, r2, rightSpace, capitalize));
 }
 
-void StenoEmilySymbolsDictionary::PrintInfo() const {
-  Console::Printf("      Emily's Symbols\n");
+const char *StenoEmilySymbolsDictionary::GetName() const {
+  return "emily_symbols";
 }
 
 bool StenoEmilySymbolsDictionary::PrintDictionary(bool hasData) const {

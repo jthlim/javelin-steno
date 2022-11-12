@@ -132,7 +132,7 @@ StenoEngine::UpdateAddTranslationModeTextBuffer(StenoKeyCodeBuffer &buffer) {
   addTranslationHistory.CreateSegments(context, 256, i);
 
   StenoTokenizer *tokenizer = segmentList.CreateTokenizer();
-  buffer.Append(tokenizer, orthography);
+  buffer.Append(tokenizer);
   delete tokenizer;
   return i + segmentList.GetCount();
 }
@@ -160,7 +160,7 @@ void StenoEngine::AddTranslation(size_t newlineIndex) {
   addTranslationHistory.CreateSegments(context, 256, newlineIndex + 1);
 
   StenoTokenizer *tokenizer = segmentList.CreateTokenizer();
-  nextKeyCodeBuffer.Append(tokenizer, orthography);
+  nextKeyCodeBuffer.Append(tokenizer);
   delete tokenizer;
 
   char *word = nextKeyCodeBuffer.ToString();
@@ -179,8 +179,11 @@ void StenoEngine::DeleteTranslation(size_t newlineIndex) {
 //---------------------------------------------------------------------------
 
 bool StenoEngine::IsNewline(StenoChord chord) const {
-  StenoDictionaryLookup lookup = dictionary.Lookup(&chord, 1);
-  bool result = lookup.IsValid() && strchr(lookup.GetText(), '\n') != nullptr;
+  StenoDictionaryLookupResult lookup = dictionary.Lookup(&chord, 1);
+
+  bool result =
+      lookup.IsValid() && (strchr(lookup.GetText(), '\n') != nullptr ||
+                           strstr(lookup.GetText(), "{#Return}") != nullptr);
   lookup.Destroy();
   return result;
 }

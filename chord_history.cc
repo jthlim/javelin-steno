@@ -47,7 +47,7 @@ void ChordHistory::AddSegments(BuildSegmentContext &context, size_t offset) {
     chords[offset].ToString(buffer);
     context.segmentList.Add(StenoSegment(
         1, states + offset,
-        StenoDictionaryLookup::CreateDynamicString(Str::Dup(buffer))));
+        StenoDictionaryLookupResult::CreateDynamicString(Str::Dup(buffer))));
     ++offset;
   }
 }
@@ -59,8 +59,9 @@ bool ChordHistory::DirectLookup(BuildSegmentContext &context, size_t &offset) {
   }
 
   for (size_t length = startLength; length > 0; --length) {
-    StenoDictionaryLookup lookup =
+    StenoDictionaryLookupResult lookup =
         context.dictionary.Lookup(chords + offset, length);
+
     if (lookup.IsValid()) {
       if (strstr(lookup.GetText(), "{*?}")) {
         HandleRetroactiveInsertSpace(context, offset);
@@ -158,19 +159,21 @@ StenoSegment ChordHistory::AutoSuffixTest(BuildSegmentContext &context,
       }
       localChords[length - 1] = chords[offset + length - 1] & ~suffix.chord;
 
-      StenoDictionaryLookup lookup =
+      StenoDictionaryLookupResult lookup =
           context.dictionary.Lookup(localChords, length);
+
       if (lookup.IsValid()) {
         const char *text = lookup.GetText();
         const char *result = Str::Asprintf("%s%s", text, suffix.text);
         lookup.Destroy();
-        return StenoSegment(length, states + offset,
-                            StenoDictionaryLookup::CreateDynamicString(result));
+        return StenoSegment(
+            length, states + offset,
+            StenoDictionaryLookupResult::CreateDynamicString(result));
       }
     }
   }
 
-  return StenoSegment(0, nullptr, StenoDictionaryLookup::CreateInvalid());
+  return StenoSegment(0, nullptr, StenoDictionaryLookupResult::CreateInvalid());
 }
 
 void ChordHistory::HandleRetroactiveInsertSpace(BuildSegmentContext &context,
@@ -191,7 +194,7 @@ void ChordHistory::HandleRetroactiveInsertSpace(BuildSegmentContext &context,
     // (See logic at end of StenoEngine::ProcessNormalModeChord).
     context.segmentList.Add(
         StenoSegment(1, states + currentOffset,
-                     StenoDictionaryLookup::CreateStaticString("")));
+                     StenoDictionaryLookupResult::CreateStaticString("")));
     return;
   }
 
@@ -230,9 +233,9 @@ const StenoDictionary *const DICTIONARIES[] = {
     &mainDictionary,
 };
 
-constexpr StenoDictionaryList dictionary(DICTIONARIES, 2);
-
 TEST_BEGIN("ChordHistory: Test single segment") {
+  const StenoDictionaryList dictionary(DICTIONARIES, 2);
+
   ChordHistory history;
   // spellchecker: disable
   history.Add(StenoChord("TEFT"), StenoState());
@@ -253,6 +256,8 @@ TEST_BEGIN("ChordHistory: Test single segment") {
 TEST_END
 
 TEST_BEGIN("ChordHistory: Test two segments, with multi-stroke") {
+  const StenoDictionaryList dictionary(DICTIONARIES, 2);
+
   ChordHistory history;
   // spellchecker: disable
   history.Add(StenoChord("TEFT"), StenoState());
@@ -276,6 +281,8 @@ TEST_BEGIN("ChordHistory: Test two segments, with multi-stroke") {
 TEST_END
 
 TEST_BEGIN("ChordHistory: Test *? splits strokes") {
+  const StenoDictionaryList dictionary(DICTIONARIES, 2);
+
   ChordHistory history;
   // spellchecker: disable
   history.Add(StenoChord("TEFT"), StenoState());

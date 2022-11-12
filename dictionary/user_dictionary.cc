@@ -96,20 +96,20 @@ size_t StenoUserDictionary::GetNextDescriptorToWriteOffset() const {
   return nextOffset;
 }
 
-StenoDictionaryLookup StenoUserDictionary::Lookup(const StenoChord *chords,
-                                                  size_t length) const {
-  if (length > activeDescriptor->data.maximumStrokeCount) {
-    return StenoDictionaryLookup::CreateInvalid();
+StenoDictionaryLookupResult
+StenoUserDictionary::Lookup(const StenoDictionaryLookup &lookup) const {
+  if (lookup.length > activeDescriptor->data.maximumStrokeCount) {
+    return StenoDictionaryLookupResult::CreateInvalid();
   }
 
-  size_t entryIndex = StenoChord::Hash(chords, length);
+  size_t entryIndex = lookup.hash;
   for (;;) {
     entryIndex = entryIndex & (activeDescriptor->data.hashTableSize - 1);
 
     uint32_t offset = activeDescriptor->data.hashTable[entryIndex];
     switch (offset) {
     case OFFSET_EMPTY:
-      return StenoDictionaryLookup::CreateInvalid();
+      return StenoDictionaryLookupResult::CreateInvalid();
 
     case OFFSET_DELETED:
       break;
@@ -119,9 +119,11 @@ StenoDictionaryLookup StenoUserDictionary::Lookup(const StenoChord *chords,
           (const StenoUserDictionaryEntry *)(activeDescriptor->data.dataBlock +
                                              offset - OFFSET_DATA);
 
-      if (entry->chordLength == length &&
-          memcmp(chords, entry->chords, sizeof(StenoChord) * length) == 0) {
-        return StenoDictionaryLookup::CreateStaticString(entry->GetText());
+      if (entry->chordLength == lookup.length &&
+          memcmp(lookup.chords, entry->chords,
+                 sizeof(StenoChord) * lookup.length) == 0) {
+        return StenoDictionaryLookupResult::CreateStaticString(
+            entry->GetText());
       }
     }
 
@@ -162,7 +164,9 @@ void StenoUserDictionary::Reset() {
 bool StenoUserDictionary::Add(const StenoChord *chords, size_t length,
                               const char *word) {
   // Verify that it doesn't already exist.
-  StenoDictionaryLookup lookup = Lookup(chords, length);
+  StenoDictionaryLookupResult lookup =
+      Lookup(StenoDictionaryLookup(chords, length));
+
   if (lookup.IsValid() && Str::Eq(lookup.GetText(), word)) {
     lookup.Destroy();
     return true;
@@ -377,7 +381,9 @@ void StenoUserDictionaryEntry::Print(char *buffer) const {
   Console::Write(buffer, p - buffer);
 }
 
-void StenoUserDictionary::PrintInfo() const {
+const char *StenoUserDictionary::GetName() const { return "user_dictionary"; }
+
+void StenoUserDictionary::PrintInfo(int depth) const {
   size_t hashTableUsed = 0;
   for (size_t i = 0; i < activeDescriptor->data.hashTableSize; ++i) {
     switch (activeDescriptor->data.hashTable[i]) {
@@ -390,11 +396,13 @@ void StenoUserDictionary::PrintInfo() const {
     }
   }
 
-  Console::Printf("      User Dictionary\n");
-  Console::Printf("        Format version: %u\n", USER_DICTIONARY_VERSION);
-  Console::Printf("        Hash table usage: %zu/%zu\n", hashTableUsed,
+  Console::Printf("%s%s\n", Spaces(depth), GetName());
+
+  const char *prefix = Spaces(depth + 2);
+  Console::Printf("%sFormat version: %u\n", prefix, USER_DICTIONARY_VERSION);
+  Console::Printf("%sHash table usage: %zu/%zu\n", prefix, hashTableUsed,
                   activeDescriptor->data.hashTableSize);
-  Console::Printf("        Data block usage: %zu/%zu\n",
+  Console::Printf("%sData block usage: %zu/%zu\n", prefix,
                   activeDescriptor->data.dataBlockSize, layout.dataBlockSize);
 }
 

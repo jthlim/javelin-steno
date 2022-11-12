@@ -21,8 +21,7 @@ enum StenoEngineMode { NORMAL, ADD_TRANSLATION };
 
 class StenoEngine final : public StenoProcessorElement {
 public:
-  StenoEngine(const StenoDictionary &dictionary,
-              const StenoOrthography &orthography,
+  StenoEngine(StenoDictionary &dictionary, const StenoOrthography &orthography,
               StenoUserDictionary *userDictionary = nullptr);
 
   void Process(StenoKeyState value, StenoAction action) final;
@@ -33,6 +32,11 @@ public:
   void PrintInfo() const;
   void PrintDictionary() const;
 
+  void ListDictionaries();
+  bool EnableDictionary(const char *name);
+  bool DisableDictionary(const char *name);
+  bool ToggleDictionary(const char *name);
+
 private:
   static const StenoChord UNDO_CHORD;
   static const size_t SEGMENT_CONVERSION_LIMIT = 32;
@@ -40,7 +44,7 @@ private:
   StenoEngineMode mode = StenoEngineMode::NORMAL;
 
   uint32_t strokeCount = 0;
-  const StenoDictionary &dictionary;
+  StenoDictionary &dictionary;
   const StenoCompiledOrthography orthography;
   StenoUserDictionary *userDictionary;
 

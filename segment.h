@@ -11,7 +11,7 @@
 struct StenoSegment {
   StenoSegment();
   StenoSegment(size_t chordLength, const StenoState *state,
-               StenoDictionaryLookup lookup)
+               StenoDictionaryLookupResult lookup)
       : chordLength(chordLength), state(state), lookup(lookup) {}
 
   static StenoSegment CreateInvalid() {
@@ -22,7 +22,7 @@ struct StenoSegment {
 
   size_t chordLength;
   const StenoState *state;
-  StenoDictionaryLookup lookup;
+  StenoDictionaryLookupResult lookup;
 
   bool IsValid() const { return chordLength != 0; }
 };

@@ -10,11 +10,13 @@ class StenoJeffNumbersDictionary final : public StenoDictionary {
 public:
   constexpr StenoJeffNumbersDictionary() {}
 
-  virtual StenoDictionaryLookup Lookup(const StenoChord *chords,
-                                       size_t length) const final;
-  virtual unsigned int GetMaximumMatchLength() const final { return 10; }
-  virtual void PrintInfo() const final;
-  virtual bool PrintDictionary(bool hasData) const final { return false; }
+  virtual StenoDictionaryLookupResult
+  Lookup(const StenoDictionaryLookup &lookup) const;
+  using StenoDictionary::Lookup;
+
+  virtual unsigned int GetMaximumMatchLength() const { return 10; }
+  virtual const char *GetName() const;
+  virtual bool PrintDictionary(bool hasData) const { return false; }
 
   static const StenoJeffNumbersDictionary instance;
 

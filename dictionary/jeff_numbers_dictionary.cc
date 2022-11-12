@@ -60,16 +60,18 @@ bool EndsWith(char *p, size_t length, const char (&suffix)[N]) {
 
 //---------------------------------------------------------------------------
 
-StenoDictionaryLookup
-StenoJeffNumbersDictionary::Lookup(const StenoChord *chords,
-                                   size_t length) const {
+StenoDictionaryLookupResult
+StenoJeffNumbersDictionary::Lookup(const StenoDictionaryLookup &lookup) const {
   char *result = nullptr;
   char scratch[32];
+
+  const StenoChord *chords = lookup.chords;
+  size_t length = lookup.length;
 
   for (size_t i = 0; i < length; ++i) {
     if ((chords[i] & ChordMask::NUM).IsEmpty()) {
       free(result);
-      return StenoDictionaryLookup::CreateInvalid();
+      return StenoDictionaryLookupResult::CreateInvalid();
     }
 
     StenoChord control = GetDigits(scratch, chords[i]);
@@ -91,7 +93,7 @@ StenoJeffNumbersDictionary::Lookup(const StenoChord *chords,
       // Dollars
       if (i + 1 != length) {
         free(result);
-        return StenoDictionaryLookup::CreateInvalid();
+        return StenoDictionaryLookupResult::CreateInvalid();
       }
       control &= ~RB;
       char *updated = Str::Asprintf("$%s", result);
@@ -101,7 +103,7 @@ StenoJeffNumbersDictionary::Lookup(const StenoChord *chords,
       // Dollars
       if (i + 1 != length) {
         free(result);
-        return StenoDictionaryLookup::CreateInvalid();
+        return StenoDictionaryLookupResult::CreateInvalid();
       }
       control &= ~WR;
       char *updated = Str::Asprintf("$%s", result);
@@ -111,7 +113,7 @@ StenoJeffNumbersDictionary::Lookup(const StenoChord *chords,
       // Percent
       if (i + 1 != length) {
         free(result);
-        return StenoDictionaryLookup::CreateInvalid();
+        return StenoDictionaryLookupResult::CreateInvalid();
       }
       control &= ~KR;
       char *updated = Str::Asprintf("%s%%", result);
@@ -121,7 +123,7 @@ StenoJeffNumbersDictionary::Lookup(const StenoChord *chords,
       // Percent
       if (i + 1 != length) {
         free(result);
-        return StenoDictionaryLookup::CreateInvalid();
+        return StenoDictionaryLookupResult::CreateInvalid();
       }
       control &= ~RG;
       char *updated = Str::Asprintf("%s%%", result);
@@ -131,7 +133,7 @@ StenoJeffNumbersDictionary::Lookup(const StenoChord *chords,
       // Hundreds of dollars.
       if (i + 1 != length) {
         free(result);
-        return StenoDictionaryLookup::CreateInvalid();
+        return StenoDictionaryLookupResult::CreateInvalid();
       }
       control &= ~DZ;
       char *updated = Str::Asprintf("$%s00", result);
@@ -142,7 +144,7 @@ StenoJeffNumbersDictionary::Lookup(const StenoChord *chords,
       // Time
       if (i + 1 != length) {
         free(result);
-        return StenoDictionaryLookup::CreateInvalid();
+        return StenoDictionaryLookupResult::CreateInvalid();
       }
       const char *minutes;
       if ((control & ChordMask::KL).IsEmpty()) {
@@ -170,7 +172,7 @@ StenoJeffNumbersDictionary::Lookup(const StenoChord *chords,
     } else if ((control & ChordMask::GR).IsNotEmpty()) {
       if (i + 1 != length) {
         free(result);
-        return StenoDictionaryLookup::CreateInvalid();
+        return StenoDictionaryLookupResult::CreateInvalid();
       }
 
       result = ToWords(result);
@@ -202,7 +204,7 @@ StenoJeffNumbersDictionary::Lookup(const StenoChord *chords,
       // Ordinals
       if (i + 1 != length) {
         free(result);
-        return StenoDictionaryLookup::CreateInvalid();
+        return StenoDictionaryLookupResult::CreateInvalid();
       }
 
       char secondLastDigit = '\0';
@@ -239,7 +241,7 @@ StenoJeffNumbersDictionary::Lookup(const StenoChord *chords,
       // Roman numerals
       if (i + 1 != length) {
         free(result);
-        return StenoDictionaryLookup::CreateInvalid();
+        return StenoDictionaryLookupResult::CreateInvalid();
       }
 
       int value = 0;
@@ -255,7 +257,7 @@ StenoJeffNumbersDictionary::Lookup(const StenoChord *chords,
       }
       free(result);
       if (value <= 0 || value >= 3999) {
-        return StenoDictionaryLookup::CreateInvalid();
+        return StenoDictionaryLookupResult::CreateInvalid();
       }
       ToRoman(scratch, value);
       result = Str::Dup(scratch);
@@ -265,15 +267,15 @@ StenoJeffNumbersDictionary::Lookup(const StenoChord *chords,
     control &= ~(ChordMask::STAR | ChordMask::DR | ChordMask::ZR);
     if (control.IsNotEmpty()) {
       free(result);
-      return StenoDictionaryLookup::CreateInvalid();
+      return StenoDictionaryLookupResult::CreateInvalid();
     }
   }
 
-  return StenoDictionaryLookup::CreateDynamicString(result);
+  return StenoDictionaryLookupResult::CreateDynamicString(result);
 }
 
-void StenoJeffNumbersDictionary::PrintInfo() const {
-  Console::Printf("      Jeff's Numbers\n");
+const char *StenoJeffNumbersDictionary::GetName() const {
+  return "jeff_numbers";
 }
 
 StenoChord StenoJeffNumbersDictionary::GetDigits(char *p,
@@ -537,7 +539,7 @@ char *ToWords(char *digits) {
 
 static void TestLookup(const char *stroke, const char *expected) {
   StenoChord chord(stroke);
-  StenoDictionaryLookup lookup =
+  StenoDictionaryLookupResult lookup =
       StenoJeffNumbersDictionary::instance.Lookup(&chord, 1);
   assert(lookup.IsValid());
   const char *text = lookup.GetText();
@@ -547,7 +549,7 @@ static void TestLookup(const char *stroke, const char *expected) {
 
 static void TestLookup(const StenoChord *chords, size_t length,
                        const char *expected) {
-  StenoDictionaryLookup lookup =
+  StenoDictionaryLookupResult lookup =
       StenoJeffNumbersDictionary::instance.Lookup(chords, length);
   assert(lookup.IsValid());
   const char *text = lookup.GetText();
