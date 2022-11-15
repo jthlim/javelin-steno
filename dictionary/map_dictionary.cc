@@ -8,11 +8,6 @@
 
 //---------------------------------------------------------------------------
 
-static const char MISMATCHED_MAGIC_ERROR[] =
-    "Dictionary Format Error. Please recreate a full firmware";
-
-//---------------------------------------------------------------------------
-
 struct StenoMapDictionaryDataEntry {
   Uint24 textOffset;
   Uint24 chords[1];
@@ -118,6 +113,38 @@ StenoMapDictionary::Lookup(const StenoDictionaryLookup &lookup) const {
     }
     ++entryIndex;
   }
+}
+
+bool StenoMapDictionary::ReverseMapDictionaryLookup(
+    StenoReverseDictionaryLookup &result, const void *data) const {
+  // Quick reject
+  if (data < definition.strokes[0].data) {
+    return false;
+  }
+  if (data >= definition.strokes[definition.maximumStrokeCount - 1].offsets) {
+    return false;
+  }
+
+  for (size_t i = 0; i < definition.maximumStrokeCount; ++i) {
+    const StenoMapDictionaryStrokesDefinition &strokeDefinition =
+        definition.strokes[i];
+
+    if (!strokeDefinition.ContainsData(data)) {
+      continue;
+    }
+
+    // There is a match! Convert it to StenoChords.
+    const StenoMapDictionaryDataEntry *entry =
+        (const StenoMapDictionaryDataEntry *)data;
+    size_t chordLength = i + 1;
+    StenoChord chords[chordLength];
+    for (size_t i = 0; i < chordLength; ++i) {
+      chords[i] = entry->chords[i].ToUint32();
+    }
+    result.AddResult(chords, chordLength);
+    return true;
+  }
+  return false;
 }
 
 const char *StenoMapDictionary::GetName() const { return definition.name; }

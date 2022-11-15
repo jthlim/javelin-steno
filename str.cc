@@ -7,6 +7,25 @@
 
 //---------------------------------------------------------------------------
 
+bool Str::IsFingerSpellingCommand(const char *p) {
+  const char *start = strstr(p, "{&");
+  if (start == nullptr) {
+    return false;
+  }
+  return strchr(start, '}') != nullptr;
+}
+
+bool Str::IsJoinNext(const char *p) {
+  size_t len = strlen(p);
+  return len > 3 && p[len - 1] == '}' && p[len - 2] == '^' && !strchr(p, '\n');
+}
+
+bool Str::IsJoinPrevious(const char *p) {
+  return p[0] == '{' && p[1] == '^' && !strchr(p, '\n');
+}
+
+bool Str::ContainsKeyCode(const char *p) { return strstr(p, "{#") != nullptr; }
+
 char *Str::Asprintf(const char *p, ...) {
   va_list v;
   va_start(v, p);

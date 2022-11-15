@@ -153,6 +153,12 @@ Pattern::BuildResult Pattern::ParseAtom(BuildContext &c) {
     case '^':
     case '\\':
       return BuildResult(new LiteralPatternComponent(Str::DupN(c.p++, 1)));
+
+    case '1':
+    case '2':
+    case '3':
+      return BuildResult(new BackReferencePatternComponent(*c.p++ - '0'));
+
     default:
       assert(!"Unhandled symbol");
     }
@@ -364,6 +370,14 @@ TEST_BEGIN("Pattern: Replace tests") {
   char *t2 = pattern.Match("b").Replace("\\0\\1");
   assert(strcmp(t2, "b") == 0);
   free(t2);
+}
+TEST_END
+
+TEST_BEGIN("Pattern: Backreference Test") {
+  const Pattern pattern = Pattern::Compile("(.+(.))\\2ed");
+  char *t1 = pattern.Match("planned").Replace("\\1");
+  assert(strcmp(t1, "plan") == 0);
+  free(t1);
 }
 TEST_END
 

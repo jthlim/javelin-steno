@@ -84,6 +84,9 @@ public:
   // Buffer must be at least 26 characters wide.
   char *ToString(char *buffer) const;
 
+  // Buffer must be at least 26 characters wide.
+  char *ToWideString(char *buffer) const;
+
   bool operator==(const StenoChord &o) const { return keyState == o.keyState; }
   bool operator!=(const StenoChord &o) const { return keyState != o.keyState; }
 
@@ -104,6 +107,7 @@ public:
   uint32_t Hash() const { return StenoChord::Hash(this, 1); }
 
   static uint32_t Hash(const StenoChord *chords, size_t length);
+  static char *ToString(const StenoChord *chords, size_t length, char *buffer);
 
 private:
   uint32_t keyState;

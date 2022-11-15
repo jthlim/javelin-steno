@@ -365,12 +365,7 @@ void StenoUserDictionary::PrintJsonDictionary() const {
 void StenoUserDictionaryEntry::Print(char *buffer) const {
   char *p = buffer;
   *p++ = '\"';
-  for (size_t i = 0; i < chordLength; ++i) {
-    if (i != 0) {
-      *p++ = '/';
-    }
-    p = chords[i].ToString(p);
-  }
+  p = StenoChord::ToString(chords, chordLength, p);
   *p++ = '\"';
   *p++ = ':';
   *p++ = ' ';
@@ -404,6 +399,21 @@ void StenoUserDictionary::PrintInfo(int depth) const {
                   activeDescriptor->data.hashTableSize);
   Console::Printf("%sData block usage: %zu/%zu\n", prefix,
                   activeDescriptor->data.dataBlockSize, layout.dataBlockSize);
+}
+
+//---------------------------------------------------------------------------
+
+void StenoUserDictionary::PrintJsonDictionary_Binding(void *context,
+                                                      const char *commandLine) {
+  StenoUserDictionary *userDictionary = (StenoUserDictionary *)context;
+  userDictionary->PrintJsonDictionary();
+}
+
+void StenoUserDictionary::Reset_Binding(void *context,
+                                        const char *commandLine) {
+  StenoUserDictionary *userDictionary = (StenoUserDictionary *)context;
+  userDictionary->Reset();
+  Console::Write("OK\n\n", 4);
 }
 
 //---------------------------------------------------------------------------

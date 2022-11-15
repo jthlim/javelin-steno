@@ -39,7 +39,7 @@ constexpr JeffPhrasingFullStarter FULL_STARTERS[] = {
 
 constexpr JeffPhrasingPronoun SIMPLE_PRONOUNS[] = {
     {}, // Unused
-    {}, // Unused
+    {"it", VerbForm::THIRD_PERSON_SINGULAR, true},
     {"he", VerbForm::THIRD_PERSON_SINGULAR, true},
     {"she", VerbForm::THIRD_PERSON_SINGULAR, true},
     {"you", VerbForm::SECOND_PERSON, true},
@@ -1856,6 +1856,7 @@ constexpr StenoChord NON_PHRASE_STROKES[] = {
     0x501a,  // SKPUR      - and you're -- rather than 'and you run'
     0x2101a, // SKPUL      - and you'll -- rather than 'and you look'
     0x8181a, // SKPEUT     - and it     -- rather than 'and I have'
+    0x41a,   // SKP*       - {&&}
 };
 // spellchecker: enable
 

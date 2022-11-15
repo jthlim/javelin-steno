@@ -20,6 +20,12 @@ public:
   bool IsEmpty() const { return count == 0; }
   bool IsNotEmpty() const { return count != 0; }
   size_t GetCount() const { return count; }
+  void Reset() {
+    uint8_t *toFree = buffer;
+    count = 0;
+    buffer = nullptr;
+    free(toFree);
+  }
 
 protected:
   _ListBase() : count(0), buffer(nullptr) {}
@@ -67,6 +73,7 @@ public:
     return ((const T *)buffer)[i];
   }
   T &Back() { return (*this)[count - 1]; }
+  const T &Back() const { return (*this)[count - 1]; }
 };
 
 //---------------------------------------------------------------------------

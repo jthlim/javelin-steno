@@ -246,8 +246,30 @@ char *StenoChord::ToString(char *buffer) const {
   return buffer;
 }
 
+char *StenoChord::ToWideString(char *buffer) const {
+  // cspell: disable-next-line
+  const char *keys = "#STKPWHRAO*EUFRPBLGTSDZ";
+
+  for (int i = 0; i < ChordBitIndex::COUNT; ++i) {
+    *buffer++ = (keyState & (1UL << i)) ? keys[i] : ' ';
+  }
+  *buffer = '\0';
+  return buffer;
+}
+
 uint32_t StenoChord::Hash(const StenoChord *chords, size_t length) {
   return Crc32(chords, 4 * length);
+}
+
+char *StenoChord::ToString(const StenoChord *chords, size_t length,
+                           char *buffer) {
+  for (size_t i = 0; i < length; ++i) {
+    if (i != 0) {
+      *buffer++ = '/';
+    }
+    buffer = chords[i].ToString(buffer);
+  }
+  return buffer;
 }
 
 //---------------------------------------------------------------------------

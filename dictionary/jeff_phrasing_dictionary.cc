@@ -13,7 +13,7 @@
 
 // spellchecker: disable
 const StenoChord SIMPLE_STARTER_MASK(0x3fe);  // `STKPWHRAO`
-const StenoChord SIMPLE_PRONOUN_MASK(0x1800); // `EU`
+const StenoChord SIMPLE_PRONOUN_MASK(0x1C00); // `*EU`
 const StenoChord FULL_STARTER_MASK(0xfe);     // 'STKPWHR'
 const StenoChord ENDER_MASK(0x7fc000);        // '-RPBLGTSDZ'
 

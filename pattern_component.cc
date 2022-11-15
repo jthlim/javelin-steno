@@ -46,6 +46,22 @@ bool AnyStarPatternComponent::Match(const char *p, PatternContext &context) {
   return false;
 }
 
+bool BackReferencePatternComponent::Match(const char *p,
+                                          PatternContext &context) {
+  const char *compareP = context.captureList[index * 2];
+  const char *comparedEnd = context.captureList[index * 2 + 1];
+
+  while (compareP < comparedEnd) {
+    if (*p != *compareP) {
+      return false;
+    }
+    ++p;
+    ++compareP;
+  }
+
+  return CallNext(p, context);
+}
+
 bool CharacterSetComponent::Match(const char *p, PatternContext &context) {
   unsigned int c = *(uint8_t *)p;
   if (c >= 128) {
@@ -61,11 +77,12 @@ bool CharacterSetComponent::Match(const char *p, PatternContext &context) {
 }
 
 bool CapturePatternComponent::Match(const char *p, PatternContext &context) {
+
+  const char *previous = context.captureList[index];
+  context.captureList[index] = p;
   bool result = CallNext(p, context);
-  if (result) {
-    // Since no backreferences are required, this can just be set here,
-    // instead of before the call and restoring it if there's no match.
-    context.captureList[index] = p;
+  if (!result) {
+    context.captureList[index] = previous;
   }
   return result;
 }

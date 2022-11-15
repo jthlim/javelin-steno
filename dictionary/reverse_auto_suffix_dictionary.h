@@ -1,25 +1,21 @@
 //---------------------------------------------------------------------------
 
 #pragma once
-#include "../list.h"
 #include "dictionary.h"
 
 //---------------------------------------------------------------------------
 
-struct StenoDictionaryListEntry {
-  StenoDictionaryListEntry(const StenoDictionary *dictionary, bool enabled)
-      : enabled(enabled), dictionary(dictionary) {}
-
-  bool enabled;
-  const StenoDictionary *dictionary;
-};
+class Pattern;
+class StenoCompiledOrthography;
+class StenoOrthography;
+struct StenoOrthographyReverseAutoSuffix;
 
 //---------------------------------------------------------------------------
 
-class StenoDictionaryList final : public StenoDictionary {
+class StenoReverseAutoSuffixDictionary final : public StenoDictionary {
 public:
-  StenoDictionaryList(List<StenoDictionaryListEntry> &dictionaries);
-  StenoDictionaryList(const StenoDictionary *const *dictionaries, size_t count);
+  StenoReverseAutoSuffixDictionary(StenoDictionary *dictionary,
+                                   const StenoOrthography &orthography);
 
   virtual StenoDictionaryLookupResult
   Lookup(const StenoDictionaryLookup &lookup) const;
@@ -30,6 +26,7 @@ public:
 
   virtual unsigned int GetMaximumMatchLength() const;
   virtual const char *GetName() const;
+
   virtual void PrintInfo(int depth) const;
   virtual bool PrintDictionary(bool hasData) const;
 
@@ -38,11 +35,24 @@ public:
   virtual bool DisableDictionary(const char *name);
   virtual bool ToggleDictionary(const char *name);
 
-private:
-  List<StenoDictionaryListEntry> &dictionaries;
-  uint32_t maximumMatchLength;
+  void
+  SetCompiledOrthography(const StenoCompiledOrthography *compiledOrthography) {
+    this->compiledOrthography = compiledOrthography;
+  }
 
-  void UpdateMaximumMatchLength();
+private:
+  StenoDictionary *dictionary;
+  const StenoOrthography &orthography;
+  const StenoCompiledOrthography *compiledOrthography;
+  const Pattern *reversePatterns;
+
+  static const Pattern *
+  CreateReversePatterns(const StenoOrthography &orthography);
+
+  void ProcessReverseAutoSuffix(
+      StenoReverseDictionaryLookup &result,
+      const StenoOrthographyReverseAutoSuffix &reverseAutoSuffix,
+      const Pattern &reversePattern) const;
 };
 
 //---------------------------------------------------------------------------

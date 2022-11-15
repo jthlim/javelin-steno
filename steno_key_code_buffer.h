@@ -44,8 +44,8 @@ public:
 
   void AppendText(const char *p, size_t n, StenoCaseMode caseMode);
 
-  // For Debugging
   char *ToString();
+  char *ToUnresolvedString();
 
   static bool IsGlue(const char *p);
 

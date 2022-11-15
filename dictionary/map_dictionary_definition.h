@@ -46,6 +46,7 @@ struct StenoMapDictionaryStrokesDefinition {
   // Hash table information.
   const StenoHashMapEntryBlock *offsets;
 
+  bool ContainsData(const void *p) const { return data <= p && p < offsets; }
   size_t GetOffset(size_t index) const;
   size_t GetEntryCount() const;
   bool PrintDictionary(bool hasData, size_t chordLength, char *buffer,
@@ -65,11 +66,15 @@ struct StenoMapDictionaryDefinition {
 
 //---------------------------------------------------------------------------
 
-constexpr uint32_t STENO_MAP_DICTIONARY_COLLECTION_MAGIC = 0x3243534a; // 'JSC1'
+constexpr uint32_t STENO_MAP_DICTIONARY_COLLECTION_MAGIC = 0x3143534a; // 'JSC1'
 
 struct StenoMapDictionaryCollection {
   uint32_t magic;
-  size_t dictionaryCount;
+  uint16_t dictionaryCount;
+  bool hasReverseLookup;
+  bool _padding7;
+  const uint8_t *textBlock;
+  size_t textBlockLength;
   const StenoMapDictionaryDefinition *const dictionaries[];
 };
 

@@ -48,6 +48,16 @@ public:
   virtual bool Match(const char *p, PatternContext &context);
 };
 
+class BackReferencePatternComponent : public PatternComponent {
+public:
+  BackReferencePatternComponent(int index) : index(index) {}
+
+  virtual bool Match(const char *p, PatternContext &context);
+
+private:
+  int index;
+};
+
 class CharacterSetComponent : public PatternComponent {
 public:
   virtual bool Match(const char *p, PatternContext &context);

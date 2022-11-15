@@ -20,6 +20,8 @@ struct StenoSegment {
     return segment;
   }
 
+  bool ContainsKeyCode() const;
+
   size_t chordLength;
   const StenoState *state;
   StenoDictionaryLookupResult lookup;

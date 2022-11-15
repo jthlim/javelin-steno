@@ -19,7 +19,7 @@
 
 //---------------------------------------------------------------------------
 
-constexpr StenoChord StenoEngine::UNDO_CHORD(ChordMask::STAR);
+const StenoChord StenoEngine::UNDO_CHORD(ChordMask::STAR);
 
 //---------------------------------------------------------------------------
 
@@ -218,7 +218,7 @@ TEST_BEGIN("Engine: Random spam") {
   Key::DisableHistory();
 
   srand(0x1234);
-  for (size_t i = 0; i < 10000; ++i) {
+  for (size_t i = 0; i < 1000; ++i) {
     StenoChord chord(rand() & ChordMask::ALL);
     engine.ProcessChord(chord);
   }

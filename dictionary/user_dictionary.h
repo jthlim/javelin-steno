@@ -57,8 +57,7 @@ public:
   virtual void PrintInfo(int depth) const final;
   virtual bool PrintDictionary(bool hasData) const final;
 
-  void RegisterConsoleCommands(Console &console);
-
+  void PrintJsonDictionary() const;
   void Reset();
 
   // Returns true if successful.
@@ -67,7 +66,9 @@ public:
   // Returns true if successful.
   virtual bool Remove(const StenoChord *chords, size_t length);
 
-  void PrintJsonDictionary() const;
+  static void PrintJsonDictionary_Binding(void *context,
+                                          const char *commandLine);
+  static void Reset_Binding(void *context, const char *commandLine);
 
 private:
   const StenoUserDictionaryDescriptor *descriptorBase;

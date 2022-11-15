@@ -295,7 +295,7 @@ void StenoKeyCodeBuffer::ProcessCommand(const char *p) {
 
 void StenoKeyCodeBuffer::ProcessOrthographicSuffix(const char *text,
                                                    size_t length) {
-  char orthographicScratchPad[128];
+  char orthographicScratchPad[32];
   char *suffix = Str::DupN(text, length);
 
   size_t start = count;
@@ -337,7 +337,6 @@ void StenoKeyCodeBuffer::ProcessOrthographicSuffix(const char *text,
 
 //---------------------------------------------------------------------------
 
-// Only for debug.
 char *StenoKeyCodeBuffer::ToString() {
   size_t length = 1;
   for (size_t i = 0; i < count; ++i) {
@@ -350,6 +349,25 @@ char *StenoKeyCodeBuffer::ToString() {
   for (size_t i = 0; i < count; ++i) {
     if (!buffer[i].IsRawKeyCode()) {
       utf8p.SetAndAdvance(buffer[i].ResolveUnicode());
+    }
+  }
+  utf8p.Set(0);
+
+  return result;
+}
+
+char *StenoKeyCodeBuffer::ToUnresolvedString() {
+  size_t length = 1;
+  for (size_t i = 0; i < count; ++i) {
+    if (!buffer[i].IsRawKeyCode()) {
+      length += Utf8Pointer::BytesForCharacterCode(buffer[i].GetUnicode());
+    }
+  }
+  char *result = (char *)malloc(length);
+  Utf8Pointer utf8p(result);
+  for (size_t i = 0; i < count; ++i) {
+    if (!buffer[i].IsRawKeyCode()) {
+      utf8p.SetAndAdvance(buffer[i].GetUnicode());
     }
   }
   utf8p.Set(0);

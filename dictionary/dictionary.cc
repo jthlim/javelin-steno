@@ -4,6 +4,7 @@
 
 #include "../console.h"
 #include <stdlib.h>
+#include <string.h>
 
 //---------------------------------------------------------------------------
 
@@ -17,6 +18,26 @@ static void NoOp(StenoDictionaryLookupResult *) {}
 
 static void FreeString(StenoDictionaryLookupResult *p) {
   free((void *)p->context);
+}
+
+//---------------------------------------------------------------------------
+
+void StenoReverseDictionaryLookup::AddResult(const StenoChord *c,
+                                             size_t length) {
+  // Ignore if above or equal to the threshold
+  if (length >= strokeThreshold) {
+    return;
+  }
+
+  // Ignore if it'll overflow.
+  if (resultCount + 1 >= sizeof(resultLengths) ||
+      chordsCount + length > CHORD_COUNT) {
+    return;
+  }
+
+  resultLengths[resultCount++] = length;
+  memcpy(&chords[chordsCount], c, sizeof(StenoChord) * length);
+  chordsCount += length;
 }
 
 //---------------------------------------------------------------------------
@@ -43,6 +64,14 @@ StenoDictionaryLookupResult::CreateDynamicString(const char *p) {
 }
 
 //---------------------------------------------------------------------------
+
+void StenoDictionary::ReverseLookup(
+    StenoReverseDictionaryLookup &result) const {}
+
+bool StenoDictionary::ReverseMapDictionaryLookup(
+    StenoReverseDictionaryLookup &result, const void *data) const {
+  return false;
+}
 
 void StenoDictionary::PrintInfo(int depth) const {
   Console::Printf("%s%s\n", Spaces(depth), GetName());

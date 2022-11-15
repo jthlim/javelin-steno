@@ -1,25 +1,17 @@
 //---------------------------------------------------------------------------
 
 #pragma once
-#include "../list.h"
 #include "dictionary.h"
 
 //---------------------------------------------------------------------------
 
-struct StenoDictionaryListEntry {
-  StenoDictionaryListEntry(const StenoDictionary *dictionary, bool enabled)
-      : enabled(enabled), dictionary(dictionary) {}
-
-  bool enabled;
-  const StenoDictionary *dictionary;
-};
-
-//---------------------------------------------------------------------------
-
-class StenoDictionaryList final : public StenoDictionary {
+class StenoReverseMapDictionary final : public StenoDictionary {
 public:
-  StenoDictionaryList(List<StenoDictionaryListEntry> &dictionaries);
-  StenoDictionaryList(const StenoDictionary *const *dictionaries, size_t count);
+  StenoReverseMapDictionary(StenoDictionary *dictionary,
+                            const uint8_t *baseAddress,
+                            const uint8_t *textBlock, size_t textBlockLength)
+      : dictionary(dictionary), baseAddress(baseAddress), textBlock(textBlock),
+        textBlockLength(textBlockLength) {}
 
   virtual StenoDictionaryLookupResult
   Lookup(const StenoDictionaryLookup &lookup) const;
@@ -30,6 +22,7 @@ public:
 
   virtual unsigned int GetMaximumMatchLength() const;
   virtual const char *GetName() const;
+
   virtual void PrintInfo(int depth) const;
   virtual bool PrintDictionary(bool hasData) const;
 
@@ -38,11 +31,13 @@ public:
   virtual bool DisableDictionary(const char *name);
   virtual bool ToggleDictionary(const char *name);
 
-private:
-  List<StenoDictionaryListEntry> &dictionaries;
-  uint32_t maximumMatchLength;
+  static int Compare(const char *lookup, const uint8_t *textBlock);
 
-  void UpdateMaximumMatchLength();
+private:
+  StenoDictionary *dictionary;
+  const uint8_t *baseAddress;
+  const uint8_t *textBlock;
+  const size_t textBlockLength;
 };
 
 //---------------------------------------------------------------------------

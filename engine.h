@@ -11,6 +11,7 @@
 
 class Pattern;
 class StenoDictionary;
+class StenoSegmentList;
 class StenoUserDictionary;
 
 //---------------------------------------------------------------------------
@@ -37,10 +38,29 @@ public:
   bool DisableDictionary(const char *name);
   bool ToggleDictionary(const char *name);
 
+  bool IsPaperTapeEnabled() const { return paperTapeEnabled; }
+  void EnablePaperTape() { paperTapeEnabled = true; }
+  void DisablePaperTape() { paperTapeEnabled = false; }
+
+  // TODO: Tidy this up.
+  const StenoCompiledOrthography *GetCompiledOrthography() const {
+    return &orthography;
+  }
+
+  static void ListDictionaries_Binding(void *context, const char *commandLine);
+  static void EnableDictionary_Binding(void *context, const char *commandLine);
+  static void DisableDictionary_Binding(void *context, const char *commandLine);
+  static void ToggleDictionary_Binding(void *context, const char *commandLine);
+  static void PrintDictionary_Binding(void *context, const char *commandLine);
+  static void EnablePaperTape_Binding(void *context, const char *commandLine);
+  static void DisablePaperTape_Binding(void *context, const char *commandLine);
+  static void Lookup_Binding(void *context, const char *commandLine);
+
 private:
   static const StenoChord UNDO_CHORD;
   static const size_t SEGMENT_CONVERSION_LIMIT = 32;
 
+  bool paperTapeEnabled = false;
   StenoEngineMode mode = StenoEngineMode::NORMAL;
 
   uint32_t strokeCount = 0;
@@ -77,9 +97,19 @@ private:
   void DeleteTranslation(size_t newlineIndex);
 
   // Returns the number of segments
-  size_t UpdateNormalModeTextBuffer(size_t maximumChordCount,
-                                    StenoKeyCodeBuffer &buffer,
-                                    size_t chordLength);
+  void UpdateNormalModeTextBuffer(size_t maximumChordCount,
+                                  StenoKeyCodeBuffer &buffer,
+                                  size_t chordLength,
+                                  StenoSegmentList &segmentList);
+
+  void PrintPaperTape(StenoChord chord,
+                      const StenoSegmentList &previousSegmentList,
+                      const StenoSegmentList &nextSegmentList, bool isUndo);
+  void PrintPaperTapeSuggestion(const char *p, size_t arrowPrefixCount,
+                                char *buffer, size_t strokeThreshold);
+  char *PrintPaperTapeSegmentSuggestion(size_t wordCount,
+                                        const StenoSegmentList &segmentList,
+                                        char *buffer, char *previousLookup);
 
   size_t UpdateAddTranslationModeTextBuffer(StenoKeyCodeBuffer &buffer);
 

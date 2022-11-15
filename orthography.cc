@@ -14,6 +14,8 @@ constexpr StenoOrthography StenoOrthography::emptyOrthography = {
     .aliases = nullptr,
     .autoSuffixCount = 0,
     .autoSuffixes = nullptr,
+    .reverseAutoSuffixCount = 0,
+    .reverseAutoSuffixes = nullptr,
 };
 
 //---------------------------------------------------------------------------

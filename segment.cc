@@ -5,6 +5,12 @@
 
 //---------------------------------------------------------------------------
 
+bool StenoSegment::ContainsKeyCode() const {
+  return Str::ContainsKeyCode(lookup.GetText());
+}
+
+//---------------------------------------------------------------------------
+
 StenoSegmentList::~StenoSegmentList() {
   for (size_t i = 0; i < count; ++i) {
     (*this)[i].lookup.Destroy();

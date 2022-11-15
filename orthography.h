@@ -23,6 +23,13 @@ struct StenoOrthographyAutoSuffix {
   const char *text;
 };
 
+struct StenoOrthographyReverseAutoSuffix {
+  StenoOrthographyAutoSuffix *autoSuffix;
+  StenoChord suppressMask;
+  const char *testPattern;
+  const char *replacement;
+};
+
 //---------------------------------------------------------------------------
 
 struct StenoOrthography {
@@ -35,6 +42,9 @@ struct StenoOrthography {
   StenoChord autoSuffixMask;
   size_t autoSuffixCount;
   const StenoOrthographyAutoSuffix *autoSuffixes;
+
+  size_t reverseAutoSuffixCount;
+  const StenoOrthographyReverseAutoSuffix *reverseAutoSuffixes;
 
   static const StenoOrthography emptyOrthography;
 

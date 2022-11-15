@@ -2,12 +2,9 @@
 
 #pragma once
 #include "../chord.h"
+#include "../str.h"
 #include <stdint.h>
 #include <stdlib.h>
-
-//---------------------------------------------------------------------------
-
-class StenoChord;
 
 //---------------------------------------------------------------------------
 
@@ -61,6 +58,31 @@ struct StenoDictionaryLookup {
 
 //---------------------------------------------------------------------------
 
+class StenoReverseDictionaryLookup {
+public:
+  StenoReverseDictionaryLookup(size_t strokeThreshold, const char *lookup)
+      : strokeThreshold(strokeThreshold), lookup(lookup),
+        lookupLength(strlen(lookup)) {}
+
+  void AddResult(const StenoChord *chords, size_t length);
+
+  // Results equal to, or above this will not be captured.
+  size_t strokeThreshold;
+  const char *lookup;
+  size_t lookupLength;
+
+  size_t resultCount = 0;
+  uint8_t resultLengths[24];
+
+  size_t chordsCount = 0;
+  static const size_t CHORD_COUNT = 64;
+  StenoChord chords[CHORD_COUNT];
+
+  static const size_t MAX_STROKE_THRESHOLD = 31;
+};
+
+//---------------------------------------------------------------------------
+
 class StenoDictionary {
 public:
   virtual StenoDictionaryLookupResult
@@ -70,6 +92,10 @@ public:
                                             size_t length) const {
     return Lookup(StenoDictionaryLookup(chords, length));
   }
+
+  virtual void ReverseLookup(StenoReverseDictionaryLookup &result) const;
+  virtual bool ReverseMapDictionaryLookup(StenoReverseDictionaryLookup &result,
+                                          const void *data) const;
 
   virtual unsigned int GetMaximumMatchLength() const = 0;
   virtual const char *GetName() const = 0;

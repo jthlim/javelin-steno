@@ -74,6 +74,8 @@ void Console::Printf(const char *format, ...) {
   free(buffer);
 }
 
+__attribute__((weak)) void Console::Flush() {}
+
 //---------------------------------------------------------------------------
 
 void Console::HandleInput(const char *data, size_t length) {

@@ -18,6 +18,9 @@ public:
   Lookup(const StenoDictionaryLookup &lookup) const;
   using StenoDictionary::Lookup;
 
+  virtual bool ReverseMapDictionaryLookup(StenoReverseDictionaryLookup &result,
+                                          const void *data) const;
+
   virtual unsigned int GetMaximumMatchLength() const;
   virtual const char *GetName() const;
   virtual bool PrintDictionary(bool hasData) const;

@@ -46,6 +46,31 @@ StenoDictionaryList::Lookup(const StenoDictionaryLookup &lookup) const {
   return StenoDictionaryLookupResult::CreateInvalid();
 }
 
+void StenoDictionaryList::ReverseLookup(
+    StenoReverseDictionaryLookup &result) const {
+  for (size_t i = 0; i < dictionaries.GetCount(); ++i) {
+    if (!dictionaries[i].enabled) {
+      continue;
+    }
+    const StenoDictionary *dictionary = dictionaries[i].dictionary;
+    dictionary->ReverseLookup(result);
+  }
+}
+
+bool StenoDictionaryList::ReverseMapDictionaryLookup(
+    StenoReverseDictionaryLookup &result, const void *data) const {
+  for (size_t i = 0; i < dictionaries.GetCount(); ++i) {
+    if (!dictionaries[i].enabled) {
+      continue;
+    }
+    const StenoDictionary *dictionary = dictionaries[i].dictionary;
+    if (dictionary->ReverseMapDictionaryLookup(result, data)) {
+      return true;
+    }
+  }
+  return false;
+}
+
 void StenoDictionaryList::UpdateMaximumMatchLength() {
   unsigned int max = 0;
   for (size_t i = 0; i < dictionaries.GetCount(); ++i) {

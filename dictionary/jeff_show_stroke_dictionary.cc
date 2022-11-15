@@ -45,12 +45,7 @@ StenoDictionaryLookupResult StenoJeffShowStrokeDictionary::Lookup(
   *p++ = '`';
 
   size_t end = closed ? length - 1 : length;
-  for (size_t i = 1; i < end; ++i) {
-    if (i != 1) {
-      *p++ = '/';
-    }
-    p = chords[i].ToString(p);
-  }
+  p = StenoChord::ToString(chords + 1, end - 1, p);
   if (closed) {
     p[0] = '`';
     p[1] = '\0';

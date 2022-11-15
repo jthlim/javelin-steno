@@ -32,6 +32,8 @@ public:
   static void Write(const char *data, size_t length);
   static void Printf(const char *format, ...) __printflike(1, 2);
 
+  static void Flush();
+
 #if RUN_TESTS
   static std::vector<char> history;
 #endif
