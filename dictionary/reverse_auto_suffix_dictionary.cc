@@ -22,9 +22,9 @@ const Pattern *StenoReverseAutoSuffixDictionary::CreateReversePatterns(
 //---------------------------------------------------------------------------
 
 StenoReverseAutoSuffixDictionary::StenoReverseAutoSuffixDictionary(
-    StenoDictionary *dictionary, const StenoOrthography &orthography)
+    StenoDictionary *dictionary, const StenoCompiledOrthography &orthography)
     : dictionary(dictionary), orthography(orthography),
-      reversePatterns(CreateReversePatterns(orthography)) {}
+      reversePatterns(CreateReversePatterns(orthography.data)) {}
 
 StenoDictionaryLookupResult StenoReverseAutoSuffixDictionary::Lookup(
     const StenoDictionaryLookup &lookup) const {
@@ -36,8 +36,8 @@ void StenoReverseAutoSuffixDictionary::ReverseLookup(
 
   dictionary->ReverseLookup(result);
 
-  for (size_t i = 0; i < orthography.reverseAutoSuffixCount; ++i) {
-    ProcessReverseAutoSuffix(result, orthography.reverseAutoSuffixes[i],
+  for (size_t i = 0; i < orthography.data.reverseAutoSuffixCount; ++i) {
+    ProcessReverseAutoSuffix(result, orthography.data.reverseAutoSuffixes[i],
                              reversePatterns[i]);
   }
 }
@@ -109,7 +109,7 @@ void StenoReverseAutoSuffixDictionary::ProcessReverseAutoSuffix(
 
   char *suffix = Str::DupN(reverseAutoSuffix.autoSuffix->text + 3,
                            strlen(reverseAutoSuffix.autoSuffix->text) - 4);
-  char *withSuffix = compiledOrthography->AddSuffix(withoutSuffix, suffix);
+  char *withSuffix = orthography.AddSuffix(withoutSuffix, suffix);
   free(suffix);
 
   bool isSuffixEqual = Str::Eq(withSuffix, result.lookup);
@@ -132,23 +132,48 @@ void StenoReverseAutoSuffixDictionary::ProcessReverseAutoSuffix(
 
     if ((chords[length - 1] & reverseAutoSuffix.suppressMask).IsEmpty()) {
       chords[length - 1] |= reverseAutoSuffix.autoSuffix->chord;
-      bool isValid = false;
-      // Lookup all chord lengths.
-      for (size_t chordLength = 1; !isValid && chordLength <= length;
-           ++chordLength) {
-        StenoDictionaryLookupResult lookupResult =
-            dictionary->Lookup(chords + length - chordLength, chordLength);
-        isValid = lookupResult.IsValid();
-        lookupResult.Destroy();
-      }
 
-      if (!isValid) {
-        result.AddResult(chords, length);
+      if (!HasValidLookup(chords, length)) {
+        // Even if it produced an invalid lookup, there's a chance that
+        // another auto-suffix might take precedence. Check for that.
+        for (size_t i = 0; i < orthography.data.autoSuffixCount; ++i) {
+          const StenoOrthographyAutoSuffix *autoSuffix =
+              &orthography.data.autoSuffixes[i];
+          if (reverseAutoSuffix.autoSuffix == autoSuffix) {
+            result.AddResult(chords, length);
+          }
+
+          if ((chords[length - 1] & autoSuffix->chord).IsNotEmpty()) {
+            chords[length - 1] &= ~autoSuffix->chord;
+            StenoDictionaryLookupResult lookupResult =
+                dictionary->Lookup(chords, length);
+            bool isValid = lookupResult.IsValid();
+            lookupResult.Destroy();
+            if (isValid) {
+              break;
+            }
+            chords[length - 1] |= autoSuffix->chord;
+          }
+        }
       }
     }
 
     chords += length;
   }
+}
+
+bool StenoReverseAutoSuffixDictionary::HasValidLookup(const StenoChord *chords,
+                                                      size_t length) const {
+  for (size_t chordLength = 1; chordLength <= length; ++chordLength) {
+    StenoDictionaryLookupResult lookupResult =
+        dictionary->Lookup(chords + length - chordLength, chordLength);
+    bool isValid = lookupResult.IsValid();
+    lookupResult.Destroy();
+    if (isValid) {
+      return true;
+    }
+  }
+  return false;
 }
 
 //---------------------------------------------------------------------------

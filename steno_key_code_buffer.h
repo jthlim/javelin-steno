@@ -33,6 +33,7 @@ public:
 
   size_t count = 0;
   size_t addTranslationCount = 0;
+  size_t resetStateCount = 0;
   StenoState state;
   StenoKeyCode buffer[BUFFER_SIZE];
 
@@ -59,19 +60,23 @@ public:
                          const char *endQuote);
   void RetroactiveDeleteSpace();
 
+  bool ProcessFunction(const List<char *> &parameters);
+
   // parameters[0] == function name.
   bool AddTranslationFunction(const List<char *> &parameters);
-  bool EnableDictionaryFunction(const List<char *> &parameters);
   bool DisableDictionaryFunction(const List<char *> &parameters);
-  bool ToggleDictionaryFunction(const List<char *> &parameters);
+  bool EnableDictionaryFunction(const List<char *> &parameters);
   bool KeyboardLayoutFunction(const List<char *> &parameters);
-  bool ProcessFunction(const List<char *> &parameters);
+  bool ResetStateFunction(const List<char *> &parameters);
   bool RetroCapitalizeFunction(const List<char *> &parameters);
-  bool RetroTitleCaseFunction(const List<char *> &parameters);
-  bool RetroUpperCaseFunction(const List<char *> &parameters);
+  bool RetroDoubleQuotesFunction(const List<char *> &parameters);
   bool RetroLowerCaseFunction(const List<char *> &parameters);
   bool RetroSingleQuotesFunction(const List<char *> &parameters);
-  bool RetroDoubleQuotesFunction(const List<char *> &parameters);
+  bool RetroTitleCaseFunction(const List<char *> &parameters);
+  bool RetroUpperCaseFunction(const List<char *> &parameters);
+  bool SetCaseFunction(const List<char *> &parameters);
+  bool SetSpaceFunction(const List<char *> &parameters);
+  bool ToggleDictionaryFunction(const List<char *> &parameters);
   bool UnicodeFunction(const List<char *> &parameters);
 
   void operator=(const StenoKeyCodeBuffer &o);

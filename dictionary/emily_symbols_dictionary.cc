@@ -282,7 +282,8 @@ bool StenoEmilySymbolsDictionary::PrintDictionary(bool hasData) const {
 #include "../unit_test.h"
 
 static void VerifyChord(const char *chord, const char *result) {
-  StenoChord stenoChord(chord);
+  StenoChord stenoChord;
+  stenoChord.Set(chord);
 
   auto lookup = StenoEmilySymbolsDictionary::instance.Lookup(&stenoChord, 1);
   assert(lookup.IsValid());

@@ -68,6 +68,7 @@ void StenoEngine::ProcessNormalModeChord(StenoChord chord) {
 #endif
 
   state = nextKeyCodeBuffer.state;
+  state.hasManualStateChange = false;
 
   if (nextKeyCodeBuffer.addTranslationCount >
       previousKeyCodeBuffer.addTranslationCount) {
@@ -78,9 +79,19 @@ void StenoEngine::ProcessNormalModeChord(StenoChord chord) {
     return;
   }
 
+  if (nextKeyCodeBuffer.resetStateCount >
+      previousKeyCodeBuffer.resetStateCount) {
+    ResetState();
+    return;
+  }
+
   if (!emitter.Process(previousKeyCodeBuffer, nextKeyCodeBuffer) &&
       nextSegmentList.GetCount() > previousSegmentList.GetCount()) {
     history.Pop();
+
+    if (previousKeyCodeBuffer.count == nextKeyCodeBuffer.count) {
+      state.hasManualStateChange = true;
+    }
   }
 
   PrintPaperTape(chord, previousSegmentList, nextSegmentList, false);
@@ -290,6 +301,12 @@ char *StenoEngine::PrintPaperTapeSegmentSuggestion(
     }
   }
 
+  if (segmentList.GetCount() - startSegmentIndex >=
+      PAPER_TAPE_SUGGESTION_SEGMENT_LIMIT) {
+    free(lastLookup);
+    return nullptr;
+  }
+
   StenoSegmentList testSegments;
 
   size_t chordThresholdCount = 0;
@@ -302,10 +319,18 @@ char *StenoEngine::PrintPaperTapeSegmentSuggestion(
   previousKeyCodeBuffer.Populate(tokenizer);
   delete tokenizer;
 
-  testSegments.Reset();
+  char *lookup;
 
-  char *lookup = previousKeyCodeBuffer.ToUnresolvedString();
+  if (testSegments[0].state->hasManualStateChange) {
+    lookup = previousKeyCodeBuffer.ToString();
+    chordThresholdCount++;
+  } else {
+    lookup = previousKeyCodeBuffer.ToUnresolvedString();
+  }
+
   char *spaceRemoved = *lookup == ' ' ? lookup + 1 : lookup;
+
+  testSegments.Reset();
 
   if (lastLookup) {
     if (*lastLookup == '\0' || Str::Eq(lookup, lastLookup)) {
@@ -317,9 +342,9 @@ char *StenoEngine::PrintPaperTapeSegmentSuggestion(
 
   // No need to check if there's a single chord producing the output.
   if (startSegmentIndex != segmentList.GetCount() - 1 ||
-      segmentList[startSegmentIndex].chordLength != 1) {
+      chordThresholdCount != 1) {
 
-    PrintPaperTapeSuggestion(spaceRemoved, wordCount, buffer,
+    PrintPaperTapeSuggestion(spaceRemoved, chordThresholdCount, buffer,
                              chordThresholdCount);
   }
 

@@ -64,6 +64,15 @@ public:
 
   void Pop() { --count; }
 
+  bool Contains(const T &v) const {
+    for (size_t i = 0; i < count; ++i) {
+      if ((*this)[i] == v) {
+        return true;
+      }
+    }
+    return false;
+  }
+
   T &operator[](size_t i) {
     assert(i < count);
     return ((T *)buffer)[i];

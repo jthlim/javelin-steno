@@ -125,6 +125,25 @@ struct JeffPhrasingStructureException {
   JeffPhrasingStructure structure;
 };
 
+struct JeffPhrasingReverseHashMapEntry {
+  uint32_t hash;
+  uint32_t replaceHash;
+  StenoChord stroke;
+  bool checkNext;
+
+  // 1 = starter, 2 = middle, 4 structure, 8 verb, 128 = past tense.
+  uint8_t componentMask;
+
+  // 1 = full, 2 = simple.
+  uint8_t modeMask;
+};
+
+struct JeffPhrasingReverseStructureEntry {
+  uint32_t hash;
+  StenoChord stroke;
+  uint32_t modeMask; // 1 = full, 2 = simple.
+};
+
 struct JeffPhrasingDictionaryData {
   size_t simpleStarterCount;
   const JeffPhrasingSimpleStarter *simpleStarters;
@@ -153,6 +172,14 @@ struct JeffPhrasingDictionaryData {
   size_t enderHashMapSize;
   const JeffPhrasingEnder *const *enderHashMap;
 
+  size_t reverseHashMapSize;
+  const JeffPhrasingReverseHashMapEntry *const *reverseHashMap;
+
+  const JeffPhrasingReverseHashMapEntry *reverseEntries;
+
+  size_t reverseStructureHashMapSize;
+  const JeffPhrasingReverseStructureEntry *const *reverseStructureHashMap;
+
   static const JeffPhrasingDictionaryData instance;
 
   bool IsValidPhraseChord(StenoChord chord) const;
@@ -162,6 +189,9 @@ struct JeffPhrasingDictionaryData {
   const JeffPhrasingEnder *LookupEnder(StenoChord chord) const;
   const JeffPhrasingStructure *LookupUniqueStarter(StenoChord chord) const;
   const JeffPhrasingStructure *LookupStructureException(StenoChord chord) const;
+  const JeffPhrasingReverseHashMapEntry *LookupReverseWord(uint32_t hash) const;
+  const JeffPhrasingReverseStructureEntry *
+  LookupReverseStructure(uint32_t hash) const;
 };
 
 //---------------------------------------------------------------------------

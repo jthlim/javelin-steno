@@ -55,13 +55,13 @@ struct StenoOrthography {
 
 class StenoCompiledOrthography {
 public:
-  StenoCompiledOrthography(const StenoOrthography &orthography);
+  explicit StenoCompiledOrthography(const StenoOrthography &orthography);
 
   char *AddSuffix(const char *word, const char *suffix) const;
 
   void PrintInfo() const;
 
-  const StenoOrthography &orthography;
+  const StenoOrthography &data;
 
 private:
   struct SuffixEntry;

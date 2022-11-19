@@ -16,13 +16,13 @@ enum class StenoCaseMode : uint8_t {
   UNSPECIFIED,
 };
 
-
 //---------------------------------------------------------------------------
 
 struct StenoState {
   StenoCaseMode caseMode;
   bool joinNext : 1;
   bool isGlue : 1;
+  bool hasManualStateChange : 1;
   uint8_t spaceCharacterLength;
   const char *spaceCharacter;
 
@@ -37,7 +37,7 @@ struct StenoState {
 //---------------------------------------------------------------------------
 
 inline StenoCaseMode GetNextLetterCaseMode(StenoCaseMode caseMode) {
-    return StenoState::NEXT_LETTER_CASE_MODE[(int)caseMode];
+  return StenoState::NEXT_LETTER_CASE_MODE[(int)caseMode];
 }
 
 //---------------------------------------------------------------------------

@@ -76,7 +76,8 @@ public:
   constexpr StenoChord(uint32_t keyState = 0) : keyState(keyState) {}
 
   // Only for use in tests.
-  StenoChord(const char *string);
+  void Set(const char *string);
+  template <size_t N> StenoChord(const char (&s)[N]) { Set(s); }
 
   bool IsEmpty() const { return keyState == 0; }
   bool IsNotEmpty() const { return keyState != 0; }

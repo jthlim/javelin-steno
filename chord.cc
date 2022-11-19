@@ -9,7 +9,8 @@
 
 // Only for use in tests.
 #ifdef RUN_TESTS
-StenoChord::StenoChord(const char *string) : keyState(0) {
+void StenoChord::Set(const char *string) {
+  keyState = 0;
   const char *rightStart = RightStart(string);
   const char *p = string;
 

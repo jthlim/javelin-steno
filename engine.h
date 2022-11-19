@@ -22,7 +22,8 @@ enum StenoEngineMode { NORMAL, ADD_TRANSLATION };
 
 class StenoEngine final : public StenoProcessorElement {
 public:
-  StenoEngine(StenoDictionary &dictionary, const StenoOrthography &orthography,
+  StenoEngine(StenoDictionary &dictionary,
+              const StenoCompiledOrthography &orthography,
               StenoUserDictionary *userDictionary = nullptr);
 
   void Process(StenoKeyState value, StenoAction action) final;
@@ -42,11 +43,6 @@ public:
   void EnablePaperTape() { paperTapeEnabled = true; }
   void DisablePaperTape() { paperTapeEnabled = false; }
 
-  // TODO: Tidy this up.
-  const StenoCompiledOrthography *GetCompiledOrthography() const {
-    return &orthography;
-  }
-
   static void ListDictionaries_Binding(void *context, const char *commandLine);
   static void EnableDictionary_Binding(void *context, const char *commandLine);
   static void DisableDictionary_Binding(void *context, const char *commandLine);
@@ -59,6 +55,7 @@ public:
 private:
   static const StenoChord UNDO_CHORD;
   static const size_t SEGMENT_CONVERSION_LIMIT = 32;
+  static const size_t PAPER_TAPE_SUGGESTION_SEGMENT_LIMIT = 8;
 
   bool paperTapeEnabled = false;
   StenoEngineMode mode = StenoEngineMode::NORMAL;
@@ -72,6 +69,7 @@ private:
       .caseMode = StenoCaseMode::NORMAL,
       .joinNext = true,
       .isGlue = false,
+      .hasManualStateChange = false,
       .spaceCharacterLength = 1,
       .spaceCharacter = " ",
   };
@@ -95,6 +93,7 @@ private:
   void EndAddTranslationMode();
   void AddTranslation(size_t newlineIndex);
   void DeleteTranslation(size_t newlineIndex);
+  void ResetState();
 
   // Returns the number of segments
   void UpdateNormalModeTextBuffer(size_t maximumChordCount,

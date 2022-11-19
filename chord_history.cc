@@ -145,7 +145,7 @@ StenoSegment ChordHistory::AutoSuffixTest(BuildSegmentContext &context,
       (StenoChord *)alloca(sizeof(StenoChord) * startLength);
   memcpy(localChords, chords + offset, sizeof(StenoChord) * startLength);
 
-  const StenoOrthography &orthography = context.orthography.orthography;
+  const StenoOrthography &orthography = context.orthography.data;
 
   for (size_t length = startLength; length >= minimumLength; --length) {
     if ((chords[offset + length - 1] & orthography.autoSuffixMask).IsEmpty()) {

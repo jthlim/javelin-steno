@@ -14,9 +14,11 @@
 void StenoKeyCodeBuffer::Reset() {
   count = 0;
   addTranslationCount = 0;
+  resetStateCount = 0;
   state.caseMode = StenoCaseMode::NORMAL;
   state.joinNext = false;
   state.isGlue = false;
+  state.hasManualStateChange = false;
   state.spaceCharacterLength = 1;
   state.spaceCharacter = " ";
 }
@@ -299,8 +301,14 @@ void StenoKeyCodeBuffer::ProcessOrthographicSuffix(const char *text,
   char *suffix = Str::DupN(text, length);
 
   size_t start = count;
-  while (start != 0 && count - start < sizeof(orthographicScratchPad) / 4 - 1 &&
-         buffer[start - 1].IsLetter()) {
+  size_t byteCount = 1; // Need one byte for terminating null.
+  while (start != 0 && buffer[start - 1].IsLetter()) {
+    size_t utf8Length =
+        Utf8Pointer::BytesForCharacterCode(buffer[start - 1].GetUnicode());
+    if (byteCount + utf8Length > sizeof(orthographicScratchPad)) {
+      break;
+    }
+    byteCount += utf8Length;
     --start;
   }
 

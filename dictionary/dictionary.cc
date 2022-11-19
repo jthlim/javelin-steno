@@ -29,6 +29,10 @@ void StenoReverseDictionaryLookup::AddResult(const StenoChord *c,
     return;
   }
 
+  if (HasResult(c, length)) {
+    return;
+  }
+
   // Ignore if it'll overflow.
   if (resultCount + 1 >= sizeof(resultLengths) ||
       chordsCount + length > CHORD_COUNT) {
@@ -38,6 +42,22 @@ void StenoReverseDictionaryLookup::AddResult(const StenoChord *c,
   resultLengths[resultCount++] = length;
   memcpy(&chords[chordsCount], c, sizeof(StenoChord) * length);
   chordsCount += length;
+}
+
+bool StenoReverseDictionaryLookup::HasResult(const StenoChord *c,
+                                             size_t length) const {
+
+  const StenoChord *currentChord = chords;
+  for (size_t i = 0; i < resultCount; ++i) {
+    size_t currentChordLength = resultLengths[i];
+    if (currentChordLength == length &&
+        memcmp(currentChord, c, length * sizeof(StenoChord)) == 0) {
+      return true;
+    }
+    currentChord += currentChordLength;
+  }
+
+  return false;
 }
 
 //---------------------------------------------------------------------------

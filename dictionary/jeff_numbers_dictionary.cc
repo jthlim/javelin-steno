@@ -39,8 +39,9 @@ const char *const DIGIT_VALUES = "1234506789";
 
 static bool _EndsWith(char *p, size_t length, const char *suffix,
                       size_t suffixLength) {
-  if (length < suffixLength)
+  if (length < suffixLength) {
     return false;
+  }
   return memcmp(p + length - suffixLength, suffix, suffixLength) == 0;
 }
 
@@ -367,7 +368,7 @@ const char *const TENS[] = {
     "fifty", "sixty", "seventy", "eighty", "ninety",
 };
 
-const char *HUNDRED = " hundred";
+const char *const HUNDRED = " hundred";
 
 const char *const LARGE_SUM_WORDS[] = {
     "",
@@ -538,7 +539,8 @@ char *ToWords(char *digits) {
 #include <assert.h>
 
 static void TestLookup(const char *stroke, const char *expected) {
-  StenoChord chord(stroke);
+  StenoChord chord;
+  chord.Set(stroke);
   StenoDictionaryLookupResult lookup =
       StenoJeffNumbersDictionary::instance.Lookup(&chord, 1);
   assert(lookup.IsValid());

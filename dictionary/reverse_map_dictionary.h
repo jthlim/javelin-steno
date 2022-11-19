@@ -31,8 +31,6 @@ public:
   virtual bool DisableDictionary(const char *name);
   virtual bool ToggleDictionary(const char *name);
 
-  static int Compare(const char *lookup, const uint8_t *textBlock);
-
 private:
   StenoDictionary *dictionary;
   const uint8_t *baseAddress;

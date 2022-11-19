@@ -24,7 +24,7 @@ const StenoChord StenoEngine::UNDO_CHORD(ChordMask::STAR);
 //---------------------------------------------------------------------------
 
 StenoEngine::StenoEngine(StenoDictionary &dictionary,
-                         const StenoOrthography &orthography,
+                         const StenoCompiledOrthography &orthography,
                          StenoUserDictionary *userDictionary)
     : dictionary(dictionary), orthography(orthography),
       userDictionary(userDictionary) {
@@ -72,6 +72,19 @@ void StenoEngine::ProcessUndo() {
     ProcessAddTranslationModeUndo();
     return;
   }
+}
+
+//---------------------------------------------------------------------------
+
+void StenoEngine::ResetState() {
+  history.Reset();
+  addTranslationHistory.Reset();
+  state.caseMode = StenoCaseMode::NORMAL;
+  state.joinNext = true;
+  state.isGlue = false;
+  state.hasManualStateChange = false;
+  state.spaceCharacterLength = 1;
+  state.spaceCharacter = " ";
 }
 
 //---------------------------------------------------------------------------
@@ -167,7 +180,8 @@ void StenoEngineTester::TestSymbols(StenoEngine &engine) {
 TEST_BEGIN("Engine: Test symbols") {
   StenoDictionaryList dictionary(DICTIONARIES, 2);
 
-  StenoEngine engine(dictionary, StenoOrthography::emptyOrthography);
+  StenoCompiledOrthography orthography(StenoOrthography::emptyOrthography);
+  StenoEngine engine(dictionary, orthography);
   StenoEngineTester::TestSymbols(engine);
 }
 TEST_END
@@ -213,7 +227,8 @@ TEST_BEGIN("Engine: Random spam") {
   StenoDictionaryList dictionaryList(
       DICTIONARIES, sizeof(DICTIONARIES) / sizeof(*DICTIONARIES)); // NOLINT
 
-  StenoEngine engine(dictionaryList, StenoOrthography::emptyOrthography);
+  StenoCompiledOrthography orthography(StenoOrthography::emptyOrthography);
+  StenoEngine engine(dictionaryList, orthography);
 
   Key::DisableHistory();
 
@@ -240,8 +255,8 @@ TEST_BEGIN("Engine: Add Translation Test") {
 
   StenoDictionaryList dictionaryList(
       dictionaries, sizeof(dictionaries) / sizeof(*dictionaries)); // NOLINT
-  StenoEngine engine(dictionaryList, StenoOrthography::emptyOrthography,
-                     userDictionary);
+  StenoCompiledOrthography orthography(StenoOrthography::emptyOrthography);
+  StenoEngine engine(dictionaryList, orthography, userDictionary);
   tester.TestAddTranslation(engine);
 
   delete userDictionary;

@@ -60,7 +60,6 @@ void StenoEngine::ProcessAddTranslationModeChord(StenoChord chord) {
     if (addTranslationHistory.GetCount() > MAX_USER_DICTIONARY_STROKE_COUNT) {
       return;
     }
-
   } else if (newlineIndex + 1 == addTranslationHistory.GetCount()) {
     addTranslationState.isGlue = true;
     addTranslationState.joinNext = true;

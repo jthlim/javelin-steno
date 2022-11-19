@@ -15,7 +15,7 @@ struct StenoOrthographyReverseAutoSuffix;
 class StenoReverseAutoSuffixDictionary final : public StenoDictionary {
 public:
   StenoReverseAutoSuffixDictionary(StenoDictionary *dictionary,
-                                   const StenoOrthography &orthography);
+                                   const StenoCompiledOrthography &orthography);
 
   virtual StenoDictionaryLookupResult
   Lookup(const StenoDictionaryLookup &lookup) const;
@@ -35,15 +35,9 @@ public:
   virtual bool DisableDictionary(const char *name);
   virtual bool ToggleDictionary(const char *name);
 
-  void
-  SetCompiledOrthography(const StenoCompiledOrthography *compiledOrthography) {
-    this->compiledOrthography = compiledOrthography;
-  }
-
 private:
   StenoDictionary *dictionary;
-  const StenoOrthography &orthography;
-  const StenoCompiledOrthography *compiledOrthography;
+  const StenoCompiledOrthography &orthography;
   const Pattern *reversePatterns;
 
   static const Pattern *
@@ -53,6 +47,8 @@ private:
       StenoReverseDictionaryLookup &result,
       const StenoOrthographyReverseAutoSuffix &reverseAutoSuffix,
       const Pattern &reversePattern) const;
+
+  bool HasValidLookup(const StenoChord *chords, size_t length) const;
 };
 
 //---------------------------------------------------------------------------

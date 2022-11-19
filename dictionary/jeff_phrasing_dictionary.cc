@@ -2,7 +2,7 @@
 
 #include "jeff_phrasing_dictionary.h"
 #include "../chord.h"
-#include "../console.h"
+#include "../crc32.h"
 #include "../pattern.h"
 #include "../str.h"
 #include "dictionary.h"
@@ -159,6 +159,39 @@ JeffPhrasingDictionaryData::LookupStructureException(StenoChord chord) const {
   return nullptr;
 }
 
+const JeffPhrasingReverseHashMapEntry *
+JeffPhrasingDictionaryData::LookupReverseWord(uint32_t hash) const {
+  size_t index = hash;
+  for (;;) {
+    const JeffPhrasingReverseHashMapEntry *entry =
+        reverseHashMap[index & (reverseHashMapSize - 1)];
+    if (entry == nullptr) {
+      return nullptr;
+    }
+    if (entry->hash == hash) {
+      return entry;
+    }
+
+    ++index;
+  }
+}
+
+const JeffPhrasingReverseStructureEntry *
+JeffPhrasingDictionaryData::LookupReverseStructure(uint32_t hash) const {
+  size_t index = hash;
+  for (;;) {
+    const JeffPhrasingReverseStructureEntry *entry =
+        reverseStructureHashMap[index & (reverseStructureHashMapSize - 1)];
+    if (entry == nullptr) {
+      return nullptr;
+    }
+    if (entry->hash == hash) {
+      return entry;
+    }
+    ++index;
+  }
+}
+
 //---------------------------------------------------------------------------
 
 #define phrasingData JeffPhrasingDictionaryData::instance
@@ -274,6 +307,186 @@ const char *StenoJeffPhrasingDictionary::GetName() const {
   return "jeff_phrasing";
 }
 
+void StenoJeffPhrasingDictionary::ReverseLookup(
+    StenoReverseDictionaryLookup &result) const {
+  // Maximum phrase is 7 words (6 spaces).
+  if (CountNumberOfSpaces(result.lookup) > 6) {
+    return;
+  }
+
+  if (ContainsNonPhraseCharacter(result.lookup)) {
+    return;
+  }
+
+  List<StenoChord> testedChords;
+  RecurseCheckReverseLookup(result, result.lookup, StenoChord(), 0, 0, 3,
+                            testedChords);
+}
+
+void StenoJeffPhrasingDictionary::RecurseCheckReverseLookup(
+    StenoReverseDictionaryLookup &result, const char *p, StenoChord stroke,
+    uint32_t hash, uint8_t componentMask, uint8_t modeMask,
+    List<StenoChord> &testedChords) const {
+  while (*p == ' ' && *p != '\0') {
+    ++p;
+  }
+
+  const char *pEnd = p;
+  while (*pEnd != '\0' && *pEnd != ' ') {
+    ++pEnd;
+  }
+
+  if (p == pEnd) {
+    if ((componentMask & 1) == 0) {
+      // There must be a starter for simple forms.
+      if (modeMask & 2) {
+        return;
+      }
+
+      componentMask |= 1;
+      hash += 0x710e300b; // CRC for "\\0"
+
+      for (const JeffPhrasingReverseHashMapEntry *entry =
+               phrasingData.reverseEntries;
+           entry->hash == 0; ++entry) {
+        if (entry->componentMask == 1) {
+          RecurseCheckReverseLookup(result, p, stroke | entry->stroke, hash,
+                                    componentMask, modeMask, testedChords);
+        }
+      }
+    }
+    if ((componentMask & 2) == 0) {
+      // Simple forms must have a middle.
+      componentMask |= 2;
+      if (modeMask & 2) {
+        return;
+      }
+
+      // Recurse, once with no change, then proceed with \\1 appended.
+      RecurseCheckReverseLookup(result, p, stroke, hash, componentMask,
+                                modeMask, testedChords);
+      hash += 0x0609009d; // CRC for "\\1"
+    }
+
+    if ((componentMask & 8) == 0) {
+      hash += 0x9f005127; // CRC for "\\2"
+      hash += 0xe80761b1; // CRC for "\\3"
+
+      if (componentMask & 0x80) {
+        stroke |= StenoChord(ChordMask::DR);
+      }
+    }
+
+    // End of string. Do lookup & check.
+    const JeffPhrasingReverseStructureEntry *entry =
+        phrasingData.LookupReverseStructure(hash);
+    if (!entry) {
+      return;
+    }
+    for (; entry->hash == hash; ++entry) {
+      // Try lookup.
+      if (entry->modeMask & modeMask) {
+        StenoChord lookupChord = stroke | entry->stroke;
+        if (testedChords.Contains(lookupChord)) {
+          continue;
+        }
+        testedChords.Add(lookupChord);
+        StenoDictionaryLookupResult lookup = Lookup(&lookupChord, 1);
+        if (lookup.IsValid()) {
+          const char *lookupText = lookup.GetText();
+          if (*lookupText == ' ') {
+            ++lookupText;
+          }
+          if (Str::Eq(lookupText, result.lookup)) {
+            result.AddResult(&lookupChord, 1);
+          }
+          lookup.Destroy();
+        }
+      }
+    }
+    return;
+  }
+
+  uint32_t wordHash = Crc32(p, pEnd - p);
+  const JeffPhrasingReverseHashMapEntry *entry =
+      phrasingData.LookupReverseWord(wordHash);
+  if (entry) {
+    if (entry->checkNext && *pEnd != '\0') {
+      const char *pEnd2 = pEnd;
+      while (*pEnd2 == ' ' && *pEnd2 != '\0') {
+        ++pEnd2;
+      }
+
+      while (*pEnd2 != '\0' && *pEnd2 != ' ') {
+        ++pEnd2;
+      }
+
+      uint32_t wordHash2 = Crc32(p, pEnd2 - p);
+      const JeffPhrasingReverseHashMapEntry *entry2 =
+          phrasingData.LookupReverseWord(wordHash2);
+      if (entry2) {
+        for (; entry2->hash == wordHash2; ++entry2) {
+          uint8_t updatedModeMask2 = entry2->modeMask & modeMask;
+          if (updatedModeMask2 == 0) {
+            continue;
+          }
+          if (componentMask & entry2->componentMask) {
+            continue;
+          }
+
+          if (entry2->replaceHash != 0) {
+            RecurseCheckReverseLookup(result, pEnd2, stroke | entry2->stroke,
+                                      hash + entry2->replaceHash,
+                                      componentMask | entry2->componentMask,
+                                      updatedModeMask2, testedChords);
+          }
+        }
+      }
+    }
+
+    for (; entry->hash == wordHash; ++entry) {
+      uint8_t updatedModeMask = entry->modeMask & modeMask;
+      if (updatedModeMask == 0) {
+        continue;
+      }
+      if (componentMask & entry->componentMask) {
+        continue;
+      }
+      if (entry->replaceHash != 0) {
+        RecurseCheckReverseLookup(result, pEnd, stroke | entry->stroke,
+                                  hash + entry->replaceHash,
+                                  componentMask | entry->componentMask,
+                                  updatedModeMask, testedChords);
+      }
+    }
+  }
+}
+
+inline bool IsValidPhraseCharacter(int c) {
+  return ('a' <= c && c <= 'z') || c == 'I' || c == '\'' || c == ' ';
+}
+
+bool StenoJeffPhrasingDictionary::ContainsNonPhraseCharacter(const char *p) {
+  while (*p) {
+    int c = *p++;
+    if (!IsValidPhraseCharacter(c)) {
+      return true;
+    }
+  }
+  return false;
+}
+
+size_t StenoJeffPhrasingDictionary::CountNumberOfSpaces(const char *p) {
+  size_t count = 0;
+  while (*p) {
+    if (*p == ' ') {
+      ++count;
+    }
+    ++p;
+  }
+  return count;
+}
+
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
@@ -281,7 +494,8 @@ const char *StenoJeffPhrasingDictionary::GetName() const {
 #include <stdio.h>
 
 void VerifyChord(const char *chord, const char *result) {
-  StenoChord stenoChord(chord);
+  StenoChord stenoChord;
+  stenoChord.Set(chord);
 
   auto lookup = StenoJeffPhrasingDictionary::instance.Lookup(&stenoChord, 1);
   if (!lookup.IsValid()) {
@@ -1319,42 +1533,32 @@ TEST_BEGIN("JeffPhrasing: Enders tests") {
 }
 TEST_END
 
-// void GenerateLookupTable() {
-//   printf("endersCount: %zu\n", phrasingData.endersCount);
+void VerifyReverseLookup(const char *text, StenoChord expected) {
+  StenoReverseDictionaryLookup lookup(2, text);
+  StenoJeffPhrasingDictionary::instance.ReverseLookup(lookup);
+  assert(lookup.resultCount > 0);
+  for (size_t i = 0; i < lookup.resultCount; ++i) {
+    assert(lookup.resultLengths[i] == 1);
+    if (lookup.chords[i] == expected) {
+      return;
+    }
+  }
+  assert(false);
+}
 
-//   static const size_t HASH_SIZE = 512;
-
-//   const JeffPhrasingEnder **enderMap = new const JeffPhrasingEnder *[512];
-//   for (size_t i = 0; i < HASH_SIZE; ++i) {
-//     enderMap[i] = nullptr;
-//   }
-
-//   for (size_t i = 0; i < phrasingData.endersCount; ++i) {
-//     const JeffPhrasingEnder *ender = &phrasingData.enders[i];
-//     size_t index = ender->chord.Hash() & (HASH_SIZE - 1);
-
-//     while (enderMap[index] != nullptr) {
-//       index = (index + 1) & (HASH_SIZE - 1);
-//     }
-//     enderMap[index] = ender;
-//   }
-
-//   printf("const size_t ENDER_HASH_MAP_SIZE = %zu;\n", HASH_SIZE);
-//   printf("const JeffPhrasingEnder *const ENDER_HASH_MAP[] = {\n");
-//   for (size_t i = 0; i < HASH_SIZE; ++i) {
-//     if (enderMap[i] == nullptr) {
-//       printf("  nullptr,\n");
-//     } else {
-//       size_t offset = enderMap[i] - phrasingData.enders;
-//       printf("  ENDERS + %zu,\n", offset);
-//     }
-//   }
-//   printf("};\n");
-// }
-
-// int main(int, const char **) {
-//   GenerateLookupTable();
-//   return 0;
-// }
+TEST_BEGIN("JeffPhrasing: Single word reverse lookup") {
+  // spellchecker: disable
+  VerifyReverseLookup("to go to", StenoChord("STWRUGT"));
+  VerifyReverseLookup("there are", StenoChord("STPHR-B"));
+  VerifyReverseLookup("can I", StenoChord("SWRAU"));
+  VerifyReverseLookup("I", StenoChord("SWR"));
+  VerifyReverseLookup("I can", StenoChord("SWRA"));
+  VerifyReverseLookup("I can't", StenoChord("SWRA*"));
+  VerifyReverseLookup("I need to", StenoChord("SWR-RPGT"));
+  VerifyReverseLookup("I am going to", StenoChord("SWREGT"));
+  VerifyReverseLookup("if you go", StenoChord("STPAUG"));
+  // spellchecker: enable
+}
+TEST_END
 
 //---------------------------------------------------------------------------

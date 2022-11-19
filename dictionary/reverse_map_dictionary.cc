@@ -26,7 +26,7 @@ void StenoReverseMapDictionary::ReverseLookup(
       --wordStart;
     }
 
-    int compare = Compare(result.lookup, wordStart);
+    int compare = strcmp(result.lookup, (const char *)wordStart);
     if (compare < 0) {
       right = wordStart;
     } else if (compare > 0) {
@@ -87,64 +87,5 @@ bool StenoReverseMapDictionary::DisableDictionary(const char *name) {
 bool StenoReverseMapDictionary::ToggleDictionary(const char *name) {
   return dictionary->ToggleDictionary(name);
 }
-
-//---------------------------------------------------------------------------
-
-// strcmp, with special consideration for {.}, {,} and {!}
-int StenoReverseMapDictionary::Compare(const char *lookup,
-                                       const uint8_t *textBlock) {
-  const char *startLookup = lookup;
-  const char *startTextBlock = (const char *)textBlock;
-
-  // TODO.
-
-  // for (;;) {
-  //   int a = *(uint8_t *)lookup++;
-  //   int b = *textBlock++;
-  //   if (a == b) {
-  //     if (a != '\0') {
-  //       continue;
-  //     }
-  //     return 0;
-  //   }
-
-  //   if (b == '{') {
-  //     int c = *textBlock++;
-  //     switch (c) {
-  //     case '.':
-  //     case ',':
-  //     case '!':
-  //     case '?':
-  //       if (a == c && *textBlock == '}') {
-  //         ++textBlock;
-  //         if (*lookup == ' ') {
-  //           ++lookup;
-  //         }
-  //         if (*textBlock == ' ') {
-  //           ++textBlock;
-  //         }
-  //         continue;
-  //       }
-  //     }
-  //   }
-
-  //   // In this situation, the comparison needs to go back to the start
-  //   // for binary search to work properly.
-  //   return strcmp(startLookup, startTextBlock);
-  // }
-  return strcmp(startLookup, startTextBlock);
-}
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-// #include "../unit_test.h"
-
-// TEST_BEGIN("Compare matches words with {,}") {
-//   assert(StenoReverseMapDictionary::Compare("door,",
-//                                             (const uint8_t *)"door{,}") ==
-//                                             0);
-// }
-// TEST_END
 
 //---------------------------------------------------------------------------

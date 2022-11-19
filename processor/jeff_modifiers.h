@@ -8,9 +8,9 @@
 //
 // One key difference is that the modifier keys state is *held down*, so that
 // actions such as alt-tab can be achieved (when using first-up triggering).
-class JeffModifiers : public StenoProcessorElement {
+class StenoJeffModifiers : public StenoProcessorElement {
 public:
-  JeffModifiers(StenoProcessorElement &nextProcessor)
+  StenoJeffModifiers(StenoProcessorElement &nextProcessor)
       : nextProcessor(nextProcessor) {}
 
   void Process(StenoKeyState value, StenoAction action) final;

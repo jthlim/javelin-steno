@@ -22,12 +22,15 @@ constexpr KeyCodeFunctionEntry HANDLERS[] = {
     {"disable_dictionary", &StenoKeyCodeBuffer::DisableDictionaryFunction},
     {"enable_dictionary", &StenoKeyCodeBuffer::EnableDictionaryFunction},
     {"keyboard_layout", &StenoKeyCodeBuffer::KeyboardLayoutFunction},
+    {"reset_state", &StenoKeyCodeBuffer::ResetStateFunction},
     {"retro_capitalise", &StenoKeyCodeBuffer::RetroCapitalizeFunction},
     {"retro_double_quotes", &StenoKeyCodeBuffer::RetroDoubleQuotesFunction},
     {"retro_lower", &StenoKeyCodeBuffer::RetroLowerCaseFunction},
     {"retro_single_quotes", &StenoKeyCodeBuffer::RetroSingleQuotesFunction},
     {"retro_title", &StenoKeyCodeBuffer::RetroTitleCaseFunction},
     {"retro_upper", &StenoKeyCodeBuffer::RetroUpperCaseFunction},
+    {"set_case", &StenoKeyCodeBuffer::SetCaseFunction},
+    {"set_space", &StenoKeyCodeBuffer::SetSpaceFunction},
     {"toggle_dictionary", &StenoKeyCodeBuffer::ToggleDictionaryFunction},
     {"unicode", &StenoKeyCodeBuffer::UnicodeFunction},
 };
@@ -383,6 +386,75 @@ bool StenoKeyCodeBuffer::RetroDoubleQuotesFunction(
   }
 
   RetroactiveQuotes(wordCount, "\"", "\"");
+  return true;
+}
+
+bool StenoKeyCodeBuffer::SetCaseFunction(const List<char *> &parameters) {
+  if (parameters.GetCount() != 2) {
+    return false;
+  }
+
+  if (Str::Eq(parameters[1], "normal")) {
+    state.caseMode = StenoCaseMode::NORMAL;
+    return true;
+  }
+
+  if (Str::Eq(parameters[1], "lower")) {
+    state.caseMode = StenoCaseMode::LOWER;
+    return true;
+  }
+
+  if (Str::Eq(parameters[1], "upper")) {
+    state.caseMode = StenoCaseMode::UPPER;
+    return true;
+  }
+
+  if (Str::Eq(parameters[1], "title")) {
+    state.caseMode = StenoCaseMode::TITLE;
+    return true;
+  }
+
+  return false;
+}
+
+bool StenoKeyCodeBuffer::SetSpaceFunction(const List<char *> &parameters) {
+  static int spaceOffset = 0;
+  static char spaceBuffer[16];
+
+  if (parameters.GetCount() != 2) {
+    return false;
+  }
+
+  if (Str::Eq(parameters[1], " ")) {
+    state.spaceCharacter = " ";
+    state.spaceCharacterLength = 1;
+    return true;
+  }
+
+  // Find if it exists in the buffer.
+  size_t length = strlen(parameters[1]);
+  for (size_t i = 0; i + length <= spaceOffset; ++i) {
+    if (memcmp(spaceBuffer + i, parameters[1], length) == 0) {
+      state.spaceCharacter = spaceBuffer + i;
+      state.spaceCharacterLength = length;
+      return true;
+    }
+  }
+
+  // Can it fit?
+  if (spaceOffset + length < sizeof(spaceBuffer)) {
+    state.spaceCharacter = spaceBuffer + spaceOffset;
+    state.spaceCharacterLength = length;
+    memcpy(spaceBuffer + spaceOffset, parameters[1], length);
+    spaceOffset += length;
+    return true;
+  }
+
+  return false;
+}
+
+bool StenoKeyCodeBuffer::ResetStateFunction(const List<char *> &) {
+  resetStateCount++;
   return true;
 }
 

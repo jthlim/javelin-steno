@@ -61,6 +61,40 @@ void StenoOrthography::Print() const {
     Console::Write(buffer, p - buffer);
     Console::Printf("\"\n\t\t}");
   }
+  Console::Printf("\n\t],");
+  Console::Printf("\n\t\"auto-suffix\": [");
+  for (size_t i = 0; i < autoSuffixCount; ++i) {
+    if (i != 0) {
+      Console::Write(",", 1);
+    }
+    Console::Printf("\n\t\t{\n\t\t\t\"key\": \"");
+    char *p = autoSuffixes[i].chord.ToString(buffer);
+    Console::Write(buffer, p - buffer);
+    Console::Printf("\",\n\t\t\t\"suffix\": \"");
+    p = Str::WriteJson(buffer, autoSuffixes[i].text + 1);
+    Console::Write(buffer, p - buffer);
+    Console::Printf("\"\n\t\t}");
+  }
+  Console::Printf("\n\t],");
+  Console::Printf("\n\t\"reverse-auto-suffix\": [");
+  for (size_t i = 0; i < reverseAutoSuffixCount; ++i) {
+    if (i != 0) {
+      Console::Write(",", 1);
+    }
+    Console::Printf("\n\t\t{\n\t\t\t\"key\": \"");
+    char *p = reverseAutoSuffixes[i].autoSuffix->chord.ToString(buffer);
+    Console::Write(buffer, p - buffer);
+    Console::Printf("\",\n\t\t\t\"suppressMask\": \"");
+    p = reverseAutoSuffixes[i].suppressMask.ToString(buffer);
+    Console::Write(buffer, p - buffer);
+    Console::Printf("\",\n\t\t\t\"pattern\": \"");
+    p = Str::WriteJson(buffer, reverseAutoSuffixes[i].testPattern);
+    Console::Write(buffer, p - buffer);
+    Console::Printf("\",\n\t\t\t\"replacement\": \"");
+    p = Str::WriteJson(buffer, reverseAutoSuffixes[i].replacement);
+    Console::Write(buffer, p - buffer);
+    Console::Printf("\"\n\t\t}");
+  }
   Console::Printf("\n\t]\n}\n\n");
 }
 
@@ -68,7 +102,7 @@ void StenoOrthography::Print() const {
 
 StenoCompiledOrthography::StenoCompiledOrthography(
     const StenoOrthography &orthography)
-    : orthography(orthography), patterns(CreatePatterns(orthography)) {}
+    : data(orthography), patterns(CreatePatterns(orthography)) {}
 
 const Pattern *
 StenoCompiledOrthography::CreatePatterns(const StenoOrthography &orthography) {
@@ -84,9 +118,9 @@ char *StenoCompiledOrthography::AddSuffix(const char *word,
                                           const char *suffix) const {
   List<SuffixEntry> candidates;
 
-  for (size_t i = 0; i < orthography.aliasCount; ++i) {
-    if (Str::Eq(word, orthography.aliases[i].text)) {
-      AddCandidates(candidates, word, orthography.aliases[i].alias);
+  for (size_t i = 0; i < data.aliasCount; ++i) {
+    if (Str::Eq(word, data.aliases[i].text)) {
+      AddCandidates(candidates, word, data.aliases[i].alias);
     }
   }
 
@@ -119,13 +153,13 @@ char *StenoCompiledOrthography::AddSuffix(const char *word,
   }
 
   char *text = Str::Asprintf("%s ^%s", word, suffix);
-  for (size_t i = 0; i < orthography.ruleCount; ++i) {
+  for (size_t i = 0; i < data.ruleCount; ++i) {
     const PatternMatch match = patterns[i].Match(text);
     if (!match.match) {
       continue;
     }
 
-    char *candidate = match.Replace(orthography.rules[i].replacement);
+    char *candidate = match.Replace(data.rules[i].replacement);
     free(text);
     return candidate;
   }
@@ -137,15 +171,27 @@ char *StenoCompiledOrthography::AddSuffix(const char *word,
 void StenoCompiledOrthography::AddCandidates(List<SuffixEntry> &candidates,
                                              const char *word,
                                              const char *suffix) const {
-  char *text = Str::Asprintf("%s ^%s", word, suffix);
+  const size_t MAXIMUM_PREFIX_LENGTH = 8;
+  size_t wordLength = strlen(word);
+  size_t offset = wordLength > MAXIMUM_PREFIX_LENGTH
+                      ? wordLength - MAXIMUM_PREFIX_LENGTH
+                      : 0;
+  char *text = Str::Asprintf("%s ^%s", word + offset, suffix);
 
-  for (size_t i = 0; i < orthography.ruleCount; ++i) {
+  for (size_t i = 0; i < data.ruleCount; ++i) {
     const PatternMatch match = patterns[i].Match(text);
     if (!match.match) {
       continue;
     }
 
-    char *candidate = match.Replace(orthography.rules[i].replacement);
+    char *candidate = match.Replace(data.rules[i].replacement);
+    if (offset != 0) {
+      char *fullCandidate = (char *)malloc(wordLength + strlen(candidate));
+      memcpy(fullCandidate, word, offset);
+      strcpy(fullCandidate + offset, candidate);
+      free(candidate);
+      candidate = fullCandidate;
+    }
     int score = WordList::GetWordRank(candidate);
     if (score < 0) {
       free(candidate);
@@ -160,8 +206,8 @@ void StenoCompiledOrthography::AddCandidates(List<SuffixEntry> &candidates,
 
 void StenoCompiledOrthography::PrintInfo() const {
   Console::Printf("    Orthography\n");
-  Console::Printf("      Rules: %zu\n", orthography.ruleCount);
-  Console::Printf("      Aliases: %zu\n", orthography.aliasCount);
+  Console::Printf("      Rules: %zu\n", data.ruleCount);
+  Console::Printf("      Aliases: %zu\n", data.aliasCount);
 }
 
 //---------------------------------------------------------------------------

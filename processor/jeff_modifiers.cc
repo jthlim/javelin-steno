@@ -7,30 +7,28 @@
 
 //---------------------------------------------------------------------------
 
-constexpr StenoChord JeffModifiers::TRIGGER_CHORD(ChordMask::TR |
-                                                  ChordMask::ZR);
-constexpr StenoChord JeffModifiers::TRIGGER_MASK(ChordMask::GR | ChordMask::TR |
-                                                 ChordMask::SR | ChordMask::DR |
-                                                 ChordMask::ZR);
-constexpr StenoChord JeffModifiers::DATA_MASK(ChordMask::NUM | ChordMask::SL |
-                                              ChordMask::TL | ChordMask::KL |
-                                              ChordMask::PL | ChordMask::WL |
-                                              ChordMask::HL | ChordMask::RL |
-                                              ChordMask::A | ChordMask::O |
-                                              ChordMask::STAR | ChordMask::E |
-                                              ChordMask::U | ChordMask::LR);
+constexpr StenoChord StenoJeffModifiers::TRIGGER_CHORD(ChordMask::TR |
+                                                       ChordMask::ZR);
+constexpr StenoChord StenoJeffModifiers::TRIGGER_MASK(ChordMask::GR |
+                                                      ChordMask::TR |
+                                                      ChordMask::SR |
+                                                      ChordMask::DR |
+                                                      ChordMask::ZR);
+constexpr StenoChord StenoJeffModifiers::DATA_MASK(
+    ChordMask::NUM | ChordMask::SL | ChordMask::TL | ChordMask::KL |
+    ChordMask::PL | ChordMask::WL | ChordMask::HL | ChordMask::RL |
+    ChordMask::A | ChordMask::O | ChordMask::STAR | ChordMask::E |
+    ChordMask::U | ChordMask::LR);
 
-constexpr StenoChord JeffModifiers::IGNORE_MASK(ChordMask::NUM | ChordMask::SL |
-                                                ChordMask::TL | ChordMask::KL |
-                                                ChordMask::PL | ChordMask::WL |
-                                                ChordMask::HL | ChordMask::RL |
-                                                ChordMask::A | ChordMask::O |
-                                                ChordMask::STAR);
+constexpr StenoChord StenoJeffModifiers::IGNORE_MASK(
+    ChordMask::NUM | ChordMask::SL | ChordMask::TL | ChordMask::KL |
+    ChordMask::PL | ChordMask::WL | ChordMask::HL | ChordMask::RL |
+    ChordMask::A | ChordMask::O | ChordMask::STAR);
 
-constexpr StenoChord JeffModifiers::CONTROL_MASK(ChordMask::FR);
-constexpr StenoChord JeffModifiers::SHIFT_MASK(ChordMask::RR);
-constexpr StenoChord JeffModifiers::SUPER_MASK(ChordMask::PR);
-constexpr StenoChord JeffModifiers::ALT_MASK(ChordMask::BR);
+constexpr StenoChord StenoJeffModifiers::CONTROL_MASK(ChordMask::FR);
+constexpr StenoChord StenoJeffModifiers::SHIFT_MASK(ChordMask::RR);
+constexpr StenoChord StenoJeffModifiers::SUPER_MASK(ChordMask::PR);
+constexpr StenoChord StenoJeffModifiers::ALT_MASK(ChordMask::BR);
 
 //---------------------------------------------------------------------------
 
@@ -448,7 +446,7 @@ const JeffModifiersData DATA[] = {
 
 //---------------------------------------------------------------------------
 
-void JeffModifiers::Process(StenoKeyState value, StenoAction action) {
+void StenoJeffModifiers::Process(StenoKeyState value, StenoAction action) {
   const StenoChord chord = value.ToChord();
 
   bool isModifier = (chord & TRIGGER_MASK) == TRIGGER_CHORD;
@@ -498,12 +496,12 @@ void JeffModifiers::Process(StenoKeyState value, StenoAction action) {
   nextProcessor.Process(value, action);
 }
 
-void JeffModifiers::PrintInfo() const {
+void StenoJeffModifiers::PrintInfo() const {
   Console::Printf("  Jeff's Modifiers\n");
   nextProcessor.PrintInfo();
 }
 
-void JeffModifiers::UpdateModifiers(StenoChord chord) {
+void StenoJeffModifiers::UpdateModifiers(StenoChord chord) {
   lastModifiers = chord;
   bool isControl = (chord & CONTROL_MASK).IsNotEmpty();
   if (isControl != wasControl) {
@@ -546,7 +544,7 @@ void JeffModifiers::UpdateModifiers(StenoChord chord) {
   }
 }
 
-bool JeffModifiers::TriggerSendKey(StenoChord chord) const {
+bool StenoJeffModifiers::TriggerSendKey(StenoChord chord) const {
   const uint32_t keyState = (chord & DATA_MASK).GetKeyState();
 
   for (size_t i = 0; i < sizeof(DATA) / sizeof(*DATA); ++i) {
@@ -572,7 +570,7 @@ bool JeffModifiers::TriggerSendKey(StenoChord chord) const {
 
 TEST_BEGIN("JeffModifiers tests") {
   FakeStenoProcessor fakeProcessor;
-  JeffModifiers jeffModifier(fakeProcessor);
+  StenoJeffModifiers jeffModifier(fakeProcessor);
   StenoProcessor processor(jeffModifier);
 
   processor.Process(StenoKey::TR, true);
