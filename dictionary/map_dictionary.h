@@ -18,6 +18,9 @@ public:
   Lookup(const StenoDictionaryLookup &lookup) const;
   using StenoDictionary::Lookup;
 
+  virtual const StenoDictionary *
+  GetLookupProvider(const StenoDictionaryLookup &lookup) const;
+
   virtual bool ReverseMapDictionaryLookup(StenoReverseDictionaryLookup &result,
                                           const void *data) const;
 

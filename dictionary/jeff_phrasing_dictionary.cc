@@ -265,6 +265,14 @@ StenoJeffPhrasingDictionary::Lookup(const StenoDictionaryLookup &lookup) const {
   return StenoDictionaryLookupResult::CreateDynamicString(parts.CreatePhrase());
 }
 
+const StenoDictionary *StenoJeffPhrasingDictionary::GetLookupProvider(
+    const StenoDictionaryLookup &lookup) const {
+  assert(lookup.length == 1);
+
+  PhrasingParts parts = DetermineParts(lookup.chords[0]);
+  return parts.IsValid() ? this : nullptr;
+}
+
 char *PhrasingParts::CreatePhrase() const {
   VerbForm verbForm = pronoun->verbForm;
   const char *middleText =
@@ -398,7 +406,7 @@ void StenoJeffPhrasingDictionary::RecurseCheckReverseLookup(
             ++lookupText;
           }
           if (Str::Eq(lookupText, result.lookup)) {
-            result.AddResult(&lookupChord, 1);
+            result.AddResult(&lookupChord, 1, this);
           }
           lookup.Destroy();
         }

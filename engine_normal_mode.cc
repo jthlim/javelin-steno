@@ -241,6 +241,7 @@ void StenoEngine::PrintPaperTape(StenoChord chord,
       return;
     }
   }
+  free(lastLookup);
 }
 
 void StenoEngine::PrintPaperTapeSuggestion(const char *p,

@@ -239,6 +239,18 @@ StenoEmilySymbolsDictionary::Lookup(const StenoDictionaryLookup &lookup) const {
       "%s%s%s%s%s%s%s", leftSpace, text, r1, r2, r2, rightSpace, capitalize));
 }
 
+const StenoDictionary *StenoEmilySymbolsDictionary::GetLookupProvider(
+    const StenoDictionaryLookup &lookup) const {
+  assert(lookup.length == 1);
+  const StenoChord c = lookup.chords[0];
+  if ((c & ACTIVATION_MASK) != ACTIVATION_MATCH) {
+    return nullptr;
+  }
+
+  const EmilySymbolData *data = LookupDataChord(c & DATA_MASK);
+  return data != nullptr ? this : nullptr;
+}
+
 const char *StenoEmilySymbolsDictionary::GetName() const {
   return "emily_symbols";
 }

@@ -8,6 +8,10 @@
 
 //---------------------------------------------------------------------------
 
+class StenoDictionary;
+
+//---------------------------------------------------------------------------
+
 // A class to wrap dictionary lookups, avoiding memory allocations in most
 // situations.
 struct StenoDictionaryLookupResult {
@@ -64,8 +68,10 @@ public:
       : strokeThreshold(strokeThreshold), lookup(lookup),
         lookupLength(strlen(lookup)) {}
 
-  void AddResult(const StenoChord *chords, size_t length);
-  bool HasResult(const StenoChord *chords, size_t length) const;
+  void AddResult(const StenoChord *chords, size_t length,
+                 const StenoDictionary *lookupProvider);
+  bool HasResult(const StenoChord *chords, size_t length,
+                 const StenoDictionary *lookupProvider) const;
 
   // Results equal to, or above this will not be captured.
   size_t strokeThreshold;
@@ -74,6 +80,7 @@ public:
 
   size_t resultCount = 0;
   uint8_t resultLengths[24];
+  const StenoDictionary *lookupProviders[24];
 
   size_t chordsCount = 0;
   static const size_t CHORD_COUNT = 64;
@@ -92,6 +99,14 @@ public:
   inline StenoDictionaryLookupResult Lookup(const StenoChord *chords,
                                             size_t length) const {
     return Lookup(StenoDictionaryLookup(chords, length));
+  }
+
+  virtual const StenoDictionary *
+  GetLookupProvider(const StenoDictionaryLookup &lookup) const;
+
+  inline const StenoDictionary *GetLookupProvider(const StenoChord *chords,
+                                                  size_t length) const {
+    return GetLookupProvider(StenoDictionaryLookup(chords, length));
   }
 
   virtual void ReverseLookup(StenoReverseDictionaryLookup &result) const;

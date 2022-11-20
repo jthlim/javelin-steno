@@ -13,6 +13,9 @@ public:
   Lookup(const StenoDictionaryLookup &lookup) const;
   using StenoDictionary::Lookup;
 
+  virtual const StenoDictionary *
+  GetLookupProvider(const StenoDictionaryLookup &lookup) const;
+
   virtual unsigned int GetMaximumMatchLength() const { return 1; }
   virtual const char *GetName() const;
   virtual bool PrintDictionary(bool hasData) const;

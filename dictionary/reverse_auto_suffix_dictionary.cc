@@ -31,6 +31,11 @@ StenoDictionaryLookupResult StenoReverseAutoSuffixDictionary::Lookup(
   return dictionary->Lookup(lookup);
 }
 
+const StenoDictionary *StenoReverseAutoSuffixDictionary::GetLookupProvider(
+    const StenoDictionaryLookup &lookup) const {
+  return dictionary->GetLookupProvider(lookup);
+}
+
 void StenoReverseAutoSuffixDictionary::ReverseLookup(
     StenoReverseDictionaryLookup &result) const {
 
@@ -140,16 +145,14 @@ void StenoReverseAutoSuffixDictionary::ProcessReverseAutoSuffix(
           const StenoOrthographyAutoSuffix *autoSuffix =
               &orthography.data.autoSuffixes[i];
           if (reverseAutoSuffix.autoSuffix == autoSuffix) {
-            result.AddResult(chords, length);
+            result.AddResult(chords, length, this);
           }
 
           if ((chords[length - 1] & autoSuffix->chord).IsNotEmpty()) {
             chords[length - 1] &= ~autoSuffix->chord;
-            StenoDictionaryLookupResult lookupResult =
-                dictionary->Lookup(chords, length);
-            bool isValid = lookupResult.IsValid();
-            lookupResult.Destroy();
-            if (isValid) {
+            const StenoDictionary *lookupProvider =
+                dictionary->GetLookupProvider(chords, length);
+            if (lookupProvider) {
               break;
             }
             chords[length - 1] |= autoSuffix->chord;
@@ -165,11 +168,9 @@ void StenoReverseAutoSuffixDictionary::ProcessReverseAutoSuffix(
 bool StenoReverseAutoSuffixDictionary::HasValidLookup(const StenoChord *chords,
                                                       size_t length) const {
   for (size_t chordLength = 1; chordLength <= length; ++chordLength) {
-    StenoDictionaryLookupResult lookupResult =
-        dictionary->Lookup(chords + length - chordLength, chordLength);
-    bool isValid = lookupResult.IsValid();
-    lookupResult.Destroy();
-    if (isValid) {
+    const StenoDictionary *lookupProvider = dictionary->GetLookupProvider(
+        chords + length - chordLength, chordLength);
+    if (lookupProvider) {
       return true;
     }
   }

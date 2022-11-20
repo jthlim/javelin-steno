@@ -115,6 +115,34 @@ StenoMapDictionary::Lookup(const StenoDictionaryLookup &lookup) const {
   }
 }
 
+const StenoDictionary *StenoMapDictionary::GetLookupProvider(
+    const StenoDictionaryLookup &lookup) const {
+  const StenoMapDictionaryStrokesDefinition &strokesDefinition =
+      definition.strokes[lookup.length - 1];
+  if (strokesDefinition.hashMapSize == 0) {
+    return nullptr;
+  }
+
+  size_t entryIndex = lookup.hash;
+  for (;;) {
+    entryIndex = entryIndex & (strokesDefinition.hashMapSize - 1);
+
+    size_t offset = strokesDefinition.GetOffset(entryIndex);
+    if (offset == 0) {
+      return nullptr;
+    }
+
+    size_t dataIndex = 3 * (offset - 1) * (1 + lookup.length);
+    const StenoMapDictionaryDataEntry &entry =
+        (const StenoMapDictionaryDataEntry &)strokesDefinition.data[dataIndex];
+
+    if (entry.Equals(lookup.chords, lookup.length)) {
+      return this;
+    }
+    ++entryIndex;
+  }
+}
+
 bool StenoMapDictionary::ReverseMapDictionaryLookup(
     StenoReverseDictionaryLookup &result, const void *data) const {
   // Quick reject
@@ -141,7 +169,7 @@ bool StenoMapDictionary::ReverseMapDictionaryLookup(
     for (size_t i = 0; i < chordLength; ++i) {
       chords[i] = entry->chords[i].ToUint32();
     }
-    result.AddResult(chords, chordLength);
+    result.AddResult(chords, chordLength, this);
     return true;
   }
   return false;

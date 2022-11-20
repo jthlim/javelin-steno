@@ -16,6 +16,9 @@ public:
   virtual StenoDictionaryLookupResult
   Lookup(const StenoDictionaryLookup &lookup) const;
 
+  virtual const StenoDictionary *
+  GetLookupProvider(const StenoDictionaryLookup &lookup) const;
+
   virtual void ReverseLookup(StenoReverseDictionaryLookup &result) const;
   virtual bool ReverseMapDictionaryLookup(StenoReverseDictionaryLookup &result,
                                           const void *data) const;
@@ -36,6 +39,10 @@ private:
   const uint8_t *baseAddress;
   const uint8_t *textBlock;
   const size_t textBlockLength;
+
+  void AddMapDictionaryResults(StenoReverseDictionaryLookup &result) const;
+  void AddValidLookupProviders(StenoReverseDictionaryLookup &result,
+                               StenoReverseDictionaryLookup &value) const;
 };
 
 //---------------------------------------------------------------------------

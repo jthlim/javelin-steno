@@ -10,11 +10,22 @@ StenoReverseMapDictionary::Lookup(const StenoDictionaryLookup &lookup) const {
   return dictionary->Lookup(lookup);
 }
 
+const StenoDictionary *StenoReverseMapDictionary::GetLookupProvider(
+    const StenoDictionaryLookup &lookup) const {
+  return dictionary->GetLookupProvider(lookup);
+}
+
 void StenoReverseMapDictionary::ReverseLookup(
     StenoReverseDictionaryLookup &result) const {
+  StenoReverseDictionaryLookup value(result.strokeThreshold, result.lookup);
 
-  dictionary->ReverseLookup(result);
+  dictionary->ReverseLookup(value);
+  AddMapDictionaryResults(value);
+  AddValidLookupProviders(result, value);
+}
 
+void StenoReverseMapDictionary::AddMapDictionaryResults(
+    StenoReverseDictionaryLookup &result) const {
   const uint8_t *left = textBlock + 1;
   const uint8_t *right = textBlock + textBlockLength;
 
@@ -48,6 +59,20 @@ void StenoReverseMapDictionary::ReverseLookup(
 
       return;
     }
+  }
+}
+
+void StenoReverseMapDictionary::AddValidLookupProviders(
+    StenoReverseDictionaryLookup &result,
+    StenoReverseDictionaryLookup &value) const {
+  const StenoChord *chords = value.chords;
+  for (size_t i = 0; i < value.resultCount; ++i) {
+    size_t length = value.resultLengths[i];
+    const StenoDictionary *lookupProvider = value.lookupProviders[i];
+    if (dictionary->GetLookupProvider(chords, length) == lookupProvider) {
+      result.AddResult(chords, length, lookupProvider);
+    }
+    chords += length;
   }
 }
 

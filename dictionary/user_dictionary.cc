@@ -131,6 +131,40 @@ StenoUserDictionary::Lookup(const StenoDictionaryLookup &lookup) const {
   }
 }
 
+const StenoDictionary *StenoUserDictionary::GetLookupProvider(
+    const StenoDictionaryLookup &lookup) const {
+  if (lookup.length > activeDescriptor->data.maximumStrokeCount) {
+    return nullptr;
+  }
+
+  size_t entryIndex = lookup.hash;
+  for (;;) {
+    entryIndex = entryIndex & (activeDescriptor->data.hashTableSize - 1);
+
+    uint32_t offset = activeDescriptor->data.hashTable[entryIndex];
+    switch (offset) {
+    case OFFSET_EMPTY:
+      return nullptr;
+
+    case OFFSET_DELETED:
+      break;
+
+    default:
+      const StenoUserDictionaryEntry *entry =
+          (const StenoUserDictionaryEntry *)(activeDescriptor->data.dataBlock +
+                                             offset - OFFSET_DATA);
+
+      if (entry->chordLength == lookup.length &&
+          memcmp(lookup.chords, entry->chords,
+                 sizeof(StenoChord) * lookup.length) == 0) {
+        return this;
+      }
+    }
+
+    ++entryIndex;
+  }
+}
+
 unsigned int StenoUserDictionary::GetMaximumMatchLength() const {
   return activeDescriptor->data.maximumStrokeCount;
 }

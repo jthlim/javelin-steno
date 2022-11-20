@@ -18,7 +18,6 @@ const StenoJeffShowStrokeDictionary StenoJeffShowStrokeDictionary::instance;
 
 StenoDictionaryLookupResult StenoJeffShowStrokeDictionary::Lookup(
     const StenoDictionaryLookup &lookup) const {
-
   const StenoChord *chords = lookup.chords;
   if (chords[0] != trigger) {
     return StenoDictionaryLookupResult::CreateInvalid();
@@ -52,6 +51,26 @@ StenoDictionaryLookupResult StenoJeffShowStrokeDictionary::Lookup(
   }
 
   return StenoDictionaryLookupResult::CreateDynamicString(base);
+}
+
+const StenoDictionary *StenoJeffShowStrokeDictionary::GetLookupProvider(
+    const StenoDictionaryLookup &lookup) const {
+  const StenoChord *chords = lookup.chords;
+  if (chords[0] != trigger) {
+    return nullptr;
+  }
+
+  size_t length = lookup.length;
+  if (length == 1) {
+    return this;
+  }
+  for (size_t i = 1; i < length - 1; ++i) {
+    if (chords[i] == trigger) {
+      return nullptr;
+    }
+  }
+
+  return this;
 }
 
 const char *StenoJeffShowStrokeDictionary::GetName() const {
