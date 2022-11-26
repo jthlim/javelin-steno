@@ -93,8 +93,16 @@ bool IsWordCharacter(uint32_t c) {
 
 //---------------------------------------------------------------------------
 
-uint32_t StenoKeyCode::ResolveUnicode() const {
-  switch (caseMode) {
+uint32_t StenoKeyCode::ResolveOutputUnicode() const {
+  return ResolveUnicode(unicode, StenoCaseMode(outputCaseMode));
+}
+
+uint32_t StenoKeyCode::ResolveSelectedUnicode() const {
+  return ResolveUnicode(unicode, StenoCaseMode(selectedCaseMode));
+}
+
+uint32_t StenoKeyCode::ResolveUnicode(uint32_t unicode, StenoCaseMode mode) {
+  switch (mode) {
   case StenoCaseMode::NORMAL:
     return unicode;
   case StenoCaseMode::LOWER:

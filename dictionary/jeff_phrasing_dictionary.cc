@@ -345,13 +345,13 @@ void StenoJeffPhrasingDictionary::RecurseCheckReverseLookup(
   }
 
   if (p == pEnd) {
-    if ((componentMask & 1) == 0) {
+    if ((componentMask & ComponentMask::STARTER) == 0) {
       // There must be a starter for simple forms.
-      if (modeMask & 2) {
+      if ((modeMask & ~ModeMask::SIMPLE) == 0) {
         return;
       }
 
-      componentMask |= 1;
+      componentMask |= ComponentMask::STARTER;
       hash += 0x710e300b; // CRC for "\\0"
 
       for (const JeffPhrasingReverseHashMapEntry *entry =
@@ -363,10 +363,10 @@ void StenoJeffPhrasingDictionary::RecurseCheckReverseLookup(
         }
       }
     }
-    if ((componentMask & 2) == 0) {
+    if ((componentMask & ComponentMask::MIDDLE) == 0) {
       // Simple forms must have a middle.
-      componentMask |= 2;
-      if (modeMask & 2) {
+      componentMask |= ComponentMask::MIDDLE;
+      if ((modeMask & ~ModeMask::SIMPLE) == 0) {
         return;
       }
 
@@ -376,11 +376,11 @@ void StenoJeffPhrasingDictionary::RecurseCheckReverseLookup(
       hash += 0x0609009d; // CRC for "\\1"
     }
 
-    if ((componentMask & 8) == 0) {
+    if ((componentMask & ComponentMask::VERB) == 0) {
       hash += 0x9f005127; // CRC for "\\2"
       hash += 0xe80761b1; // CRC for "\\3"
 
-      if (componentMask & 0x80) {
+      if (modeMask & ModeMask::PAST) {
         stroke |= StenoChord(ChordMask::DR);
       }
     }
@@ -1556,6 +1556,7 @@ void VerifyReverseLookup(const char *text, StenoChord expected) {
 
 TEST_BEGIN("JeffPhrasing: Single word reverse lookup") {
   // spellchecker: disable
+  VerifyReverseLookup("I didn't like", StenoChord("SWR*BLGD"));
   VerifyReverseLookup("to go to", StenoChord("STWRUGT"));
   VerifyReverseLookup("there are", StenoChord("STPHR-B"));
   VerifyReverseLookup("can I", StenoChord("SWRAU"));

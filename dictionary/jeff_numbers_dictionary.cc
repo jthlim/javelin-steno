@@ -25,9 +25,9 @@ const StenoChord ALL_DIGITS_MASK(ChordMask::SL | ChordMask::TL | ChordMask::PL |
                                  ChordMask::TR);
 
 const StenoChord CONTROL_MASK(ChordMask::KL | ChordMask::WL | ChordMask::RL |
-                              ChordMask::STAR | ChordMask::RR | ChordMask::BR |
-                              ChordMask::GR | ChordMask::SR | ChordMask::DR |
-                              ChordMask::ZR);
+                              ChordMask::STAR | ChordMask::E | ChordMask::U |
+                              ChordMask::RR | ChordMask::BR | ChordMask::GR |
+                              ChordMask::SR | ChordMask::DR | ChordMask::ZR);
 
 constexpr StenoChord DIGIT_MASKS[] = {
     ChordMask::SL, ChordMask::TL, ChordMask::PL, ChordMask::HL, ChordMask::A,
@@ -282,24 +282,27 @@ const char *StenoJeffNumbersDictionary::GetName() const {
 StenoChord StenoJeffNumbersDictionary::GetDigits(char *p,
                                                  StenoChord chord) const {
 
-  if ((chord & (ChordMask::E | ChordMask::U)).IsEmpty()) {
-    // Normal direction
-    for (int i = 0; i < 10; ++i) {
-      if ((chord & DIGIT_MASKS[i]).IsNotEmpty()) {
-        *p++ = DIGIT_VALUES[i];
+  StenoChord control = chord & CONTROL_MASK;
+  if ((chord & ALL_DIGITS_MASK).IsNotEmpty()) {
+    if ((chord & (ChordMask::E | ChordMask::U)).IsEmpty()) {
+      // Normal direction
+      for (int i = 0; i < 10; ++i) {
+        if ((chord & DIGIT_MASKS[i]).IsNotEmpty()) {
+          *p++ = DIGIT_VALUES[i];
+        }
       }
-    }
-  } else {
-    // Reverse direction
-    for (int i = 9; i >= 0; --i) {
-      if ((chord & DIGIT_MASKS[i]).IsNotEmpty()) {
-        *p++ = DIGIT_VALUES[i];
+    } else {
+      // Reverse direction
+      control &= ~(ChordMask::E | ChordMask::U);
+      for (int i = 9; i >= 0; --i) {
+        if ((chord & DIGIT_MASKS[i]).IsNotEmpty()) {
+          *p++ = DIGIT_VALUES[i];
+        }
       }
     }
   }
 
   const StenoChord DZ = (ChordMask::DR | ChordMask::ZR);
-  StenoChord control = chord & CONTROL_MASK;
   if ((control & DZ) != DZ) {
     if ((control & ChordMask::ZR).IsNotEmpty()) {
       if ((control & ChordMask::STAR).IsNotEmpty()) {
@@ -763,6 +766,20 @@ TEST_BEGIN("JeffNumbers: Test words") {
 
   TestLookup("#TWOG", "twentieth");
   // spellchecker: enable
+}
+TEST_END
+
+TEST_BEGIN("JeffNumbers: #E, #EU, #U are not valid") {
+  StenoChord testChords[] = {
+      StenoChord("#E"),
+      StenoChord("#U"),
+      StenoChord("#EU"),
+  };
+
+  for (const StenoChord chord : testChords) {
+    assert(StenoJeffNumbersDictionary::instance.Lookup(&chord, 1).IsValid() ==
+           false);
+  }
 }
 TEST_END
 

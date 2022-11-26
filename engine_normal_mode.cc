@@ -2,6 +2,7 @@
 
 #include "console.h"
 #include "engine.h"
+#include "key_code.h"
 #include "segment.h"
 #include "str.h"
 #include "thread.h"
@@ -79,12 +80,6 @@ void StenoEngine::ProcessNormalModeChord(StenoChord chord) {
     return;
   }
 
-  if (nextKeyCodeBuffer.resetStateCount >
-      previousKeyCodeBuffer.resetStateCount) {
-    ResetState();
-    return;
-  }
-
   if (!emitter.Process(previousKeyCodeBuffer, nextKeyCodeBuffer) &&
       nextSegmentList.GetCount() > previousSegmentList.GetCount()) {
     history.Pop();
@@ -95,10 +90,18 @@ void StenoEngine::ProcessNormalModeChord(StenoChord chord) {
   }
 
   PrintPaperTape(chord, previousSegmentList, nextSegmentList, false);
+
+  if (nextKeyCodeBuffer.resetStateCount >
+      previousKeyCodeBuffer.resetStateCount) {
+    ResetState();
+    return;
+  }
 }
 
 void StenoEngine::ProcessNormalModeUndo() {
   if (history.IsEmpty()) {
+    Key::Press(KeyCode::BACKSPACE);
+    Key::Release(KeyCode::BACKSPACE);
     return;
   }
 
@@ -171,6 +174,11 @@ void StenoEngine::PrintPaperTape(StenoChord chord,
   chord.ToWideString(buffer);
   Console::Printf("PT | %s | ", buffer);
 
+  if (isUndo) {
+    Console::Write("*\n\n", 4);
+    return;
+  }
+
   size_t commonIndex = 0;
   while (commonIndex < previousSegmentList.GetCount() &&
          commonIndex < nextSegmentList.GetCount() &&
@@ -204,7 +212,7 @@ void StenoEngine::PrintPaperTape(StenoChord chord,
   newSegments.Reset();
   Console::Write("\n\n", 3);
 
-  if (isUndo) {
+  if (state.hasManualStateChange) {
     return;
   }
 
@@ -233,15 +241,13 @@ void StenoEngine::PrintPaperTape(StenoChord chord,
   }
 
   // General suggestions. Search back up to 8 word segments.
-  char *lastLookup = nullptr;
   for (size_t wordCount = 1; wordCount < 8; ++wordCount) {
-    lastLookup = PrintPaperTapeSegmentSuggestion(wordCount, nextSegmentList,
-                                                 buffer, lastLookup);
-    if (lastLookup == nullptr) {
+    bool shouldContinue =
+        PrintPaperTapeSegmentSuggestion(wordCount, nextSegmentList, buffer);
+    if (!shouldContinue) {
       return;
     }
   }
-  free(lastLookup);
 }
 
 void StenoEngine::PrintPaperTapeSuggestion(const char *p,
@@ -273,39 +279,35 @@ void StenoEngine::PrintPaperTapeSuggestion(const char *p,
   Console::Write("\n\n", 3);
 }
 
-char *StenoEngine::PrintPaperTapeSegmentSuggestion(
-    size_t wordCount, const StenoSegmentList &segmentList, char *buffer,
-    char *lastLookup) {
+bool StenoEngine::PrintPaperTapeSegmentSuggestion(
+    size_t wordCount, const StenoSegmentList &segmentList, char *buffer) {
 
   size_t startSegmentIndex = segmentList.GetCount();
+  StenoState lastState = state;
   for (size_t i = 0; i < wordCount; ++i) {
     if (startSegmentIndex == 0) {
-      free(lastLookup);
-      return nullptr;
+      return false;
     }
     while (startSegmentIndex != 0) {
       --startSegmentIndex;
       if (segmentList[startSegmentIndex].ContainsKeyCode()) {
-        free(lastLookup);
-        return nullptr;
+        return false;
       }
 
-      // It's a word start if the current doesn't join with the previous,
-      // and the previous doesn't join with the next.
+      // Consider it a word start if it isn't a suffix stroke.
+      // This will still give suggestions after prefixes, e.g.
+      //   overwatching: AUFR/WAFP/-G will suggest to combine WAFPG
       if (!Str::IsJoinPrevious(
-              segmentList[startSegmentIndex].lookup.GetText()) &&
-          (startSegmentIndex == 0 ||
-           !Str::IsJoinNext(
-               segmentList[startSegmentIndex - 1].lookup.GetText()))) {
+              segmentList[startSegmentIndex].lookup.GetText())) {
         break;
       }
     }
+    lastState = *segmentList[startSegmentIndex].state;
   }
 
   if (segmentList.GetCount() - startSegmentIndex >=
       PAPER_TAPE_SUGGESTION_SEGMENT_LIMIT) {
-    free(lastLookup);
-    return nullptr;
+    return false;
   }
 
   StenoSegmentList testSegments;
@@ -333,14 +335,6 @@ char *StenoEngine::PrintPaperTapeSegmentSuggestion(
 
   testSegments.Reset();
 
-  if (lastLookup) {
-    if (*lastLookup == '\0' || Str::Eq(lookup, lastLookup)) {
-      free(lastLookup);
-      return lookup;
-    }
-    free(lastLookup);
-  }
-
   // No need to check if there's a single chord producing the output.
   if (startSegmentIndex != segmentList.GetCount() - 1 ||
       chordThresholdCount != 1) {
@@ -349,7 +343,8 @@ char *StenoEngine::PrintPaperTapeSegmentSuggestion(
                              chordThresholdCount);
   }
 
-  return lookup;
+  free(lookup);
+  return true;
 }
 
 //---------------------------------------------------------------------------

@@ -43,7 +43,8 @@ public:
   void ProcessCommand(const char *command);
   void ProcessOrthographicSuffix(const char *text, size_t length);
 
-  void AppendText(const char *p, size_t n, StenoCaseMode caseMode);
+  void AppendText(const char *p, size_t n, StenoCaseMode outputCaseMode,
+                  bool hasManualStateChange = false);
 
   char *ToString();
   char *ToUnresolvedString();

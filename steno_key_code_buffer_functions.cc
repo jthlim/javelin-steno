@@ -279,6 +279,7 @@ bool StenoKeyCodeBuffer::EnableDictionaryFunction(
     return false;
   }
 
+  ++resetStateCount;
   return rootDictionary->EnableDictionary(parameters[1]);
 }
 
@@ -288,14 +289,17 @@ bool StenoKeyCodeBuffer::DisableDictionaryFunction(
     return false;
   }
 
+  ++resetStateCount;
   return rootDictionary->DisableDictionary(parameters[1]);
 }
+
 bool StenoKeyCodeBuffer::ToggleDictionaryFunction(
     const List<char *> &parameters) {
   if (parameters.GetCount() != 2) {
     return false;
   }
 
+  ++resetStateCount;
   return rootDictionary->ToggleDictionary(parameters[1]);
 }
 

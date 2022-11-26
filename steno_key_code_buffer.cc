@@ -51,14 +51,21 @@ void StenoKeyCodeBuffer::ProcessText(const char *text) {
                StenoCaseMode::NORMAL);
   }
 
-  AppendText(text, strlen(text), state.caseMode);
+  AppendText(text, strlen(text), state.caseMode, state.hasManualStateChange);
   state.joinNext = false;
   state.isGlue = isAutoGlue;
+  state.hasManualStateChange = false;
   state.caseMode = state.GetNextWordCaseMode();
 }
 
+// hasManualStateChange tags a letter as the appropriate case for the purpose
+// of reverse lookups.
+//
+// This enables looking up: KPA*/RAOD -> RAO*D
+// and AFL/PW*ET/{:retro_lower:1} -> A*FL/PW*ET
 void StenoKeyCodeBuffer::AppendText(const char *p, size_t n,
-                                    StenoCaseMode caseMode) {
+                                    StenoCaseMode caseMode,
+                                    bool hasManualStateChange) {
   const char *end = p + n;
   Utf8Pointer utf8p(p);
 
@@ -92,7 +99,8 @@ void StenoKeyCodeBuffer::AppendText(const char *p, size_t n,
       }
     }
 
-    buffer[count++] = StenoKeyCode(c, caseMode);
+    buffer[count++] = StenoKeyCode(
+        c, caseMode, hasManualStateChange ? caseMode : StenoCaseMode::NORMAL);
     caseMode = GetNextLetterCaseMode(caseMode);
   }
 }
@@ -156,6 +164,7 @@ void StenoKeyCodeBuffer::ProcessCommand(const char *p) {
     if (caseMode != StenoCaseMode::UNSPECIFIED) {
       state.caseMode = caseMode;
     }
+    state.joinNext = false;
     return;
   }
 
@@ -330,7 +339,7 @@ void StenoKeyCodeBuffer::ProcessOrthographicSuffix(const char *text,
   while (*pWord && *pScratchPad && *pWord == *pScratchPad) {
     // Skip utf8 suffix characters.
     if ((*pWord & 0xc0) != 0x80) {
-      state.caseMode = buffer[count++].GetCaseMode();
+      state.caseMode = buffer[count++].GetOutputCaseMode();
     }
     ++pWord;
     ++pScratchPad;
@@ -349,14 +358,15 @@ char *StenoKeyCodeBuffer::ToString() {
   size_t length = 1;
   for (size_t i = 0; i < count; ++i) {
     if (!buffer[i].IsRawKeyCode()) {
-      length += Utf8Pointer::BytesForCharacterCode(buffer[i].ResolveUnicode());
+      length +=
+          Utf8Pointer::BytesForCharacterCode(buffer[i].ResolveOutputUnicode());
     }
   }
   char *result = (char *)malloc(length);
   Utf8Pointer utf8p(result);
   for (size_t i = 0; i < count; ++i) {
     if (!buffer[i].IsRawKeyCode()) {
-      utf8p.SetAndAdvance(buffer[i].ResolveUnicode());
+      utf8p.SetAndAdvance(buffer[i].ResolveOutputUnicode());
     }
   }
   utf8p.Set(0);
@@ -368,14 +378,15 @@ char *StenoKeyCodeBuffer::ToUnresolvedString() {
   size_t length = 1;
   for (size_t i = 0; i < count; ++i) {
     if (!buffer[i].IsRawKeyCode()) {
-      length += Utf8Pointer::BytesForCharacterCode(buffer[i].GetUnicode());
+      length += Utf8Pointer::BytesForCharacterCode(
+          buffer[i].ResolveSelectedUnicode());
     }
   }
   char *result = (char *)malloc(length);
   Utf8Pointer utf8p(result);
   for (size_t i = 0; i < count; ++i) {
     if (!buffer[i].IsRawKeyCode()) {
-      utf8p.SetAndAdvance(buffer[i].GetUnicode());
+      utf8p.SetAndAdvance(buffer[i].ResolveSelectedUnicode());
     }
   }
   utf8p.Set(0);

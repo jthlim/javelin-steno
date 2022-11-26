@@ -20,8 +20,10 @@ class StenoKeyCode {
 public:
   StenoKeyCode() = default;
 
-  StenoKeyCode(uint32_t unicode, StenoCaseMode caseMode)
-      : unicode(unicode), caseMode(caseMode) {}
+  StenoKeyCode(uint32_t unicode, StenoCaseMode outputCaseMode,
+               StenoCaseMode selectedCaseMode = StenoCaseMode::NORMAL)
+      : unicode(unicode), outputCaseMode(uint8_t(outputCaseMode)),
+        selectedCaseMode(uint8_t(selectedCaseMode)) {}
 
   static StenoKeyCode CreateRawKeyCodePress(uint32_t v) {
     StenoKeyCode result;
@@ -44,13 +46,14 @@ public:
   uint32_t GetRawKeyCode() { return rawKeyCode; }
 
   uint32_t GetUnicode() const { return isRawKeyCode ? 0 : unicode; }
-  StenoCaseMode GetCaseMode() const {
-    return isRawKeyCode ? StenoCaseMode::NORMAL : caseMode;
+  StenoCaseMode GetOutputCaseMode() const {
+    return isRawKeyCode ? StenoCaseMode::NORMAL : StenoCaseMode(outputCaseMode);
   }
 
   void SetCase(StenoCaseMode newCaseMode) {
     if (!isRawKeyCode) {
-      caseMode = newCaseMode;
+      outputCaseMode = uint8_t(newCaseMode);
+      selectedCaseMode = uint8_t(newCaseMode);
     }
   }
 
@@ -75,8 +78,9 @@ public:
     return isRawKeyCode ? *this : StenoKeyCode(unicode, StenoCaseMode::LOWER);
   }
 
-  // Applies case mode on unicode and returns the result.
-  uint32_t ResolveUnicode() const;
+  // Applies output case mode on unicode and returns the result.
+  uint32_t ResolveOutputUnicode() const;
+  uint32_t ResolveSelectedUnicode() const;
 
   bool operator==(const StenoKeyCode &other) const {
     return value == other.value;
@@ -92,10 +96,13 @@ private:
     };
     struct {
       uint32_t unicode : 24;
-      StenoCaseMode caseMode : 8;
+      uint8_t outputCaseMode : 4; // StenoCaseMode type.
+      uint8_t selectedCaseMode : 4;
     };
     uint32_t value;
   };
+
+  static uint32_t ResolveUnicode(uint32_t unicode, StenoCaseMode mode);
 };
 
 static_assert(sizeof(StenoKeyCode) == 4);

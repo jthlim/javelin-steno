@@ -106,9 +106,9 @@ private:
                       const StenoSegmentList &nextSegmentList, bool isUndo);
   void PrintPaperTapeSuggestion(const char *p, size_t arrowPrefixCount,
                                 char *buffer, size_t strokeThreshold);
-  char *PrintPaperTapeSegmentSuggestion(size_t wordCount,
-                                        const StenoSegmentList &segmentList,
-                                        char *buffer, char *previousLookup);
+  bool PrintPaperTapeSegmentSuggestion(size_t wordCount,
+                                       const StenoSegmentList &segmentList,
+                                       char *buffer);
 
   size_t UpdateAddTranslationModeTextBuffer(StenoKeyCodeBuffer &buffer);
 

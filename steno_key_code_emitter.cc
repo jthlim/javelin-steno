@@ -199,7 +199,7 @@ void StenoKeyCodeEmitter::EmitterContext::ProcessStenoKeyCode(
     }
   } else {
     shouldStoreStroke = true;
-    uint32_t unicode = stenoKeyCode.ResolveUnicode();
+    uint32_t unicode = stenoKeyCode.ResolveOutputUnicode();
 
     if (unicode < 128) {
       uint32_t keyCode = ASCII_KEY_CODES[unicode];

@@ -1,7 +1,6 @@
 //---------------------------------------------------------------------------
 
 #include "reverse_auto_suffix_dictionary.h"
-#include "../console.h"
 #include "../orthography.h"
 #include "../pattern.h"
 #include "../str.h"
@@ -135,6 +134,8 @@ void StenoReverseAutoSuffixDictionary::ProcessReverseAutoSuffix(
   for (size_t i = 0; i < resultWithoutSuffix.resultCount; ++i) {
     size_t length = resultWithoutSuffix.resultLengths[i];
 
+    bool hasAdded = false;
+
     if ((chords[length - 1] & reverseAutoSuffix.suppressMask).IsEmpty()) {
       chords[length - 1] |= reverseAutoSuffix.autoSuffix->chord;
 
@@ -146,6 +147,7 @@ void StenoReverseAutoSuffixDictionary::ProcessReverseAutoSuffix(
               &orthography.data.autoSuffixes[i];
           if (reverseAutoSuffix.autoSuffix == autoSuffix) {
             result.AddResult(chords, length, this);
+            hasAdded = true;
           }
 
           if ((chords[length - 1] & autoSuffix->chord).IsNotEmpty()) {
@@ -158,6 +160,18 @@ void StenoReverseAutoSuffixDictionary::ProcessReverseAutoSuffix(
             chords[length - 1] |= autoSuffix->chord;
           }
         }
+      }
+      chords[length - 1] &= ~reverseAutoSuffix.autoSuffix->chord;
+    }
+
+    if (!hasAdded) {
+      StenoChord chordsWithSuffixStroke[length + 1];
+      memcpy(chordsWithSuffixStroke, chords, length * sizeof(StenoChord));
+      chordsWithSuffixStroke[length] = reverseAutoSuffix.autoSuffix->chord;
+
+      if (dictionary->GetLookupProvider(chordsWithSuffixStroke, length + 1) ==
+          nullptr) {
+        result.AddResult(chordsWithSuffixStroke, length + 1, this);
       }
     }
 

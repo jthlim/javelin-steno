@@ -125,16 +125,30 @@ struct JeffPhrasingStructureException {
   JeffPhrasingStructure structure;
 };
 
+struct ComponentMask {
+  static const uint8_t STARTER = 1;
+  static const uint8_t MIDDLE = 2;
+  static const uint8_t STRUCTURE = 4;
+  static const uint8_t VERB = 8;
+};
+
+struct ModeMask {
+  static const uint8_t FULL = 1;
+  static const uint8_t SIMPLE = 2;
+  static const uint8_t PRESENT = 4;
+  static const uint8_t PAST = 8;
+};
+
 struct JeffPhrasingReverseHashMapEntry {
   uint32_t hash;
   uint32_t replaceHash;
   StenoChord stroke;
   bool checkNext;
 
-  // 1 = starter, 2 = middle, 4 structure, 8 verb, 128 = past tense.
+  // 1 = starter, 2 = middle, 4 structure, 8 verb.
   uint8_t componentMask;
 
-  // 1 = full, 2 = simple.
+  // 1 = full, 2 = simple, 4 = present, 8 = past.
   uint8_t modeMask;
 };
 

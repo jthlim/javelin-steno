@@ -6,6 +6,10 @@
 
 //---------------------------------------------------------------------------
 
+bool StenoDictionaryList::isSendDictionaryStatusEnabled = false;
+
+//---------------------------------------------------------------------------
+
 StenoDictionaryList::StenoDictionaryList(
     List<StenoDictionaryListEntry> &dictionaries)
     : dictionaries(dictionaries) {
@@ -145,7 +149,7 @@ bool StenoDictionaryList::EnableDictionary(const char *name) {
   for (size_t i = 0; i < dictionaries.GetCount(); ++i) {
     if (Str::Eq(name, dictionaries[i].dictionary->GetName())) {
       dictionaries[i].enabled = true;
-      Console::Printf("DS %s: true\n\n", name);
+      SendDictionaryStatus(name, true);
       return true;
     }
   }
@@ -156,7 +160,7 @@ bool StenoDictionaryList::DisableDictionary(const char *name) {
   for (size_t i = 0; i < dictionaries.GetCount(); ++i) {
     if (Str::Eq(name, dictionaries[i].dictionary->GetName())) {
       dictionaries[i].enabled = false;
-      Console::Printf("DS %s: false\n\n", name);
+      SendDictionaryStatus(name, false);
       return true;
     }
   }
@@ -167,13 +171,31 @@ bool StenoDictionaryList::ToggleDictionary(const char *name) {
   for (size_t i = 0; i < dictionaries.GetCount(); ++i) {
     if (Str::Eq(name, dictionaries[i].dictionary->GetName())) {
       dictionaries[i].enabled = !dictionaries[i].enabled;
-      Console::Printf(dictionaries[i].enabled ? "DS %s: true\n\n"
-                                              : "DS %s: false\n\n",
-                      name);
+      SendDictionaryStatus(name, dictionaries[i].enabled);
       return true;
     }
   }
   return false;
 }
 
+void StenoDictionaryList::SendDictionaryStatus(const char *name,
+                                               bool enabled) const {
+  if (isSendDictionaryStatusEnabled) {
+    Console::Printf(enabled ? "DS %s: true\n\n" : "DS %s: false\n\n", name);
+  }
+}
+
 //---------------------------------------------------------------------------
+
+void StenoDictionaryList::EnableDictionaryStatus_Binding(
+    void *context, const char *commandLine) {
+  EnableSendDictionaryStatus();
+  Console::Write("OK\n\n", 4);
+}
+
+void StenoDictionaryList::DisableDictionaryStatus_Binding(
+    void *context, const char *commandLine) {
+
+  DisableSendDictionaryStatus();
+  Console::Write("OK\n\n", 4);
+}
