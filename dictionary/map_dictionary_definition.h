@@ -18,7 +18,7 @@
 //  until the index and counting all 1 bits to determine the offset into
 //  the data block.
 //
-//  The approach used here is to divide the hash table into 32-bit blocks,
+//  The approach used here is to divide the hash table into blocks,
 //  Each block will have a bit mask, where 0 = null, 1 = present, but
 //  there's a `baseOffset` value precalculated, which is a tally of all 1
 //  bits in all previous blocks.
@@ -27,14 +27,16 @@
 //  a population count on the mask up to the bit index being inspected,
 //  and adding it to the baseOffset.
 //
-//  Overall, this reduces the memory requirements from 128 bytes per 32
-//  hashmap entries to just 8 bytes -- a 16x savings.
+//  Overall, this reduces the memory requirements from 512 bytes per 128
+//  hashmap entries to just 20 bytes -- a 25x savings.
 //
 //---------------------------------------------------------------------------
 
 struct StenoHashMapEntryBlock {
+  uint32_t masks[4];
   uint32_t baseOffset;
-  uint32_t mask;
+
+  size_t PopCount() const;
 };
 
 struct StenoMapDictionaryStrokesDefinition {
@@ -66,7 +68,7 @@ struct StenoMapDictionaryDefinition {
 
 //---------------------------------------------------------------------------
 
-constexpr uint32_t STENO_MAP_DICTIONARY_COLLECTION_MAGIC = 0x3143534a; // 'JSC1'
+constexpr uint32_t STENO_MAP_DICTIONARY_COLLECTION_MAGIC = 0x3243534a; // 'JSC1'
 
 struct StenoMapDictionaryCollection {
   uint32_t magic;

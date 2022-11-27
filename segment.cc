@@ -142,10 +142,11 @@ TEST_BEGIN("Segment tests") {
   // spellchecker: enable
 
   StenoSegmentList segmentList;
-  BuildSegmentContext context(
-      segmentList, dictionary, dictionary.GetMaximumMatchLength(),
-      StenoCompiledOrthography(StenoOrthography::emptyOrthography),
-      history.GetCount());
+  StenoCompiledOrthography compiledOrthography(
+      StenoOrthography::emptyOrthography);
+  BuildSegmentContext context(segmentList, dictionary,
+                              dictionary.GetMaximumMatchLength(),
+                              compiledOrthography, history.GetCount());
 
   history.CreateSegments(context, 10);
 

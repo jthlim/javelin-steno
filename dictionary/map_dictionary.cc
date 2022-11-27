@@ -8,11 +8,22 @@
 
 //---------------------------------------------------------------------------
 
+size_t StenoHashMapEntryBlock::PopCount() const {
+  size_t result = 0;
+  for (size_t i = 0; i < sizeof(masks) / sizeof(*masks); ++i) {
+    result += __builtin_popcount(masks[i]);
+  }
+  return result;
+}
+
+//---------------------------------------------------------------------------
+
 struct StenoMapDictionaryDataEntry {
   Uint24 textOffset;
   Uint24 chords[1];
 
-  bool Equals(const StenoChord *chord, size_t length) const;
+  bool Equals(const StenoChord *chords, size_t length) const;
+  void ExpandTo(StenoChord *chords, size_t length);
 };
 
 inline bool StenoMapDictionaryDataEntry::Equals(const StenoChord *chords,
@@ -25,25 +36,38 @@ inline bool StenoMapDictionaryDataEntry::Equals(const StenoChord *chords,
   return true;
 }
 
+void StenoMapDictionaryDataEntry::ExpandTo(StenoChord *chords, size_t length) {
+  for (size_t i = 0; i < length; ++i) {
+    chords[i] = this->chords[i].ToUint32();
+  }
+}
+
 //---------------------------------------------------------------------------
 
 size_t StenoMapDictionaryStrokesDefinition::GetOffset(size_t index) const {
-  size_t blockIndex = index / 32;
-  size_t bitIndex = index % 32;
+  size_t blockIndex = index / 128;
+  size_t blockBitIndex = index & 127;
+  size_t maskIndex = blockBitIndex / 32;
+  size_t bitIndex = blockBitIndex & 31;
 
   const StenoHashMapEntryBlock &block = offsets[blockIndex];
-  if ((block.mask & (1 << bitIndex)) == 0) {
-    return 0;
+  if ((block.masks[maskIndex] & (1 << bitIndex)) == 0) {
+    return (size_t)-1;
   }
 
-  return __builtin_popcount(block.mask & ~(0xffffffff << bitIndex)) +
-         block.baseOffset;
+  size_t result = block.baseOffset;
+  for (size_t i = 0; i < maskIndex; ++i) {
+    result += __builtin_popcount(block.masks[i]);
+  }
+
+  return result +
+         __builtin_popcount(block.masks[maskIndex] & ~(0xffffffff << bitIndex));
 }
 
 size_t StenoMapDictionaryStrokesDefinition::GetEntryCount() const {
   size_t entryCount = 0;
-  for (size_t i = 0; i < hashMapSize / 32; ++i) {
-    entryCount += __builtin_popcount(offsets[i].mask);
+  for (size_t i = 0; i < hashMapSize / 128; ++i) {
+    entryCount += offsets[i].PopCount();
   }
   return entryCount;
 }
@@ -99,11 +123,11 @@ StenoMapDictionary::Lookup(const StenoDictionaryLookup &lookup) const {
     entryIndex = entryIndex & (strokesDefinition.hashMapSize - 1);
 
     size_t offset = strokesDefinition.GetOffset(entryIndex);
-    if (offset == 0) {
+    if (offset == (size_t)-1) {
       return StenoDictionaryLookupResult::CreateInvalid();
     }
 
-    size_t dataIndex = 3 * (offset - 1) * (1 + lookup.length);
+    size_t dataIndex = 3 * offset * (1 + lookup.length);
     const StenoMapDictionaryDataEntry &entry =
         (const StenoMapDictionaryDataEntry &)strokesDefinition.data[dataIndex];
 
@@ -128,11 +152,11 @@ const StenoDictionary *StenoMapDictionary::GetLookupProvider(
     entryIndex = entryIndex & (strokesDefinition.hashMapSize - 1);
 
     size_t offset = strokesDefinition.GetOffset(entryIndex);
-    if (offset == 0) {
+    if (offset == (size_t)-1) {
       return nullptr;
     }
 
-    size_t dataIndex = 3 * (offset - 1) * (1 + lookup.length);
+    size_t dataIndex = 3 * offset * (1 + lookup.length);
     const StenoMapDictionaryDataEntry &entry =
         (const StenoMapDictionaryDataEntry &)strokesDefinition.data[dataIndex];
 
