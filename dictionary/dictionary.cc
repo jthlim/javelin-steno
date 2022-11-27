@@ -29,7 +29,7 @@ void StenoReverseDictionaryLookup::AddResult(
     return;
   }
 
-  if (HasResult(c, length, lookupProvider)) {
+  if (HasResult(c, length)) {
     return;
   }
 
@@ -46,14 +46,13 @@ void StenoReverseDictionaryLookup::AddResult(
   chordsCount += length;
 }
 
-bool StenoReverseDictionaryLookup::HasResult(
-    const StenoChord *c, size_t length,
-    const StenoDictionary *lookupProvider) const {
+bool StenoReverseDictionaryLookup::HasResult(const StenoChord *c,
+                                             size_t length) const {
 
   const StenoChord *currentChord = chords;
   for (size_t i = 0; i < resultCount; ++i) {
     size_t currentChordLength = resultLengths[i];
-    if (currentChordLength == length && lookupProvider == lookupProviders[i] &&
+    if (currentChordLength == length &&
         memcmp(currentChord, c, length * sizeof(StenoChord)) == 0) {
       return true;
     }

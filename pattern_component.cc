@@ -5,6 +5,29 @@
 
 //---------------------------------------------------------------------------
 
+constexpr size_t PATTERN_COMPONENT_BLOCK_SIZE = 1024;
+
+size_t PatternComponent::sizeRemaining = 0;
+uint8_t *PatternComponent::data = nullptr;
+
+//---------------------------------------------------------------------------
+
+void *PatternComponent::operator new(size_t size) {
+  assert(size <= PATTERN_COMPONENT_BLOCK_SIZE);
+
+  if (sizeRemaining < size) {
+    sizeRemaining = PATTERN_COMPONENT_BLOCK_SIZE;
+    data = (uint8_t *)malloc(PATTERN_COMPONENT_BLOCK_SIZE);
+  }
+
+  sizeRemaining -= size;
+  void *result = data;
+  data += size;
+  return result;
+}
+
+//---------------------------------------------------------------------------
+
 bool PatternComponent::CallNext(const char *p, PatternContext &context) {
   if (!next) {
     return true;

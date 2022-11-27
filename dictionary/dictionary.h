@@ -70,8 +70,7 @@ public:
 
   void AddResult(const StenoChord *chords, size_t length,
                  const StenoDictionary *lookupProvider);
-  bool HasResult(const StenoChord *chords, size_t length,
-                 const StenoDictionary *lookupProvider) const;
+  bool HasResult(const StenoChord *chords, size_t length) const;
 
   // Results equal to, or above this will not be captured.
   size_t strokeThreshold;

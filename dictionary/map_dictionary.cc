@@ -177,6 +177,18 @@ bool StenoMapDictionary::ReverseMapDictionaryLookup(
 
 const char *StenoMapDictionary::GetName() const { return definition.name; }
 
+void StenoMapDictionary::PrintInfo(int depth) const {
+  const uint8_t *start = (const uint8_t *)&definition;
+
+  const StenoMapDictionaryStrokesDefinition &lastStrokeDefinition =
+      definition.strokes[definition.maximumStrokeCount - 1];
+
+  const uint8_t *end = (const uint8_t *)(lastStrokeDefinition.offsets +
+                                         lastStrokeDefinition.hashMapSize / 32);
+
+  Console::Printf("%s%s: %zu bytes\n", Spaces(depth), GetName(), end - start);
+}
+
 bool StenoMapDictionary::PrintDictionary(bool hasData) const {
   char *buffer = (char *)malloc(2048);
   for (size_t i = 0; i < definition.maximumStrokeCount; ++i) {

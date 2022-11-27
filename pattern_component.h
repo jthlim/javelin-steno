@@ -21,6 +21,8 @@ public:
 
   virtual void RemoveEpsilon();
 
+  static void *operator new(size_t size);
+
 protected:
   bool CallNext(const char *p, PatternContext &context);
 
@@ -30,6 +32,9 @@ private:
   friend class Pattern;
   friend class BranchPatternComponent;
   friend class AlternatePatternComponent;
+
+  static size_t sizeRemaining;
+  static uint8_t *data;
 };
 
 class EpsilonPatternComponent : public PatternComponent {

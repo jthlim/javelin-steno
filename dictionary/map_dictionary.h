@@ -26,15 +26,11 @@ public:
 
   virtual unsigned int GetMaximumMatchLength() const;
   virtual const char *GetName() const;
+  virtual void PrintInfo(int depth) const;
   virtual bool PrintDictionary(bool hasData) const;
 
 private:
   const StenoMapDictionaryDefinition &definition;
-
-  struct DictionaryStats {
-    size_t entryCount;
-    uint32_t maxTextOffset;
-  };
 };
 
 //---------------------------------------------------------------------------

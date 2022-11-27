@@ -37,7 +37,6 @@ const StenoDictionary *StenoReverseAutoSuffixDictionary::GetLookupProvider(
 
 void StenoReverseAutoSuffixDictionary::ReverseLookup(
     StenoReverseDictionaryLookup &result) const {
-
   dictionary->ReverseLookup(result);
 
   for (size_t i = 0; i < orthography.data.reverseAutoSuffixCount; ++i) {
@@ -139,7 +138,9 @@ void StenoReverseAutoSuffixDictionary::ProcessReverseAutoSuffix(
     if ((chords[length - 1] & reverseAutoSuffix.suppressMask).IsEmpty()) {
       chords[length - 1] |= reverseAutoSuffix.autoSuffix->chord;
 
-      if (!HasValidLookup(chords, length)) {
+      if (result.HasResult(chords, length)) {
+        hasAdded = true;
+      } else if (!HasValidLookup(chords, length)) {
         // Even if it produced an invalid lookup, there's a chance that
         // another auto-suffix might take precedence. Check for that.
         for (size_t i = 0; i < orthography.data.autoSuffixCount; ++i) {
@@ -182,9 +183,8 @@ void StenoReverseAutoSuffixDictionary::ProcessReverseAutoSuffix(
 bool StenoReverseAutoSuffixDictionary::HasValidLookup(const StenoChord *chords,
                                                       size_t length) const {
   for (size_t chordLength = 1; chordLength <= length; ++chordLength) {
-    const StenoDictionary *lookupProvider = dictionary->GetLookupProvider(
-        chords + length - chordLength, chordLength);
-    if (lookupProvider) {
+    if (dictionary->GetLookupProvider(chords + length - chordLength,
+                                      chordLength)) {
       return true;
     }
   }

@@ -7,7 +7,7 @@
 
 //---------------------------------------------------------------------------
 
-enum class VerbForm {
+enum class VerbForm : uint16_t {
   UNSPECIFIED = 0,
   FIRST_PERSON_SINGULAR,
   SECOND_PERSON,
