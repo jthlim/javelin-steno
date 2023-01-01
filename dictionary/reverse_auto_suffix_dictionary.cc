@@ -22,18 +22,8 @@ const Pattern *StenoReverseAutoSuffixDictionary::CreateReversePatterns(
 
 StenoReverseAutoSuffixDictionary::StenoReverseAutoSuffixDictionary(
     StenoDictionary *dictionary, const StenoCompiledOrthography &orthography)
-    : dictionary(dictionary), orthography(orthography),
+    : StenoWrappedDictionary(dictionary), orthography(orthography),
       reversePatterns(CreateReversePatterns(orthography.data)) {}
-
-StenoDictionaryLookupResult StenoReverseAutoSuffixDictionary::Lookup(
-    const StenoDictionaryLookup &lookup) const {
-  return dictionary->Lookup(lookup);
-}
-
-const StenoDictionary *StenoReverseAutoSuffixDictionary::GetLookupProvider(
-    const StenoDictionaryLookup &lookup) const {
-  return dictionary->GetLookupProvider(lookup);
-}
 
 void StenoReverseAutoSuffixDictionary::ReverseLookup(
     StenoReverseDictionaryLookup &result) const {
@@ -45,41 +35,8 @@ void StenoReverseAutoSuffixDictionary::ReverseLookup(
   }
 }
 
-bool StenoReverseAutoSuffixDictionary::ReverseMapDictionaryLookup(
-    StenoReverseDictionaryLookup &result, const void *data) const {
-  return dictionary->ReverseMapDictionaryLookup(result, data);
-}
-
-unsigned int StenoReverseAutoSuffixDictionary::GetMaximumMatchLength() const {
-  return dictionary->GetMaximumMatchLength();
-}
-
 const char *StenoReverseAutoSuffixDictionary::GetName() const {
   return "#internal#reverse_auto_suffix_dictionary";
-}
-
-void StenoReverseAutoSuffixDictionary::PrintInfo(int depth) const {
-  dictionary->PrintInfo(depth);
-}
-
-bool StenoReverseAutoSuffixDictionary::PrintDictionary(bool hasData) const {
-  return dictionary->PrintDictionary(hasData);
-}
-
-void StenoReverseAutoSuffixDictionary::ListDictionaries() const {
-  dictionary->ListDictionaries();
-}
-
-bool StenoReverseAutoSuffixDictionary::EnableDictionary(const char *name) {
-  return dictionary->EnableDictionary(name);
-}
-
-bool StenoReverseAutoSuffixDictionary::DisableDictionary(const char *name) {
-  return dictionary->DisableDictionary(name);
-}
-
-bool StenoReverseAutoSuffixDictionary::ToggleDictionary(const char *name) {
-  return dictionary->ToggleDictionary(name);
 }
 
 //---------------------------------------------------------------------------
@@ -129,9 +86,11 @@ void StenoReverseAutoSuffixDictionary::ProcessReverseAutoSuffix(
   free(withoutSuffix);
 
   // 4. Verify that lookup up with suffix produces an invalid lookup.
-  StenoChord *chords = resultWithoutSuffix.chords;
   for (size_t i = 0; i < resultWithoutSuffix.resultCount; ++i) {
-    size_t length = resultWithoutSuffix.resultLengths[i];
+    const StenoReverseDictionaryResult &lookup = resultWithoutSuffix.results[i];
+
+    size_t length = lookup.length;
+    StenoChord *chords = lookup.chords;
 
     bool hasAdded = false;
 
@@ -140,7 +99,7 @@ void StenoReverseAutoSuffixDictionary::ProcessReverseAutoSuffix(
 
       if (result.HasResult(chords, length)) {
         hasAdded = true;
-      } else if (!HasValidLookup(chords, length)) {
+      } else if (CanAutoSuffixLookup(chords, length)) {
         // Even if it produced an invalid lookup, there's a chance that
         // another auto-suffix might take precedence. Check for that.
         for (size_t i = 0; i < orthography.data.autoSuffixCount; ++i) {
@@ -175,20 +134,33 @@ void StenoReverseAutoSuffixDictionary::ProcessReverseAutoSuffix(
         result.AddResult(chordsWithSuffixStroke, length + 1, this);
       }
     }
-
-    chords += length;
   }
 }
 
-bool StenoReverseAutoSuffixDictionary::HasValidLookup(const StenoChord *chords,
-                                                      size_t length) const {
+bool StenoReverseAutoSuffixDictionary::CanAutoSuffixLookup(
+    const StenoChord *chords, size_t length) const {
+  // For autosuffix to be used, there must be no valid shorter lookup,
+  // or there must be no valid suffix lookup
+  return !HasPrefixLookup(chords, length) ||
+         (length > 1 && !HasSuffixLookup(chords, length));
+}
+
+// Returns true if there's any valid prefix lookup.
+bool StenoReverseAutoSuffixDictionary::HasPrefixLookup(const StenoChord *chords,
+                                                       size_t length) const {
   for (size_t chordLength = 1; chordLength <= length; ++chordLength) {
-    if (dictionary->GetLookupProvider(chords + length - chordLength,
-                                      chordLength)) {
+    if (dictionary->GetLookupProvider(chords, chordLength)) {
       return true;
     }
   }
+
   return false;
+}
+
+// Returns true if the last stroke lookup is valid.
+bool StenoReverseAutoSuffixDictionary::HasSuffixLookup(const StenoChord *chords,
+                                                       size_t length) const {
+  return dictionary->GetLookupProvider(chords + length - 1, 1) != nullptr;
 }
 
 //---------------------------------------------------------------------------

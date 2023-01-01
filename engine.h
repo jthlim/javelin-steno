@@ -11,6 +11,7 @@
 
 class Pattern;
 class StenoDictionary;
+class StenoReverseDictionaryLookup;
 class StenoSegmentList;
 class StenoUserDictionary;
 
@@ -26,11 +27,12 @@ public:
               const StenoCompiledOrthography &orthography,
               StenoUserDictionary *userDictionary = nullptr);
 
-  void Process(StenoKeyState value, StenoAction action) final;
+  void Process(const StenoKeyState &value, StenoAction action);
   void ProcessUndo();
   void ProcessChord(StenoChord chord);
-  void Tick() final {}
+  void Tick() {}
 
+  void SendText(const uint8_t *p);
   void PrintInfo() const;
   void PrintDictionary() const;
 
@@ -38,10 +40,15 @@ public:
   bool EnableDictionary(const char *name);
   bool DisableDictionary(const char *name);
   bool ToggleDictionary(const char *name);
+  void ReverseLookup(StenoReverseDictionaryLookup &result);
 
   bool IsPaperTapeEnabled() const { return paperTapeEnabled; }
   void EnablePaperTape() { paperTapeEnabled = true; }
   void DisablePaperTape() { paperTapeEnabled = false; }
+
+  bool IsSuggestionsEnabled() const { return suggestionsEnabled; }
+  void EnableSuggestions() { suggestionsEnabled = true; }
+  void DisableSuggestions() { suggestionsEnabled = false; }
 
   static void ListDictionaries_Binding(void *context, const char *commandLine);
   static void EnableDictionary_Binding(void *context, const char *commandLine);
@@ -50,6 +57,9 @@ public:
   static void PrintDictionary_Binding(void *context, const char *commandLine);
   static void EnablePaperTape_Binding(void *context, const char *commandLine);
   static void DisablePaperTape_Binding(void *context, const char *commandLine);
+  static void EnableSuggestions_Binding(void *context, const char *commandLine);
+  static void DisableSuggestions_Binding(void *context,
+                                         const char *commandLine);
   static void Lookup_Binding(void *context, const char *commandLine);
 
 private:
@@ -58,6 +68,7 @@ private:
   static const size_t PAPER_TAPE_SUGGESTION_SEGMENT_LIMIT = 8;
 
   bool paperTapeEnabled = false;
+  bool suggestionsEnabled = false;
   StenoEngineMode mode = StenoEngineMode::NORMAL;
 
   uint32_t strokeCount = 0;
@@ -65,22 +76,21 @@ private:
   const StenoCompiledOrthography orthography;
   StenoUserDictionary *userDictionary;
 
-  StenoState state = {
-      .caseMode = StenoCaseMode::NORMAL,
-      .joinNext = true,
-      .isGlue = false,
-      .hasManualStateChange = false,
-      .spaceCharacterLength = 1,
-      .spaceCharacter = " ",
-  };
+  StenoState state;
   StenoState addTranslationState;
 
   StenoKeyCodeEmitter emitter;
 
   ChordHistory history;
   ChordHistory addTranslationHistory;
-  StenoKeyCodeBuffer previousKeyCodeBuffer;
-  StenoKeyCodeBuffer nextKeyCodeBuffer;
+
+  struct ConversionBuffer {
+    ChordHistory chordHistory;
+    StenoKeyCodeBuffer keyCodeBuffer;
+  };
+
+  ConversionBuffer previousConversionBuffer;
+  ConversionBuffer nextConversionBuffer;
 
   struct UpdateNormalModeTextBufferThreadData;
 
@@ -96,21 +106,24 @@ private:
   void ResetState();
 
   // Returns the number of segments
-  void UpdateNormalModeTextBuffer(size_t maximumChordCount,
-                                  StenoKeyCodeBuffer &buffer,
-                                  size_t chordLength,
+  void UpdateNormalModeTextBuffer(size_t sourceChordCount,
+                                  ConversionBuffer &buffer,
+                                  size_t conversionLimit,
                                   StenoSegmentList &segmentList);
 
   void PrintPaperTape(StenoChord chord,
                       const StenoSegmentList &previousSegmentList,
-                      const StenoSegmentList &nextSegmentList, bool isUndo);
-  void PrintPaperTapeSuggestion(const char *p, size_t arrowPrefixCount,
-                                char *buffer, size_t strokeThreshold);
-  bool PrintPaperTapeSegmentSuggestion(size_t wordCount,
-                                       const StenoSegmentList &segmentList,
-                                       char *buffer);
+                      const StenoSegmentList &nextSegmentList);
+  void PrintPaperTapeUndo(size_t undoCount);
+  void PrintSuggestions(const StenoSegmentList &previousSegmentList,
+                        const StenoSegmentList &nextSegmentList);
+  void PrintSuggestion(const char *p, size_t arrowPrefixCount, char *buffer,
+                       size_t strokeThreshold);
+  char *PrintSegmentSuggestion(size_t wordCount,
+                               const StenoSegmentList &segmentList,
+                               char *buffer, char *lastLookup);
 
-  size_t UpdateAddTranslationModeTextBuffer(StenoKeyCodeBuffer &buffer);
+  size_t UpdateAddTranslationModeTextBuffer(ConversionBuffer &buffer);
 
   friend class StenoEngineTester;
 };

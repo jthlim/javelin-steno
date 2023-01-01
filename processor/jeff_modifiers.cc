@@ -446,7 +446,8 @@ const JeffModifiersData DATA[] = {
 
 //---------------------------------------------------------------------------
 
-void StenoJeffModifiers::Process(StenoKeyState value, StenoAction action) {
+void StenoJeffModifiers::Process(const StenoKeyState &value,
+                                 StenoAction action) {
   const StenoChord chord = value.ToChord();
 
   bool isModifier = (chord & TRIGGER_MASK) == TRIGGER_CHORD;

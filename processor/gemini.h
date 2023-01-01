@@ -4,11 +4,11 @@
 
 //---------------------------------------------------------------------------
 
-class StenoGemini : public StenoProcessorElement {
+class StenoGemini final : public StenoProcessorElement {
 public:
-  void Process(StenoKeyState value, StenoAction action) final;
+  void Process(const StenoKeyState &value, StenoAction action);
   void Tick() {}
-  void PrintInfo() const final;
+  void PrintInfo() const;
 
 private:
   size_t counter = 0;

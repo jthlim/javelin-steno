@@ -4,15 +4,15 @@
 
 //---------------------------------------------------------------------------
 
-class StenoProcessorList : public StenoProcessorElement {
+class StenoProcessorList final : public StenoProcessorElement {
 public:
   StenoProcessorList(StenoProcessorElement *const *processors,
                      size_t processorCount)
       : processors(processors), processorCount(processorCount) {}
 
-  void Process(StenoKeyState value, StenoAction action) final;
+  void Process(const StenoKeyState &value, StenoAction action);
   void Tick();
-  void PrintInfo() const final;
+  void PrintInfo() const;
 
 private:
   StenoProcessorElement *const *processors;

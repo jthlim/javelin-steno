@@ -173,6 +173,9 @@ Pattern::BuildResult Pattern::ParseAtom(BuildContext &c) {
         for (int index = p[-1]; index <= p[1]; ++index) {
           component->SetBit(index);
         }
+        // Don't increment p here -- this protects against
+        // bad input where '-' is at the end of a string and there's
+        // no terminating ']'.
       } else {
         component->SetBit(*p);
       }

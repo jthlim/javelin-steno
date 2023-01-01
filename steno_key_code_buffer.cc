@@ -15,12 +15,7 @@ void StenoKeyCodeBuffer::Reset() {
   count = 0;
   addTranslationCount = 0;
   resetStateCount = 0;
-  state.caseMode = StenoCaseMode::NORMAL;
-  state.joinNext = false;
-  state.isGlue = false;
-  state.hasManualStateChange = false;
-  state.spaceCharacterLength = 1;
-  state.spaceCharacter = " ";
+  state.Reset();
 }
 
 void StenoKeyCodeBuffer::Populate(StenoTokenizer *tokenizer) {
@@ -51,10 +46,10 @@ void StenoKeyCodeBuffer::ProcessText(const char *text) {
                StenoCaseMode::NORMAL);
   }
 
-  AppendText(text, strlen(text), state.caseMode, state.hasManualStateChange);
+  AppendText(text, strlen(text), state.caseMode);
   state.joinNext = false;
   state.isGlue = isAutoGlue;
-  state.hasManualStateChange = false;
+  state.isManualStateChange = false;
   state.caseMode = state.GetNextWordCaseMode();
 }
 
@@ -64,8 +59,15 @@ void StenoKeyCodeBuffer::ProcessText(const char *text) {
 // This enables looking up: KPA*/RAOD -> RAO*D
 // and AFL/PW*ET/{:retro_lower:1} -> A*FL/PW*ET
 void StenoKeyCodeBuffer::AppendText(const char *p, size_t n,
-                                    StenoCaseMode caseMode,
-                                    bool hasManualStateChange) {
+                                    StenoCaseMode caseMode) {
+  if (state.overrideCaseMode != StenoCaseMode::NORMAL) {
+    caseMode = state.overrideCaseMode;
+  }
+  AppendTextNoCaseModeOverride(p, n, caseMode);
+}
+
+void StenoKeyCodeBuffer::AppendTextNoCaseModeOverride(const char *p, size_t n,
+                                                      StenoCaseMode caseMode) {
   const char *end = p + n;
   Utf8Pointer utf8p(p);
 
@@ -99,8 +101,12 @@ void StenoKeyCodeBuffer::AppendText(const char *p, size_t n,
       }
     }
 
-    buffer[count++] = StenoKeyCode(
-        c, caseMode, hasManualStateChange ? caseMode : StenoCaseMode::NORMAL);
+    if (c == '\b') {
+      Backspace(1);
+    } else {
+      buffer[count++] = StenoKeyCode(c, caseMode, StenoCaseMode::NORMAL);
+    }
+
     caseMode = GetNextLetterCaseMode(caseMode);
   }
 }
@@ -202,6 +208,12 @@ void StenoKeyCodeBuffer::ProcessCommand(const char *p) {
       return;
     }
 
+    // Retroactive un-capitalize.
+    if (p[2] == '>' && p + 3 == end) {
+      RetroactiveUncapitalize(1);
+      return;
+    }
+
     // Retroactive delete space
     if (p[2] == '!' && p + 3 == end) {
       RetroactiveDeleteSpace();
@@ -244,14 +256,14 @@ void StenoKeyCodeBuffer::ProcessCommand(const char *p) {
     return;
   }
 
+  // Upper case next word.
   if (p[1] == '<' && p + 2 == end) {
-    // Upper case next word.
     state.caseMode = StenoCaseMode::UPPER_ONCE;
     return;
   }
 
+  // Lower case next word.
   if (p[1] == '>' && p + 2 == end) {
-    // Lower case next word.
     state.caseMode = StenoCaseMode::LOWER_ONCE;
     return;
   }
@@ -345,7 +357,8 @@ void StenoKeyCodeBuffer::ProcessOrthographicSuffix(const char *text,
     ++pScratchPad;
   }
 
-  AppendText(pWord, strlen(pWord), GetNextLetterCaseMode(state.caseMode));
+  AppendTextNoCaseModeOverride(pWord, strlen(pWord),
+                               GetNextLetterCaseMode(state.caseMode));
   state.caseMode = state.GetNextWordCaseMode();
 
   free(word);
@@ -425,13 +438,13 @@ bool StenoKeyCodeBuffer::ProcessKeyPresses(const char *p, const char *end) {
   for (;;) {
     StenoKeyPressToken token = tokenizer.GetNext();
     switch (token.type) {
-    case StenoKeyPressToken::Type::Key: {
+    case StenoKeyPressToken::Type::KEY: {
       uint32_t keyCode = token.keyCode;
       if (keyCode != 0) {
         buffer[count++] = StenoKeyCode::CreateRawKeyCodePress(keyCode);
       }
       if (tokenizer.PeekNextTokenType() ==
-          StenoKeyPressToken::Type::OpenParen) {
+          StenoKeyPressToken::Type::OPEN_PAREN) {
         keyPressStack.Add(keyCode);
         tokenizer.GetNext();
       } else {
@@ -439,12 +452,12 @@ bool StenoKeyCodeBuffer::ProcessKeyPresses(const char *p, const char *end) {
       }
       break;
     }
-    case StenoKeyPressToken::Type::Unknown:
+    case StenoKeyPressToken::Type::UNKNOWN:
       return false;
-    case StenoKeyPressToken::Type::OpenParen:
+    case StenoKeyPressToken::Type::OPEN_PAREN:
       // Unexpected open paren.
       return false;
-    case StenoKeyPressToken::Type::CloseParen: {
+    case StenoKeyPressToken::Type::CLOSE_PAREN: {
       if (keyPressStack.IsEmpty()) {
         return false;
       }
@@ -455,7 +468,7 @@ bool StenoKeyCodeBuffer::ProcessKeyPresses(const char *p, const char *end) {
       keyPressStack.Pop();
       break;
     }
-    case StenoKeyPressToken::Type::End: {
+    case StenoKeyPressToken::Type::END:
       // If unmatched trailing brackets, just close them out..
       while (keyPressStack.IsNotEmpty()) {
         uint32_t keyCode = keyPressStack.Back();
@@ -465,9 +478,7 @@ bool StenoKeyCodeBuffer::ProcessKeyPresses(const char *p, const char *end) {
         }
         keyPressStack.Pop();
       }
-
       return true;
-    }
     }
   }
 }

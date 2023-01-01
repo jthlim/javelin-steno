@@ -1,9 +1,12 @@
 //---------------------------------------------------------------------------
 
 #pragma once
+#include "pool_allocate.h"
 #include <assert.h>
-#include <stdint.h>
-#include <stdlib.h>
+
+//---------------------------------------------------------------------------
+
+constexpr size_t PATTERN_COMPONENT_BLOCK_SIZE = 1024;
 
 //---------------------------------------------------------------------------
 
@@ -14,9 +17,10 @@ struct PatternContext {
 
 //---------------------------------------------------------------------------
 
-class PatternComponent {
+class PatternComponent
+    : public PoolAllocate<PatternComponent, PATTERN_COMPONENT_BLOCK_SIZE> {
 public:
-  virtual bool Match(const char *p, PatternContext &context) = 0;
+  virtual bool Match(const char *p, PatternContext &context) const = 0;
   virtual bool IsEpsilon() const { return false; }
 
   virtual void RemoveEpsilon();
@@ -24,7 +28,8 @@ public:
   static void *operator new(size_t size);
 
 protected:
-  bool CallNext(const char *p, PatternContext &context);
+  bool CallNext(const char *p, PatternContext &context) const;
+  const PatternComponent *GetNext() const { return next; }
 
 private:
   PatternComponent *next = nullptr;
@@ -32,32 +37,29 @@ private:
   friend class Pattern;
   friend class BranchPatternComponent;
   friend class AlternatePatternComponent;
-
-  static size_t sizeRemaining;
-  static uint8_t *data;
 };
 
 class EpsilonPatternComponent : public PatternComponent {
 public:
-  virtual bool Match(const char *p, PatternContext &context);
+  virtual bool Match(const char *p, PatternContext &context) const;
   virtual bool IsEpsilon() const { return true; }
 };
 
 class AnyPatternComponent : public PatternComponent {
 public:
-  virtual bool Match(const char *p, PatternContext &context);
+  virtual bool Match(const char *p, PatternContext &context) const;
 };
 
 class AnyStarPatternComponent : public PatternComponent {
 public:
-  virtual bool Match(const char *p, PatternContext &context);
+  virtual bool Match(const char *p, PatternContext &context) const;
 };
 
 class BackReferencePatternComponent : public PatternComponent {
 public:
   BackReferencePatternComponent(int index) : index(index) {}
 
-  virtual bool Match(const char *p, PatternContext &context);
+  virtual bool Match(const char *p, PatternContext &context) const;
 
 private:
   int index;
@@ -65,7 +67,7 @@ private:
 
 class CharacterSetComponent : public PatternComponent {
 public:
-  virtual bool Match(const char *p, PatternContext &context);
+  virtual bool Match(const char *p, PatternContext &context) const;
 
 private:
   uint8_t mask[16] = {};
@@ -83,7 +85,7 @@ private:
 class BranchPatternComponent : public PatternComponent {
 public:
   BranchPatternComponent(PatternComponent *branch) : branch(branch) {}
-  virtual bool Match(const char *p, PatternContext &context);
+  virtual bool Match(const char *p, PatternContext &context) const;
   virtual void RemoveEpsilon() final;
 
 private:
@@ -93,19 +95,19 @@ private:
 
 class StartOfLinePatternComponent : public PatternComponent {
 public:
-  virtual bool Match(const char *p, PatternContext &context);
+  virtual bool Match(const char *p, PatternContext &context) const;
 };
 
 class EndOfLinePatternComponent : public PatternComponent {
 public:
-  virtual bool Match(const char *p, PatternContext &context);
+  virtual bool Match(const char *p, PatternContext &context) const;
 };
 
 class CapturePatternComponent : public PatternComponent {
 public:
   CapturePatternComponent(size_t index) : index(index) {}
 
-  virtual bool Match(const char *p, PatternContext &context) final;
+  virtual bool Match(const char *p, PatternContext &context) const final;
 
 private:
   size_t index;
@@ -115,7 +117,7 @@ class LiteralPatternComponent : public PatternComponent {
 public:
   LiteralPatternComponent(const char *text) : text(text) {}
 
-  virtual bool Match(const char *p, PatternContext &context) final;
+  virtual bool Match(const char *p, PatternContext &context) const final;
 
 private:
   const char *text;
@@ -139,7 +141,7 @@ public:
   AlternatePatternComponent(PatternComponent *initialComponent)
       : ContainerPatternComponent(initialComponent) {}
 
-  virtual bool Match(const char *p, PatternContext &context) final;
+  virtual bool Match(const char *p, PatternContext &context) const final;
 };
 
 //---------------------------------------------------------------------------

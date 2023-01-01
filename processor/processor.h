@@ -18,7 +18,7 @@ class StenoProcessorElement {
 public:
   StenoProcessorElement() {}
 
-  virtual void Process(StenoKeyState value, StenoAction action) = 0;
+  virtual void Process(const StenoKeyState &value, StenoAction action) = 0;
   virtual void Tick() = 0;
   virtual void PrintInfo() const = 0;
 
@@ -36,7 +36,8 @@ public:
   StenoProcessor(StenoProcessorElement &next) : next(next) {}
 
   void Process(StenoKey key, bool isPress);
-  void Process(StenoKeyState newState);
+  void Process(const StenoKeyState &newState);
+  void ProcessCancel();
   void Tick() { next.Tick(); }
   void PrintInfo() const;
 

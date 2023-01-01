@@ -10,7 +10,7 @@ void StenoProcessor::Process(StenoKey key, bool isPress) {
   next.Process(state, isPress ? StenoAction::PRESS : StenoAction::RELEASE);
 }
 
-void StenoProcessor::Process(StenoKeyState newState) {
+void StenoProcessor::Process(const StenoKeyState &newState) {
   StenoKeyState pressed = newState & ~state;
   if (pressed.IsNotEmpty()) {
     next.Process(state | newState, StenoAction::PRESS);
@@ -23,9 +23,10 @@ void StenoProcessor::Process(StenoKeyState newState) {
   state = newState;
 }
 
-void StenoProcessor::PrintInfo() const {
-  Console::Printf("Processing chain\n");
-  next.PrintInfo();
+void StenoProcessor::ProcessCancel() {
+  next.Process(StenoKeyState(0), StenoAction::CANCEL);
 }
+
+void StenoProcessor::PrintInfo() const { next.PrintInfo(); }
 
 //---------------------------------------------------------------------------

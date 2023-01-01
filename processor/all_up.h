@@ -12,9 +12,9 @@ public:
   StenoAllUp(StenoProcessorElement &nextProcessor)
       : nextProcessor(nextProcessor) {}
 
-  void Process(StenoKeyState value, StenoAction action);
+  void Process(const StenoKeyState &value, StenoAction action);
   void Tick() { nextProcessor.Tick(); }
-  void PrintInfo() const final;
+  void PrintInfo() const;
 
 private:
   StenoKeyState pressedKeyState;

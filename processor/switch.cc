@@ -11,7 +11,7 @@ const StenoKeyState switchTrigger((1ULL << (int)StenoKey::S1) |
 
 //---------------------------------------------------------------------------
 
-void StenoSwitch::Process(StenoKeyState value, StenoAction action) {
+void StenoSwitch::Process(const StenoKeyState &value, StenoAction action) {
   if (action == StenoAction::TRIGGER && value == switchTrigger) {
     useDefault = !useDefault;
     return;

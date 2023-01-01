@@ -5,6 +5,7 @@
 
 //---------------------------------------------------------------------------
 
+// Only used for debug test code.
 class StenoDebugDictionary final : public StenoDictionary {
 public:
   constexpr StenoDebugDictionary() {}
@@ -17,10 +18,13 @@ public:
   virtual const char *GetName() const;
   virtual bool PrintDictionary(bool hasData) const { return false; }
 
+  void SetResponse(const char *p) { response = p; }
+
   static const StenoDebugDictionary instance;
 
 private:
   static const StenoChord trigger;
+  const char *response = nullptr;
 };
 
 //---------------------------------------------------------------------------

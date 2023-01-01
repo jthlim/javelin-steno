@@ -27,3 +27,15 @@ const StenoCaseMode StenoState::NEXT_LETTER_CASE_MODE[] = {
 };
 
 //---------------------------------------------------------------------------
+
+void StenoState::Reset() {
+  caseMode = StenoCaseMode::NORMAL;
+  overrideCaseMode = StenoCaseMode::NORMAL;
+  joinNext = false;
+  isGlue = false;
+  isManualStateChange = false;
+  spaceCharacterLength = 1;
+  spaceCharacter = " ";
+}
+
+//---------------------------------------------------------------------------

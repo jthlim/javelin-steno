@@ -1983,14 +1983,14 @@ constexpr JeffPhrasingReverseHashMapEntry REVERSE_ENTRIES[] = {
     {0x040092cb, 0x8707b2d8, StenoChord(0x00298000), 0, 8, 11},
     {0x0505e520, 0x8707b2d8, StenoChord(0x000a4000), 0, 8, 7},
     {0x0505e520, 0x8707b2d8, StenoChord(0x002a4000), 0, 8, 11},
-    {0x063120af, 0x0609009d, StenoChord(0x00000400), 0, 2, 9},
+    {0x063120af, 0x0609009d, StenoChord(0x00000400), 0, 2, 5},
     {0x0649e8c4, 0x8707b2d8, StenoChord(0x000a4000), 0, 8, 7},
     {0x0649e8c4, 0x8707b2d8, StenoChord(0x002a4000), 0, 8, 11},
     {0x06aa82f6, 0x8707b2d8, StenoChord(0x00094000), 0, 8, 7},
     {0x06aa82f6, 0x8707b2d8, StenoChord(0x00294000), 0, 8, 11},
     {0x06ee4070, 0x8707b2d8, StenoChord(0x000f8000), 0, 8, 7},
     {0x06ee4070, 0x8707b2d8, StenoChord(0x002f8000), 0, 8, 11},
-    {0x070d8c31, 0x0609009d, StenoChord(0x00000000), 1, 2, 9},
+    {0x070d8c31, 0x0609009d, StenoChord(0x00000000), 1, 2, 5},
     {0x070d8c31, 0x8707b2d8, StenoChord(0x0000c000), 0, 8, 7},
     {0x0743a13d, 0x8707b2d8, StenoChord(0x00088000), 0, 8, 7},
     {0x07d4c6fa, 0x8707b2d8, StenoChord(0x00540000), 1, 8, 11},
@@ -2001,10 +2001,10 @@ constexpr JeffPhrasingReverseHashMapEntry REVERSE_ENTRIES[] = {
     {0x0966a6ff, 0x8707b2d8, StenoChord(0x002e0000), 0, 8, 11},
     {0x0a817e37, 0x8707b2d8, StenoChord(0x0010c000), 1, 8, 7},
     {0x0a817e37, 0x8707b2d8, StenoChord(0x0050c000), 0, 8, 11},
-    {0x0c6f39ea, 0x0c6f39ea, StenoChord(0x00002000), 1, 4, 10},
-    {0x0c6f39ea, 0x0c6f39ea, StenoChord(0x00002000), 0, 6, 9},
-    {0x0c6f39ea, 0x0c6f39ea, StenoChord(0x00002000), 0, 4, 9},
-    {0x0c6f39ea, 0x0c6f39ea, StenoChord(0x00002400), 0, 4, 9},
+    {0x0c6f39ea, 0x0c6f39ea, StenoChord(0x00002000), 1, 4, 6},
+    {0x0c6f39ea, 0x0c6f39ea, StenoChord(0x00002000), 0, 6, 5},
+    {0x0c6f39ea, 0x0c6f39ea, StenoChord(0x00002000), 0, 4, 5},
+    {0x0c6f39ea, 0x0c6f39ea, StenoChord(0x00002400), 0, 4, 5},
     {0x0c6f39ea, 0x8707b2d8, StenoChord(0x00080000), 0, 8, 7},
     {0x0ce50045, 0x8707b2d8, StenoChord(0x00140000), 1, 8, 7},
     {0x0ce50045, 0x8707b2d8, StenoChord(0x00540000), 0, 8, 11},
@@ -2016,9 +2016,9 @@ constexpr JeffPhrasingReverseHashMapEntry REVERSE_ENTRIES[] = {
     {0x0daeceeb, 0x8707b2d8, StenoChord(0x00524000), 0, 8, 11},
     {0x0e15f2fe, 0x8707b2d8, StenoChord(0x0001c000), 1, 8, 7},
     {0x0e15f2fe, 0x8707b2d8, StenoChord(0x0021c000), 0, 8, 11},
-    {0x0e3c55fc, 0x0e3c55fc, StenoChord(0x00000800), 1, 4, 9},
-    {0x0e3c55fc, 0x0e3c55fc, StenoChord(0x00000800), 0, 6, 9},
-    {0x0e3c55fc, 0x0e3c55fc, StenoChord(0x00000c00), 0, 4, 9},
+    {0x0e3c55fc, 0x0e3c55fc, StenoChord(0x00000800), 1, 4, 5},
+    {0x0e3c55fc, 0x0e3c55fc, StenoChord(0x00000800), 0, 6, 5},
+    {0x0e3c55fc, 0x0e3c55fc, StenoChord(0x00000c00), 0, 4, 5},
     {0x0e3c55fc, 0x8707b2d8, StenoChord(0x00010000), 0, 8, 7},
     {0x0eb86064, 0x8707b2d8, StenoChord(0x0019c000), 0, 8, 7},
     {0x0eb86064, 0x8707b2d8, StenoChord(0x0079c000), 0, 8, 11},
@@ -2061,9 +2061,9 @@ constexpr JeffPhrasingReverseHashMapEntry REVERSE_ENTRIES[] = {
     {0x1acc766e, 0x8707b2d8, StenoChord(0x0023c000), 0, 8, 11},
     {0x1aeec2c5, 0x8707b2d8, StenoChord(0x000dc000), 0, 8, 7},
     {0x1aeec2c5, 0x8707b2d8, StenoChord(0x002dc000), 0, 8, 11},
-    {0x1b15dda7, 0x1b15dda7, StenoChord(0x00000800), 1, 4, 5},
-    {0x1b15dda7, 0x1b15dda7, StenoChord(0x00000800), 0, 6, 5},
-    {0x1b15dda7, 0x1b15dda7, StenoChord(0x00000c00), 0, 4, 5},
+    {0x1b15dda7, 0x1b15dda7, StenoChord(0x00000800), 1, 4, 9},
+    {0x1b15dda7, 0x1b15dda7, StenoChord(0x00000800), 0, 6, 9},
+    {0x1b15dda7, 0x1b15dda7, StenoChord(0x00000c00), 0, 4, 9},
     {0x1b15dda7, 0x8707b2d8, StenoChord(0x00210000), 0, 8, 11},
     {0x1b479518, 0x8707b2d8, StenoChord(0x00088000), 0, 8, 7},
     {0x1b479518, 0x8707b2d8, StenoChord(0x00288000), 0, 8, 11},
@@ -2083,7 +2083,7 @@ constexpr JeffPhrasingReverseHashMapEntry REVERSE_ENTRIES[] = {
     {0x1dd9069f, 0x8707b2d8, StenoChord(0x000d0000), 0, 8, 7},
     {0x1dd9069f, 0x8707b2d8, StenoChord(0x002d0000), 0, 8, 11},
     {0x1dd969bc, 0x8707b2d8, StenoChord(0x00404000), 0, 8, 7},
-    {0x1de6be4e, 0x0609009d, StenoChord(0x00000300), 0, 2, 9},
+    {0x1de6be4e, 0x0609009d, StenoChord(0x00000300), 0, 2, 5},
     {0x1de6be4e, 0x8707b2d8, StenoChord(0x00154000), 0, 8, 7},
     {0x1e151309, 0x8707b2d8, StenoChord(0x00084000), 1, 8, 7},
     {0x1e151309, 0x8707b2d8, StenoChord(0x00284000), 0, 8, 11},
@@ -2096,7 +2096,7 @@ constexpr JeffPhrasingReverseHashMapEntry REVERSE_ENTRIES[] = {
     {0x20663dce, 0x8707b2d8, StenoChord(0x002c0000), 0, 8, 11},
     {0x212afb55, 0x8707b2d8, StenoChord(0x001a4000), 0, 8, 7},
     {0x212afb55, 0x8707b2d8, StenoChord(0x007a4000), 0, 8, 11},
-    {0x2171cdfd, 0x0609009d, StenoChord(0x00000700), 0, 2, 9},
+    {0x2171cdfd, 0x0609009d, StenoChord(0x00000700), 0, 2, 5},
     {0x21f3e377, 0x8707b2d8, StenoChord(0x000ac000), 0, 8, 7},
     {0x21f3e377, 0x8707b2d8, StenoChord(0x002ac000), 0, 8, 11},
     {0x2273d1a5, 0x8707b2d8, StenoChord(0x0003c000), 1, 8, 7},
@@ -2113,7 +2113,7 @@ constexpr JeffPhrasingReverseHashMapEntry REVERSE_ENTRIES[] = {
     {0x27684180, 0x8707b2d8, StenoChord(0x00190000), 0, 8, 7},
     {0x27684180, 0x8707b2d8, StenoChord(0x00790000), 0, 8, 11},
     {0x27d367ef, 0x8707b2d8, StenoChord(0x002d0000), 0, 8, 11},
-    {0x27de2e44, 0x0609009d, StenoChord(0x00000200), 0, 2, 5},
+    {0x27de2e44, 0x0609009d, StenoChord(0x00000200), 0, 2, 9},
     {0x27de2e44, 0x8707b2d8, StenoChord(0x00234000), 0, 8, 11},
     {0x28218e08, 0x8707b2d8, StenoChord(0x0025c000), 1, 8, 11},
     {0x28ec173f, 0x8707b2d8, StenoChord(0x000d8000), 0, 8, 7},
@@ -2127,7 +2127,7 @@ constexpr JeffPhrasingReverseHashMapEntry REVERSE_ENTRIES[] = {
     {0x2bca8e0d, 0x8707b2d8, StenoChord(0x00010000), 0, 8, 7},
     {0x2bca8e0d, 0x8707b2d8, StenoChord(0x00210000), 0, 8, 11},
     {0x2c316b9d, 0x8707b2d8, StenoChord(0x002dc000), 0, 8, 11},
-    {0x2d5aebbc, 0x0609009d, StenoChord(0x00000600), 0, 2, 5},
+    {0x2d5aebbc, 0x0609009d, StenoChord(0x00000600), 0, 2, 9},
     {0x2d9bcc99, 0x8707b2d8, StenoChord(0x000a0000), 1, 8, 7},
     {0x2d9bcc99, 0x8707b2d8, StenoChord(0x002a0000), 0, 8, 11},
     {0x2e086b3a, 0x8707b2d8, StenoChord(0x000ac000), 0, 8, 7},
@@ -2136,7 +2136,7 @@ constexpr JeffPhrasingReverseHashMapEntry REVERSE_ENTRIES[] = {
     {0x2f21896f, 0x8707b2d8, StenoChord(0x00004000), 0, 8, 7},
     {0x2f21896f, 0x8707b2d8, StenoChord(0x00204000), 0, 8, 11},
     {0x320ed901, 0x8707b2d8, StenoChord(0x00414000), 0, 8, 7},
-    {0x326428a8, 0x326428a8, StenoChord(0x00000c00), 0, 6, 9},
+    {0x326428a8, 0x326428a8, StenoChord(0x00000c00), 0, 6, 5},
     {0x32af1522, 0x8707b2d8, StenoChord(0x00008000), 1, 8, 7},
     {0x32af1522, 0x8707b2d8, StenoChord(0x00208000), 0, 8, 11},
     {0x32af1522, 0x8707b2d8, StenoChord(0x00614000), 0, 8, 11},
@@ -2153,14 +2153,14 @@ constexpr JeffPhrasingReverseHashMapEntry REVERSE_ENTRIES[] = {
     {0x3896e72c, 0x8707b2d8, StenoChord(0x0052c000), 0, 8, 11},
     {0x390a7b63, 0x710e300b, StenoChord(0x000000ea), 0, 1, 13},
     {0x390a7b63, 0x710e300b, StenoChord(0x00000c00), 0, 1, 14},
-    {0x3a35c33d, 0x0609009d, StenoChord(0x00000500), 0, 2, 5},
+    {0x3a35c33d, 0x0609009d, StenoChord(0x00000500), 0, 2, 9},
     {0x3a528d82, 0x8707b2d8, StenoChord(0x002a8000), 0, 8, 11},
     {0x3cb73648, 0x8707b2d8, StenoChord(0x000ac000), 0, 8, 7},
     {0x3cb73648, 0x8707b2d8, StenoChord(0x002ac000), 0, 8, 11},
     {0x3cca9f20, 0x8707b2d8, StenoChord(0x001a0000), 0, 8, 7},
-    {0x3ceae297, 0x3ceae297, StenoChord(0x00000800), 1, 6, 9},
-    {0x3ceae297, 0x3ceae297, StenoChord(0x00000800), 0, 4, 9},
-    {0x3ceae297, 0x3ceae297, StenoChord(0x00000c00), 0, 4, 9},
+    {0x3ceae297, 0x3ceae297, StenoChord(0x00000800), 1, 6, 5},
+    {0x3ceae297, 0x3ceae297, StenoChord(0x00000800), 0, 4, 5},
+    {0x3ceae297, 0x3ceae297, StenoChord(0x00000c00), 0, 4, 5},
     {0x3ceae297, 0x8707b2d8, StenoChord(0x00010000), 0, 8, 7},
     {0x3d5b5ba2, 0x8707b2d8, StenoChord(0x00128000), 1, 8, 7},
     {0x3d5b5ba2, 0x8707b2d8, StenoChord(0x00528000), 0, 8, 11},
@@ -2168,24 +2168,24 @@ constexpr JeffPhrasingReverseHashMapEntry REVERSE_ENTRIES[] = {
     {0x3f30e086, 0x8707b2d8, StenoChord(0x00628000), 0, 8, 11},
     {0x3f31f002, 0x8707b2d8, StenoChord(0x00038000), 1, 8, 7},
     {0x3f31f002, 0x8707b2d8, StenoChord(0x00238000), 0, 8, 11},
-    {0x3f3807c6, 0x0609009d, StenoChord(0x00000300), 0, 2, 5},
+    {0x3f3807c6, 0x0609009d, StenoChord(0x00000300), 0, 2, 9},
     {0x3f3807c6, 0x8707b2d8, StenoChord(0x00554000), 0, 8, 11},
     {0x410505e2, 0x8707b2d8, StenoChord(0x0001c000), 1, 8, 7},
     {0x426bbd50, 0x8707b2d8, StenoChord(0x00090000), 0, 8, 7},
     {0x4286c9ef, 0x8707b2d8, StenoChord(0x0009c000), 0, 8, 7},
     {0x4286c9ef, 0x8707b2d8, StenoChord(0x0029c000), 0, 8, 11},
-    {0x429b1a21, 0x0609009d, StenoChord(0x00000200), 1, 2, 9},
+    {0x429b1a21, 0x0609009d, StenoChord(0x00000200), 1, 2, 5},
     {0x429b1a21, 0x8707b2d8, StenoChord(0x00034000), 0, 8, 7},
     {0x44630acd, 0x8707b2d8, StenoChord(0x0009c000), 0, 8, 7},
     {0x44ac63b8, 0x8707b2d8, StenoChord(0x00090000), 0, 8, 7},
     {0x44ac63b8, 0x8707b2d8, StenoChord(0x00290000), 0, 8, 11},
-    {0x44be45f9, 0x44be45f9, StenoChord(0x00000c00), 0, 6, 9},
+    {0x44be45f9, 0x44be45f9, StenoChord(0x00000c00), 0, 6, 5},
     {0x453f0832, 0x8707b2d8, StenoChord(0x00428000), 0, 8, 7},
     {0x456239f9, 0x8707b2d8, StenoChord(0x00068000), 1, 8, 7},
     {0x456239f9, 0x8707b2d8, StenoChord(0x00268000), 0, 8, 11},
     {0x4686967c, 0x8707b2d8, StenoChord(0x00010000), 1, 8, 7},
     {0x4686967c, 0x8707b2d8, StenoChord(0x00210000), 0, 8, 11},
-    {0x47599c71, 0x47599c71, StenoChord(0x00002400), 1, 6, 9},
+    {0x47599c71, 0x47599c71, StenoChord(0x00002400), 1, 6, 5},
     {0x48746d47, 0x8707b2d8, StenoChord(0x00030000), 1, 8, 7},
     {0x49033525, 0x8707b2d8, StenoChord(0x000c4000), 0, 8, 7},
     {0x49033525, 0x8707b2d8, StenoChord(0x002c4000), 0, 8, 11},
@@ -2199,15 +2199,15 @@ constexpr JeffPhrasingReverseHashMapEntry REVERSE_ENTRIES[] = {
     {0x4bf68519, 0x8707b2d8, StenoChord(0x00140000), 1, 8, 7},
     {0x4cf73ae2, 0x8707b2d8, StenoChord(0x00010000), 1, 8, 7},
     {0x4cf73ae2, 0x8707b2d8, StenoChord(0x00210000), 0, 8, 11},
-    {0x4d8049c1, 0x4d8049c1, StenoChord(0x00002c00), 0, 6, 5},
+    {0x4d8049c1, 0x4d8049c1, StenoChord(0x00002c00), 0, 6, 9},
     {0x4d9a0d84, 0x8707b2d8, StenoChord(0x00054000), 1, 8, 7},
     {0x4d9a0d84, 0x8707b2d8, StenoChord(0x00254000), 0, 8, 11},
     {0x4daeda87, 0x8707b2d8, StenoChord(0x00244000), 1, 8, 11},
     {0x4de06265, 0x8707b2d8, StenoChord(0x00090000), 0, 8, 7},
     {0x4e7b11cb, 0x8707b2d8, StenoChord(0x00038000), 1, 8, 7},
     {0x4e7b11cb, 0x8707b2d8, StenoChord(0x00238000), 0, 8, 11},
-    {0x4e7fcf41, 0x0609009d, StenoChord(0x00000000), 0, 2, 5},
-    {0x4e7fcf41, 0x8707b2d8, StenoChord(0x0020c000), 1, 8, 11},
+    {0x4e7fcf41, 0x0609009d, StenoChord(0x00000000), 1, 2, 9},
+    {0x4e7fcf41, 0x8707b2d8, StenoChord(0x0020c000), 0, 8, 11},
     {0x4f91d53c, 0x8707b2d8, StenoChord(0x00014000), 0, 8, 7},
     {0x4f91d53c, 0x8707b2d8, StenoChord(0x00214000), 0, 8, 11},
     {0x5060b8c4, 0x8707b2d8, StenoChord(0x00148000), 1, 8, 7},
@@ -2228,7 +2228,7 @@ constexpr JeffPhrasingReverseHashMapEntry REVERSE_ENTRIES[] = {
     {0x52fa60a8, 0x8707b2d8, StenoChord(0x00258000), 0, 8, 11},
     {0x530f2caf, 0x8707b2d8, StenoChord(0x00420000), 0, 8, 7},
     {0x530f2caf, 0x8707b2d8, StenoChord(0x00620000), 0, 8, 11},
-    {0x5313f237, 0x5313f237, StenoChord(0x00002400), 1, 6, 9},
+    {0x5313f237, 0x5313f237, StenoChord(0x00002400), 1, 6, 5},
     {0x532743cd, 0x8707b2d8, StenoChord(0x00048000), 1, 8, 7},
     {0x532743cd, 0x8707b2d8, StenoChord(0x00248000), 0, 8, 11},
     {0x534e6880, 0x8707b2d8, StenoChord(0x00054000), 1, 8, 7},
@@ -2237,7 +2237,7 @@ constexpr JeffPhrasingReverseHashMapEntry REVERSE_ENTRIES[] = {
     {0x53da313c, 0x8707b2d8, StenoChord(0x002bc000), 0, 8, 11},
     {0x5468790f, 0x8707b2d8, StenoChord(0x000b0000), 0, 8, 7},
     {0x5468790f, 0x8707b2d8, StenoChord(0x002b0000), 0, 8, 11},
-    {0x54ce8b8c, 0x0609009d, StenoChord(0x00000500), 0, 2, 9},
+    {0x54ce8b8c, 0x0609009d, StenoChord(0x00000500), 0, 2, 5},
     {0x5559689d, 0x8707b2d8, StenoChord(0x000cc000), 0, 8, 7},
     {0x5559689d, 0x8707b2d8, StenoChord(0x002cc000), 0, 8, 11},
     {0x5647a3be, 0x5647a3be, StenoChord(0x00001800), 0, 6, 13},
@@ -2276,16 +2276,16 @@ constexpr JeffPhrasingReverseHashMapEntry REVERSE_ENTRIES[] = {
     {0x6156e822, 0x8707b2d8, StenoChord(0x002d0000), 0, 8, 11},
     {0x62bfcab3, 0x8707b2d8, StenoChord(0x000a0000), 1, 8, 7},
     {0x62bfcab3, 0x8707b2d8, StenoChord(0x002a0000), 0, 8, 11},
-    {0x633cbad2, 0x0609009d, StenoChord(0x00000100), 0, 2, 9},
+    {0x633cbad2, 0x0609009d, StenoChord(0x00000100), 0, 2, 5},
     {0x633cbad2, 0x8707b2d8, StenoChord(0x00150000), 0, 8, 7},
     {0x64e2a26f, 0x8707b2d8, StenoChord(0x0001c000), 1, 8, 7},
     {0x64e2a26f, 0x8707b2d8, StenoChord(0x0021c000), 0, 8, 11},
     {0x6508f284, 0x8707b2d8, StenoChord(0x00044000), 1, 8, 7},
     {0x65fe1937, 0x8707b2d8, StenoChord(0x000bc000), 0, 8, 7},
     {0x65fe1937, 0x8707b2d8, StenoChord(0x002bc000), 0, 8, 11},
-    {0x66002635, 0x66002635, StenoChord(0x00002800), 0, 4, 5},
-    {0x66002635, 0x66002635, StenoChord(0x00002800), 0, 6, 9},
     {0x66002635, 0x66002635, StenoChord(0x00002800), 0, 4, 9},
+    {0x66002635, 0x66002635, StenoChord(0x00002800), 0, 6, 5},
+    {0x66002635, 0x66002635, StenoChord(0x00002800), 0, 4, 5},
     {0x66002635, 0x66002635, StenoChord(0x00002c00), 0, 4, 13},
     {0x666b7816, 0x710e300b, StenoChord(0x000000b8), 0, 1, 13},
     {0x666b7816, 0x710e300b, StenoChord(0x00001000), 0, 1, 14},
@@ -2293,9 +2293,9 @@ constexpr JeffPhrasingReverseHashMapEntry REVERSE_ENTRIES[] = {
     {0x680e9c5c, 0x8707b2d8, StenoChord(0x0051c000), 0, 8, 11},
     {0x6826eae0, 0x8707b2d8, StenoChord(0x00014000), 0, 8, 7},
     {0x6826eae0, 0x8707b2d8, StenoChord(0x00214000), 0, 8, 11},
-    {0x6a2996a3, 0x6a2996a3, StenoChord(0x00002800), 0, 6, 9},
-    {0x6a2996a3, 0x6a2996a3, StenoChord(0x00002800), 0, 4, 9},
-    {0x6a2996a3, 0x6a2996a3, StenoChord(0x00002c00), 0, 4, 9},
+    {0x6a2996a3, 0x6a2996a3, StenoChord(0x00002800), 0, 6, 5},
+    {0x6a2996a3, 0x6a2996a3, StenoChord(0x00002800), 0, 4, 5},
+    {0x6a2996a3, 0x6a2996a3, StenoChord(0x00002c00), 0, 4, 5},
     {0x6a59beee, 0x8707b2d8, StenoChord(0x0004c000), 1, 8, 7},
     {0x6b660a33, 0x8707b2d8, StenoChord(0x00054000), 1, 8, 7},
     {0x6b660a33, 0x8707b2d8, StenoChord(0x00254000), 0, 8, 11},
@@ -2319,10 +2319,10 @@ constexpr JeffPhrasingReverseHashMapEntry REVERSE_ENTRIES[] = {
     {0x749ffdd0, 0x749ffdd0, StenoChord(0x00003400), 0, 4, 13},
     {0x749ffdd0, 0x749ffdd0, StenoChord(0x000034a6), 0, 7, 13},
     {0x749ffdd0, 0x749ffdd0, StenoChord(0x000034fe), 0, 7, 13},
-    {0x74faa480, 0x74faa480, StenoChord(0x00002800), 0, 4, 5},
-    {0x74faa480, 0x74faa480, StenoChord(0x00002800), 0, 6, 5},
-    {0x74faa480, 0x74faa480, StenoChord(0x00002c00), 0, 4, 5},
-    {0x756ac9d5, 0x0609009d, StenoChord(0x00000600), 0, 2, 9},
+    {0x74faa480, 0x74faa480, StenoChord(0x00002800), 0, 4, 9},
+    {0x74faa480, 0x74faa480, StenoChord(0x00002800), 0, 6, 9},
+    {0x74faa480, 0x74faa480, StenoChord(0x00002c00), 0, 4, 9},
+    {0x756ac9d5, 0x0609009d, StenoChord(0x00000600), 0, 2, 5},
     {0x75abac61, 0x8707b2d8, StenoChord(0x00194000), 0, 8, 7},
     {0x75abac61, 0x8707b2d8, StenoChord(0x00794000), 0, 8, 11},
     {0x77c63782, 0x8707b2d8, StenoChord(0x00048000), 1, 8, 7},
@@ -2366,13 +2366,13 @@ constexpr JeffPhrasingReverseHashMapEntry REVERSE_ENTRIES[] = {
     {0x8429f971, 0x8707b2d8, StenoChord(0x00188000), 0, 8, 7},
     {0x843cba45, 0x8707b2d8, StenoChord(0x00064000), 0, 8, 7},
     {0x843cba45, 0x8707b2d8, StenoChord(0x00264000), 0, 8, 11},
-    {0x85216679, 0x85216679, StenoChord(0x00002c00), 0, 6, 9},
+    {0x85216679, 0x85216679, StenoChord(0x00002c00), 0, 6, 5},
     {0x8701804a, 0x8707b2d8, StenoChord(0x000a4000), 0, 8, 7},
     {0x87ae0156, 0x8707b2d8, StenoChord(0x0018c000), 0, 8, 7},
     {0x87ae0156, 0x8707b2d8, StenoChord(0x0078c000), 0, 8, 11},
     {0x8952fbf0, 0x8707b2d8, StenoChord(0x0010c000), 1, 8, 7},
     {0x8a1dfa16, 0x8707b2d8, StenoChord(0x00640000), 0, 8, 11},
-    {0x8a97f357, 0x8a97f357, StenoChord(0x00002400), 1, 6, 5},
+    {0x8a97f357, 0x8a97f357, StenoChord(0x00002400), 1, 6, 9},
     {0x8b4ba9e6, 0x8707b2d8, StenoChord(0x000c8000), 0, 8, 7},
     {0x8b4ba9e6, 0x8707b2d8, StenoChord(0x002c8000), 0, 8, 11},
     {0x8c17e6cb, 0x8707b2d8, StenoChord(0x00158000), 0, 8, 7},
@@ -2380,10 +2380,10 @@ constexpr JeffPhrasingReverseHashMapEntry REVERSE_ENTRIES[] = {
     {0x8ca4052e, 0x8707b2d8, StenoChord(0x00500000), 0, 8, 11},
     {0x8eba60cc, 0x8707b2d8, StenoChord(0x0010c000), 1, 8, 7},
     {0x8eba60cc, 0x8707b2d8, StenoChord(0x0050c000), 0, 8, 11},
-    {0x8fbcbc2d, 0x8fbcbc2d, StenoChord(0x00002000), 1, 4, 6},
-    {0x8fbcbc2d, 0x8fbcbc2d, StenoChord(0x00002000), 0, 6, 5},
-    {0x8fbcbc2d, 0x8fbcbc2d, StenoChord(0x00002000), 0, 4, 5},
-    {0x8fbcbc2d, 0x8fbcbc2d, StenoChord(0x00002400), 0, 4, 5},
+    {0x8fbcbc2d, 0x8fbcbc2d, StenoChord(0x00002000), 1, 4, 10},
+    {0x8fbcbc2d, 0x8fbcbc2d, StenoChord(0x00002000), 0, 6, 9},
+    {0x8fbcbc2d, 0x8fbcbc2d, StenoChord(0x00002000), 0, 4, 9},
+    {0x8fbcbc2d, 0x8fbcbc2d, StenoChord(0x00002400), 0, 4, 9},
     {0x8fbcbc2d, 0x8707b2d8, StenoChord(0x00080000), 0, 8, 7},
     {0x8fbcbc2d, 0x8707b2d8, StenoChord(0x00280000), 0, 8, 11},
     {0x8ff6cc98, 0x8707b2d8, StenoChord(0x00190000), 0, 8, 7},
@@ -2406,9 +2406,9 @@ constexpr JeffPhrasingReverseHashMapEntry REVERSE_ENTRIES[] = {
     {0x95989bc5, 0x8707b2d8, StenoChord(0x000c8000), 0, 8, 7},
     {0x96445b9d, 0x8707b2d8, StenoChord(0x000d8000), 0, 8, 7},
     {0x96445b9d, 0x8707b2d8, StenoChord(0x002d8000), 0, 8, 11},
-    {0x9685f6a6, 0x9685f6a6, StenoChord(0x00000800), 1, 4, 9},
-    {0x9685f6a6, 0x9685f6a6, StenoChord(0x00000800), 0, 6, 9},
-    {0x9685f6a6, 0x9685f6a6, StenoChord(0x00000c00), 0, 4, 9},
+    {0x9685f6a6, 0x9685f6a6, StenoChord(0x00000800), 1, 4, 5},
+    {0x9685f6a6, 0x9685f6a6, StenoChord(0x00000800), 0, 6, 5},
+    {0x9685f6a6, 0x9685f6a6, StenoChord(0x00000c00), 0, 4, 5},
     {0x9685f6a6, 0x8707b2d8, StenoChord(0x00010000), 0, 8, 7},
     {0x96bb243e, 0x8707b2d8, StenoChord(0x0018c000), 0, 8, 7},
     {0x98574167, 0x8707b2d8, StenoChord(0x00104000), 0, 8, 7},
@@ -2426,8 +2426,8 @@ constexpr JeffPhrasingReverseHashMapEntry REVERSE_ENTRIES[] = {
     {0x9c428b46, 0x8707b2d8, StenoChord(0x00194000), 0, 8, 7},
     {0x9c428b46, 0x8707b2d8, StenoChord(0x00794000), 0, 8, 11},
     {0x9cf70218, 0x8707b2d8, StenoChord(0x00120000), 0, 8, 7},
-    {0x9d45c095, 0x0609009d, StenoChord(0x00000000), 1, 2, 9},
-    {0x9d45c095, 0x8707b2d8, StenoChord(0x0000c000), 1, 8, 7},
+    {0x9d45c095, 0x0609009d, StenoChord(0x00000000), 1, 2, 5},
+    {0x9d45c095, 0x8707b2d8, StenoChord(0x0000c000), 0, 8, 7},
     {0x9d45c095, 0x8707b2d8, StenoChord(0x0020c000), 0, 8, 11},
     {0x9d46ad5f, 0x8707b2d8, StenoChord(0x00460000), 0, 8, 7},
     {0x9d546aa1, 0x8707b2d8, StenoChord(0x0003c000), 1, 8, 7},
@@ -2479,13 +2479,13 @@ constexpr JeffPhrasingReverseHashMapEntry REVERSE_ENTRIES[] = {
     {0xa8539d8c, 0x0609009d, StenoChord(0x00000146), 0, 2, 14},
     {0xa9eb7789, 0x8707b2d8, StenoChord(0x0012c000), 0, 8, 7},
     {0xa9eb7789, 0x8707b2d8, StenoChord(0x0052c000), 0, 8, 11},
-    {0xaa583684, 0x0609009d, StenoChord(0x00000100), 0, 2, 5},
+    {0xaa583684, 0x0609009d, StenoChord(0x00000100), 0, 2, 9},
     {0xaa583684, 0x8707b2d8, StenoChord(0x00550000), 0, 8, 11},
     {0xac49a6db, 0x8707b2d8, StenoChord(0x00250000), 1, 8, 11},
     {0xac6340b3, 0x8707b2d8, StenoChord(0x00070000), 1, 8, 7},
     {0xac6340b3, 0x8707b2d8, StenoChord(0x00270000), 0, 8, 11},
     {0xac94610e, 0x8707b2d8, StenoChord(0x000c0000), 0, 8, 7},
-    {0xac94fac6, 0xac94fac6, StenoChord(0x00000c00), 0, 6, 5},
+    {0xac94fac6, 0xac94fac6, StenoChord(0x00000c00), 0, 6, 9},
     {0xad4aa09e, 0x8707b2d8, StenoChord(0x00108000), 1, 8, 7},
     {0xad4aa09e, 0x8707b2d8, StenoChord(0x00508000), 0, 8, 11},
     {0xae36585c, 0x8707b2d8, StenoChord(0x000c0000), 0, 8, 7},
@@ -2510,16 +2510,16 @@ constexpr JeffPhrasingReverseHashMapEntry REVERSE_ENTRIES[] = {
     {0xb495d73d, 0x8707b2d8, StenoChord(0x00788000), 0, 8, 11},
     {0xb521e95a, 0x8707b2d8, StenoChord(0x000c4000), 0, 8, 7},
     {0xb521e95a, 0x8707b2d8, StenoChord(0x002c4000), 0, 8, 11},
-    {0xb5d92c3f, 0xb5d92c3f, StenoChord(0x00000c00), 0, 6, 5},
+    {0xb5d92c3f, 0xb5d92c3f, StenoChord(0x00000c00), 0, 6, 9},
     {0xb6689356, 0x8707b2d8, StenoChord(0x00040000), 1, 8, 7},
     {0xb6689356, 0x8707b2d8, StenoChord(0x00240000), 0, 8, 11},
     {0xb741320d, 0x8707b2d8, StenoChord(0x00044000), 1, 8, 7},
     {0xb741320d, 0x8707b2d8, StenoChord(0x00244000), 0, 8, 11},
     {0xb8cb2493, 0x8707b2d8, StenoChord(0x001c8000), 0, 8, 7},
     {0xb8cb2493, 0x8707b2d8, StenoChord(0x007c8000), 0, 8, 11},
-    {0xb961c051, 0xb961c051, StenoChord(0x00000800), 1, 4, 5},
-    {0xb961c051, 0xb961c051, StenoChord(0x00000800), 0, 6, 5},
-    {0xb961c051, 0xb961c051, StenoChord(0x00000c00), 0, 4, 5},
+    {0xb961c051, 0xb961c051, StenoChord(0x00000800), 1, 4, 9},
+    {0xb961c051, 0xb961c051, StenoChord(0x00000800), 0, 6, 9},
+    {0xb961c051, 0xb961c051, StenoChord(0x00000c00), 0, 4, 9},
     {0xb961c051, 0x8707b2d8, StenoChord(0x00210000), 0, 8, 11},
     {0xba441fc2, 0x8707b2d8, StenoChord(0x000c8000), 0, 8, 7},
     {0xba441fc2, 0x8707b2d8, StenoChord(0x002c8000), 0, 8, 11},
@@ -2540,7 +2540,7 @@ constexpr JeffPhrasingReverseHashMapEntry REVERSE_ENTRIES[] = {
     {0xc11afc41, 0x8707b2d8, StenoChord(0x00504000), 0, 8, 11},
     {0xc1389bb2, 0x8707b2d8, StenoChord(0x001a0000), 0, 8, 7},
     {0xc1389bb2, 0x8707b2d8, StenoChord(0x007a0000), 0, 8, 11},
-    {0xc2c4fcec, 0x0609009d, StenoChord(0x00000700), 0, 2, 5},
+    {0xc2c4fcec, 0x0609009d, StenoChord(0x00000700), 0, 2, 9},
     {0xc3325b66, 0x8707b2d8, StenoChord(0x0019c000), 0, 8, 7},
     {0xc3325b66, 0x8707b2d8, StenoChord(0x0079c000), 0, 8, 11},
     {0xc3511eb1, 0x8707b2d8, StenoChord(0x00058000), 1, 8, 7},
@@ -2577,7 +2577,7 @@ constexpr JeffPhrasingReverseHashMapEntry REVERSE_ENTRIES[] = {
     {0xcc2b13c3, 0x8707b2d8, StenoChord(0x002d4000), 0, 8, 11},
     {0xcc8e2f3e, 0x8707b2d8, StenoChord(0x00074000), 0, 8, 7},
     {0xcc8e2f3e, 0x8707b2d8, StenoChord(0x00274000), 0, 8, 11},
-    {0xcd2578ed, 0x0609009d, StenoChord(0x00000400), 0, 2, 5},
+    {0xcd2578ed, 0x0609009d, StenoChord(0x00000400), 0, 2, 9},
     {0xce5c21fa, 0x8707b2d8, StenoChord(0x00008000), 1, 8, 7},
     {0xcf05a4c2, 0x8707b2d8, StenoChord(0x0011c000), 1, 8, 7},
     {0xcf05a4c2, 0x8707b2d8, StenoChord(0x0051c000), 0, 8, 11},
@@ -2593,7 +2593,7 @@ constexpr JeffPhrasingReverseHashMapEntry REVERSE_ENTRIES[] = {
     {0xd1256687, 0x710e300b, StenoChord(0x00000800), 0, 1, 14},
     {0xd2109e05, 0xd2109e05, StenoChord(0x000014a6), 0, 7, 13},
     {0xd2109e05, 0xd2109e05, StenoChord(0x000014fe), 0, 7, 13},
-    {0xd27eea40, 0xd27eea40, StenoChord(0x00002000), 1, 6, 9},
+    {0xd27eea40, 0xd27eea40, StenoChord(0x00002000), 1, 6, 5},
     {0xd27eea40, 0xd27eea40, StenoChord(0x00002000), 0, 4, 15},
     {0xd27eea40, 0xd27eea40, StenoChord(0x00002400), 0, 4, 13},
     {0xd27eea40, 0x8707b2d8, StenoChord(0x00080000), 0, 8, 7},
@@ -2615,7 +2615,7 @@ constexpr JeffPhrasingReverseHashMapEntry REVERSE_ENTRIES[] = {
     {0xd9e56117, 0x8707b2d8, StenoChord(0x0009c000), 0, 8, 7},
     {0xd9e56117, 0x8707b2d8, StenoChord(0x0029c000), 0, 8, 11},
     {0xdaa35c8f, 0x8707b2d8, StenoChord(0x00074000), 0, 8, 7},
-    {0xdac894e3, 0xdac894e3, StenoChord(0x00002c00), 0, 6, 9},
+    {0xdac894e3, 0xdac894e3, StenoChord(0x00002c00), 0, 6, 5},
     {0xdafa51be, 0x8707b2d8, StenoChord(0x00008000), 1, 8, 7},
     {0xdafa51be, 0x8707b2d8, StenoChord(0x00208000), 0, 8, 11},
     {0xdb36efc7, 0x8707b2d8, StenoChord(0x000e0000), 0, 8, 7},
@@ -2649,7 +2649,7 @@ constexpr JeffPhrasingReverseHashMapEntry REVERSE_ENTRIES[] = {
     {0xe1dbf968, 0x8707b2d8, StenoChord(0x00240000), 0, 8, 11},
     {0xe26e7f10, 0x8707b2d8, StenoChord(0x001c8000), 0, 8, 7},
     {0xe26e7f10, 0x8707b2d8, StenoChord(0x007c8000), 0, 8, 11},
-    {0xe46e0c39, 0xe46e0c39, StenoChord(0x00000c00), 0, 6, 9},
+    {0xe46e0c39, 0xe46e0c39, StenoChord(0x00000c00), 0, 6, 5},
     {0xe50a8bf1, 0x8707b2d8, StenoChord(0x0018c000), 0, 8, 7},
     {0xe50a8bf1, 0x8707b2d8, StenoChord(0x0078c000), 0, 8, 11},
     {0xe50f412f, 0x8707b2d8, StenoChord(0x00480000), 0, 8, 7},
@@ -2710,7 +2710,7 @@ constexpr JeffPhrasingReverseHashMapEntry REVERSE_ENTRIES[] = {
     {0xfb286a06, 0x8707b2d8, StenoChord(0x00558000), 0, 8, 11},
     {0xfb8ca445, 0x8707b2d8, StenoChord(0x00060000), 1, 8, 7},
     {0xfb8ca445, 0x8707b2d8, StenoChord(0x00260000), 0, 8, 11},
-    {0xfc8b1c22, 0x0609009d, StenoChord(0x00000400), 0, 2, 9},
+    {0xfc8b1c22, 0x0609009d, StenoChord(0x00000400), 0, 2, 5},
     {0xfca1d0e5, 0x8707b2d8, StenoChord(0x000e0000), 0, 8, 7},
     {0xfca1d0e5, 0x8707b2d8, StenoChord(0x002e0000), 0, 8, 11},
     {0xfcc99c65, 0x8707b2d8, StenoChord(0x00110000), 1, 8, 7},
@@ -4781,55 +4781,55 @@ constexpr const JeffPhrasingReverseHashMapEntry *REVERSE_HASH_MAP[] = {
 constexpr JeffPhrasingReverseStructureEntry REVERSE_STRUCTURES[] = {
     {0x01b0b145, StenoChord(0x000034a6), 13},
     {0x01b0b145, StenoChord(0x000034fe), 13},
-    {0x04851ccd, StenoChord(0x00002000), 9},
-    {0x065238df, StenoChord(0x00000800), 9},
-    {0x0a8e1d6a, StenoChord(0x00002000), 11},
-    {0x0c5b397c, StenoChord(0x00000800), 9},
-    {0x0e583654, StenoChord(0x00000c00), 9},
+    {0x04851ccd, StenoChord(0x00002000), 5},
+    {0x065238df, StenoChord(0x00000800), 5},
+    {0x0a8e1d6a, StenoChord(0x00002000), 7},
+    {0x0c5b397c, StenoChord(0x00000800), 5},
+    {0x0e583654, StenoChord(0x00000c00), 5},
     {0x123b84f3, StenoChord(0x00003800), 13},
-    {0x132bc08a, StenoChord(0x00000800), 5},
-    {0x178c0805, StenoChord(0x00002800), 9},
+    {0x132bc08a, StenoChord(0x00000800), 9},
+    {0x178c0805, StenoChord(0x00002800), 5},
     {0x18448590, StenoChord(0x00003800), 13},
-    {0x1934c127, StenoChord(0x00000800), 5},
+    {0x1934c127, StenoChord(0x00000800), 9},
     {0x1d9508a2, StenoChord(0x00002800), 13},
     {0x29e9718d, StenoChord(0x00000800), 13},
-    {0x2a7a0b8b, StenoChord(0x00000c00), 9},
-    {0x3500c57a, StenoChord(0x00000800), 9},
-    {0x3b09c617, StenoChord(0x00000800), 9},
-    {0x3f6f7f54, StenoChord(0x00002400), 9},
-    {0x4b29d51a, StenoChord(0x00002400), 9},
+    {0x2a7a0b8b, StenoChord(0x00000c00), 5},
+    {0x3500c57a, StenoChord(0x00000800), 5},
+    {0x3b09c617, StenoChord(0x00000800), 5},
+    {0x3f6f7f54, StenoChord(0x00002400), 5},
+    {0x4b29d51a, StenoChord(0x00002400), 5},
     {0x4e5d86a1, StenoChord(0x00001800), 13},
-    {0x517c57af, StenoChord(0x00002800), 9},
+    {0x517c57af, StenoChord(0x00002800), 5},
     {0x5466873e, StenoChord(0x00001800), 13},
     {0x5647d24a, StenoChord(0x00003ca6), 13},
     {0x5647d24a, StenoChord(0x00003cfe), 13},
-    {0x5785584c, StenoChord(0x00002800), 9},
+    {0x5785584c, StenoChord(0x00002800), 5},
     {0x5e8f859c, StenoChord(0x000010a6), 13},
     {0x5e8f859c, StenoChord(0x000010fe), 13},
     {0x66958311, StenoChord(0x000014a6), 13},
     {0x66958311, StenoChord(0x000014fe), 13},
     {0x6cb5e0b3, StenoChord(0x00003000), 13},
     {0x72bee150, StenoChord(0x00003000), 13},
-    {0x82add63a, StenoChord(0x00002400), 5},
-    {0x87d29f10, StenoChord(0x00002000), 5},
-    {0x8c66ba36, StenoChord(0x00002c00), 9},
-    {0x8ddb9fad, StenoChord(0x00002000), 7},
-    {0x8e9bd989, StenoChord(0x00000800), 9},
-    {0x94a4da26, StenoChord(0x00000800), 9},
-    {0x98210ffc, StenoChord(0x00002c00), 9},
+    {0x82add63a, StenoChord(0x00002400), 9},
+    {0x87d29f10, StenoChord(0x00002000), 9},
+    {0x8c66ba36, StenoChord(0x00002c00), 5},
+    {0x8ddb9fad, StenoChord(0x00002000), 11},
+    {0x8e9bd989, StenoChord(0x00000800), 5},
+    {0x94a4da26, StenoChord(0x00000800), 5},
+    {0x98210ffc, StenoChord(0x00002c00), 5},
     {0xa12d54e8, StenoChord(0x000038a6), 13},
     {0xa12d54e8, StenoChord(0x000038fe), 13},
-    {0xa4aadda9, StenoChord(0x00000c00), 5},
-    {0xadef0f22, StenoChord(0x00000c00), 5},
-    {0xb177a334, StenoChord(0x00000800), 5},
-    {0xb780a3d1, StenoChord(0x00000800), 5},
-    {0xca94cd23, StenoChord(0x00002000), 9},
+    {0xa4aadda9, StenoChord(0x00000c00), 9},
+    {0xadef0f22, StenoChord(0x00000c00), 9},
+    {0xb177a334, StenoChord(0x00000800), 9},
+    {0xb780a3d1, StenoChord(0x00000800), 9},
+    {0xca94cd23, StenoChord(0x00002000), 5},
     {0xcd5f02f2, StenoChord(0x00003800), 13},
-    {0xcfa5111c, StenoChord(0x00002c00), 5},
+    {0xcfa5111c, StenoChord(0x00002c00), 9},
     {0xd09dcdc0, StenoChord(0x00002000), 15},
-    {0xd4c9d9f2, StenoChord(0x00002800), 5},
-    {0xdad2da8f, StenoChord(0x00002800), 5},
-    {0xdc83ef1c, StenoChord(0x00000c00), 9},
+    {0xd4c9d9f2, StenoChord(0x00002800), 9},
+    {0xdad2da8f, StenoChord(0x00002800), 9},
+    {0xdc83ef1c, StenoChord(0x00000c00), 5},
     {0xdd4f5696, StenoChord(0x000018a6), 13},
     {0xdd4f5696, StenoChord(0x000018fe), 13},
     {0xe3585733, StenoChord(0x00001ca6), 13},
@@ -4973,8 +4973,6 @@ constexpr const JeffPhrasingReverseStructureEntry *REVERSE_STRUCTURES_MAP[] = {
     nullptr,
 };
 
-//---------------------------------------------------------------------------
-
 const JeffPhrasingDictionaryData JeffPhrasingDictionaryData::instance = {
     .simpleStarterCount = sizeof(SIMPLE_STARTERS) / sizeof(*SIMPLE_STARTERS),
     .simpleStarters = SIMPLE_STARTERS,
@@ -5025,6 +5023,27 @@ const JeffPhrasingDictionaryData JeffPhrasingDictionaryData::instance = {
 #define phrasingData JeffPhrasingDictionaryData::instance
 #include <stdio.h>
 #include <vector>
+
+uint8_t charactersPresent[32] = {};
+
+static void RegisterCharacters(const char *p, size_t n) {
+  for (size_t i = 0; i < n; ++i) {
+    int c = p[i];
+    charactersPresent[c / 8] |= 1 << c % 8;
+  }
+}
+
+static void PrintCharacters() {
+  printf("static const uint8_t VALID_CHARACTERS[32] = {\n");
+  for (size_t i = 0; i < 32; ++i) {
+    if (i != 0) {
+      printf(", ");
+    }
+    printf("0x%02x", charactersPresent[i]);
+  }
+  printf("\n};\n");
+  printf("\n");
+}
 
 void GenerateLookupTable() {
   printf("endersCount: %zu\n", phrasingData.endersCount);
@@ -5169,8 +5188,13 @@ void ReverseBuilder::Generate() {
   }
 
   std::sort(entries.begin(), entries.end(), [](const Entry &a, const Entry &b) {
-    return a.hash < b.hash ||
-           (a.hash == b.hash && a.chord.GetKeyState() < b.chord.GetKeyState());
+    if (a.hash != b.hash) {
+      return a.hash < b.hash;
+    }
+    if (a.checkNext != b.checkNext) {
+      return a.checkNext;
+    }
+    return a.chord.GetKeyState() < b.chord.GetKeyState();
   });
   for (size_t i = 0; i < entries.size() - 1; ++i) {
     Entry &entry = entries[i];
@@ -5249,10 +5273,10 @@ void ReverseBuilder::RecurseVariant(const JeffPhrasingVariant &variant,
     for (size_t i = 0; i < map->entryCount; ++i) {
       uint8_t localModeMask = modeMask;
       if (map->entries[i].key == (uint32_t)Tense::PRESENT) {
-        localModeMask &= ~ModeMask::PRESENT;
+        localModeMask &= ~ModeMask::PAST;
       }
       if (map->entries[i].key == (uint32_t)Tense::PAST) {
-        localModeMask &= ~ModeMask::PAST;
+        localModeMask &= ~ModeMask::PRESENT;
       }
       RecurseVariant(map->entries[i].value, chord, replacement, componentMask,
                      localModeMask, suffix);
@@ -5304,6 +5328,7 @@ void ReverseBuilder::AddText(const char *text, StenoChord chord,
 
   Entry entry = {};
   entry.hash = Crc32(p, pEnd - p);
+  RegisterCharacters(p, pEnd - p);
   entry.replacementHash = replacement == 0 ? entry.hash : replacement;
   entry.chord = chord;
   entry.componentMask = componentMask;
@@ -5316,6 +5341,7 @@ void ReverseBuilder::AddText(const char *text, StenoChord chord,
     Entry entry = {};
     entry.modeMask = modeMask;
     entry.hash = Crc32(p, space - p);
+    RegisterCharacters(p, space - p);
     entry.checkNext = true;
     entries.push_back(entry);
   }
@@ -5435,10 +5461,10 @@ void ReverseStructureBuilder::RecurseVariant(const JeffPhrasingVariant &variant,
     for (size_t i = 0; i < map->entryCount; ++i) {
       uint8_t localModeMask = modeMask;
       if (map->entries[i].key == (uint32_t)Tense::PRESENT) {
-        localModeMask &= ~ModeMask::PRESENT;
+        localModeMask &= ~ModeMask::PAST;
       }
       if (map->entries[i].key == (uint32_t)Tense::PAST) {
-        localModeMask &= ~ModeMask::PAST;
+        localModeMask &= ~ModeMask::PRESENT;
       }
       RecurseVariant(map->entries[i].value, chord, localModeMask);
     }
@@ -5469,6 +5495,7 @@ void ReverseStructureBuilder::RecurseVariant(const JeffPhrasingVariant &variant,
       while (*pEnd != '\\' && *pEnd != ' ' && *pEnd != '\0') {
         ++pEnd;
       }
+      RegisterCharacters(p, pEnd - p);
       hash += Crc32(p, pEnd - p);
       p = pEnd;
     }
@@ -5496,6 +5523,8 @@ int main(int, const char **) {
 
   ReverseStructureBuilder reverseStructureBuilder;
   reverseStructureBuilder.Generate();
+
+  PrintCharacters();
   return 0;
 }
 

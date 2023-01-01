@@ -20,9 +20,11 @@ enum class StenoCaseMode : uint8_t {
 
 struct StenoState {
   StenoCaseMode caseMode;
+  StenoCaseMode overrideCaseMode;
   bool joinNext : 1;
   bool isGlue : 1;
-  bool hasManualStateChange : 1;
+  bool isManualStateChange : 1;
+  bool shouldCombineUndo : 1;
   uint8_t spaceCharacterLength;
   const char *spaceCharacter;
 
@@ -32,6 +34,8 @@ struct StenoState {
   StenoCaseMode GetNextWordCaseMode() const {
     return NEXT_WORD_CASE_MODE[(int)caseMode];
   }
+
+  void Reset();
 };
 
 //---------------------------------------------------------------------------

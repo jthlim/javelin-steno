@@ -29,15 +29,16 @@ StenoEngine::StenoEngine(StenoDictionary &dictionary,
     : dictionary(dictionary), orthography(orthography),
       userDictionary(userDictionary) {
 
-  previousKeyCodeBuffer.orthography = &this->orthography;
-  previousKeyCodeBuffer.rootDictionary = &this->dictionary;
-  nextKeyCodeBuffer.orthography = &this->orthography;
-  nextKeyCodeBuffer.rootDictionary = &this->dictionary;
+  previousConversionBuffer.keyCodeBuffer.orthography = &this->orthography;
+  previousConversionBuffer.keyCodeBuffer.rootDictionary = &this->dictionary;
+  nextConversionBuffer.keyCodeBuffer.orthography = &this->orthography;
+  nextConversionBuffer.keyCodeBuffer.rootDictionary = &this->dictionary;
+  ResetState();
 }
 
 //---------------------------------------------------------------------------
 
-void StenoEngine::Process(StenoKeyState value, StenoAction action) {
+void StenoEngine::Process(const StenoKeyState &value, StenoAction action) {
   if (action != StenoAction::TRIGGER)
     return;
 
@@ -79,12 +80,8 @@ void StenoEngine::ProcessUndo() {
 void StenoEngine::ResetState() {
   history.Reset();
   addTranslationHistory.Reset();
-  state.caseMode = StenoCaseMode::NORMAL;
+  state.Reset();
   state.joinNext = true;
-  state.isGlue = false;
-  state.hasManualStateChange = false;
-  state.spaceCharacterLength = 1;
-  state.spaceCharacter = " ";
 }
 
 //---------------------------------------------------------------------------
@@ -121,6 +118,46 @@ bool StenoEngine::ToggleDictionary(const char *name) {
   return dictionary.ToggleDictionary(name);
 }
 
+void StenoEngine::ReverseLookup(StenoReverseDictionaryLookup &result) {
+  dictionary.ReverseLookup(result);
+  if (result.resultCount == 0) {
+    return;
+  }
+
+  qsort(result.results, result.resultCount,
+        sizeof(StenoReverseDictionaryResult),
+        [](const void *a, const void *b) -> int {
+          const StenoReverseDictionaryResult *pa =
+              (const StenoReverseDictionaryResult *)a;
+          const StenoReverseDictionaryResult *pb =
+              (const StenoReverseDictionaryResult *)b;
+
+          if (pa->length != pb->length) {
+            return (int)pa->length - (int)pb->length;
+          }
+
+          uint32_t popCountA = StenoChord::PopCount(pa->chords, pa->length);
+          uint32_t popCountB = StenoChord::PopCount(pb->chords, pb->length);
+          if (popCountA != popCountB) {
+            return (int)popCountA - (int)popCountB;
+          }
+
+          return int(intptr_t(pa) - intptr_t(pb));
+        });
+}
+
+void StenoEngine::SendText(const uint8_t *p) {
+  const char *ccp = (const char *)p;
+
+  nextConversionBuffer.keyCodeBuffer.Reset();
+  nextConversionBuffer.keyCodeBuffer.AppendTextNoCaseModeOverride(
+      ccp, strlen(ccp), StenoCaseMode::NORMAL);
+  previousConversionBuffer.keyCodeBuffer.Reset();
+
+  emitter.Process(previousConversionBuffer.keyCodeBuffer,
+                  nextConversionBuffer.keyCodeBuffer);
+}
+
 //---------------------------------------------------------------------------
 
 #include "key_code.h"
@@ -152,7 +189,7 @@ public:
 
 void StenoEngineTester::VerifyTextBuffer(StenoEngine &engine,
                                          const char *expected) {
-  char *p = engine.nextKeyCodeBuffer.ToString();
+  char *p = engine.nextConversionBuffer.keyCodeBuffer.ToString();
   if (!Str::Eq(p, expected)) {
     printf("Expected: %s\nActual: %s\n", expected, p);
     assert(Str::Eq(p, expected));
@@ -166,14 +203,14 @@ void StenoEngineTester::TestSymbols(StenoEngine &engine) {
   engine.ProcessChord(StenoChord("SKWHEUFPL"));
   engine.ProcessChord(StenoChord("SKWHEFG"));
   // spellchecker: enable
-  assert(engine.nextKeyCodeBuffer.count == 4);
-  assert(engine.nextKeyCodeBuffer.buffer[0] ==
+  assert(engine.nextConversionBuffer.keyCodeBuffer.count == 4);
+  assert(engine.nextConversionBuffer.keyCodeBuffer.buffer[0] ==
          StenoKeyCode('{', StenoCaseMode::NORMAL));
-  assert(engine.nextKeyCodeBuffer.buffer[1] ==
+  assert(engine.nextConversionBuffer.keyCodeBuffer.buffer[1] ==
          StenoKeyCode('{', StenoCaseMode::NORMAL));
-  assert(engine.nextKeyCodeBuffer.buffer[2] ==
+  assert(engine.nextConversionBuffer.keyCodeBuffer.buffer[2] ==
          StenoKeyCode::CreateRawKeyCodePress(KeyCode::BACKSPACE));
-  assert(engine.nextKeyCodeBuffer.buffer[3] ==
+  assert(engine.nextConversionBuffer.keyCodeBuffer.buffer[3] ==
          StenoKeyCode::CreateRawKeyCodeRelease(KeyCode::BACKSPACE));
 }
 

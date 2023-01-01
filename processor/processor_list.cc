@@ -4,7 +4,8 @@
 
 //---------------------------------------------------------------------------
 
-void StenoProcessorList::Process(StenoKeyState value, StenoAction action) {
+void StenoProcessorList::Process(const StenoKeyState &value,
+                                 StenoAction action) {
   for (size_t i = 0; i < processorCount; ++i) {
     processors[i]->Process(value, action);
   }

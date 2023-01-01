@@ -258,6 +258,14 @@ char *StenoChord::ToWideString(char *buffer) const {
   return buffer;
 }
 
+uint32_t StenoChord::PopCount(const StenoChord *chords, size_t length) {
+  uint32_t result = 0;
+  for (size_t i = 0; i < length; ++i) {
+    result += chords[i].PopCount();
+  }
+  return result;
+}
+
 uint32_t StenoChord::Hash(const StenoChord *chords, size_t length) {
   return Crc32(chords, 4 * length);
 }

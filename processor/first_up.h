@@ -12,9 +12,9 @@ public:
   StenoFirstUp(StenoProcessorElement &nextProcessor)
       : nextProcessor(nextProcessor) {}
 
-  void Process(StenoKeyState value, StenoAction action) final;
-  void Tick() final { nextProcessor.Tick(); }
-  void PrintInfo() const final;
+  void Process(const StenoKeyState &value, StenoAction action);
+  void Tick() { nextProcessor.Tick(); }
+  void PrintInfo() const;
 
 private:
   bool wasLastEventAPress = false;

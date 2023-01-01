@@ -28,11 +28,11 @@ private:
   static size_t CountNumberOfSpaces(const char *p);
   static bool ContainsNonPhraseCharacter(const char *p);
 
-  void RecurseCheckReverseLookup(StenoReverseDictionaryLookup &result,
-                                 const char *p, StenoChord stroke,
-                                 uint32_t hash, uint8_t componentMask,
-                                 uint8_t modeMask,
-                                 List<StenoChord> &testedChords) const;
+  struct ReverseLookupContext;
+
+  void RecurseCheckReverseLookup(ReverseLookupContext &context, const char *p,
+                                 StenoChord stroke, uint32_t hash,
+                                 uint8_t componentMask, uint8_t modeMask) const;
 };
 
 //---------------------------------------------------------------------------

@@ -5,7 +5,7 @@
 
 //---------------------------------------------------------------------------
 
-void StenoAllUp::Process(StenoKeyState value, StenoAction action) {
+void StenoAllUp::Process(const StenoKeyState &value, StenoAction action) {
   nextProcessor.Process(value, action);
 
   switch (action) {

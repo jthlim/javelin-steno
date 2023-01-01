@@ -6,7 +6,7 @@
 
 //---------------------------------------------------------------------------
 
-void StenoRepeat::Process(StenoKeyState value, StenoAction action) {
+void StenoRepeat::Process(const StenoKeyState &value, StenoAction action) {
   nextProcessor.Process(value, action);
 
   switch (action) {
@@ -60,6 +60,10 @@ void StenoRepeat::Tick() {
 
   nextTriggerTime = now + REPEAT_DELAY;
   nextProcessor.Process(pressedKeyState, StenoAction::TRIGGER);
+  now = Clock::GetCurrentTime();
+  if (nextTriggerTime < now + REPEAT_DELAY_MINIMUM) {
+    nextTriggerTime = now + REPEAT_DELAY_MINIMUM;
+  }
 }
 
 void StenoRepeat::PrintInfo() const {

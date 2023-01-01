@@ -144,11 +144,9 @@ TEST_BEGIN("Segment tests") {
   StenoSegmentList segmentList;
   StenoCompiledOrthography compiledOrthography(
       StenoOrthography::emptyOrthography);
-  BuildSegmentContext context(segmentList, dictionary,
-                              dictionary.GetMaximumMatchLength(),
-                              compiledOrthography, history.GetCount());
+  BuildSegmentContext context(segmentList, dictionary, compiledOrthography);
 
-  history.CreateSegments(context, 10);
+  history.CreateSegments(context);
 
   StenoTokenizer *tokenizer = segmentList.CreateTokenizer();
 

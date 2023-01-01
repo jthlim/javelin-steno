@@ -44,6 +44,13 @@ constexpr KeyCodeName KEYS[] = {
     {"asterisk", KeyCode::_8},
     {"at", KeyCode::_2},
     {"atilde", 0},
+    {"audiolowervolume", KeyCode::MEDIA_VOLUME_DOWN},
+    {"audiomute", KeyCode::MEDIA_MUTE},
+    {"audionext", KeyCode::MEDIA_NEXT_SONG},
+    {"audioplay", KeyCode::MEDIA_PLAY_PAUSE},
+    {"audioprev", KeyCode::MEDIA_PREVIOUS_SONG},
+    {"audioraisevolume", KeyCode::MEDIA_VOLUME_UP},
+    {"audiostop", KeyCode::MEDIA_STOP_CD},
     {"b", KeyCode::B},
     {"backslash", KeyCode::BACKSLASH},
     {"backspace", KeyCode::BACKSPACE},
@@ -80,6 +87,8 @@ constexpr KeyCodeName KEYS[] = {
     {"ecircumflex", 0},
     {"ediaeresis", 0},
     {"egrave", 0},
+    {"eject", KeyCode::MEDIA_EJECT_CD},
+    {"end", KeyCode::END},
     {"equal", KeyCode::EQUAL},
     {"escape", KeyCode::ESC},
     {"eth", 0},
@@ -156,8 +165,9 @@ constexpr KeyCodeName KEYS[] = {
     {"m", KeyCode::M},
     {"macron", 0},
     {"masculine", 0},
-    {"meta_l", KeyCode::L_ALT},
-    {"meta_r", KeyCode::R_ALT},
+    {"meta", KeyCode::L_META},
+    {"meta_l", KeyCode::L_META},
+    {"meta_r", KeyCode::R_META},
     {"minus", KeyCode::MINUS},
     {"mu", 0},
     {"multiply", 0},
@@ -266,25 +276,25 @@ void StenoKeyPressTokenizer::ProcessNextToken() {
   }
 
   if (p == end) {
-    nextToken.type = StenoKeyPressToken::Type::End;
+    nextToken.type = StenoKeyPressToken::Type::END;
     return;
   }
 
   if (*p == '(') {
     ++p;
-    nextToken.type = StenoKeyPressToken::Type::OpenParen;
+    nextToken.type = StenoKeyPressToken::Type::OPEN_PAREN;
     return;
   }
 
   if (*p == ')') {
     ++p;
-    nextToken.type = StenoKeyPressToken::Type::CloseParen;
+    nextToken.type = StenoKeyPressToken::Type::CLOSE_PAREN;
     return;
   }
 
   if (!IsWordCharacter(*p)) {
     ++p;
-    nextToken.type = StenoKeyPressToken::Type::Unknown;
+    nextToken.type = StenoKeyPressToken::Type::UNKNOWN;
     return;
   }
 
@@ -300,10 +310,10 @@ void StenoKeyPressTokenizer::ProcessNextToken() {
 
   const KeyCodeName *entry = GetKeyCodeName(buffer);
   if (!entry) {
-    nextToken.type = StenoKeyPressToken::Type::Unknown;
+    nextToken.type = StenoKeyPressToken::Type::UNKNOWN;
     return;
   }
-  nextToken.type = StenoKeyPressToken::Type::Key;
+  nextToken.type = StenoKeyPressToken::Type::KEY;
   nextToken.keyCode = entry->keyCode;
 }
 
@@ -320,22 +330,22 @@ TEST_BEGIN("KeyPressParser tests") {
   const char *test = "Shift_L(h a p) p y";
   StenoKeyPressTokenizer tokenizer(test, test + strlen(test));
   assert(tokenizer.GetNext() ==
-         StenoKeyPressToken(StenoKeyPressToken::Type::Key, KeyCode::L_SHIFT));
+         StenoKeyPressToken(StenoKeyPressToken::Type::KEY, KeyCode::L_SHIFT));
   assert(tokenizer.GetNext() ==
-         StenoKeyPressToken(StenoKeyPressToken::Type::OpenParen));
+         StenoKeyPressToken(StenoKeyPressToken::Type::OPEN_PAREN));
   assert(tokenizer.GetNext() ==
-         StenoKeyPressToken(StenoKeyPressToken::Type::Key, KeyCode::H));
+         StenoKeyPressToken(StenoKeyPressToken::Type::KEY, KeyCode::H));
   assert(tokenizer.GetNext() ==
-         StenoKeyPressToken(StenoKeyPressToken::Type::Key, KeyCode::A));
+         StenoKeyPressToken(StenoKeyPressToken::Type::KEY, KeyCode::A));
   assert(tokenizer.GetNext() ==
-         StenoKeyPressToken(StenoKeyPressToken::Type::Key, KeyCode::P));
+         StenoKeyPressToken(StenoKeyPressToken::Type::KEY, KeyCode::P));
   assert(tokenizer.GetNext() ==
-         StenoKeyPressToken(StenoKeyPressToken::Type::CloseParen));
+         StenoKeyPressToken(StenoKeyPressToken::Type::CLOSE_PAREN));
   assert(tokenizer.GetNext() ==
-         StenoKeyPressToken(StenoKeyPressToken::Type::Key, KeyCode::P));
+         StenoKeyPressToken(StenoKeyPressToken::Type::KEY, KeyCode::P));
   assert(tokenizer.GetNext() ==
-         StenoKeyPressToken(StenoKeyPressToken::Type::Key, KeyCode::Y));
+         StenoKeyPressToken(StenoKeyPressToken::Type::KEY, KeyCode::Y));
   assert(tokenizer.GetNext() ==
-         StenoKeyPressToken(StenoKeyPressToken::Type::End));
+         StenoKeyPressToken(StenoKeyPressToken::Type::END));
 }
 TEST_END

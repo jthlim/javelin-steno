@@ -20,6 +20,7 @@ struct ConsoleCommand {
 class Console {
 public:
   void HandleInput(const char *data, size_t length);
+  static void RunCommand(const char *command);
 
   static void RegisterCommand(const ConsoleCommand &command);
   static void RegisterCommand(const char *command, const char *description,
@@ -42,8 +43,10 @@ private:
   size_t lineBufferCount = 0;
   char lineBuffer[256];
 
-  const ConsoleCommand *GetCommand() const;
   void ProcessLineBuffer();
+
+  static const ConsoleCommand *GetCommand(const char *command);
+  static void RawWrite(const char *data, size_t length);
 };
 
 //---------------------------------------------------------------------------

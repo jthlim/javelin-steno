@@ -5,34 +5,14 @@
 
 //---------------------------------------------------------------------------
 
-constexpr size_t PATTERN_COMPONENT_BLOCK_SIZE = 1024;
-
-size_t PatternComponent::sizeRemaining = 0;
-uint8_t *PatternComponent::data = nullptr;
-
-//---------------------------------------------------------------------------
-
 void *PatternComponent::operator new(size_t size) {
-  assert(size <= PATTERN_COMPONENT_BLOCK_SIZE);
-
-  if (sizeRemaining < size) {
-    sizeRemaining = PATTERN_COMPONENT_BLOCK_SIZE;
-    data = (uint8_t *)malloc(PATTERN_COMPONENT_BLOCK_SIZE);
-  }
-
-  sizeRemaining -= size;
-  void *result = data;
-  data += size;
-  return result;
+  return PoolAllocate::operator new(size);
 }
 
 //---------------------------------------------------------------------------
 
-bool PatternComponent::CallNext(const char *p, PatternContext &context) {
-  if (!next) {
-    return true;
-  }
-  return next->Match(p, context);
+bool PatternComponent::CallNext(const char *p, PatternContext &context) const {
+  return !next || next->Match(p, context);
 }
 
 void PatternComponent::RemoveEpsilon() {
@@ -44,24 +24,32 @@ void PatternComponent::RemoveEpsilon() {
   }
 }
 
-bool EpsilonPatternComponent::Match(const char *p, PatternContext &context) {
+bool EpsilonPatternComponent::Match(const char *p,
+                                    PatternContext &context) const {
   return CallNext(p, context);
 }
 
-bool AnyPatternComponent::Match(const char *p, PatternContext &context) {
-  if (*p == '\0') {
+bool AnyPatternComponent::Match(const char *p, PatternContext &context) const {
+  if (*p == 0) {
     return false;
   }
   return CallNext(p + 1, context);
 }
 
-bool AnyStarPatternComponent::Match(const char *p, PatternContext &context) {
+bool AnyStarPatternComponent::Match(const char *p,
+                                    PatternContext &context) const {
+  const PatternComponent *localNext = GetNext();
+  if (!localNext) {
+    return true;
+  }
+
   const char *start = p;
   while (*p) {
     ++p;
   }
+
   while (p >= start) {
-    if (CallNext(p, context)) {
+    if (localNext->Match(p, context)) {
       return true;
     }
     --p;
@@ -70,7 +58,7 @@ bool AnyStarPatternComponent::Match(const char *p, PatternContext &context) {
 }
 
 bool BackReferencePatternComponent::Match(const char *p,
-                                          PatternContext &context) {
+                                          PatternContext &context) const {
   const char *compareP = context.captureList[index * 2];
   const char *comparedEnd = context.captureList[index * 2 + 1];
 
@@ -85,7 +73,8 @@ bool BackReferencePatternComponent::Match(const char *p,
   return CallNext(p, context);
 }
 
-bool CharacterSetComponent::Match(const char *p, PatternContext &context) {
+bool CharacterSetComponent::Match(const char *p,
+                                  PatternContext &context) const {
   unsigned int c = *(uint8_t *)p;
   if (c >= 128) {
     return false;
@@ -99,7 +88,8 @@ bool CharacterSetComponent::Match(const char *p, PatternContext &context) {
   return CallNext(p + 1, context);
 }
 
-bool CapturePatternComponent::Match(const char *p, PatternContext &context) {
+bool CapturePatternComponent::Match(const char *p,
+                                    PatternContext &context) const {
 
   const char *previous = context.captureList[index];
   context.captureList[index] = p;
@@ -110,7 +100,8 @@ bool CapturePatternComponent::Match(const char *p, PatternContext &context) {
   return result;
 }
 
-bool BranchPatternComponent::Match(const char *p, PatternContext &context) {
+bool BranchPatternComponent::Match(const char *p,
+                                   PatternContext &context) const {
   return branch->Match(p, context) || CallNext(p, context);
 }
 
@@ -131,17 +122,19 @@ void BranchPatternComponent::RemoveEpsilon() {
 }
 
 bool StartOfLinePatternComponent::Match(const char *p,
-                                        PatternContext &context) {
+                                        PatternContext &context) const {
   return (p == context.start) && CallNext(p, context);
 }
 
-bool EndOfLinePatternComponent::Match(const char *p, PatternContext &context) {
+bool EndOfLinePatternComponent::Match(const char *p,
+                                      PatternContext &context) const {
   return (*p == '\0') && CallNext(p, context);
 }
 
 //---------------------------------------------------------------------------
 
-bool LiteralPatternComponent::Match(const char *p, PatternContext &context) {
+bool LiteralPatternComponent::Match(const char *p,
+                                    PatternContext &context) const {
   const char *pText = text;
   for (;;) {
     if (*p != *pText) {
@@ -187,7 +180,8 @@ void ContainerPatternComponent::RemoveEpsilon() {
 
 //---------------------------------------------------------------------------
 
-bool AlternatePatternComponent::Match(const char *p, PatternContext &context) {
+bool AlternatePatternComponent::Match(const char *p,
+                                      PatternContext &context) const {
   for (size_t i = 0; i < componentCount; ++i) {
     if (components[i]->Match(p, context)) {
       return true;

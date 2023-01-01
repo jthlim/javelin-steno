@@ -18,18 +18,12 @@ class StenoCompiledOrthography;
 struct BuildSegmentContext {
   BuildSegmentContext(StenoSegmentList &segmentList,
                       const StenoDictionary &dictionary,
-                      size_t maximumMatchLength,
-                      const StenoCompiledOrthography &orthography,
-                      size_t endOffset)
-      : segmentList(segmentList), dictionary(dictionary),
-        maximumMatchLength(maximumMatchLength), orthography(orthography),
-        endOffset(endOffset) {}
+                      const StenoCompiledOrthography &orthography);
 
   StenoSegmentList &segmentList;
   const StenoDictionary &dictionary;
   const size_t maximumMatchLength;
   const StenoCompiledOrthography &orthography;
-  const size_t endOffset;
 };
 
 //---------------------------------------------------------------------------
@@ -37,6 +31,7 @@ struct BuildSegmentContext {
 class ChordHistory {
 public:
   bool IsEmpty() const { return count == 0; }
+  bool IsNotEmpty() const { return count != 0; }
   bool IsFull() const { return count == BUFFER_SIZE; }
   size_t GetCount() const { return count; }
 
@@ -62,24 +57,49 @@ public:
 
   void Reset() { count = 0; }
 
-  const StenoState &BackState() const { return states[count - 1]; }
+  // When undo is pressed, returns how many items should be removed
+  // from the list up to maxCount.
+  size_t GetUndoCount(size_t maxCount) const;
 
-  void CreateSegments(BuildSegmentContext &context, size_t maximumChordLength,
+  void PopCount(size_t popCount) { count -= popCount; }
+
+  void TransferFrom(const ChordHistory &source, size_t sourceChordCount,
+                    size_t maxCount);
+
+  void SetBackCombineUndo() { states[count - 1].shouldCombineUndo = true; }
+  void SetBackHasManualStateChange() {
+    states[count - 1].isManualStateChange = true;
+  }
+
+  const StenoState &BackState(size_t fromEnd = 1) const {
+    return states[count - fromEnd];
+  }
+
+  void CreateSegments(BuildSegmentContext &context,
                       size_t minimumStartOffset = 0);
 
   const StenoChord &GetChord(size_t i) const { return chords[i]; }
 
-private:
   static const size_t BUFFER_SIZE = 256;
 
+private:
   size_t count = 0;
   StenoChord chords[BUFFER_SIZE];
   StenoState states[BUFFER_SIZE];
 
   void AddSegments(BuildSegmentContext &context, size_t offset);
 
+  void RemoveOffset(BuildSegmentContext &context, size_t &offset,
+                    size_t length);
+  void ReevaluateSegments(BuildSegmentContext &context, size_t &offset);
   void HandleRetroactiveInsertSpace(BuildSegmentContext &context,
                                     size_t currentOffset);
+
+  void HandleRetroactiveToggleAsterisk(BuildSegmentContext &context,
+                                       size_t currentOffset);
+
+  void HandleRepeatLastStroke(BuildSegmentContext &context,
+                              size_t currentOffset, const StenoState &state);
 
   bool DirectLookup(BuildSegmentContext &context, size_t &offset);
 

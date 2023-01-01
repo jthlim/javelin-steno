@@ -96,7 +96,11 @@ private:
     };
     struct {
       uint32_t unicode : 24;
-      uint8_t outputCaseMode : 4; // StenoCaseMode type.
+
+      // StenoCaseMode type.
+      // outputCaseMode is used to display.
+      // selectedCaseMode is used for reverse lookups.
+      uint8_t outputCaseMode : 4;
       uint8_t selectedCaseMode : 4;
     };
     uint32_t value;

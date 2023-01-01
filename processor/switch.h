@@ -13,9 +13,9 @@ public:
       : defaultProcessor(defaultProcessor),
         alternateProcessor(alternateProcessor) {}
 
-  void Process(StenoKeyState value, StenoAction action) final;
-  void Tick() final;
-  void PrintInfo() const final;
+  void Process(const StenoKeyState &value, StenoAction action);
+  void Tick();
+  void PrintInfo() const;
 
 private:
   bool useDefault = true;

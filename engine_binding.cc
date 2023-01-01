@@ -83,6 +83,20 @@ void StenoEngine::DisablePaperTape_Binding(void *context,
   Console::Write("OK\n\n", 4);
 }
 
+void StenoEngine::EnableSuggestions_Binding(void *context,
+                                            const char *commandLine) {
+  StenoEngine *engine = (StenoEngine *)context;
+  engine->EnableSuggestions();
+  Console::Write("OK\n\n", 4);
+}
+
+void StenoEngine::DisableSuggestions_Binding(void *context,
+                                             const char *commandLine) {
+  StenoEngine *engine = (StenoEngine *)context;
+  engine->DisableSuggestions();
+  Console::Write("OK\n\n", 4);
+}
+
 void StenoEngine::Lookup_Binding(void *context, const char *commandLine) {
   StenoEngine *engine = (StenoEngine *)context;
   const char *lookup = strchr(commandLine, ' ');
@@ -93,18 +107,15 @@ void StenoEngine::Lookup_Binding(void *context, const char *commandLine) {
   ++lookup;
   StenoReverseDictionaryLookup result(
       StenoReverseDictionaryLookup::MAX_STROKE_THRESHOLD, lookup);
-  engine->dictionary.ReverseLookup(result);
+  engine->ReverseLookup(result);
 
   char buffer[256];
-  const StenoChord *chords = result.chords;
   Console::Printf("[");
   for (size_t i = 0; i < result.resultCount; ++i) {
-    size_t length = result.resultLengths[i];
+    const StenoReverseDictionaryResult lookup = result.results[i];
 
-    StenoChord::ToString(chords, length, buffer);
+    StenoChord::ToString(lookup.chords, lookup.length, buffer);
     Console::Printf(i == 0 ? "\n  \"%s\"" : ",\n  \"%s\"", buffer);
-
-    chords += length;
   }
 
   Console::Write("\n]\n\n", 4);

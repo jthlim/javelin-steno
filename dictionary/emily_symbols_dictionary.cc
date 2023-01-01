@@ -252,7 +252,7 @@ const StenoDictionary *StenoEmilySymbolsDictionary::GetLookupProvider(
 }
 
 const char *StenoEmilySymbolsDictionary::GetName() const {
-  return "emily_symbols";
+  return "emily-symbols";
 }
 
 bool StenoEmilySymbolsDictionary::PrintDictionary(bool hasData) const {

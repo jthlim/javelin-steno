@@ -24,6 +24,7 @@ static const ConsoleCommand HELLO_COMMAND = {
 };
 
 static const size_t MAX_COMMAND_COUNT = 32;
+static bool enableConsoleWrite = true;
 static size_t commandCount = 2;
 static ConsoleCommand commands[MAX_COMMAND_COUNT] = {
     HELLO_COMMAND,
@@ -54,13 +55,17 @@ void Console::RegisterCommand(const char *command, const char *description,
 
 std::vector<char> Console::history;
 
-void Console::Write(const char *data, size_t length) {
+void Console::RawWrite(const char *data, size_t length) {
   std::copy(data, data + length, std::back_inserter(history));
 }
 
 #endif
 
 void Console::Printf(const char *format, ...) {
+  if (!enableConsoleWrite) {
+    return;
+  }
+
   va_list v;
   va_start(v, format);
 
@@ -69,9 +74,15 @@ void Console::Printf(const char *format, ...) {
   vsnprintf(buffer, length, format, v);
   va_end(v);
 
-  Console::Write(buffer, length - 1);
+  RawWrite(buffer, length - 1);
 
   free(buffer);
+}
+
+void Console::Write(const char *data, size_t length) {
+  if (enableConsoleWrite) {
+    RawWrite(data, length);
+  }
 }
 
 __attribute__((weak)) void Console::Flush() {}
@@ -100,7 +111,7 @@ void Console::ProcessLineBuffer() {
   lineBuffer[lineBufferCount] = '\0';
   lineBufferCount = 0;
 
-  const ConsoleCommand *command = GetCommand();
+  const ConsoleCommand *command = GetCommand(lineBuffer);
   if (command) {
     (*command->handler)(command->context, lineBuffer);
   } else {
@@ -109,14 +120,26 @@ void Console::ProcessLineBuffer() {
   }
 }
 
-const ConsoleCommand *Console::GetCommand() const {
+const ConsoleCommand *Console::GetCommand(const char *buffer) {
   for (size_t i = 0; i < commandCount; ++i) {
-    if (Str::HasPrefix(lineBuffer, commands[i].command) &&
-        IsWhitespace(lineBuffer[strlen(commands[i].command)])) {
+    if (Str::HasPrefix(buffer, commands[i].command) &&
+        IsWhitespace(buffer[strlen(commands[i].command)])) {
       return &commands[i];
     }
   }
   return nullptr;
+}
+
+void Console::RunCommand(const char *command) {
+  const ConsoleCommand *consoleCommand = GetCommand(command);
+  if (!consoleCommand) {
+    return;
+  }
+
+  const bool previousEnableConsoleWrite = enableConsoleWrite;
+  enableConsoleWrite = false;
+  (*consoleCommand->handler)(consoleCommand->context, command);
+  enableConsoleWrite = previousEnableConsoleWrite;
 }
 
 // Used to flush the output buffer and ensure a stable connection.

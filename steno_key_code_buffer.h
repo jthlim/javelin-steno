@@ -43,8 +43,9 @@ public:
   void ProcessCommand(const char *command);
   void ProcessOrthographicSuffix(const char *text, size_t length);
 
-  void AppendText(const char *p, size_t n, StenoCaseMode outputCaseMode,
-                  bool hasManualStateChange = false);
+  void AppendText(const char *p, size_t n, StenoCaseMode outputCaseMode);
+  void AppendTextNoCaseModeOverride(const char *p, size_t n,
+                                    StenoCaseMode outputCaseMode);
 
   char *ToString();
   char *ToUnresolvedString();
@@ -53,7 +54,9 @@ public:
 
   bool ProcessKeyPresses(const char *p, const char *end);
 
+  void Backspace(int count);
   void RetroactiveCapitalize(int count);
+  void RetroactiveUncapitalize(int count);
   void RetroactiveTitleCase(int count);
   void RetroactiveUpperCase(int count);
   void RetroactiveLowerCase(int count);

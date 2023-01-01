@@ -16,9 +16,11 @@ public:
 
 //---------------------------------------------------------------------------
 
-// Any changes in key state and stable for DEBOUNCE_DELAY_MS before
+// Only triggers a key after new state has been stable for DEBOUNCE_DELAY_MS.
 template <typename T> class GlobalDeferredDebounce {
 public:
+  GlobalDeferredDebounce() {}
+
   GlobalDeferredDebounce(T initialState)
       : lastDebouncedState(initialState), lastState(initialState) {}
 

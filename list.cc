@@ -32,7 +32,7 @@ size_t _ListBase::GetCapacity(size_t count) {
   if (count == 0) {
     return 0;
   }
-  size_t powerOf2 = 8;
+  size_t powerOf2 = 4;
   while (powerOf2 < count) {
     powerOf2 <<= 1;
   }

@@ -58,6 +58,18 @@ bool Str::HasPrefix(const char *p, const char *prefix) {
 char *Str::WriteJson(char *p, const char *text) {
   while (*text) {
     switch (*text) {
+    case '\f':
+      *p++ = '\\';
+      *p++ = 'f';
+      text += 2;
+      break;
+
+    case '\b':
+      *p++ = '\\';
+      *p++ = 'b';
+      text += 2;
+      break;
+
     case '\r':
       *p++ = '\\';
       *p++ = 'r';

@@ -5,7 +5,7 @@
 
 //---------------------------------------------------------------------------
 
-void StenoPloverHid::Process(StenoKeyState value, StenoAction action) {
+void StenoPloverHid::Process(const StenoKeyState &value, StenoAction action) {
   switch (action) {
   case StenoAction::CANCEL:
   case StenoAction::TRIGGER:

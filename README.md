@@ -6,7 +6,7 @@ This repository contains the raw steno engine, without any bindings.
 
 For pico-sdk bindings, see https://github.com/jthlim/javelin-steno-rp2040.
 
-TODO: Update documentation.
+For the online firmware builder tool, go to http://lim.au/#/software/javelin-steno
 
 # Terms
 

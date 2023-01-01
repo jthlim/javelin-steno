@@ -73,6 +73,8 @@ public:
     return false;
   }
 
+  T *GetData() const { return (T *)buffer; }
+
   T &operator[](size_t i) {
     assert(i < count);
     return ((T *)buffer)[i];

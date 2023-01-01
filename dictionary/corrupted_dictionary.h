@@ -12,7 +12,7 @@ public:
   using StenoDictionary::Lookup;
 
   virtual unsigned int GetMaximumMatchLength() const { return 1; }
-  virtual const char *GetName() const { return "bad"; }
+  virtual const char *GetName() const { return "#bad"; }
   virtual bool PrintDictionary(bool hasData) const { return hasData; }
 
   static const StenoCorruptedDictionary instance;

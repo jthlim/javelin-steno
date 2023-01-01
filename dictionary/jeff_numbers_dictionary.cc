@@ -276,7 +276,7 @@ StenoJeffNumbersDictionary::Lookup(const StenoDictionaryLookup &lookup) const {
 }
 
 const char *StenoJeffNumbersDictionary::GetName() const {
-  return "jeff_numbers";
+  return "jeff-numbers";
 }
 
 StenoChord StenoJeffNumbersDictionary::GetDigits(char *p,

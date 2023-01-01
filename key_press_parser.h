@@ -8,11 +8,11 @@
 
 struct StenoKeyPressToken {
   enum class Type {
-    Key,
-    OpenParen,
-    CloseParen,
-    Unknown,
-    End,
+    KEY,
+    OPEN_PAREN,
+    CLOSE_PAREN,
+    UNKNOWN,
+    END,
   };
 
   StenoKeyPressToken() = default;
@@ -20,7 +20,7 @@ struct StenoKeyPressToken {
       : type(type), keyCode(keyCode) {}
 
   bool operator==(const StenoKeyPressToken &other) const {
-    if (type == Type::Key) {
+    if (type == Type::KEY) {
       if (keyCode != other.keyCode) {
         return false;
       }
@@ -42,7 +42,7 @@ public:
   }
 
   bool HasMore() const {
-    return nextToken.type != StenoKeyPressToken::Type::End;
+    return nextToken.type != StenoKeyPressToken::Type::END;
   }
 
   StenoKeyPressToken GetNext() {

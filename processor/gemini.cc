@@ -6,7 +6,7 @@
 
 //---------------------------------------------------------------------------
 
-void StenoGemini::Process(StenoKeyState value, StenoAction action) {
+void StenoGemini::Process(const StenoKeyState &value, StenoAction action) {
   if (action != StenoAction::TRIGGER) {
     return;
   }

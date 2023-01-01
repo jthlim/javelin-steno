@@ -97,16 +97,22 @@ public:
   StenoChord operator|(const StenoChord &o) const {
     return StenoChord(keyState | o.keyState);
   }
+  StenoChord operator^(const StenoChord &o) const {
+    return StenoChord(keyState ^ o.keyState);
+  }
 
   void operator&=(const StenoChord &o) { keyState &= o.keyState; }
   void operator|=(const StenoChord &o) { keyState |= o.keyState; }
+  void operator^=(const StenoChord &o) { keyState ^= o.keyState; }
 
   StenoChord operator~() const { return StenoChord(~keyState); }
 
   uint32_t GetKeyState() const { return keyState; }
 
+  uint32_t PopCount() const { return __builtin_popcount(keyState); }
   uint32_t Hash() const { return StenoChord::Hash(this, 1); }
 
+  static uint32_t PopCount(const StenoChord *chords, size_t length);
   static uint32_t Hash(const StenoChord *chords, size_t length);
   static char *ToString(const StenoChord *chords, size_t length, char *buffer);
 

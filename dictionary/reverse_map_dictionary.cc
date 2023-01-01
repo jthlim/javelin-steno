@@ -5,16 +5,6 @@
 
 //---------------------------------------------------------------------------
 
-StenoDictionaryLookupResult
-StenoReverseMapDictionary::Lookup(const StenoDictionaryLookup &lookup) const {
-  return dictionary->Lookup(lookup);
-}
-
-const StenoDictionary *StenoReverseMapDictionary::GetLookupProvider(
-    const StenoDictionaryLookup &lookup) const {
-  return dictionary->GetLookupProvider(lookup);
-}
-
 void StenoReverseMapDictionary::ReverseLookup(
     StenoReverseDictionaryLookup &result) const {
   StenoReverseDictionaryLookup value(result.strokeThreshold, result.lookup);
@@ -53,7 +43,10 @@ void StenoReverseMapDictionary::AddMapDictionaryResults(
       ++p;
       while (*p != 0xff) {
         uint32_t offset = p[0] | (p[1] << 7) | (p[2] << 14) + (p[3] << 21);
-        ReverseMapDictionaryLookup(result, baseAddress + offset);
+        StenoReverseMapDictionaryLookup lookup(baseAddress + offset);
+        if (ReverseMapDictionaryLookup(lookup)) {
+          result.AddResult(lookup.chords, lookup.length, lookup.provider);
+        }
         p += 4;
       }
 
@@ -65,52 +58,16 @@ void StenoReverseMapDictionary::AddMapDictionaryResults(
 void StenoReverseMapDictionary::AddValidLookupProviders(
     StenoReverseDictionaryLookup &result,
     StenoReverseDictionaryLookup &value) const {
-  const StenoChord *chords = value.chords;
   for (size_t i = 0; i < value.resultCount; ++i) {
-    size_t length = value.resultLengths[i];
-    const StenoDictionary *lookupProvider = value.lookupProviders[i];
-    if (dictionary->GetLookupProvider(chords, length) == lookupProvider) {
-      result.AddResult(chords, length, lookupProvider);
+    const StenoReverseDictionaryResult &v = value.results[i];
+    if (dictionary->GetLookupProvider(v.chords, v.length) == v.lookupProvider) {
+      result.AddResult(v.chords, v.length, v.lookupProvider);
     }
-    chords += length;
   }
-}
-
-bool StenoReverseMapDictionary::ReverseMapDictionaryLookup(
-    StenoReverseDictionaryLookup &result, const void *data) const {
-  return dictionary->ReverseMapDictionaryLookup(result, data);
-}
-
-unsigned int StenoReverseMapDictionary::GetMaximumMatchLength() const {
-  return dictionary->GetMaximumMatchLength();
 }
 
 const char *StenoReverseMapDictionary::GetName() const {
   return "#internal#reverse_map_dictionary";
-}
-
-void StenoReverseMapDictionary::PrintInfo(int depth) const {
-  dictionary->PrintInfo(depth);
-}
-
-bool StenoReverseMapDictionary::PrintDictionary(bool hasData) const {
-  return dictionary->PrintDictionary(hasData);
-}
-
-void StenoReverseMapDictionary::ListDictionaries() const {
-  dictionary->ListDictionaries();
-}
-
-bool StenoReverseMapDictionary::EnableDictionary(const char *name) {
-  return dictionary->EnableDictionary(name);
-}
-
-bool StenoReverseMapDictionary::DisableDictionary(const char *name) {
-  return dictionary->DisableDictionary(name);
-}
-
-bool StenoReverseMapDictionary::ToggleDictionary(const char *name) {
-  return dictionary->ToggleDictionary(name);
 }
 
 //---------------------------------------------------------------------------

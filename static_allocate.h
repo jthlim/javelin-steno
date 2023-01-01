@@ -9,6 +9,7 @@
 template <typename T> class JavelinStaticAllocate {
 public:
   JavelinStaticAllocate() {}
+  ~JavelinStaticAllocate() {}
 
   union {
     uint8_t storage[sizeof(T)];

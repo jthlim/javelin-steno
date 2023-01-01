@@ -14,10 +14,8 @@ UnicodeMode StenoKeyCodeEmitter::emitterMode = UnicodeMode::MACOS_US;
 //---------------------------------------------------------------------------
 
 struct StenoKeyCodeEmitter::EmitterContext {
-  EmitterContext(bool shouldStoreStroke)
-      : shouldStoreStroke(shouldStoreStroke) {}
   uint32_t modifiers = 0;
-  bool shouldStoreStroke;
+  bool shouldCombineUndo = true;
   bool hasDeterminedNumLockState = false;
   bool isNumLockOn;
 
@@ -164,14 +162,18 @@ bool StenoKeyCodeEmitter::Process(const StenoKeyCode *previous,
     ++value;
   }
 
-  if (previousLength == 0 && valueLength == 0)
-    return false;
+  if (previousLength == 0 && valueLength == 0) {
+    return true;
+  }
 
-  EmitterContext context(previousLength != 0);
+  EmitterContext context;
 
   // Now the length of previous represents how much needs to be backspaced.
   for (size_t i = 0; i < previousLength; ++i) {
-    context.TapKey(KeyCode::BACKSPACE);
+    if (!previous[i].IsRawKeyCode()) {
+      context.shouldCombineUndo = false;
+      context.TapKey(KeyCode::BACKSPACE);
+    }
   }
 
   for (size_t i = 0; i < valueLength; ++i) {
@@ -180,7 +182,7 @@ bool StenoKeyCodeEmitter::Process(const StenoKeyCode *previous,
 
   context.ReleaseModifiers(context.modifiers);
 
-  return context.shouldStoreStroke;
+  return context.shouldCombineUndo;
 }
 
 //---------------------------------------------------------------------------
@@ -198,7 +200,7 @@ void StenoKeyCodeEmitter::EmitterContext::ProcessStenoKeyCode(
       ReleaseKey(stenoKeyCode.GetRawKeyCode());
     }
   } else {
-    shouldStoreStroke = true;
+    shouldCombineUndo = false;
     uint32_t unicode = stenoKeyCode.ResolveOutputUnicode();
 
     if (unicode < 128) {

@@ -74,7 +74,7 @@ const StenoDictionary *StenoJeffShowStrokeDictionary::GetLookupProvider(
 }
 
 const char *StenoJeffShowStrokeDictionary::GetName() const {
-  return "jeff_show_stroke";
+  return "jeff-show-stroke";
 }
 
 //---------------------------------------------------------------------------

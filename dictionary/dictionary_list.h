@@ -28,8 +28,8 @@ public:
   GetLookupProvider(const StenoDictionaryLookup &lookup) const;
 
   virtual void ReverseLookup(StenoReverseDictionaryLookup &result) const;
-  virtual bool ReverseMapDictionaryLookup(StenoReverseDictionaryLookup &result,
-                                          const void *data) const;
+  virtual bool
+  ReverseMapDictionaryLookup(StenoReverseMapDictionaryLookup &lookup) const;
 
   virtual unsigned int GetMaximumMatchLength() const;
   virtual const char *GetName() const;

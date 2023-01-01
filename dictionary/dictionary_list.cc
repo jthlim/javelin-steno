@@ -81,14 +81,17 @@ void StenoDictionaryList::ReverseLookup(
 }
 
 bool StenoDictionaryList::ReverseMapDictionaryLookup(
-    StenoReverseDictionaryLookup &result, const void *data) const {
+    StenoReverseMapDictionaryLookup &lookup) const {
   for (size_t i = 0; i < dictionaries.GetCount(); ++i) {
     if (!dictionaries[i].enabled) {
       continue;
     }
     const StenoDictionary *dictionary = dictionaries[i].dictionary;
-    if (dictionary->ReverseMapDictionaryLookup(result, data)) {
-      return true;
+    if (dictionary->ReverseMapDictionaryLookup(lookup)) {
+      StenoDictionaryLookup testLookup(lookup.chords, lookup.length);
+      if (GetLookupProvider(testLookup) == dictionary) {
+        return true;
+      }
     }
   }
   return false;

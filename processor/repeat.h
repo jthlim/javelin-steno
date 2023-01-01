@@ -9,13 +9,14 @@ public:
   StenoRepeat(StenoProcessorElement &nextProcessor)
       : nextProcessor(nextProcessor) {}
 
-  void Process(StenoKeyState value, StenoAction action) final;
-  void Tick() final;
-  void PrintInfo() const final;
+  void Process(const StenoKeyState &value, StenoAction action);
+  void Tick();
+  void PrintInfo() const;
 
   static const int FORGET_TIME_SPAN = 120;
   static const int INITIAL_REPEAT_DELAY = 200;
   static const int REPEAT_DELAY = 30;
+  static const int REPEAT_DELAY_MINIMUM = 5;
 
 private:
   bool wasLastEventAPress = false;

@@ -21,6 +21,10 @@ StenoDebugDictionary::Lookup(const StenoDictionaryLookup &lookup) const {
     return StenoDictionaryLookupResult::CreateInvalid();
   }
 
+  if (response != nullptr) {
+    return StenoDictionaryLookupResult::CreateStaticString(response);
+  }
+
   return StenoDictionaryLookupResult::CreateDynamicString(
       Str::Asprintf("Debug text"));
 }

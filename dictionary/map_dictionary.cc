@@ -23,7 +23,7 @@ struct StenoMapDictionaryDataEntry {
   Uint24 chords[1];
 
   bool Equals(const StenoChord *chords, size_t length) const;
-  void ExpandTo(StenoChord *chords, size_t length);
+  void ExpandTo(StenoChord *chords, size_t length) const;
 };
 
 inline bool StenoMapDictionaryDataEntry::Equals(const StenoChord *chords,
@@ -36,7 +36,8 @@ inline bool StenoMapDictionaryDataEntry::Equals(const StenoChord *chords,
   return true;
 }
 
-void StenoMapDictionaryDataEntry::ExpandTo(StenoChord *chords, size_t length) {
+void StenoMapDictionaryDataEntry::ExpandTo(StenoChord *chords,
+                                           size_t length) const {
   for (size_t i = 0; i < length; ++i) {
     chords[i] = this->chords[i].ToUint32();
   }
@@ -46,22 +47,26 @@ void StenoMapDictionaryDataEntry::ExpandTo(StenoChord *chords, size_t length) {
 
 size_t StenoMapDictionaryStrokesDefinition::GetOffset(size_t index) const {
   size_t blockIndex = index / 128;
-  size_t blockBitIndex = index & 127;
+  size_t blockBitIndex = index % 128;
   size_t maskIndex = blockBitIndex / 32;
-  size_t bitIndex = blockBitIndex & 31;
+  size_t bitIndex = blockBitIndex % 32;
 
   const StenoHashMapEntryBlock &block = offsets[blockIndex];
-  if ((block.masks[maskIndex] & (1 << bitIndex)) == 0) {
+
+  // Take advantage of sign bit to test presence.
+  uint32_t mask = block.masks[maskIndex];
+  mask <<= (31 - bitIndex);
+  if ((mask & 0x80000000) == 0) {
     return (size_t)-1;
   }
 
-  size_t result = block.baseOffset;
+  // mask << 1 prevents counting the current bit.
+  size_t result = __builtin_popcount(mask << 1) + block.baseOffset;
   for (size_t i = 0; i < maskIndex; ++i) {
     result += __builtin_popcount(block.masks[i]);
   }
 
-  return result +
-         __builtin_popcount(block.masks[maskIndex] & ~(0xffffffff << bitIndex));
+  return result;
 }
 
 size_t StenoMapDictionaryStrokesDefinition::GetEntryCount() const {
@@ -168,7 +173,9 @@ const StenoDictionary *StenoMapDictionary::GetLookupProvider(
 }
 
 bool StenoMapDictionary::ReverseMapDictionaryLookup(
-    StenoReverseDictionaryLookup &result, const void *data) const {
+    StenoReverseMapDictionaryLookup &lookup) const {
+  const void *data = lookup.data;
+
   // Quick reject
   if (data < definition.strokes[0].data) {
     return false;
@@ -189,11 +196,11 @@ bool StenoMapDictionary::ReverseMapDictionaryLookup(
     const StenoMapDictionaryDataEntry *entry =
         (const StenoMapDictionaryDataEntry *)data;
     size_t chordLength = i + 1;
-    StenoChord chords[chordLength];
     for (size_t i = 0; i < chordLength; ++i) {
-      chords[i] = entry->chords[i].ToUint32();
+      lookup.chords[i] = entry->chords[i].ToUint32();
     }
-    result.AddResult(chords, chordLength, this);
+    lookup.length = chordLength;
+    lookup.provider = this;
     return true;
   }
   return false;
@@ -207,8 +214,9 @@ void StenoMapDictionary::PrintInfo(int depth) const {
   const StenoMapDictionaryStrokesDefinition &lastStrokeDefinition =
       definition.strokes[definition.maximumStrokeCount - 1];
 
-  const uint8_t *end = (const uint8_t *)(lastStrokeDefinition.offsets +
-                                         lastStrokeDefinition.hashMapSize / 32);
+  const uint8_t *end =
+      (const uint8_t *)(lastStrokeDefinition.offsets +
+                        lastStrokeDefinition.hashMapSize / 128);
 
   Console::Printf("%s%s: %zu bytes\n", Spaces(depth), GetName(), end - start);
 }

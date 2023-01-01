@@ -70,7 +70,7 @@ enum class StenoKey : int8_t {
 // star, S) are represented by the *different* bits.
 class StenoKeyState {
 public:
-  StenoKeyState(uint64_t keyState = 0) : keyState(keyState) {}
+  constexpr StenoKeyState(uint64_t keyState = 0) : keyState(keyState) {}
 
   void Process(StenoKey keycode, bool isPress);
 
@@ -92,6 +92,7 @@ public:
     return StenoKeyState(keyState | other.keyState);
   }
 
+  void operator&=(const StenoKeyState &other) { keyState &= other.keyState; }
   void operator|=(const StenoKeyState &other) { keyState |= other.keyState; }
 
   StenoChord ToChord() const;

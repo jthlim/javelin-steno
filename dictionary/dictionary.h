@@ -62,6 +62,12 @@ struct StenoDictionaryLookup {
 
 //---------------------------------------------------------------------------
 
+struct StenoReverseDictionaryResult {
+  size_t length;
+  StenoChord *chords;
+  const StenoDictionary *lookupProvider;
+};
+
 class StenoReverseDictionaryLookup {
 public:
   StenoReverseDictionaryLookup(size_t strokeThreshold, const char *lookup)
@@ -78,14 +84,25 @@ public:
   size_t lookupLength;
 
   size_t resultCount = 0;
-  uint8_t resultLengths[24];
-  const StenoDictionary *lookupProviders[24];
-
   size_t chordsCount = 0;
+
+  StenoReverseDictionaryResult results[24];
+
   static const size_t CHORD_COUNT = 64;
   StenoChord chords[CHORD_COUNT];
 
   static const size_t MAX_STROKE_THRESHOLD = 31;
+};
+
+//---------------------------------------------------------------------------
+
+struct StenoReverseMapDictionaryLookup {
+  StenoReverseMapDictionaryLookup(const void *data) : data(data) {}
+
+  const void *data;
+  const StenoDictionary *provider;
+  size_t length;
+  StenoChord chords[32];
 };
 
 //---------------------------------------------------------------------------
@@ -109,8 +126,8 @@ public:
   }
 
   virtual void ReverseLookup(StenoReverseDictionaryLookup &result) const;
-  virtual bool ReverseMapDictionaryLookup(StenoReverseDictionaryLookup &result,
-                                          const void *data) const;
+  virtual bool
+  ReverseMapDictionaryLookup(StenoReverseMapDictionaryLookup &lookup) const;
 
   virtual unsigned int GetMaximumMatchLength() const = 0;
   virtual const char *GetName() const = 0;

@@ -5,7 +5,8 @@
 
 //---------------------------------------------------------------------------
 
-void FakeStenoProcessor::Process(StenoKeyState value, StenoAction action) {
+void FakeStenoProcessor::Process(const StenoKeyState &value,
+                                 StenoAction action) {
   ProcessArguments arguments = {.chord = value, .action = action};
   history.push_back(arguments);
   if (action == StenoAction::TRIGGER) {

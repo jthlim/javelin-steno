@@ -2,13 +2,7 @@
 
 #include "engine.h"
 #include "key_code.h"
-#include "segment.h"
-#include "state.h"
-#include "steno_key_code_buffer.h"
-#include "steno_key_code_emitter.h"
-#include "steno_key_state.h"
 #include "str.h"
-#include "utf8_pointer.h"
 
 //---------------------------------------------------------------------------
 
@@ -63,6 +57,34 @@ static bool ReadIntegerParameter(int &result, const char *p,
 
 //---------------------------------------------------------------------------
 
+// `a b {#key1} c {#key2}` with two backspaces should leave:
+// `a {#key1} {#key2}
+void StenoKeyCodeBuffer::Backspace(int backspaceCount) {
+  StenoKeyCode *pEnd = buffer + count;
+  StenoKeyCode *d = pEnd;
+  int localCount = backspaceCount;
+  while (d > buffer) {
+    --d;
+    if (d->IsRawKeyCode()) {
+      continue;
+    }
+    if (--localCount == 0) {
+      break;
+    }
+  }
+
+  StenoKeyCode *s = d;
+  while (s < pEnd) {
+    if (s->IsRawKeyCode() || backspaceCount == 0) {
+      *d++ = *s++;
+    } else {
+      --backspaceCount;
+      ++s;
+    }
+  }
+  count = size_t(d - buffer);
+}
+
 void StenoKeyCodeBuffer::RetroactiveCapitalize(int wordCount) {
   if (count == 0) {
     return;
@@ -101,6 +123,38 @@ void StenoKeyCodeBuffer::RetroactiveCapitalize(int wordCount) {
 
 epilog:
   lastCharacterPointer->SetCase(StenoCaseMode::TITLE_ONCE);
+}
+
+void StenoKeyCodeBuffer::RetroactiveUncapitalize(int wordCount) {
+  StenoKeyCode *p = buffer + count - 1;
+  while (wordCount > 0) {
+    for (;;) {
+      if (p < buffer) {
+        return;
+      }
+      if (!p->IsWhitespace()) {
+        break;
+      }
+      --p;
+    }
+
+    StenoKeyCode *lastCharacterPointer = p;
+    for (;;) {
+      if (p < buffer) {
+        break;
+      }
+      if (p->IsWhitespace()) {
+        break;
+      }
+      if (p->IsLetter()) {
+        lastCharacterPointer = p;
+      }
+      --p;
+    }
+    lastCharacterPointer->SetCase(StenoCaseMode::LOWER_ONCE);
+
+    --wordCount;
+  }
 }
 
 void StenoKeyCodeBuffer::RetroactiveTitleCase(int wordCount) {
@@ -399,22 +453,26 @@ bool StenoKeyCodeBuffer::SetCaseFunction(const List<char *> &parameters) {
   }
 
   if (Str::Eq(parameters[1], "normal")) {
+    // This is needed because orthographic suffixes can make the case mode
+    // take on the overriden case mode. This is not a problem for the other
+    // cases as the override will kick in.
     state.caseMode = StenoCaseMode::NORMAL;
+    state.overrideCaseMode = StenoCaseMode::NORMAL;
     return true;
   }
 
   if (Str::Eq(parameters[1], "lower")) {
-    state.caseMode = StenoCaseMode::LOWER;
+    state.overrideCaseMode = StenoCaseMode::LOWER;
     return true;
   }
 
   if (Str::Eq(parameters[1], "upper")) {
-    state.caseMode = StenoCaseMode::UPPER;
+    state.overrideCaseMode = StenoCaseMode::UPPER;
     return true;
   }
 
   if (Str::Eq(parameters[1], "title")) {
-    state.caseMode = StenoCaseMode::TITLE;
+    state.overrideCaseMode = StenoCaseMode::TITLE;
     return true;
   }
 
@@ -480,5 +538,29 @@ bool StenoKeyCodeBuffer::KeyboardLayoutFunction(
 
   return Key::SetKeyboardLayout(parameters[1]);
 }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+#include "unit_test.h"
+
+TEST_BEGIN("StenoKeyCodeBuffer: Backspace() should give expected results") {
+  StenoKeyCodeBuffer buffer;
+  buffer.buffer[0] = StenoKeyCode('a', StenoCaseMode::NORMAL);
+  buffer.buffer[1] = StenoKeyCode('b', StenoCaseMode::NORMAL);
+  buffer.buffer[2] = StenoKeyCode::CreateRawKeyCodePress(KeyCode::F1);
+  buffer.buffer[3] = StenoKeyCode('c', StenoCaseMode::NORMAL);
+  buffer.buffer[4] = StenoKeyCode::CreateRawKeyCodeRelease(KeyCode::F1);
+  buffer.count = 5;
+
+  buffer.Backspace(2);
+
+  assert(buffer.count == 3);
+  assert(buffer.buffer[0] == StenoKeyCode('a', StenoCaseMode::NORMAL));
+  assert(buffer.buffer[1] == StenoKeyCode::CreateRawKeyCodePress(KeyCode::F1));
+  assert(buffer.buffer[2] ==
+         StenoKeyCode::CreateRawKeyCodeRelease(KeyCode::F1));
+}
+TEST_END
 
 //---------------------------------------------------------------------------
