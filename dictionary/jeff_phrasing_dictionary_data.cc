@@ -16,7 +16,7 @@ constexpr JeffPhrasingSimpleStarter SIMPLE_STARTERS[] = {
     {StenoChord(0x62 /*SWH*/), {VerbForm::UNSPECIFIED, "when"}},
     {StenoChord(0x162 /*SWHA*/), {VerbForm::UNSPECIFIED, "what"}},
     {StenoChord(0xe2 /*SWHR*/), {VerbForm::UNSPECIFIED, "where"}},
-    {StenoChord(0x146 /*STHA*/), {VerbForm::UNSPECIFIED, "that"}},
+    {StenoChord(0x262 /*SWHO*/), {VerbForm::UNSPECIFIED, "who"}},
 
     // # Remove the entry below if you don't want "and" phrases.
     {StenoChord(0x1a /*SKP*/), {VerbForm::UNSPECIFIED, "and"}},
