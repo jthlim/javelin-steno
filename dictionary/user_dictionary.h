@@ -64,10 +64,10 @@ public:
   void Reset();
 
   // Returns true if successful.
-  virtual bool Add(const StenoChord *chords, size_t length, const char *word);
+  virtual bool Add(const StenoStroke *strokes, size_t length, const char *word);
 
   // Returns true if successful.
-  virtual bool Remove(const StenoChord *chords, size_t length);
+  virtual bool Remove(const StenoStroke *strokes, size_t length);
 
   static void PrintJsonDictionary_Binding(void *context,
                                           const char *commandLine);
@@ -86,10 +86,10 @@ private:
     size_t length;
   };
 
-  AddToDataBlockResult AddToDataBlock(const StenoChord *chords, uint32_t length,
-                                      const char *word);
-  void AddToDescriptor(size_t chordLength, size_t dataLength);
-  bool AddToHashTable(const StenoChord *chords, size_t length, size_t offset);
+  AddToDataBlockResult AddToDataBlock(const StenoStroke *strokes,
+                                      uint32_t length, const char *word);
+  void AddToDescriptor(size_t strokeLength, size_t dataLength);
+  bool AddToHashTable(const StenoStroke *strokes, size_t length, size_t offset);
   void WriteEntryIndex(size_t entryIndex, size_t offset);
 
   const StenoUserDictionaryDescriptor *FindMostRecentDescriptor() const;

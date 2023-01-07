@@ -23,7 +23,7 @@ public:
   static const StenoJeffShowStrokeDictionary instance;
 
 private:
-  static const StenoChord trigger;
+  static const StenoStroke trigger;
 };
 
 //---------------------------------------------------------------------------

@@ -10,54 +10,54 @@
 
 //---------------------------------------------------------------------------
 
-int8_t StenoKeyState::CHORD_BIT_INDEX_LOOKUP[] = {
-    ChordBitIndex::SL,   // S1
-    ChordBitIndex::SL,   // S2
-    ChordBitIndex::TL,   // TL
-    ChordBitIndex::KL,   // KL
-    ChordBitIndex::PL,   // PL
-    ChordBitIndex::WL,   // WL
-    ChordBitIndex::HL,   // HL
-    ChordBitIndex::RL,   // RL
-    ChordBitIndex::A,    // A
-    ChordBitIndex::O,    // O
-    ChordBitIndex::STAR, // STAR1
-    ChordBitIndex::STAR, // STAR2
-    ChordBitIndex::STAR, // STAR3
-    ChordBitIndex::STAR, // STAR4
-    ChordBitIndex::E,    // E
-    ChordBitIndex::U,    // U
-    ChordBitIndex::FR,   // FR
-    ChordBitIndex::RR,   // RR
-    ChordBitIndex::PR,   // PR
-    ChordBitIndex::BR,   // BR
-    ChordBitIndex::LR,   // LR
-    ChordBitIndex::GR,   // GR
-    ChordBitIndex::TR,   // TR
-    ChordBitIndex::SR,   // SR
-    ChordBitIndex::DR,   // DR
-    ChordBitIndex::ZR,   // ZR
-    ChordBitIndex::NUM,  // NUM1
-    ChordBitIndex::NUM,  // NUM2
-    ChordBitIndex::NUM,  // NUM3
-    ChordBitIndex::NUM,  // NUM4
-    ChordBitIndex::NUM,  // NUM5
-    ChordBitIndex::NUM,  // NUM6
-    ChordBitIndex::NUM,  // NUM7
-    ChordBitIndex::NUM,  // NUM8
-    ChordBitIndex::NUM,  // NUM9
-    ChordBitIndex::NUM,  // NUM10
-    ChordBitIndex::NUM,  // NUM11
-    ChordBitIndex::NUM,  // NUM12
-    ChordBitIndex::NONE, // FUNCTION
-    ChordBitIndex::NONE, // POWER
-    ChordBitIndex::NONE, // RES1
-    ChordBitIndex::NONE, // RES2
+int8_t StenoKeyState::STROKE_BIT_INDEX_LOOKUP[] = {
+    StrokeBitIndex::SL,   // S1
+    StrokeBitIndex::SL,   // S2
+    StrokeBitIndex::TL,   // TL
+    StrokeBitIndex::KL,   // KL
+    StrokeBitIndex::PL,   // PL
+    StrokeBitIndex::WL,   // WL
+    StrokeBitIndex::HL,   // HL
+    StrokeBitIndex::RL,   // RL
+    StrokeBitIndex::A,    // A
+    StrokeBitIndex::O,    // O
+    StrokeBitIndex::STAR, // STAR1
+    StrokeBitIndex::STAR, // STAR2
+    StrokeBitIndex::STAR, // STAR3
+    StrokeBitIndex::STAR, // STAR4
+    StrokeBitIndex::E,    // E
+    StrokeBitIndex::U,    // U
+    StrokeBitIndex::FR,   // FR
+    StrokeBitIndex::RR,   // RR
+    StrokeBitIndex::PR,   // PR
+    StrokeBitIndex::BR,   // BR
+    StrokeBitIndex::LR,   // LR
+    StrokeBitIndex::GR,   // GR
+    StrokeBitIndex::TR,   // TR
+    StrokeBitIndex::SR,   // SR
+    StrokeBitIndex::DR,   // DR
+    StrokeBitIndex::ZR,   // ZR
+    StrokeBitIndex::NUM,  // NUM1
+    StrokeBitIndex::NUM,  // NUM2
+    StrokeBitIndex::NUM,  // NUM3
+    StrokeBitIndex::NUM,  // NUM4
+    StrokeBitIndex::NUM,  // NUM5
+    StrokeBitIndex::NUM,  // NUM6
+    StrokeBitIndex::NUM,  // NUM7
+    StrokeBitIndex::NUM,  // NUM8
+    StrokeBitIndex::NUM,  // NUM9
+    StrokeBitIndex::NUM,  // NUM10
+    StrokeBitIndex::NUM,  // NUM11
+    StrokeBitIndex::NUM,  // NUM12
+    StrokeBitIndex::NONE, // FUNCTION
+    StrokeBitIndex::NONE, // POWER
+    StrokeBitIndex::NONE, // RES1
+    StrokeBitIndex::NONE, // RES2
 };
 
-static_assert(sizeof(StenoKeyState::CHORD_BIT_INDEX_LOOKUP) ==
+static_assert(sizeof(StenoKeyState::STROKE_BIT_INDEX_LOOKUP) ==
                   (int)StenoKey::COUNT,
-              "ChordBitIndex table must be complete");
+              "StrokeBitIndex table must be complete");
 
 constexpr uint8_t GEMINI_LOOKUP[] = {
     14, // S1
@@ -165,33 +165,33 @@ void StenoKeyState::Process(StenoKey key, bool isPress) {
   }
 }
 
-StenoChord StenoKeyState::ToChord() const {
-  uint32_t chordKeyState = 0;
+StenoStroke StenoKeyState::ToStroke() const {
+  uint32_t strokeKeyState = 0;
 
 #if USE_CTZLL
   uint64_t localKeyState = keyState;
   while (localKeyState) {
     int index = __builtin_ctzll(localKeyState);
-    int shift = CHORD_BIT_INDEX_LOOKUP[index];
+    int shift = STROKE_BIT_INDEX_LOOKUP[index];
     if (shift != -1) {
-      chordKeyState |= 1UL << shift;
+      strokeKeyState |= 1UL << shift;
     }
 
     // Zero the lowest bit.
     localKeyState &= localKeyState - 1;
   }
 #else
-  for (size_t i = 0; i < sizeof(CHORD_BIT_INDEX_LOOKUP); ++i) {
+  for (size_t i = 0; i < sizeof(STROKE_BIT_INDEX_LOOKUP); ++i) {
     if (keyState & (1ULL << i)) {
-      int shift = CHORD_BIT_INDEX_LOOKUP[i];
+      int shift = STROKE_BIT_INDEX_LOOKUP[i];
       if (shift != -1) {
-        chordKeyState |= 1UL << shift;
+        strokeKeyState |= 1UL << shift;
       }
     }
   }
 #endif
 
-  return StenoChord(chordKeyState);
+  return StenoStroke(strokeKeyState);
 }
 
 StenoGeminiPacket StenoKeyState::ToGeminiPacket() const {
@@ -238,8 +238,8 @@ TEST_BEGIN("StenoKeyState tests") {
   state.Process(StenoKey::HL, true);
   state.Process(StenoKey::LR, true);
   {
-    const StenoChord chord = state.ToChord();
-    chord.ToString(buffer);
+    const StenoStroke stroke = state.ToStroke();
+    stroke.ToString(buffer);
     assert(strcmp(buffer, "H-L") == 0);
   }
 }

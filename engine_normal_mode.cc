@@ -14,7 +14,7 @@
 
 struct StenoEngine::UpdateNormalModeTextBufferThreadData {
   StenoEngine *engine;
-  size_t sourceChordCount;
+  size_t sourceStrokeCount;
   ConversionBuffer *conversionBuffer;
   StenoSegmentList segmentList;
   size_t conversionLimit;
@@ -27,26 +27,26 @@ void StenoEngine::UpdateNormalModeTextBufferThreadData::EntryPoint(void *data) {
       (UpdateNormalModeTextBufferThreadData *)data;
 
   threadData->engine->UpdateNormalModeTextBuffer(
-      threadData->sourceChordCount, *threadData->conversionBuffer,
+      threadData->sourceStrokeCount, *threadData->conversionBuffer,
       threadData->conversionLimit, threadData->segmentList);
 }
 
 #endif
 
-void StenoEngine::ProcessNormalModeChord(StenoChord chord) {
+void StenoEngine::ProcessNormalModeStroke(StenoStroke stroke) {
   history.ShiftIfFull();
 
 #if JAVELIN_THREADS
   UpdateNormalModeTextBufferThreadData threadData[2];
   threadData[0].engine = this;
-  threadData[0].sourceChordCount = history.GetCount();
+  threadData[0].sourceStrokeCount = history.GetCount();
   threadData[0].conversionBuffer = &previousConversionBuffer;
   threadData[0].conversionLimit = SEGMENT_CONVERSION_LIMIT - 1;
 
-  history.Add(chord, state);
+  history.Add(stroke, state);
 
   threadData[1].engine = this;
-  threadData[1].sourceChordCount = history.GetCount();
+  threadData[1].sourceStrokeCount = history.GetCount();
   threadData[1].conversionBuffer = &nextConversionBuffer;
   threadData[1].conversionLimit = SEGMENT_CONVERSION_LIMIT;
 
@@ -61,7 +61,7 @@ void StenoEngine::ProcessNormalModeChord(StenoChord chord) {
   UpdateNormalModeTextBuffer(history.GetCount(), previousConversionBuffer,
                              SEGMENT_CONVERSION_LIMIT - 1, previousSegmentList);
 
-  history.Add(chord, state);
+  history.Add(stroke, state);
 
   StenoSegmentList nextSegmentList;
   UpdateNormalModeTextBuffer(history.GetCount(), nextConversionBuffer,
@@ -74,7 +74,7 @@ void StenoEngine::ProcessNormalModeChord(StenoChord chord) {
 
   if (nextConversionBuffer.keyCodeBuffer.addTranslationCount >
       previousConversionBuffer.keyCodeBuffer.addTranslationCount) {
-    PrintPaperTape(chord, previousSegmentList, nextSegmentList);
+    PrintPaperTape(stroke, previousSegmentList, nextSegmentList);
 
     history.Pop();
     InitiateAddTranslationMode();
@@ -93,7 +93,7 @@ void StenoEngine::ProcessNormalModeChord(StenoChord chord) {
     }
   }
 
-  PrintPaperTape(chord, previousSegmentList, nextSegmentList);
+  PrintPaperTape(stroke, previousSegmentList, nextSegmentList);
   if (printSuggestions) {
     PrintSuggestions(previousSegmentList, nextSegmentList);
   }
@@ -117,12 +117,12 @@ void StenoEngine::ProcessNormalModeUndo() {
 #if JAVELIN_THREADS
   UpdateNormalModeTextBufferThreadData threadData[2];
   threadData[0].engine = this;
-  threadData[0].sourceChordCount = history.GetCount();
+  threadData[0].sourceStrokeCount = history.GetCount();
   threadData[0].conversionBuffer = &previousConversionBuffer;
   threadData[0].conversionLimit = SEGMENT_CONVERSION_LIMIT;
 
   threadData[1].engine = this;
-  threadData[1].sourceChordCount = history.GetCount() - undoCount;
+  threadData[1].sourceStrokeCount = history.GetCount() - undoCount;
   threadData[1].conversionBuffer = &nextConversionBuffer;
   threadData[1].conversionLimit = SEGMENT_CONVERSION_LIMIT - undoCount;
 
@@ -154,14 +154,15 @@ void StenoEngine::ProcessNormalModeUndo() {
   PrintPaperTapeUndo(undoCount);
 }
 
-void StenoEngine::UpdateNormalModeTextBuffer(size_t sourceChordCount,
+void StenoEngine::UpdateNormalModeTextBuffer(size_t sourceStrokeCount,
                                              ConversionBuffer &buffer,
                                              size_t conversionLimit,
                                              StenoSegmentList &segmentList) {
-  buffer.chordHistory.TransferFrom(history, sourceChordCount, conversionLimit);
+  buffer.strokeHistory.TransferFrom(history, sourceStrokeCount,
+                                    conversionLimit);
   BuildSegmentContext context(segmentList, dictionary, orthography);
 
-  buffer.chordHistory.CreateSegments(context);
+  buffer.strokeHistory.CreateSegments(context);
 
   StenoTokenizer *tokenizer = segmentList.CreateTokenizer();
   buffer.keyCodeBuffer.Populate(tokenizer);
@@ -178,7 +179,7 @@ void StenoEngine::PrintPaperTapeUndo(size_t undoCount) {
   }
 
   char buffer[32];
-  UNDO_CHORD.ToWideString(buffer);
+  UNDO_STROKE.ToWideString(buffer);
   Console::Printf("PT | %s | ", buffer);
 
   while (undoCount > 8) {
@@ -189,7 +190,7 @@ void StenoEngine::PrintPaperTapeUndo(size_t undoCount) {
   Console::Printf("%s\n\n", ASTERISKS + (8 - undoCount));
 }
 
-void StenoEngine::PrintPaperTape(StenoChord chord,
+void StenoEngine::PrintPaperTape(StenoStroke stroke,
                                  const StenoSegmentList &previousSegmentList,
                                  const StenoSegmentList &nextSegmentList) {
   if (!IsPaperTapeEnabled()) {
@@ -197,7 +198,7 @@ void StenoEngine::PrintPaperTape(StenoChord chord,
   }
 
   char buffer[256];
-  chord.ToWideString(buffer);
+  stroke.ToWideString(buffer);
   Console::Printf("PT | %s | ", buffer);
 
   size_t commonIndex = 0;
@@ -303,21 +304,21 @@ void StenoEngine::PrintSuggestion(const char *p, size_t arrowPrefixCount,
       if (lookup.length != length) {
         break;
       }
-      StenoChord::ToString(lookup.chords, lookup.length, buffer);
+      StenoStroke::ToString(lookup.strokes, lookup.length, buffer);
       Console::Printf(" %s", buffer);
     }
     Console::Write("\n\n", 3);
   }
 
   if (IsPaperTapeEnabled()) {
-    StenoChord().ToWideString(buffer);
+    StenoStroke().ToWideString(buffer);
     Console::Printf("PT   %s   %s", buffer,
                     ARROWS + sizeof(ARROWS) - 1 - arrowPrefixCount);
 
     for (size_t i = 0; i < result.resultCount; ++i) {
       const StenoReverseDictionaryResult &lookup = result.results[i];
 
-      StenoChord::ToString(lookup.chords, lookup.length, buffer);
+      StenoStroke::ToString(lookup.strokes, lookup.length, buffer);
       Console::Printf(" %s", buffer);
     }
     Console::Write("\n\n", 3);
@@ -358,10 +359,10 @@ char *StenoEngine::PrintSegmentSuggestion(size_t wordCount,
 
   StenoSegmentList testSegments;
 
-  size_t chordThresholdCount = 0;
+  size_t strokeThresholdCount = 0;
   for (size_t i = startSegmentIndex; i < segmentList.GetCount(); ++i) {
     testSegments.Add(segmentList[i]);
-    chordThresholdCount += segmentList[i].chordLength;
+    strokeThresholdCount += segmentList[i].strokeLength;
   }
 
   StenoTokenizer *tokenizer = testSegments.CreateTokenizer();
@@ -398,11 +399,11 @@ char *StenoEngine::PrintSegmentSuggestion(size_t wordCount,
   }
 
   if (printSuggestion && (startSegmentIndex != segmentList.GetCount() - 1 ||
-                          chordThresholdCount != 1)) {
-    // No need to check if there's a single chord producing the output.
+                          strokeThresholdCount != 1)) {
+    // No need to check if there's a single stroke producing the output.
 
-    PrintSuggestion(spaceRemoved, chordThresholdCount, buffer,
-                    chordThresholdCount);
+    PrintSuggestion(spaceRemoved, strokeThresholdCount, buffer,
+                    strokeThresholdCount);
   }
 
   if (!continueLookups) {

@@ -1,6 +1,6 @@
 //---------------------------------------------------------------------------
 
-#include "chord_history.h"
+#include "stroke_history.h"
 #include "dictionary/dictionary.h"
 #include "orthography.h"
 #include "segment.h"
@@ -17,16 +17,16 @@ BuildSegmentContext::BuildSegmentContext(
 
 //---------------------------------------------------------------------------
 
-void ChordHistory::Shift() {
+void StenoStrokeHistory::Shift() {
   if (count == 0) {
     return;
   }
   --count;
-  memmove(chords, chords + 1, count * sizeof(StenoChord));
+  memmove(strokes, strokes + 1, count * sizeof(StenoStroke));
   memmove(states, states + 1, count * sizeof(StenoState));
 }
 
-size_t ChordHistory::GetUndoCount(size_t maxCount) const {
+size_t StenoStrokeHistory::GetUndoCount(size_t maxCount) const {
   if (count == 0) {
     return 0;
   }
@@ -39,22 +39,24 @@ size_t ChordHistory::GetUndoCount(size_t maxCount) const {
   return result;
 }
 
-void ChordHistory::TransferFrom(const ChordHistory &source,
-                                size_t sourceChordCount, size_t maxCount) {
+void StenoStrokeHistory::TransferFrom(const StenoStrokeHistory &source,
+                                      size_t sourceStrokeCount,
+                                      size_t maxCount) {
   size_t offset =
-      sourceChordCount <= maxCount ? 0 : sourceChordCount - maxCount;
-  count = sourceChordCount - offset;
+      sourceStrokeCount <= maxCount ? 0 : sourceStrokeCount - maxCount;
+  count = sourceStrokeCount - offset;
 
-  memcpy(chords, source.chords + offset, count * sizeof(StenoChord));
+  memcpy(strokes, source.strokes + offset, count * sizeof(StenoStroke));
   memcpy(states, source.states + offset, count * sizeof(StenoState));
 }
 
-void ChordHistory::CreateSegments(BuildSegmentContext &context,
-                                  size_t minimumStartOffset) {
+void StenoStrokeHistory::CreateSegments(BuildSegmentContext &context,
+                                        size_t minimumStartOffset) {
   AddSegments(context, minimumStartOffset);
 }
 
-void ChordHistory::AddSegments(BuildSegmentContext &context, size_t offset) {
+void StenoStrokeHistory::AddSegments(BuildSegmentContext &context,
+                                     size_t offset) {
   char buffer[32];
 
   while (offset < count) {
@@ -65,7 +67,7 @@ void ChordHistory::AddSegments(BuildSegmentContext &context, size_t offset) {
       continue;
     }
 
-    chords[offset].ToString(buffer);
+    strokes[offset].ToString(buffer);
     context.segmentList.Add(StenoSegment(
         1, states + offset,
         StenoDictionaryLookupResult::CreateDynamicString(Str::Dup(buffer))));
@@ -73,7 +75,8 @@ void ChordHistory::AddSegments(BuildSegmentContext &context, size_t offset) {
   }
 }
 
-bool ChordHistory::DirectLookup(BuildSegmentContext &context, size_t &offset) {
+bool StenoStrokeHistory::DirectLookup(BuildSegmentContext &context,
+                                      size_t &offset) {
   size_t startLength = count - offset;
   if (startLength > context.maximumMatchLength) {
     startLength = context.maximumMatchLength;
@@ -81,7 +84,7 @@ bool ChordHistory::DirectLookup(BuildSegmentContext &context, size_t &offset) {
 
   for (size_t length = startLength; length > 0; --length) {
     StenoDictionaryLookupResult lookup =
-        context.dictionary.Lookup(chords + offset, length);
+        context.dictionary.Lookup(strokes + offset, length);
 
     if (lookup.IsValid()) {
       const char *lookupText = lookup.GetText();
@@ -119,19 +122,19 @@ bool ChordHistory::DirectLookup(BuildSegmentContext &context, size_t &offset) {
   return false;
 }
 
-void ChordHistory::RemoveOffset(BuildSegmentContext &context, size_t &offset,
-                                size_t length) {
+void StenoStrokeHistory::RemoveOffset(BuildSegmentContext &context,
+                                      size_t &offset, size_t length) {
   assert(offset + length <= count);
   size_t remaining = count - offset - length;
-  memmove(chords + offset, chords + offset + length,
-          sizeof(StenoChord) * remaining);
+  memmove(strokes + offset, strokes + offset + length,
+          sizeof(StenoStroke) * remaining);
   memmove(states + offset, states + offset + length,
           sizeof(StenoState) * remaining);
   count -= length;
 }
 
-bool ChordHistory::AutoSuffixLookup(BuildSegmentContext &context,
-                                    size_t &offset) {
+bool StenoStrokeHistory::AutoSuffixLookup(BuildSegmentContext &context,
+                                          size_t &offset) {
 
   // See which historical translations can be extended with auto-suffixes.
   const StenoState *oldestState =
@@ -155,7 +158,7 @@ bool ChordHistory::AutoSuffixLookup(BuildSegmentContext &context,
       }
       context.segmentList.Back().lookup.Destroy();
       context.segmentList.Back() = segment;
-      offset = segment.state - states + segment.chordLength;
+      offset = segment.state - states + segment.strokeLength;
       return true;
     }
   }
@@ -173,44 +176,45 @@ bool ChordHistory::AutoSuffixLookup(BuildSegmentContext &context,
 
   // Auto-suffix worked. Add it to the list.
   context.segmentList.Add(segment);
-  offset += segment.chordLength;
+  offset += segment.strokeLength;
   return true;
 }
 
-StenoSegment ChordHistory::AutoSuffixTest(BuildSegmentContext &context,
-                                          const StenoSegment &segment,
-                                          size_t offset) {
-  size_t lastChordOffset = segment.state - states;
-  size_t startLength = count - lastChordOffset > context.maximumMatchLength
+StenoSegment StenoStrokeHistory::AutoSuffixTest(BuildSegmentContext &context,
+                                                const StenoSegment &segment,
+                                                size_t offset) {
+  size_t lastStrokeOffset = segment.state - states;
+  size_t startLength = count - lastStrokeOffset > context.maximumMatchLength
                            ? context.maximumMatchLength
-                           : count - lastChordOffset;
-  size_t minimumLength = offset - lastChordOffset + 1;
-  return AutoSuffixTest(context, lastChordOffset, startLength, minimumLength);
+                           : count - lastStrokeOffset;
+  size_t minimumLength = offset - lastStrokeOffset + 1;
+  return AutoSuffixTest(context, lastStrokeOffset, startLength, minimumLength);
 }
 
-StenoSegment ChordHistory::AutoSuffixTest(BuildSegmentContext &context,
-                                          size_t offset, size_t startLength,
-                                          size_t minimumLength) {
-  StenoChord *localChords =
-      (StenoChord *)alloca(sizeof(StenoChord) * startLength);
-  memcpy(localChords, chords + offset, sizeof(StenoChord) * startLength);
+StenoSegment StenoStrokeHistory::AutoSuffixTest(BuildSegmentContext &context,
+                                                size_t offset,
+                                                size_t startLength,
+                                                size_t minimumLength) {
+  StenoStroke *localStrokes =
+      (StenoStroke *)alloca(sizeof(StenoStroke) * startLength);
+  memcpy(localStrokes, strokes + offset, sizeof(StenoStroke) * startLength);
 
   const StenoOrthography &orthography = context.orthography.data;
 
   for (size_t length = startLength; length >= minimumLength; --length) {
-    if ((chords[offset + length - 1] & orthography.autoSuffixMask).IsEmpty()) {
+    if ((strokes[offset + length - 1] & orthography.autoSuffixMask).IsEmpty()) {
       continue;
     }
 
     for (size_t i = 0; i < orthography.autoSuffixCount; ++i) {
       const StenoOrthographyAutoSuffix &suffix = orthography.autoSuffixes[i];
-      if ((chords[offset + length - 1] & suffix.chord).IsEmpty()) {
+      if ((strokes[offset + length - 1] & suffix.stroke).IsEmpty()) {
         continue;
       }
-      localChords[length - 1] = chords[offset + length - 1] & ~suffix.chord;
+      localStrokes[length - 1] = strokes[offset + length - 1] & ~suffix.stroke;
 
       StenoDictionaryLookupResult lookup =
-          context.dictionary.Lookup(localChords, length);
+          context.dictionary.Lookup(localStrokes, length);
 
       if (lookup.IsValid()) {
         const char *text = lookup.GetText();
@@ -226,8 +230,8 @@ StenoSegment ChordHistory::AutoSuffixTest(BuildSegmentContext &context,
   return StenoSegment(0, nullptr, StenoDictionaryLookupResult::CreateInvalid());
 }
 
-void ChordHistory::ReevaluateSegments(BuildSegmentContext &context,
-                                      size_t &offset) {
+void StenoStrokeHistory::ReevaluateSegments(BuildSegmentContext &context,
+                                            size_t &offset) {
   size_t currentOffset = offset;
   while (context.segmentList.IsNotEmpty()) {
     StenoSegment &lastSegment = context.segmentList.Back();
@@ -241,45 +245,45 @@ void ChordHistory::ReevaluateSegments(BuildSegmentContext &context,
   }
 }
 
-void ChordHistory::HandleRetroactiveInsertSpace(BuildSegmentContext &context,
-                                                size_t currentOffset) {
+void StenoStrokeHistory::HandleRetroactiveInsertSpace(
+    BuildSegmentContext &context, size_t currentOffset) {
   if (currentOffset == 0) {
     return;
   }
 
   ++count;
   size_t remaining = count - currentOffset;
-  memmove(chords + currentOffset, chords + currentOffset - 1,
-          sizeof(StenoChord) * remaining);
+  memmove(strokes + currentOffset, strokes + currentOffset - 1,
+          sizeof(StenoStroke) * remaining);
   memmove(states + currentOffset, states + currentOffset - 1,
           sizeof(StenoState) * remaining);
 
-  chords[currentOffset - 1] = StenoChord(0);
+  strokes[currentOffset - 1] = StenoStroke(0);
 }
 
-void ChordHistory::HandleRetroactiveToggleAsterisk(BuildSegmentContext &context,
-                                                   size_t currentOffset) {
+void StenoStrokeHistory::HandleRetroactiveToggleAsterisk(
+    BuildSegmentContext &context, size_t currentOffset) {
   if (currentOffset == 0) {
     return;
   }
 
-  chords[currentOffset - 1] ^= ChordMask::STAR;
+  strokes[currentOffset - 1] ^= StrokeMask::STAR;
 }
 
-void ChordHistory::HandleRepeatLastStroke(BuildSegmentContext &context,
-                                          size_t currentOffset,
-                                          const StenoState &state) {
+void StenoStrokeHistory::HandleRepeatLastStroke(BuildSegmentContext &context,
+                                                size_t currentOffset,
+                                                const StenoState &state) {
   if (currentOffset == 0) {
     return;
   }
 
   size_t remaining = count - currentOffset;
-  memmove(chords + currentOffset + 1, chords + currentOffset,
-          sizeof(StenoChord) * remaining);
+  memmove(strokes + currentOffset + 1, strokes + currentOffset,
+          sizeof(StenoStroke) * remaining);
   memmove(states + currentOffset + 1, states + currentOffset,
           sizeof(StenoState) * remaining);
 
-  chords[currentOffset] = chords[currentOffset - 1];
+  strokes[currentOffset] = strokes[currentOffset - 1];
   states[currentOffset] = state;
   ++count;
 }
@@ -302,12 +306,12 @@ const StenoDictionary *const DICTIONARIES[] = {
     &mainDictionary,
 };
 
-TEST_BEGIN("ChordHistory: Test single segment") {
+TEST_BEGIN("StrokeHistory: Test single segment") {
   const StenoDictionaryList dictionary(DICTIONARIES, 2);
 
-  ChordHistory history;
+  StenoStrokeHistory history;
   // spellchecker: disable
-  history.Add(StenoChord("TEFT"), StenoState());
+  history.Add(StenoStroke("TEFT"), StenoState());
   // spellchecker: enable
 
   StenoSegmentList segmentList;
@@ -322,14 +326,14 @@ TEST_BEGIN("ChordHistory: Test single segment") {
 }
 TEST_END
 
-TEST_BEGIN("ChordHistory: Test two segments, with multi-stroke") {
+TEST_BEGIN("StrokeHistory: Test two segments, with multi-stroke") {
   const StenoDictionaryList dictionary(DICTIONARIES, 2);
 
-  ChordHistory history;
+  StenoStrokeHistory history;
   // spellchecker: disable
-  history.Add(StenoChord("TEFT"), StenoState());
-  history.Add(StenoChord("TEFT"), StenoState());
-  history.Add(StenoChord("-D"), StenoState());
+  history.Add(StenoStroke("TEFT"), StenoState());
+  history.Add(StenoStroke("TEFT"), StenoState());
+  history.Add(StenoStroke("-D"), StenoState());
   // spellchecker: enable
 
   StenoSegmentList segmentList;
@@ -345,14 +349,14 @@ TEST_BEGIN("ChordHistory: Test two segments, with multi-stroke") {
 }
 TEST_END
 
-TEST_BEGIN("ChordHistory: Test *? splits strokes") {
+TEST_BEGIN("StrokeHistory: Test *? splits strokes") {
   const StenoDictionaryList dictionary(DICTIONARIES, 2);
 
-  ChordHistory history;
+  StenoStrokeHistory history;
   // spellchecker: disable
-  history.Add(StenoChord("TEFT"), StenoState());
-  history.Add(StenoChord("-D"), StenoState());
-  history.Add(StenoChord("SKWHU"), StenoState());
+  history.Add(StenoStroke("TEFT"), StenoState());
+  history.Add(StenoStroke("-D"), StenoState());
+  history.Add(StenoStroke("SKWHU"), StenoState());
   // spellchecker: enable
 
   StenoSegmentList segmentList;
@@ -369,14 +373,14 @@ TEST_BEGIN("ChordHistory: Test *? splits strokes") {
 }
 TEST_END
 
-TEST_BEGIN("ChordHistory: Test * toggles ") {
+TEST_BEGIN("StrokeHistory: Test * toggles ") {
   StenoDebugDictionary dictionary;
   dictionary.SetResponse("{*}");
 
-  ChordHistory history;
+  StenoStrokeHistory history;
   // spellchecker: disable
-  history.Add(StenoChord("TEFT"), StenoState());
-  history.Add(StenoChord("#EU"), StenoState());
+  history.Add(StenoStroke("TEFT"), StenoState());
+  history.Add(StenoStroke("#EU"), StenoState());
   // spellchecker: enable
 
   StenoSegmentList segmentList;

@@ -21,7 +21,7 @@ public:
   static const StenoJeffNumbersDictionary instance;
 
 private:
-  StenoChord GetDigits(char *scratch, StenoChord chord) const;
+  StenoStroke GetDigits(char *scratch, StenoStroke stroke) const;
 };
 
 //---------------------------------------------------------------------------

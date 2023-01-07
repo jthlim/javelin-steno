@@ -1,36 +1,38 @@
 //---------------------------------------------------------------------------
 
 #include "emily_symbols_dictionary.h"
-#include "../chord.h"
 #include "../console.h"
 #include "../str.h"
+#include "../stroke.h"
 #include <assert.h>
 
 //---------------------------------------------------------------------------
 
-const StenoChord ACTIVATION_MASK(ChordMask::SL | ChordMask::TL | ChordMask::KL |
-                                 ChordMask::PL | ChordMask::WL | ChordMask::HL |
-                                 ChordMask::RL | ChordMask::DR | ChordMask::ZR);
+const StenoStroke ACTIVATION_MASK(StrokeMask::SL | StrokeMask::TL |
+                                  StrokeMask::KL | StrokeMask::PL |
+                                  StrokeMask::WL | StrokeMask::HL |
+                                  StrokeMask::RL | StrokeMask::DR |
+                                  StrokeMask::ZR);
 
-const StenoChord ACTIVATION_MATCH(ChordMask::SL | ChordMask::KL |
-                                  ChordMask::WL | ChordMask::HL);
+const StenoStroke ACTIVATION_MATCH(StrokeMask::SL | StrokeMask::KL |
+                                   StrokeMask::WL | StrokeMask::HL);
 
-const StenoChord CAPITALIZE_MASK(ChordMask::STAR);
+const StenoStroke CAPITALIZE_MASK(StrokeMask::STAR);
 
-const StenoChord LEFT_SPACE_MASK(ChordMask::A);
-const StenoChord RIGHT_SPACE_MASK(ChordMask::O);
+const StenoStroke LEFT_SPACE_MASK(StrokeMask::A);
+const StenoStroke RIGHT_SPACE_MASK(StrokeMask::O);
 
-const StenoChord VARIANT_1(ChordMask::E);
-const StenoChord VARIANT_2(ChordMask::U);
+const StenoStroke VARIANT_1(StrokeMask::E);
+const StenoStroke VARIANT_2(StrokeMask::U);
 
-const StenoChord REPEAT_EXTRA_1(ChordMask::SR);
-const StenoChord REPEAT_EXTRA_2(ChordMask::TR);
+const StenoStroke REPEAT_EXTRA_1(StrokeMask::SR);
+const StenoStroke REPEAT_EXTRA_2(StrokeMask::TR);
 
-const StenoChord DATA_MASK(ChordMask::FR | ChordMask::RR | ChordMask::PR |
-                           ChordMask::BR | ChordMask::LR | ChordMask::GR);
+const StenoStroke DATA_MASK(StrokeMask::FR | StrokeMask::RR | StrokeMask::PR |
+                            StrokeMask::BR | StrokeMask::LR | StrokeMask::GR);
 
 struct EmilySymbolData {
-  StenoChord trigger;
+  StenoStroke trigger;
   const char *text[4];
 };
 
@@ -38,162 +40,170 @@ const StenoEmilySymbolsDictionary StenoEmilySymbolsDictionary::instance;
 
 constexpr EmilySymbolData DATA[] = {
     {
-        .trigger = StenoChord(ChordMask::FR | ChordMask::GR),
+        .trigger = StenoStroke(StrokeMask::FR | StrokeMask::GR),
         .text = {"{#Tab}", "{#Backspace}", "{#Delete}", "{#Escape}"},
     },
     {
-        .trigger = StenoChord(ChordMask::RR | ChordMask::PR | ChordMask::BR |
-                              ChordMask::GR),
+        .trigger = StenoStroke(StrokeMask::RR | StrokeMask::PR |
+                               StrokeMask::BR | StrokeMask::GR),
         .text = {"{#Up}", "{#Left}", "{#Right}", "{#Down}"},
     },
     {
-        .trigger = StenoChord(ChordMask::FR | ChordMask::RR | ChordMask::PR |
-                              ChordMask::BR | ChordMask::GR),
+        .trigger =
+            StenoStroke(StrokeMask::FR | StrokeMask::RR | StrokeMask::PR |
+                        StrokeMask::BR | StrokeMask::GR),
         .text = {"{#Page_Up}", "{#Home}", "{#End}", "{#Page_Down}"},
     },
     {
-        .trigger = StenoChord(ChordMask::FR | ChordMask::RR | ChordMask::BR |
-                              ChordMask::GR),
+        .trigger = StenoStroke(StrokeMask::FR | StrokeMask::RR |
+                               StrokeMask::BR | StrokeMask::GR),
         .text = {"{#AudioPlay}", "{#AudioPrev}", "{#AudioNext}",
                  "{#AudioStop}"},
     },
     {
-        .trigger = StenoChord(ChordMask::FR | ChordMask::RR | ChordMask::BR),
+        .trigger =
+            StenoStroke(StrokeMask::FR | StrokeMask::RR | StrokeMask::BR),
         .text = {"{#AudioMute}", "{#AudioLowerVolume}", "{#AudioRaiseVolume}",
                  "{#Eject}"},
     },
     {
-        .trigger = StenoChord(),
+        .trigger = StenoStroke(),
         .text = {"", "{*!}", "{*?}", "{#Space}"},
     },
     {
-        .trigger = StenoChord(ChordMask::FR | ChordMask::LR),
+        .trigger = StenoStroke(StrokeMask::FR | StrokeMask::LR),
         .text = {"{*-|}", "{*<}", "{<}", "{*>}"},
     },
 
     // Type-able symbols.
     {
-        .trigger = StenoChord(ChordMask::FR | ChordMask::RR),
+        .trigger = StenoStroke(StrokeMask::FR | StrokeMask::RR),
         .text = {"!", "¬", "↦", "¡"},
     },
     {
-        .trigger = StenoChord(ChordMask::FR | ChordMask::PR),
+        .trigger = StenoStroke(StrokeMask::FR | StrokeMask::PR),
         .text = {"\"", "“", "”", "„"},
     },
     {
-        .trigger = StenoChord(ChordMask::FR | ChordMask::RR | ChordMask::LR |
-                              ChordMask::GR),
+        .trigger = StenoStroke(StrokeMask::FR | StrokeMask::RR |
+                               StrokeMask::LR | StrokeMask::GR),
         .text = {"#", "©", "®", "™"},
     },
     {
-        .trigger = StenoChord(ChordMask::RR | ChordMask::PR | ChordMask::BR |
-                              ChordMask::LR),
+        .trigger = StenoStroke(StrokeMask::RR | StrokeMask::PR |
+                               StrokeMask::BR | StrokeMask::LR),
         .text = {"$", "¥", "€", "£"},
     },
     {
-        .trigger = StenoChord(ChordMask::FR | ChordMask::RR | ChordMask::PR |
-                              ChordMask::BR),
+        .trigger = StenoStroke(StrokeMask::FR | StrokeMask::RR |
+                               StrokeMask::PR | StrokeMask::BR),
         .text = {"%", "‰", "‱", "φ"},
     },
     {
-        .trigger = StenoChord(ChordMask::FR | ChordMask::BR | ChordMask::GR),
+        .trigger =
+            StenoStroke(StrokeMask::FR | StrokeMask::BR | StrokeMask::GR),
         .text = {"&", "∩", "∧", "∈"},
     },
     {
-        .trigger = StenoChord(ChordMask::FR),
+        .trigger = StenoStroke(StrokeMask::FR),
         .text = {"'", "‘", "’", "‚"},
     },
     {
-        .trigger = StenoChord(ChordMask::FR | ChordMask::PR | ChordMask::LR),
+        .trigger =
+            StenoStroke(StrokeMask::FR | StrokeMask::PR | StrokeMask::LR),
         .text = {"(", "[", "<", "\\{"},
     },
     {
-        .trigger = StenoChord(ChordMask::RR | ChordMask::BR | ChordMask::GR),
+        .trigger =
+            StenoStroke(StrokeMask::RR | StrokeMask::BR | StrokeMask::GR),
         .text = {")", "]", ">", "\\}"},
     },
     {
-        .trigger = StenoChord(ChordMask::LR),
+        .trigger = StenoStroke(StrokeMask::LR),
         .text = {"*", "∏", "§", "×"},
     },
     {
-        .trigger = StenoChord(ChordMask::GR),
+        .trigger = StenoStroke(StrokeMask::GR),
         .text = {"+", "∑", "¶", "±"},
     },
     {
-        .trigger = StenoChord(ChordMask::BR),
+        .trigger = StenoStroke(StrokeMask::BR),
         .text = {",", "∪", "∨", "∉"},
     },
     {
-        .trigger = StenoChord(ChordMask::PR | ChordMask::LR),
+        .trigger = StenoStroke(StrokeMask::PR | StrokeMask::LR),
         .text = {"-", "−", "–", "—"},
     },
     {
-        .trigger = StenoChord(ChordMask::RR),
+        .trigger = StenoStroke(StrokeMask::RR),
         .text = {".", "•", "·", "…"},
     },
     {
-        .trigger = StenoChord(ChordMask::RR | ChordMask::PR),
+        .trigger = StenoStroke(StrokeMask::RR | StrokeMask::PR),
         .text = {"/", "⇒", "⇔", "÷"},
     },
     {
-        .trigger = StenoChord(ChordMask::LR | ChordMask::GR),
+        .trigger = StenoStroke(StrokeMask::LR | StrokeMask::GR),
         .text = {":", "∋", "∵", "∴"},
     },
     {
-        .trigger = StenoChord(ChordMask::RR | ChordMask::BR),
+        .trigger = StenoStroke(StrokeMask::RR | StrokeMask::BR),
         .text = {";", "∀", "∃", "∄"},
     },
     {
-        .trigger = StenoChord(ChordMask::PR | ChordMask::BR | ChordMask::LR |
-                              ChordMask::GR),
+        .trigger = StenoStroke(StrokeMask::PR | StrokeMask::BR |
+                               StrokeMask::LR | StrokeMask::GR),
         .text = {"=", "≡", "≈", "≠"},
     },
     {
-        .trigger = StenoChord(ChordMask::FR | ChordMask::PR | ChordMask::BR),
+        .trigger =
+            StenoStroke(StrokeMask::FR | StrokeMask::PR | StrokeMask::BR),
         .text = {"?", "¿", "∝", "‽"},
     },
     {
-        .trigger = StenoChord(ChordMask::FR | ChordMask::RR | ChordMask::PR |
-                              ChordMask::BR | ChordMask::LR | ChordMask::GR),
+        .trigger =
+            StenoStroke(StrokeMask::FR | StrokeMask::RR | StrokeMask::PR |
+                        StrokeMask::BR | StrokeMask::LR | StrokeMask::GR),
         .text = {"@", "⊕", "⊗", "∅"},
     },
     {
-        .trigger = StenoChord(ChordMask::FR | ChordMask::BR),
+        .trigger = StenoStroke(StrokeMask::FR | StrokeMask::BR),
         .text = {"\\\\", "Δ", "√", "∞"},
     },
     {
-        .trigger = StenoChord(ChordMask::RR | ChordMask::PR | ChordMask::GR),
+        .trigger =
+            StenoStroke(StrokeMask::RR | StrokeMask::PR | StrokeMask::GR),
         .text = {"^", "«", "»", "°"},
     },
     {
-        .trigger = StenoChord(ChordMask::BR | ChordMask::GR),
+        .trigger = StenoStroke(StrokeMask::BR | StrokeMask::GR),
         .text = {"_", "≤", "≥", "µ"},
     },
     {
-        .trigger = StenoChord(ChordMask::PR),
+        .trigger = StenoStroke(StrokeMask::PR),
         .text = {"`", "⊂", "⊃", "π"},
     },
     {
-        .trigger = StenoChord(ChordMask::PR | ChordMask::BR),
+        .trigger = StenoStroke(StrokeMask::PR | StrokeMask::BR),
         .text = {"|", "⊤", "⊥", "¦"},
     },
     {
-        .trigger = StenoChord(ChordMask::FR | ChordMask::PR | ChordMask::GR |
-                              ChordMask::BR),
+        .trigger = StenoStroke(StrokeMask::FR | StrokeMask::PR |
+                               StrokeMask::GR | StrokeMask::BR),
         .text = {"~", "⊆", "⊇", "˜"},
     },
     {
-        .trigger = StenoChord(ChordMask::FR | ChordMask::PR | ChordMask::BR |
-                              ChordMask::LR),
+        .trigger = StenoStroke(StrokeMask::FR | StrokeMask::PR |
+                               StrokeMask::BR | StrokeMask::LR),
         .text = {"↑", "←", "→", "↓"},
     },
 };
 
 //---------------------------------------------------------------------------
 
-static const EmilySymbolData *LookupDataChord(StenoChord chord) {
+static const EmilySymbolData *LookupDataStroke(StenoStroke stroke) {
   for (size_t i = 0; i < sizeof(DATA) / sizeof(*DATA); ++i) {
-    if (DATA[i].trigger == chord)
+    if (DATA[i].trigger == stroke)
       return &DATA[i];
   }
   return nullptr;
@@ -204,12 +214,12 @@ static const EmilySymbolData *LookupDataChord(StenoChord chord) {
 StenoDictionaryLookupResult
 StenoEmilySymbolsDictionary::Lookup(const StenoDictionaryLookup &lookup) const {
   assert(lookup.length == 1);
-  const StenoChord c = lookup.chords[0];
+  const StenoStroke c = lookup.strokes[0];
   if ((c & ACTIVATION_MASK) != ACTIVATION_MATCH) {
     return StenoDictionaryLookupResult::CreateInvalid();
   }
 
-  const EmilySymbolData *data = LookupDataChord(c & DATA_MASK);
+  const EmilySymbolData *data = LookupDataStroke(c & DATA_MASK);
   if (data == nullptr) {
     return StenoDictionaryLookupResult::CreateInvalid();
   }
@@ -242,12 +252,12 @@ StenoEmilySymbolsDictionary::Lookup(const StenoDictionaryLookup &lookup) const {
 const StenoDictionary *StenoEmilySymbolsDictionary::GetLookupProvider(
     const StenoDictionaryLookup &lookup) const {
   assert(lookup.length == 1);
-  const StenoChord c = lookup.chords[0];
+  const StenoStroke c = lookup.strokes[0];
   if ((c & ACTIVATION_MASK) != ACTIVATION_MATCH) {
     return nullptr;
   }
 
-  const EmilySymbolData *data = LookupDataChord(c & DATA_MASK);
+  const EmilySymbolData *data = LookupDataStroke(c & DATA_MASK);
   return data != nullptr ? this : nullptr;
 }
 
@@ -256,21 +266,21 @@ const char *StenoEmilySymbolsDictionary::GetName() const {
 }
 
 bool StenoEmilySymbolsDictionary::PrintDictionary(bool hasData) const {
-  char chordBuffer[32];
+  char strokeBuffer[32];
   char translationBuffer[32];
   for (size_t i = 0; i < sizeof(DATA) / sizeof(*DATA); ++i) {
-    StenoChord chord = ACTIVATION_MATCH | DATA[i].trigger;
+    StenoStroke stroke = ACTIVATION_MATCH | DATA[i].trigger;
 
     for (int j = 0; j < 4; ++j) {
-      StenoChord localChord = chord;
+      StenoStroke localStroke = stroke;
       if (j & 1) {
-        localChord |= VARIANT_1;
+        localStroke |= VARIANT_1;
       }
       if (j & 2) {
-        localChord |= VARIANT_2;
+        localStroke |= VARIANT_2;
       }
 
-      localChord.ToString(chordBuffer);
+      localStroke.ToString(strokeBuffer);
 
       char *p = Str::WriteJson(translationBuffer, DATA[i].text[j]);
       *p++ = '\0';
@@ -282,7 +292,7 @@ bool StenoEmilySymbolsDictionary::PrintDictionary(bool hasData) const {
         Console::Write(",\n\t", 3);
       }
 
-      Console::Printf("\"%s\": \"%s\"", chordBuffer, translationBuffer);
+      Console::Printf("\"%s\": \"%s\"", strokeBuffer, translationBuffer);
     }
   }
   return true;
@@ -293,11 +303,11 @@ bool StenoEmilySymbolsDictionary::PrintDictionary(bool hasData) const {
 
 #include "../unit_test.h"
 
-static void VerifyChord(const char *chord, const char *result) {
-  StenoChord stenoChord;
-  stenoChord.Set(chord);
+static void VerifyStroke(const char *stroke, const char *result) {
+  StenoStroke stenoStroke;
+  stenoStroke.Set(stroke);
 
-  auto lookup = StenoEmilySymbolsDictionary::instance.Lookup(&stenoChord, 1);
+  auto lookup = StenoEmilySymbolsDictionary::instance.Lookup(&stenoStroke, 1);
   assert(lookup.IsValid());
   assert(Str::Eq(lookup.GetText(), result));
   lookup.Destroy();
@@ -305,19 +315,19 @@ static void VerifyChord(const char *chord, const char *result) {
 
 TEST_BEGIN("EmilySymbolsDictionary tests") {
   // spellchecker: disable
-  VerifyChord("SKWHE", "{*!}");
-  VerifyChord("SKWH-R", "{^}.{^}");
-  VerifyChord("SKWH-RS", "{^}..{^}");
-  VerifyChord("SKWH-RT", "{^}...{^}");
-  VerifyChord("SKWH-RTS", "{^}....{^}");
-  VerifyChord("SKWHAR", "{}.{^}");
-  VerifyChord("SKWHOR", "{^}.{}");
-  VerifyChord("SKWHAOR", "{}.{}");
-  VerifyChord("SKWHAO*R", "{}.{}{-|}");
-  VerifyChord("SKWH-R", "{^}.{^}");
-  VerifyChord("SKWHER", "{^}•{^}");
-  VerifyChord("SKWHUR", "{^}·{^}");
-  VerifyChord("SKWHEUR", "{^}…{^}");
+  VerifyStroke("SKWHE", "{*!}");
+  VerifyStroke("SKWH-R", "{^}.{^}");
+  VerifyStroke("SKWH-RS", "{^}..{^}");
+  VerifyStroke("SKWH-RT", "{^}...{^}");
+  VerifyStroke("SKWH-RTS", "{^}....{^}");
+  VerifyStroke("SKWHAR", "{}.{^}");
+  VerifyStroke("SKWHOR", "{^}.{}");
+  VerifyStroke("SKWHAOR", "{}.{}");
+  VerifyStroke("SKWHAO*R", "{}.{}{-|}");
+  VerifyStroke("SKWH-R", "{^}.{^}");
+  VerifyStroke("SKWHER", "{^}•{^}");
+  VerifyStroke("SKWHUR", "{^}·{^}");
+  VerifyStroke("SKWHEUR", "{^}…{^}");
   // spellchecker: enable
 }
 TEST_END

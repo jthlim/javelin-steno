@@ -20,26 +20,26 @@ size_t StenoHashMapEntryBlock::PopCount() const {
 
 struct StenoMapDictionaryDataEntry {
   Uint24 textOffset;
-  Uint24 chords[1];
+  Uint24 strokes[1];
 
-  bool Equals(const StenoChord *chords, size_t length) const;
-  void ExpandTo(StenoChord *chords, size_t length) const;
+  bool Equals(const StenoStroke *strokes, size_t length) const;
+  void ExpandTo(StenoStroke *strokes, size_t length) const;
 };
 
-inline bool StenoMapDictionaryDataEntry::Equals(const StenoChord *chords,
+inline bool StenoMapDictionaryDataEntry::Equals(const StenoStroke *strokes,
                                                 size_t length) const {
   for (size_t i = 0; i < length; ++i) {
-    if (chords[i] != this->chords[i].ToUint32()) {
+    if (strokes[i] != this->strokes[i].ToUint32()) {
       return false;
     }
   }
   return true;
 }
 
-void StenoMapDictionaryDataEntry::ExpandTo(StenoChord *chords,
+void StenoMapDictionaryDataEntry::ExpandTo(StenoStroke *strokes,
                                            size_t length) const {
   for (size_t i = 0; i < length; ++i) {
-    chords[i] = this->chords[i].ToUint32();
+    strokes[i] = this->strokes[i].ToUint32();
   }
 }
 
@@ -78,7 +78,7 @@ size_t StenoMapDictionaryStrokesDefinition::GetEntryCount() const {
 }
 
 bool StenoMapDictionaryStrokesDefinition::PrintDictionary(
-    bool hasData, size_t chordLength, char *buffer,
+    bool hasData, size_t strokeLength, char *buffer,
     const uint8_t *textBlock) const {
   size_t entryCount = GetEntryCount();
   for (size_t i = 0; i < entryCount; ++i) {
@@ -89,17 +89,17 @@ bool StenoMapDictionaryStrokesDefinition::PrintDictionary(
       Console::Write(",\n\t", 3);
     }
 
-    size_t dataIndex = 3 * i * (1 + chordLength);
+    size_t dataIndex = 3 * i * (1 + strokeLength);
     const StenoMapDictionaryDataEntry &entry =
         (const StenoMapDictionaryDataEntry &)data[dataIndex];
 
     char *p = buffer;
     *p++ = '\"';
-    for (size_t j = 0; j < chordLength; ++j) {
+    for (size_t j = 0; j < strokeLength; ++j) {
       if (j != 0) {
         *p++ = '/';
       }
-      p = StenoChord(entry.chords[j].ToUint32()).ToString(p);
+      p = StenoStroke(entry.strokes[j].ToUint32()).ToString(p);
     }
     *p++ = '\"';
     *p++ = ':';
@@ -136,7 +136,7 @@ StenoMapDictionary::Lookup(const StenoDictionaryLookup &lookup) const {
     const StenoMapDictionaryDataEntry &entry =
         (const StenoMapDictionaryDataEntry &)strokesDefinition.data[dataIndex];
 
-    if (entry.Equals(lookup.chords, lookup.length)) {
+    if (entry.Equals(lookup.strokes, lookup.length)) {
       const uint8_t *text = definition.textBlock + entry.textOffset.ToUint32();
       return StenoDictionaryLookupResult::CreateStaticString(text);
     }
@@ -165,7 +165,7 @@ const StenoDictionary *StenoMapDictionary::GetLookupProvider(
     const StenoMapDictionaryDataEntry &entry =
         (const StenoMapDictionaryDataEntry &)strokesDefinition.data[dataIndex];
 
-    if (entry.Equals(lookup.chords, lookup.length)) {
+    if (entry.Equals(lookup.strokes, lookup.length)) {
       return this;
     }
     ++entryIndex;
@@ -192,14 +192,12 @@ bool StenoMapDictionary::ReverseMapDictionaryLookup(
       continue;
     }
 
-    // There is a match! Convert it to StenoChords.
+    // There is a match! Convert it to StenoStrokes.
     const StenoMapDictionaryDataEntry *entry =
         (const StenoMapDictionaryDataEntry *)data;
-    size_t chordLength = i + 1;
-    for (size_t i = 0; i < chordLength; ++i) {
-      lookup.chords[i] = entry->chords[i].ToUint32();
-    }
-    lookup.length = chordLength;
+    size_t strokeLength = i + 1;
+    entry->ExpandTo(lookup.strokes, strokeLength);
+    lookup.length = strokeLength;
     lookup.provider = this;
     return true;
   }
@@ -250,12 +248,12 @@ constexpr StenoMapDictionary mainDictionary(MainDictionary::definition);
 
 TEST_BEGIN("MapDictionary: Single stroke lookup test") {
   // spellchecker: disable
-  const StenoChord chords[1] = {
-      StenoChord("TEFT"),
+  const StenoStroke strokes[1] = {
+      StenoStroke("TEFT"),
   };
   // spellchecker: enable
 
-  auto lookup = mainDictionary.Lookup(chords, 1);
+  auto lookup = mainDictionary.Lookup(strokes, 1);
   assert(lookup.IsValid());
   assert(strcmp(lookup.GetText(), "test") == 0);
   lookup.Destroy();
@@ -264,13 +262,13 @@ TEST_END
 
 TEST_BEGIN("MapDictionary: Double stroke lookup test") {
   // spellchecker: disable
-  const StenoChord chords[2] = {
-      StenoChord("TEFT"),
-      StenoChord("-D"),
+  const StenoStroke strokes[2] = {
+      StenoStroke("TEFT"),
+      StenoStroke("-D"),
   };
   // spellchecker: enable
 
-  auto lookup = mainDictionary.Lookup(chords, 2);
+  auto lookup = mainDictionary.Lookup(strokes, 2);
   assert(lookup.IsValid());
   assert(strcmp(lookup.GetText(), "tested") == 0);
   lookup.Destroy();

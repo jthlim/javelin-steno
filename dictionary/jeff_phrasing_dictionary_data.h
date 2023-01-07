@@ -1,6 +1,6 @@
 //---------------------------------------------------------------------------
 
-#include "../chord.h"
+#include "../stroke.h"
 #include <assert.h>
 #include <stdint.h>
 #include <stdlib.h>
@@ -27,7 +27,7 @@ enum class Tense {
 
 struct JeffPhrasingValidEnders {
   size_t enderCount;
-  const StenoChord *enders;
+  const StenoStroke *enders;
 };
 
 struct JeffPhrasingPronoun {
@@ -37,7 +37,7 @@ struct JeffPhrasingPronoun {
 };
 
 struct JeffPhrasingFullStarter {
-  StenoChord chord;
+  StenoStroke stroke;
   JeffPhrasingPronoun pronoun;
 };
 
@@ -102,7 +102,7 @@ struct JeffPhrasingMiddle {
 };
 
 struct JeffPhrasingSimpleStarter {
-  StenoChord chord;
+  StenoStroke stroke;
   JeffPhrasingMiddle middle;
 };
 
@@ -113,7 +113,7 @@ struct JeffPhrasingStructure {
 };
 
 struct JeffPhrasingEnder {
-  StenoChord chord;
+  StenoStroke stroke;
   Tense tense;
   bool canUseAllStarters;
   JeffPhrasingVariant ender;
@@ -121,7 +121,7 @@ struct JeffPhrasingEnder {
 };
 
 struct JeffPhrasingStructureException {
-  StenoChord chord;
+  StenoStroke stroke;
   JeffPhrasingStructure structure;
 };
 
@@ -142,7 +142,7 @@ struct ModeMask {
 struct JeffPhrasingReverseHashMapEntry {
   uint32_t hash;
   uint32_t replaceHash;
-  StenoChord stroke;
+  StenoStroke stroke;
   bool checkNext;
 
   // 1 = starter, 2 = middle, 4 structure, 8 verb.
@@ -154,7 +154,7 @@ struct JeffPhrasingReverseHashMapEntry {
 
 struct JeffPhrasingReverseStructureEntry {
   uint32_t hash;
-  StenoChord stroke;
+  StenoStroke stroke;
   uint32_t modeMask; // 1 = full, 2 = simple.
 };
 
@@ -178,7 +178,7 @@ struct JeffPhrasingDictionaryData {
   const JeffPhrasingEnder *enders;
 
   size_t nonPhraseStrokeCount;
-  const StenoChord *nonPhraseStrokes;
+  const StenoStroke *nonPhraseStrokes;
 
   size_t uniqueStarterCount;
   const JeffPhrasingStructureException *uniqueStarters;
@@ -196,13 +196,14 @@ struct JeffPhrasingDictionaryData {
 
   static const JeffPhrasingDictionaryData instance;
 
-  bool IsValidPhraseChord(StenoChord chord) const;
-  const JeffPhrasingMiddle *LookupSimpleStarter(StenoChord chord) const;
-  const JeffPhrasingMiddle *LookupFullMiddle(StenoChord chord) const;
-  const JeffPhrasingPronoun *LookupFullStarter(StenoChord chord) const;
-  const JeffPhrasingEnder *LookupEnder(StenoChord chord) const;
-  const JeffPhrasingStructure *LookupUniqueStarter(StenoChord chord) const;
-  const JeffPhrasingStructure *LookupStructureException(StenoChord chord) const;
+  bool IsValidPhraseStroke(StenoStroke stroke) const;
+  const JeffPhrasingMiddle *LookupSimpleStarter(StenoStroke stroke) const;
+  const JeffPhrasingMiddle *LookupFullMiddle(StenoStroke stroke) const;
+  const JeffPhrasingPronoun *LookupFullStarter(StenoStroke stroke) const;
+  const JeffPhrasingEnder *LookupEnder(StenoStroke stroke) const;
+  const JeffPhrasingStructure *LookupUniqueStarter(StenoStroke stroke) const;
+  const JeffPhrasingStructure *
+  LookupStructureException(StenoStroke stroke) const;
   const JeffPhrasingReverseHashMapEntry *LookupReverseWord(uint32_t hash) const;
   const JeffPhrasingReverseStructureEntry *
   LookupReverseStructure(uint32_t hash) const;

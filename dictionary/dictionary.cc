@@ -23,7 +23,8 @@ static void FreeString(StenoDictionaryLookupResult *p) {
 //---------------------------------------------------------------------------
 
 void StenoReverseDictionaryLookup::AddResult(
-    const StenoChord *c, size_t length, const StenoDictionary *lookupProvider) {
+    const StenoStroke *c, size_t length,
+    const StenoDictionary *lookupProvider) {
   // Ignore if above or equal to the threshold
   if (length >= strokeThreshold) {
     return;
@@ -35,26 +36,26 @@ void StenoReverseDictionaryLookup::AddResult(
 
   // Ignore if it'll overflow.
   if (resultCount + 1 >= sizeof(results) / sizeof(*results) ||
-      chordsCount + length > CHORD_COUNT) {
+      strokesCount + length > STROKE_COUNT) {
     return;
   }
 
   StenoReverseDictionaryResult &result = results[resultCount++];
   result.length = length;
-  result.chords = chords + chordsCount;
+  result.strokes = strokes + strokesCount;
   result.lookupProvider = lookupProvider;
 
-  memcpy(&chords[chordsCount], c, sizeof(StenoChord) * length);
-  chordsCount += length;
+  memcpy(&strokes[strokesCount], c, sizeof(StenoStroke) * length);
+  strokesCount += length;
 }
 
-bool StenoReverseDictionaryLookup::HasResult(const StenoChord *c,
+bool StenoReverseDictionaryLookup::HasResult(const StenoStroke *c,
                                              size_t length) const {
 
   for (size_t i = 0; i < resultCount; ++i) {
     const StenoReverseDictionaryResult &result = results[i];
     if (result.length == length &&
-        memcmp(result.chords, c, length * sizeof(StenoChord)) == 0) {
+        memcmp(result.strokes, c, length * sizeof(StenoStroke)) == 0) {
       return true;
     }
   }

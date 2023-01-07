@@ -29,7 +29,7 @@ void StenoRepeat::Process(const StenoKeyState &value, StenoAction action) {
     isRepeating = false;
     if (wasLastEventAPress) {
       wasLastEventAPress = false;
-      // Capture the chord before the release.
+      // Capture the stroke before the release.
       releasedKeyState = pressedKeyState;
       releaseTime = Clock::GetCurrentTime();
     }

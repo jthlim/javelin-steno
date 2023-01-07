@@ -30,9 +30,9 @@ private:
       const StenoOrthographyReverseAutoSuffix &reverseAutoSuffix,
       const Pattern &reversePattern) const;
 
-  bool CanAutoSuffixLookup(const StenoChord *chords, size_t length) const;
-  bool HasPrefixLookup(const StenoChord *chords, size_t length) const;
-  bool HasSuffixLookup(const StenoChord *chords, size_t length) const;
+  bool CanAutoSuffixLookup(const StenoStroke *strokes, size_t length) const;
+  bool HasPrefixLookup(const StenoStroke *strokes, size_t length) const;
+  bool HasSuffixLookup(const StenoStroke *strokes, size_t length) const;
 
   static const Pattern *
   CreateReversePatterns(const StenoOrthography &orthography);

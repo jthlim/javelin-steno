@@ -45,7 +45,7 @@ void StenoReverseMapDictionary::AddMapDictionaryResults(
         uint32_t offset = p[0] | (p[1] << 7) | (p[2] << 14) + (p[3] << 21);
         StenoReverseMapDictionaryLookup lookup(baseAddress + offset);
         if (ReverseMapDictionaryLookup(lookup)) {
-          result.AddResult(lookup.chords, lookup.length, lookup.provider);
+          result.AddResult(lookup.strokes, lookup.length, lookup.provider);
         }
         p += 4;
       }
@@ -60,8 +60,8 @@ void StenoReverseMapDictionary::AddValidLookupProviders(
     StenoReverseDictionaryLookup &value) const {
   for (size_t i = 0; i < value.resultCount; ++i) {
     const StenoReverseDictionaryResult &v = value.results[i];
-    if (dictionary->GetLookupProvider(v.chords, v.length) == v.lookupProvider) {
-      result.AddResult(v.chords, v.length, v.lookupProvider);
+    if (dictionary->GetLookupProvider(v.strokes, v.length) == v.lookupProvider) {
+      result.AddResult(v.strokes, v.length, v.lookupProvider);
     }
   }
 }

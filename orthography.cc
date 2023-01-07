@@ -68,7 +68,7 @@ void StenoOrthography::Print() const {
       Console::Write(",", 1);
     }
     Console::Printf("\n\t\t{\n\t\t\t\"key\": \"");
-    char *p = autoSuffixes[i].chord.ToString(buffer);
+    char *p = autoSuffixes[i].stroke.ToString(buffer);
     Console::Write(buffer, p - buffer);
     Console::Printf("\",\n\t\t\t\"suffix\": \"");
     p = Str::WriteJson(buffer, autoSuffixes[i].text + 1);
@@ -82,7 +82,7 @@ void StenoOrthography::Print() const {
       Console::Write(",", 1);
     }
     Console::Printf("\n\t\t{\n\t\t\t\"key\": \"");
-    char *p = reverseAutoSuffixes[i].autoSuffix->chord.ToString(buffer);
+    char *p = reverseAutoSuffixes[i].autoSuffix->stroke.ToString(buffer);
     Console::Write(buffer, p - buffer);
     Console::Printf("\",\n\t\t\t\"suppressMask\": \"");
     p = reverseAutoSuffixes[i].suppressMask.ToString(buffer);

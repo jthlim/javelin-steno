@@ -1,9 +1,9 @@
 //---------------------------------------------------------------------------
 
 #pragma once
-#include "chord.h"
 #include "list.h"
 #include "pattern.h"
+#include "stroke.h"
 #include <stdlib.h>
 
 //---------------------------------------------------------------------------
@@ -19,13 +19,13 @@ struct StenoOrthographyAlias {
 };
 
 struct StenoOrthographyAutoSuffix {
-  StenoChord chord;
+  StenoStroke stroke;
   const char *text;
 };
 
 struct StenoOrthographyReverseAutoSuffix {
   StenoOrthographyAutoSuffix *autoSuffix;
-  StenoChord suppressMask;
+  StenoStroke suppressMask;
   const char *testPattern;
   const char *replacement;
 };
@@ -39,7 +39,7 @@ struct StenoOrthography {
   size_t aliasCount;
   const StenoOrthographyAlias *aliases;
 
-  StenoChord autoSuffixMask;
+  StenoStroke autoSuffixMask;
   size_t autoSuffixCount;
   const StenoOrthographyAutoSuffix *autoSuffixes;
 

@@ -2,7 +2,6 @@
 
 #include "engine.h"
 
-#include "chord.h"
 #include "clock.h"
 #include "console.h"
 #include "dictionary/user_dictionary.h"
@@ -14,12 +13,13 @@
 #include "segment.h"
 #include "steno_key_code_buffer.h"
 #include "str.h"
+#include "stroke.h"
 #include "word_list.h"
 #include <string.h>
 
 //---------------------------------------------------------------------------
 
-const StenoChord StenoEngine::UNDO_CHORD(ChordMask::STAR);
+const StenoStroke StenoEngine::UNDO_STROKE(StrokeMask::STAR);
 
 //---------------------------------------------------------------------------
 
@@ -43,22 +43,22 @@ void StenoEngine::Process(const StenoKeyState &value, StenoAction action) {
     return;
 
   ++strokeCount;
-  StenoChord chord = value.ToChord();
-  if (chord == UNDO_CHORD) {
+  StenoStroke stroke = value.ToStroke();
+  if (stroke == UNDO_STROKE) {
     ProcessUndo();
   } else {
-    ProcessChord(chord);
+    ProcessStroke(stroke);
   }
 }
 
-void StenoEngine::ProcessChord(StenoChord chord) {
+void StenoEngine::ProcessStroke(StenoStroke stroke) {
   switch (mode) {
   case StenoEngineMode::NORMAL:
-    ProcessNormalModeChord(chord);
+    ProcessNormalModeStroke(stroke);
     return;
 
   case StenoEngineMode::ADD_TRANSLATION:
-    ProcessAddTranslationModeChord(chord);
+    ProcessAddTranslationModeStroke(stroke);
     return;
   }
 }
@@ -136,8 +136,8 @@ void StenoEngine::ReverseLookup(StenoReverseDictionaryLookup &result) {
             return (int)pa->length - (int)pb->length;
           }
 
-          uint32_t popCountA = StenoChord::PopCount(pa->chords, pa->length);
-          uint32_t popCountB = StenoChord::PopCount(pb->chords, pb->length);
+          uint32_t popCountA = StenoStroke::PopCount(pa->strokes, pa->length);
+          uint32_t popCountB = StenoStroke::PopCount(pb->strokes, pb->length);
           if (popCountA != popCountB) {
             return (int)popCountA - (int)popCountB;
           }
@@ -199,9 +199,9 @@ void StenoEngineTester::VerifyTextBuffer(StenoEngine &engine,
 
 void StenoEngineTester::TestSymbols(StenoEngine &engine) {
   // spellchecker: disable
-  engine.ProcessChord(StenoChord("SKWHEUFPL"));
-  engine.ProcessChord(StenoChord("SKWHEUFPL"));
-  engine.ProcessChord(StenoChord("SKWHEFG"));
+  engine.ProcessStroke(StenoStroke("SKWHEUFPL"));
+  engine.ProcessStroke(StenoStroke("SKWHEUFPL"));
+  engine.ProcessStroke(StenoStroke("SKWHEFG"));
   // spellchecker: enable
   assert(engine.nextConversionBuffer.keyCodeBuffer.count == 4);
   assert(engine.nextConversionBuffer.keyCodeBuffer.buffer[0] ==
@@ -225,29 +225,29 @@ TEST_END
 
 void StenoEngineTester::TestAddTranslation(StenoEngine &engine) {
   // spellchecker: disable
-  engine.ProcessChord(StenoChord("KAT"));
+  engine.ProcessStroke(StenoStroke("KAT"));
   VerifyTextBuffer(engine, "KAT");
   engine.ProcessUndo();
 
-  engine.ProcessChord(StenoChord("TKUPT"));
-  VerifyTextBuffer(engine, " >>> Add/Delete Translation - Chords: ");
+  engine.ProcessStroke(StenoStroke("TKUPT"));
+  VerifyTextBuffer(engine, " >>> Add/Delete Translation - Strokes: ");
 
-  engine.ProcessChord(StenoChord("R-R"));
-  engine.ProcessChord(StenoChord("KAT"));
-  VerifyTextBuffer(engine, " >>> Add/Delete Translation - Chords: KAT");
+  engine.ProcessStroke(StenoStroke("R-R"));
+  engine.ProcessStroke(StenoStroke("KAT"));
+  VerifyTextBuffer(engine, " >>> Add/Delete Translation - Strokes: KAT");
 
-  engine.ProcessChord(StenoChord("R-R"));
-  VerifyTextBuffer(engine, " >>> Add/Delete Translation - Chords: KAT; "
+  engine.ProcessStroke(StenoStroke("R-R"));
+  VerifyTextBuffer(engine, " >>> Add/Delete Translation - Strokes: KAT; "
                            "Translation: ");
 
-  engine.ProcessChord(StenoChord("TEFT"));
-  VerifyTextBuffer(engine, " >>> Add/Delete Translation - Chords: KAT; "
+  engine.ProcessStroke(StenoStroke("TEFT"));
+  VerifyTextBuffer(engine, " >>> Add/Delete Translation - Strokes: KAT; "
                            "Translation: test");
 
-  engine.ProcessChord(StenoChord("R-R"));
+  engine.ProcessStroke(StenoStroke("R-R"));
   VerifyTextBuffer(engine, "");
 
-  engine.ProcessChord(StenoChord("KAT"));
+  engine.ProcessStroke(StenoStroke("KAT"));
   VerifyTextBuffer(engine, "test");
   // spellchecker: enable
 }
@@ -271,8 +271,8 @@ TEST_BEGIN("Engine: Random spam") {
 
   srand(0x1234);
   for (size_t i = 0; i < 1000; ++i) {
-    StenoChord chord(rand() & ChordMask::ALL);
-    engine.ProcessChord(chord);
+    StenoStroke stroke(rand() & StrokeMask::ALL);
+    engine.ProcessStroke(stroke);
   }
 
   Key::EnableHistory();

@@ -5,7 +5,7 @@
 //---------------------------------------------------------------------------
 
 // Processor that switches between primary and secondary processors with a
-// given chord.
+// given stroke.
 class StenoSwitch final : public StenoProcessorElement {
 public:
   StenoSwitch(StenoProcessorElement &defaultProcessor,

@@ -1,16 +1,16 @@
 //---------------------------------------------------------------------------
 
 #include "jeff_show_stroke_dictionary.h"
-#include "../chord.h"
 #include "../console.h"
+#include "../stroke.h"
 #include <string.h>
 
 //---------------------------------------------------------------------------
 
-constexpr StenoChord StenoJeffShowStrokeDictionary::trigger(ChordMask::SL |
-                                                            ChordMask::TL |
-                                                            ChordMask::RL |
-                                                            ChordMask::STAR);
+constexpr StenoStroke StenoJeffShowStrokeDictionary::trigger(StrokeMask::SL |
+                                                             StrokeMask::TL |
+                                                             StrokeMask::RL |
+                                                             StrokeMask::STAR);
 
 const StenoJeffShowStrokeDictionary StenoJeffShowStrokeDictionary::instance;
 
@@ -18,8 +18,8 @@ const StenoJeffShowStrokeDictionary StenoJeffShowStrokeDictionary::instance;
 
 StenoDictionaryLookupResult StenoJeffShowStrokeDictionary::Lookup(
     const StenoDictionaryLookup &lookup) const {
-  const StenoChord *chords = lookup.chords;
-  if (chords[0] != trigger) {
+  const StenoStroke *strokes = lookup.strokes;
+  if (strokes[0] != trigger) {
     return StenoDictionaryLookupResult::CreateInvalid();
   }
 
@@ -28,23 +28,23 @@ StenoDictionaryLookupResult StenoJeffShowStrokeDictionary::Lookup(
     return StenoDictionaryLookupResult::CreateStaticString("`");
   }
   for (size_t i = 1; i < length - 1; ++i) {
-    if (chords[i] == trigger) {
+    if (strokes[i] == trigger) {
       return StenoDictionaryLookupResult::CreateInvalid();
     }
   }
 
-  const size_t maximumChordText = ChordBitIndex::COUNT;
+  const size_t maximumStrokeText = StrokeBitIndex::COUNT;
   size_t maximumStringLength =
-      (maximumChordText + 1) * (GetMaximumMatchLength() - 1) + 2;
+      (maximumStrokeText + 1) * (GetMaximumMatchLength() - 1) + 2;
 
-  bool closed = (chords[length - 1] == trigger);
+  bool closed = (strokes[length - 1] == trigger);
 
   char *base = (char *)malloc(maximumStringLength);
   char *p = base;
   *p++ = '`';
 
   size_t end = closed ? length - 1 : length;
-  p = StenoChord::ToString(chords + 1, end - 1, p);
+  p = StenoStroke::ToString(strokes + 1, end - 1, p);
   if (closed) {
     p[0] = '`';
     p[1] = '\0';
@@ -55,8 +55,8 @@ StenoDictionaryLookupResult StenoJeffShowStrokeDictionary::Lookup(
 
 const StenoDictionary *StenoJeffShowStrokeDictionary::GetLookupProvider(
     const StenoDictionaryLookup &lookup) const {
-  const StenoChord *chords = lookup.chords;
-  if (chords[0] != trigger) {
+  const StenoStroke *strokes = lookup.strokes;
+  if (strokes[0] != trigger) {
     return nullptr;
   }
 
@@ -65,7 +65,7 @@ const StenoDictionary *StenoJeffShowStrokeDictionary::GetLookupProvider(
     return this;
   }
   for (size_t i = 1; i < length - 1; ++i) {
-    if (chords[i] == trigger) {
+    if (strokes[i] == trigger) {
       return nullptr;
     }
   }
@@ -86,22 +86,22 @@ const char *StenoJeffShowStrokeDictionary::GetName() const {
 
 // cSpell:ignore TKOG
 TEST_BEGIN("JeffShowStroke: Non-quoted test") {
-  const StenoChord chords[1] = {
-      StenoChord("KAT"),
+  const StenoStroke strokes[1] = {
+      StenoStroke("KAT"),
   };
 
-  auto lookup = StenoJeffShowStrokeDictionary::instance.Lookup(chords, 1);
+  auto lookup = StenoJeffShowStrokeDictionary::instance.Lookup(strokes, 1);
   assert(!lookup.IsValid());
   lookup.Destroy();
 }
 TEST_END
 
 TEST_BEGIN("JeffShowStroke: First quote test") {
-  const StenoChord chords[1] = {
-      StenoChord("STR*"),
+  const StenoStroke strokes[1] = {
+      StenoStroke("STR*"),
   };
 
-  auto lookup = StenoJeffShowStrokeDictionary::instance.Lookup(chords, 1);
+  auto lookup = StenoJeffShowStrokeDictionary::instance.Lookup(strokes, 1);
   assert(lookup.IsValid());
   assert(strcmp(lookup.GetText(), "`") == 0);
   lookup.Destroy();
@@ -109,12 +109,12 @@ TEST_BEGIN("JeffShowStroke: First quote test") {
 TEST_END
 
 TEST_BEGIN("JeffShowStroke: In-progress quote") {
-  const StenoChord chords[2] = {
-      StenoChord("STR*"),
-      StenoChord("KAT"),
+  const StenoStroke strokes[2] = {
+      StenoStroke("STR*"),
+      StenoStroke("KAT"),
   };
 
-  auto lookup = StenoJeffShowStrokeDictionary::instance.Lookup(chords, 2);
+  auto lookup = StenoJeffShowStrokeDictionary::instance.Lookup(strokes, 2);
   assert(lookup.IsValid());
   assert(strcmp(lookup.GetText(), "`KAT") == 0);
   lookup.Destroy();
@@ -122,13 +122,13 @@ TEST_BEGIN("JeffShowStroke: In-progress quote") {
 TEST_END
 
 TEST_BEGIN("JeffShowStroke: In-progress, multiple stroke test") {
-  const StenoChord chords[3] = {
-      StenoChord("STR*"),
-      StenoChord("KAT"),
-      StenoChord("TKOG"),
+  const StenoStroke strokes[3] = {
+      StenoStroke("STR*"),
+      StenoStroke("KAT"),
+      StenoStroke("TKOG"),
   };
 
-  auto lookup = StenoJeffShowStrokeDictionary::instance.Lookup(chords, 3);
+  auto lookup = StenoJeffShowStrokeDictionary::instance.Lookup(strokes, 3);
   assert(lookup.IsValid());
   assert(strcmp(lookup.GetText(), "`KAT/TKOG") == 0);
   lookup.Destroy();
@@ -136,14 +136,14 @@ TEST_BEGIN("JeffShowStroke: In-progress, multiple stroke test") {
 TEST_END
 
 TEST_BEGIN("JeffShowStroke: Completed quote test") {
-  const StenoChord chords[4] = {
-      StenoChord("STR*"),
-      StenoChord("KAT"),
-      StenoChord("TKOG"),
-      StenoChord("STR*"),
+  const StenoStroke strokes[4] = {
+      StenoStroke("STR*"),
+      StenoStroke("KAT"),
+      StenoStroke("TKOG"),
+      StenoStroke("STR*"),
   };
 
-  auto lookup = StenoJeffShowStrokeDictionary::instance.Lookup(chords, 4);
+  auto lookup = StenoJeffShowStrokeDictionary::instance.Lookup(strokes, 4);
   assert(lookup.IsValid());
   assert(strcmp(lookup.GetText(), "`KAT/TKOG`") == 0);
   lookup.Destroy();
@@ -151,12 +151,12 @@ TEST_BEGIN("JeffShowStroke: Completed quote test") {
 TEST_END
 
 TEST_BEGIN("JeffShowStroke: Invalid quote test") {
-  const StenoChord chords[5] = {
-      StenoChord("STR*"), StenoChord("KAT"), StenoChord("TKOG"),
-      StenoChord("STR*"), StenoChord("KAT"),
+  const StenoStroke strokes[5] = {
+      StenoStroke("STR*"), StenoStroke("KAT"), StenoStroke("TKOG"),
+      StenoStroke("STR*"), StenoStroke("KAT"),
   };
 
-  auto lookup = StenoJeffShowStrokeDictionary::instance.Lookup(chords, 5);
+  auto lookup = StenoJeffShowStrokeDictionary::instance.Lookup(strokes, 5);
   assert(!lookup.IsValid());
   lookup.Destroy();
 }

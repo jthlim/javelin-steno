@@ -1,14 +1,15 @@
 //---------------------------------------------------------------------------
 
 #include "debug_dictionary.h"
-#include "../chord.h"
 #include "../console.h"
 #include "../str.h"
+#include "../stroke.h"
 
 //---------------------------------------------------------------------------
 
-constexpr StenoChord StenoDebugDictionary::trigger(ChordMask::NUM |
-                                                   ChordMask::E | ChordMask::U);
+constexpr StenoStroke StenoDebugDictionary::trigger(StrokeMask::NUM |
+                                                    StrokeMask::E |
+                                                    StrokeMask::U);
 
 const StenoDebugDictionary StenoDebugDictionary::instance;
 
@@ -16,8 +17,8 @@ const StenoDebugDictionary StenoDebugDictionary::instance;
 
 StenoDictionaryLookupResult
 StenoDebugDictionary::Lookup(const StenoDictionaryLookup &lookup) const {
-  const StenoChord *chords = lookup.chords;
-  if (chords[0] != trigger) {
+  const StenoStroke *strokes = lookup.strokes;
+  if (strokes[0] != trigger) {
     return StenoDictionaryLookupResult::CreateInvalid();
   }
 

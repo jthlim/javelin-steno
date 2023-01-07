@@ -39,7 +39,7 @@ struct StenoReversePrefixDictionary::ReverseLookupContext {
   void Narrow(uint8_t c);
 
   // Binary search for '^', then confirm suffix of '^}\0'.
-  const uint8_t *FindPrefixChordData() const;
+  const uint8_t *FindPrefixStrokeData() const;
 };
 
 void StenoReversePrefixDictionary::ReverseLookupContext::Narrow(uint8_t c) {
@@ -75,7 +75,7 @@ void StenoReversePrefixDictionary::ReverseLookupContext::Narrow(uint8_t c) {
 }
 
 const uint8_t *
-StenoReversePrefixDictionary::ReverseLookupContext::FindPrefixChordData()
+StenoReversePrefixDictionary::ReverseLookupContext::FindPrefixStrokeData()
     const {
   const uint8_t **l = left;
   const uint8_t **r = right;
@@ -173,7 +173,7 @@ void StenoReversePrefixDictionary::AddPrefixReverseLookup(
     ReverseLookupContext &context, StenoReverseDictionaryLookup &result) const {
   struct PrefixTest {
     const uint8_t *lookup;
-    const uint8_t *prefixChordData;
+    const uint8_t *prefixStrokeData;
   };
 
   const uint8_t *lookup = (const uint8_t *)result.lookup;
@@ -188,11 +188,11 @@ void StenoReversePrefixDictionary::AddPrefixReverseLookup(
     if (!context.IsValid()) {
       break;
     }
-    const uint8_t *prefixChordData = context.FindPrefixChordData();
-    if (prefixChordData) {
+    const uint8_t *prefixStrokeData = context.FindPrefixStrokeData();
+    if (prefixStrokeData) {
       prefixTests.Add(PrefixTest{
           .lookup = lookup,
-          .prefixChordData = prefixChordData,
+          .prefixStrokeData = prefixStrokeData,
       });
     }
     context.Narrow(*lookup++);
@@ -211,22 +211,22 @@ void StenoReversePrefixDictionary::AddPrefixReverseLookup(
     for (size_t i = 0; i < suffixLookup->resultCount; ++i) {
       const StenoReverseDictionaryResult &suffix = suffixLookup->results[i];
 
-      const uint8_t *prefixChords = test.prefixChordData;
-      while (*prefixChords != 0xff) {
-        uint32_t offset = prefixChords[0] | (prefixChords[1] << 7) |
-                          (prefixChords[2] << 14) + (prefixChords[3] << 21);
+      const uint8_t *prefixStrokes = test.prefixStrokeData;
+      while (*prefixStrokes != 0xff) {
+        uint32_t offset = prefixStrokes[0] | (prefixStrokes[1] << 7) |
+                          (prefixStrokes[2] << 14) + (prefixStrokes[3] << 21);
         const void *data = baseAddress + offset;
-        prefixChords += 4;
+        prefixStrokes += 4;
 
         StenoReverseMapDictionaryLookup prefixLookup(data);
         if (dictionary->ReverseMapDictionaryLookup(prefixLookup)) {
-          StenoChord chords[prefixLookup.length + suffix.length];
-          memcpy(chords, prefixLookup.chords,
-                 prefixLookup.length * sizeof(StenoChord));
-          memcpy(chords + prefixLookup.length, suffix.chords,
-                 suffix.length * sizeof(StenoChord));
+          StenoStroke strokes[prefixLookup.length + suffix.length];
+          memcpy(strokes, prefixLookup.strokes,
+                 prefixLookup.length * sizeof(StenoStroke));
+          memcpy(strokes + prefixLookup.length, suffix.strokes,
+                 suffix.length * sizeof(StenoStroke));
 
-          result.AddResult(chords, prefixLookup.length + suffix.length, this);
+          result.AddResult(strokes, prefixLookup.length + suffix.length, this);
           hasResult = true;
         }
       }

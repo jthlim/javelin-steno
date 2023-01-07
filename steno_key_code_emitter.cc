@@ -291,7 +291,8 @@ void StenoKeyCodeEmitter::EmitterContext::EmitWindowsAlt(uint32_t unicode) {
   }
 }
 
-void StenoKeyCodeEmitter::EmitterContext::RecurseEmitWindowsAlt(int alt) {
+__attribute__((noinline)) void
+StenoKeyCodeEmitter::EmitterContext::RecurseEmitWindowsAlt(int alt) {
   int quotient = alt / 10;
   int remainder = alt % 10;
   if (quotient != 0) {

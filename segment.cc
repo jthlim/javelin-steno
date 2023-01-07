@@ -125,20 +125,20 @@ StenoTokenizer *StenoSegmentList::CreateTokenizer() {
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-#include "chord_history.h"
 #include "dictionary/main_dictionary.h"
 #include "dictionary/map_dictionary.h"
 #include "orthography.h"
 #include "str.h"
+#include "stroke_history.h"
 #include "unit_test.h"
 
 constexpr StenoMapDictionary dictionary(MainDictionary::definition);
 
 TEST_BEGIN("Segment tests") {
-  ChordHistory history;
+  StenoStrokeHistory history;
   // spellchecker: disable
-  history.Add(StenoChord("TEFT"), StenoState());
-  history.Add(StenoChord("-G"), StenoState());
+  history.Add(StenoStroke("TEFT"), StenoState());
+  history.Add(StenoStroke("-G"), StenoState());
   // spellchecker: enable
 
   StenoSegmentList segmentList;

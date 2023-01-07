@@ -1,7 +1,7 @@
 //---------------------------------------------------------------------------
 
 #pragma once
-#include "chord.h"
+#include "stroke.h"
 
 //---------------------------------------------------------------------------
 
@@ -95,12 +95,12 @@ public:
   void operator&=(const StenoKeyState &other) { keyState &= other.keyState; }
   void operator|=(const StenoKeyState &other) { keyState |= other.keyState; }
 
-  StenoChord ToChord() const;
+  StenoStroke ToStroke() const;
   StenoGeminiPacket ToGeminiPacket() const;
   StenoPloverHidPacket ToPloverHidPacket() const;
 
   // Public so that config can overwrite S1 -> NUM1.
-  static int8_t CHORD_BIT_INDEX_LOOKUP[];
+  static int8_t STROKE_BIT_INDEX_LOOKUP[];
 
 private:
   uint64_t keyState;

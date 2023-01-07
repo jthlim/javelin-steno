@@ -26,7 +26,7 @@ public:
   void Populate(StenoTokenizer *tokenizer);
   void Append(StenoTokenizer *tokenizer);
 
-  static const size_t BUFFER_SIZE = 8192;
+  static const size_t BUFFER_SIZE = 2048;
 
   const StenoCompiledOrthography *orthography;
   StenoDictionary *rootDictionary;

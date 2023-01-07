@@ -1,11 +1,11 @@
 //---------------------------------------------------------------------------
 
 #pragma once
-#include "chord_history.h"
 #include "orthography.h"
 #include "processor/processor.h"
 #include "steno_key_code_buffer.h"
 #include "steno_key_code_emitter.h"
+#include "stroke_history.h"
 
 //---------------------------------------------------------------------------
 
@@ -29,7 +29,7 @@ public:
 
   void Process(const StenoKeyState &value, StenoAction action);
   void ProcessUndo();
-  void ProcessChord(StenoChord chord);
+  void ProcessStroke(StenoStroke stroke);
   void Tick() {}
 
   void SendText(const uint8_t *p);
@@ -63,7 +63,7 @@ public:
   static void Lookup_Binding(void *context, const char *commandLine);
 
 private:
-  static const StenoChord UNDO_CHORD;
+  static const StenoStroke UNDO_STROKE;
   static const size_t SEGMENT_CONVERSION_LIMIT = 32;
   static const size_t PAPER_TAPE_SUGGESTION_SEGMENT_LIMIT = 8;
 
@@ -81,11 +81,11 @@ private:
 
   StenoKeyCodeEmitter emitter;
 
-  ChordHistory history;
-  ChordHistory addTranslationHistory;
+  StenoStrokeHistory history;
+  StenoStrokeHistory addTranslationHistory;
 
   struct ConversionBuffer {
-    ChordHistory chordHistory;
+    StenoStrokeHistory strokeHistory;
     StenoKeyCodeBuffer keyCodeBuffer;
   };
 
@@ -95,23 +95,23 @@ private:
   struct UpdateNormalModeTextBufferThreadData;
 
   void ProcessNormalModeUndo();
-  void ProcessNormalModeChord(StenoChord chord);
+  void ProcessNormalModeStroke(StenoStroke stroke);
   void InitiateAddTranslationMode();
   void ProcessAddTranslationModeUndo();
-  void ProcessAddTranslationModeChord(StenoChord chord);
-  bool IsNewline(StenoChord chord) const;
+  void ProcessAddTranslationModeStroke(StenoStroke stroke);
+  bool IsNewline(StenoStroke stroke) const;
   void EndAddTranslationMode();
   void AddTranslation(size_t newlineIndex);
   void DeleteTranslation(size_t newlineIndex);
   void ResetState();
 
   // Returns the number of segments
-  void UpdateNormalModeTextBuffer(size_t sourceChordCount,
+  void UpdateNormalModeTextBuffer(size_t sourceStrokeCount,
                                   ConversionBuffer &buffer,
                                   size_t conversionLimit,
                                   StenoSegmentList &segmentList);
 
-  void PrintPaperTape(StenoChord chord,
+  void PrintPaperTape(StenoStroke stroke,
                       const StenoSegmentList &previousSegmentList,
                       const StenoSegmentList &nextSegmentList);
   void PrintPaperTapeUndo(size_t undoCount);

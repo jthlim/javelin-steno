@@ -4,7 +4,7 @@
 
 //---------------------------------------------------------------------------
 
-// Processor that sends a steno chord when all keys are released.
+// Processor that sends a steno stroke when all keys are released.
 //
 // The is the typical steno behavior.
 class StenoAllUp final : public StenoProcessorElement {

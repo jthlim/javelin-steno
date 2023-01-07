@@ -1,10 +1,10 @@
 //---------------------------------------------------------------------------
 
 #include "jeff_numbers_dictionary.h"
-#include "../chord.h"
 #include "../console.h"
 #include "../steno_key_code.h"
 #include "../str.h"
+#include "../stroke.h"
 #include <assert.h>
 #include <stdlib.h>
 
@@ -19,19 +19,23 @@ const StenoJeffNumbersDictionary StenoJeffNumbersDictionary::instance;
 static void ToRoman(char *outBuffer, int value);
 char *ToWords(char *p);
 
-const StenoChord ALL_DIGITS_MASK(ChordMask::SL | ChordMask::TL | ChordMask::PL |
-                                 ChordMask::HL | ChordMask::A | ChordMask::O |
-                                 ChordMask::FR | ChordMask::PR | ChordMask::LR |
-                                 ChordMask::TR);
+const StenoStroke ALL_DIGITS_MASK(StrokeMask::SL | StrokeMask::TL |
+                                  StrokeMask::PL | StrokeMask::HL |
+                                  StrokeMask::A | StrokeMask::O |
+                                  StrokeMask::FR | StrokeMask::PR |
+                                  StrokeMask::LR | StrokeMask::TR);
 
-const StenoChord CONTROL_MASK(ChordMask::KL | ChordMask::WL | ChordMask::RL |
-                              ChordMask::STAR | ChordMask::E | ChordMask::U |
-                              ChordMask::RR | ChordMask::BR | ChordMask::GR |
-                              ChordMask::SR | ChordMask::DR | ChordMask::ZR);
+const StenoStroke CONTROL_MASK(StrokeMask::KL | StrokeMask::WL |
+                               StrokeMask::RL | StrokeMask::STAR |
+                               StrokeMask::E | StrokeMask::U | StrokeMask::RR |
+                               StrokeMask::BR | StrokeMask::GR |
+                               StrokeMask::SR | StrokeMask::DR |
+                               StrokeMask::ZR);
 
-constexpr StenoChord DIGIT_MASKS[] = {
-    ChordMask::SL, ChordMask::TL, ChordMask::PL, ChordMask::HL, ChordMask::A,
-    ChordMask::O,  ChordMask::FR, ChordMask::PR, ChordMask::LR, ChordMask::TR,
+constexpr StenoStroke DIGIT_MASKS[] = {
+    StrokeMask::SL, StrokeMask::TL, StrokeMask::PL, StrokeMask::HL,
+    StrokeMask::A,  StrokeMask::O,  StrokeMask::FR, StrokeMask::PR,
+    StrokeMask::LR, StrokeMask::TR,
 };
 const char *const DIGIT_VALUES = "1234506789";
 
@@ -66,16 +70,16 @@ StenoJeffNumbersDictionary::Lookup(const StenoDictionaryLookup &lookup) const {
   char *result = nullptr;
   char scratch[32];
 
-  const StenoChord *chords = lookup.chords;
+  const StenoStroke *strokes = lookup.strokes;
   size_t length = lookup.length;
 
   for (size_t i = 0; i < length; ++i) {
-    if ((chords[i] & ChordMask::NUM).IsEmpty()) {
+    if ((strokes[i] & StrokeMask::NUM).IsEmpty()) {
       free(result);
       return StenoDictionaryLookupResult::CreateInvalid();
     }
 
-    StenoChord control = GetDigits(scratch, chords[i]);
+    StenoStroke control = GetDigits(scratch, strokes[i]);
     if (result) {
       char *updated = Str::Asprintf("%s%s", result, scratch);
       free(result);
@@ -84,12 +88,12 @@ StenoJeffNumbersDictionary::Lookup(const StenoDictionaryLookup &lookup) const {
       result = Str::Dup(scratch);
     }
 
-    const StenoChord RB = ChordMask::RR | ChordMask::BR;
-    const StenoChord WR = ChordMask::WL | ChordMask::RL;
-    const StenoChord KR = ChordMask::KL | ChordMask::RL;
-    const StenoChord RG = ChordMask::RR | ChordMask::GR;
-    const StenoChord DZ = ChordMask::DR | ChordMask::ZR;
-    const StenoChord BG = ChordMask::BR | ChordMask::GR;
+    const StenoStroke RB = StrokeMask::RR | StrokeMask::BR;
+    const StenoStroke WR = StrokeMask::WL | StrokeMask::RL;
+    const StenoStroke KR = StrokeMask::KL | StrokeMask::RL;
+    const StenoStroke RG = StrokeMask::RR | StrokeMask::GR;
+    const StenoStroke DZ = StrokeMask::DR | StrokeMask::ZR;
+    const StenoStroke BG = StrokeMask::BR | StrokeMask::GR;
     if ((control & RB) == RB) {
       // Dollars
       if (i + 1 != length) {
@@ -140,7 +144,7 @@ StenoJeffNumbersDictionary::Lookup(const StenoDictionaryLookup &lookup) const {
       char *updated = Str::Asprintf("$%s00", result);
       free(result);
       result = updated;
-    } else if ((control & ChordMask::KL).IsNotEmpty() ||
+    } else if ((control & StrokeMask::KL).IsNotEmpty() ||
                ((control & BG) == BG)) {
       // Time
       if (i + 1 != length) {
@@ -148,36 +152,36 @@ StenoJeffNumbersDictionary::Lookup(const StenoDictionaryLookup &lookup) const {
         return StenoDictionaryLookupResult::CreateInvalid();
       }
       const char *minutes;
-      if ((control & ChordMask::KL).IsEmpty()) {
+      if ((control & StrokeMask::KL).IsEmpty()) {
         minutes = ":00";
       } else if ((control & BG) == BG) {
         minutes = ":45";
-      } else if ((control & ChordMask::GR).IsNotEmpty()) {
+      } else if ((control & StrokeMask::GR).IsNotEmpty()) {
         minutes = ":15";
-      } else if ((control & ChordMask::BR).IsNotEmpty()) {
+      } else if ((control & StrokeMask::BR).IsNotEmpty()) {
         minutes = ":30";
       } else {
         minutes = ":00";
       }
 
       const char *suffix = "";
-      if ((control & ChordMask::SR).IsNotEmpty()) {
-        suffix = (control & ChordMask::STAR).IsNotEmpty() ? " p.m." : " a.m.";
+      if ((control & StrokeMask::SR).IsNotEmpty()) {
+        suffix = (control & StrokeMask::STAR).IsNotEmpty() ? " p.m." : " a.m.";
       }
 
       char *updated = Str::Asprintf("%s%s%s", result, minutes, suffix);
       free(result);
       result = updated;
       control &=
-          ~(ChordMask::KL | ChordMask::BR | ChordMask::GR | ChordMask::SR);
-    } else if ((control & ChordMask::GR).IsNotEmpty()) {
+          ~(StrokeMask::KL | StrokeMask::BR | StrokeMask::GR | StrokeMask::SR);
+    } else if ((control & StrokeMask::GR).IsNotEmpty()) {
       if (i + 1 != length) {
         free(result);
         return StenoDictionaryLookupResult::CreateInvalid();
       }
 
       result = ToWords(result);
-      if ((control & ChordMask::WL).IsNotEmpty()) {
+      if ((control & StrokeMask::WL).IsNotEmpty()) {
         // Ordinal words
         size_t length = strlen(result);
         if (EndsWith(result, length, "ty")) {
@@ -200,8 +204,8 @@ StenoJeffNumbersDictionary::Lookup(const StenoDictionaryLookup &lookup) const {
         }
       }
 
-      control &= ~(ChordMask::GR | ChordMask::WL);
-    } else if ((control & (ChordMask::WL | ChordMask::BR)).IsNotEmpty()) {
+      control &= ~(StrokeMask::GR | StrokeMask::WL);
+    } else if ((control & (StrokeMask::WL | StrokeMask::BR)).IsNotEmpty()) {
       // Ordinals
       if (i + 1 != length) {
         free(result);
@@ -237,8 +241,8 @@ StenoJeffNumbersDictionary::Lookup(const StenoDictionaryLookup &lookup) const {
       free(result);
       result = updated;
 
-      control &= ~(ChordMask::WL | ChordMask::BR);
-    } else if ((control & (ChordMask::RL | ChordMask::RR)).IsNotEmpty()) {
+      control &= ~(StrokeMask::WL | StrokeMask::BR);
+    } else if ((control & (StrokeMask::RL | StrokeMask::RR)).IsNotEmpty()) {
       // Roman numerals
       if (i + 1 != length) {
         free(result);
@@ -262,10 +266,10 @@ StenoJeffNumbersDictionary::Lookup(const StenoDictionaryLookup &lookup) const {
       }
       ToRoman(scratch, value);
       result = Str::Dup(scratch);
-      control &= ~(ChordMask::RL | ChordMask::RR);
+      control &= ~(StrokeMask::RL | StrokeMask::RR);
     }
 
-    control &= ~(ChordMask::STAR | ChordMask::DR | ChordMask::ZR);
+    control &= ~(StrokeMask::STAR | StrokeMask::DR | StrokeMask::ZR);
     if (control.IsNotEmpty()) {
       free(result);
       return StenoDictionaryLookupResult::CreateInvalid();
@@ -279,57 +283,57 @@ const char *StenoJeffNumbersDictionary::GetName() const {
   return "jeff-numbers";
 }
 
-StenoChord StenoJeffNumbersDictionary::GetDigits(char *p,
-                                                 StenoChord chord) const {
+StenoStroke StenoJeffNumbersDictionary::GetDigits(char *p,
+                                                  StenoStroke stroke) const {
 
-  StenoChord control = chord & CONTROL_MASK;
-  if ((chord & ALL_DIGITS_MASK).IsNotEmpty()) {
-    if ((chord & (ChordMask::E | ChordMask::U)).IsEmpty()) {
+  StenoStroke control = stroke & CONTROL_MASK;
+  if ((stroke & ALL_DIGITS_MASK).IsNotEmpty()) {
+    if ((stroke & (StrokeMask::E | StrokeMask::U)).IsEmpty()) {
       // Normal direction
       for (int i = 0; i < 10; ++i) {
-        if ((chord & DIGIT_MASKS[i]).IsNotEmpty()) {
+        if ((stroke & DIGIT_MASKS[i]).IsNotEmpty()) {
           *p++ = DIGIT_VALUES[i];
         }
       }
     } else {
       // Reverse direction
-      control &= ~(ChordMask::E | ChordMask::U);
+      control &= ~(StrokeMask::E | StrokeMask::U);
       for (int i = 9; i >= 0; --i) {
-        if ((chord & DIGIT_MASKS[i]).IsNotEmpty()) {
+        if ((stroke & DIGIT_MASKS[i]).IsNotEmpty()) {
           *p++ = DIGIT_VALUES[i];
         }
       }
     }
   }
 
-  const StenoChord DZ = (ChordMask::DR | ChordMask::ZR);
+  const StenoStroke DZ = (StrokeMask::DR | StrokeMask::ZR);
   if ((control & DZ) != DZ) {
-    if ((control & ChordMask::ZR).IsNotEmpty()) {
-      if ((control & ChordMask::STAR).IsNotEmpty()) {
+    if ((control & StrokeMask::ZR).IsNotEmpty()) {
+      if ((control & StrokeMask::STAR).IsNotEmpty()) {
         *p++ = ',';
         *p++ = '0';
-        control &= ~(ChordMask::STAR | ChordMask::ZR);
+        control &= ~(StrokeMask::STAR | StrokeMask::ZR);
       }
       *p++ = '0';
       *p++ = '0';
     }
 
-    if ((control & ChordMask::DR).IsNotEmpty() &&
-        (chord & ALL_DIGITS_MASK).IsNotEmpty()) {
+    if ((control & StrokeMask::DR).IsNotEmpty() &&
+        (stroke & ALL_DIGITS_MASK).IsNotEmpty()) {
       char previousDigit = p[-1];
       *p++ = previousDigit;
-      control &= ~ChordMask::DR;
+      control &= ~StrokeMask::DR;
     }
   }
 
-  if (control == (ChordMask::STAR | ChordMask::SR)) {
+  if (control == (StrokeMask::STAR | StrokeMask::SR)) {
     *p++ = ',';
-    control &= ~(ChordMask::STAR | ChordMask::SR);
-  } else if ((control & ChordMask::STAR).IsNotEmpty() &&
-             (control & (ChordMask::RR | ChordMask::SR | ChordMask::ZR))
+    control &= ~(StrokeMask::STAR | StrokeMask::SR);
+  } else if ((control & StrokeMask::STAR).IsNotEmpty() &&
+             (control & (StrokeMask::RR | StrokeMask::SR | StrokeMask::ZR))
                  .IsEmpty()) {
     *p++ = '.';
-    control &= ~ChordMask::STAR;
+    control &= ~StrokeMask::STAR;
   }
   *p = '\0';
   return control;
@@ -541,21 +545,21 @@ char *ToWords(char *digits) {
 #include "../unit_test.h"
 #include <assert.h>
 
-static void TestLookup(const char *stroke, const char *expected) {
-  StenoChord chord;
-  chord.Set(stroke);
+static void TestLookup(const char *textStroke, const char *expected) {
+  StenoStroke stroke;
+  stroke.Set(textStroke);
   StenoDictionaryLookupResult lookup =
-      StenoJeffNumbersDictionary::instance.Lookup(&chord, 1);
+      StenoJeffNumbersDictionary::instance.Lookup(&stroke, 1);
   assert(lookup.IsValid());
   const char *text = lookup.GetText();
   assert(Str::Eq(text, expected));
   lookup.Destroy();
 }
 
-static void TestLookup(const StenoChord *chords, size_t length,
+static void TestLookup(const StenoStroke *strokes, size_t length,
                        const char *expected) {
   StenoDictionaryLookupResult lookup =
-      StenoJeffNumbersDictionary::instance.Lookup(chords, length);
+      StenoJeffNumbersDictionary::instance.Lookup(strokes, length);
   assert(lookup.IsValid());
   const char *text = lookup.GetText();
   assert(Str::Eq(text, expected));
@@ -593,12 +597,12 @@ TEST_BEGIN("JeffNumbers: Test multiple digits") {
 
   TestLookup("#S*D", "11.");
 
-  const StenoChord chords[] = {
-      StenoChord("#ST*"),
-      StenoChord("#PH"),
+  const StenoStroke strokes[] = {
+      StenoStroke("#ST*"),
+      StenoStroke("#PH"),
   };
   // spellchecker: enable
-  TestLookup(chords, 2, "12.34");
+  TestLookup(strokes, 2, "12.34");
 }
 TEST_END
 
@@ -607,12 +611,12 @@ TEST_BEGIN("JeffNumbers: Test money") {
   TestLookup("#ST-RB", "$12");
   TestLookup("#STWR", "$12");
 
-  const StenoChord chords[] = {
-      StenoChord("#ST*"),
-      StenoChord("#PWHR"),
+  const StenoStroke strokes[] = {
+      StenoStroke("#ST*"),
+      StenoStroke("#PWHR"),
   };
   // spellchecker: enable
-  TestLookup(chords, 2, "$12.34");
+  TestLookup(strokes, 2, "$12.34");
 }
 TEST_END
 
@@ -621,12 +625,12 @@ TEST_BEGIN("JeffNumbers: Test percents") {
   TestLookup("#ST-RG", "12%");
   TestLookup("#STKR", "12%");
 
-  const StenoChord chords[] = {
-      StenoChord("#ST*"),
-      StenoChord("#PKHR"),
+  const StenoStroke strokes[] = {
+      StenoStroke("#ST*"),
+      StenoStroke("#PKHR"),
   };
   // spellchecker: enable
-  TestLookup(chords, 2, "12.34%");
+  TestLookup(strokes, 2, "12.34%");
 }
 TEST_END
 
@@ -770,14 +774,14 @@ TEST_BEGIN("JeffNumbers: Test words") {
 TEST_END
 
 TEST_BEGIN("JeffNumbers: #E, #EU, #U are not valid") {
-  StenoChord testChords[] = {
-      StenoChord("#E"),
-      StenoChord("#U"),
-      StenoChord("#EU"),
+  StenoStroke testStrokes[] = {
+      StenoStroke("#E"),
+      StenoStroke("#U"),
+      StenoStroke("#EU"),
   };
 
-  for (const StenoChord chord : testChords) {
-    assert(StenoJeffNumbersDictionary::instance.Lookup(&chord, 1).IsValid() ==
+  for (const StenoStroke stroke : testStrokes) {
+    assert(StenoJeffNumbersDictionary::instance.Lookup(&stroke, 1).IsValid() ==
            false);
   }
 }

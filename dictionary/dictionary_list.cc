@@ -88,7 +88,7 @@ bool StenoDictionaryList::ReverseMapDictionaryLookup(
     }
     const StenoDictionary *dictionary = dictionaries[i].dictionary;
     if (dictionary->ReverseMapDictionaryLookup(lookup)) {
-      StenoDictionaryLookup testLookup(lookup.chords, lookup.length);
+      StenoDictionaryLookup testLookup(lookup.strokes, lookup.length);
       if (GetLookupProvider(testLookup) == dictionary) {
         return true;
       }

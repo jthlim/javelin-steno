@@ -1,11 +1,11 @@
 //---------------------------------------------------------------------------
 
 #include "user_dictionary.h"
-#include "../chord.h"
 #include "../console.h"
 #include "../crc32.h"
 #include "../flash.h"
 #include "../str.h"
+#include "../stroke.h"
 #include <assert.h>
 
 //---------------------------------------------------------------------------
@@ -27,12 +27,12 @@ static_assert(sizeof(StenoUserDictionaryDescriptor) <= DESCRIPTOR_OFFSET,
 //---------------------------------------------------------------------------
 
 struct StenoUserDictionaryEntry {
-  uint32_t chordLength;
-  StenoChord chords[1];
-  // After chords is a null terminated string.
+  uint32_t strokeLength;
+  StenoStroke strokes[1];
+  // After strokes is a null terminated string.
 
   void Print(char *buffer) const;
-  char *GetText() const { return (char *)(chords + chordLength); }
+  char *GetText() const { return (char *)(strokes + strokeLength); }
 };
 
 //---------------------------------------------------------------------------
@@ -119,9 +119,9 @@ StenoUserDictionary::Lookup(const StenoDictionaryLookup &lookup) const {
           (const StenoUserDictionaryEntry *)(activeDescriptor->data.dataBlock +
                                              offset - OFFSET_DATA);
 
-      if (entry->chordLength == lookup.length &&
-          memcmp(lookup.chords, entry->chords,
-                 sizeof(StenoChord) * lookup.length) == 0) {
+      if (entry->strokeLength == lookup.length &&
+          memcmp(lookup.strokes, entry->strokes,
+                 sizeof(StenoStroke) * lookup.length) == 0) {
         return StenoDictionaryLookupResult::CreateStaticString(
             entry->GetText());
       }
@@ -154,9 +154,9 @@ const StenoDictionary *StenoUserDictionary::GetLookupProvider(
           (const StenoUserDictionaryEntry *)(activeDescriptor->data.dataBlock +
                                              offset - OFFSET_DATA);
 
-      if (entry->chordLength == lookup.length &&
-          memcmp(lookup.chords, entry->chords,
-                 sizeof(StenoChord) * lookup.length) == 0) {
+      if (entry->strokeLength == lookup.length &&
+          memcmp(lookup.strokes, entry->strokes,
+                 sizeof(StenoStroke) * lookup.length) == 0) {
         return this;
       }
     }
@@ -195,11 +195,11 @@ void StenoUserDictionary::Reset() {
   activeDescriptor = descriptorBase;
 }
 
-bool StenoUserDictionary::Add(const StenoChord *chords, size_t length,
+bool StenoUserDictionary::Add(const StenoStroke *strokes, size_t length,
                               const char *word) {
   // Verify that it doesn't already exist.
   StenoDictionaryLookupResult lookup =
-      Lookup(StenoDictionaryLookup(chords, length));
+      Lookup(StenoDictionaryLookup(strokes, length));
 
   if (lookup.IsValid() && Str::Eq(lookup.GetText(), word)) {
     lookup.Destroy();
@@ -207,16 +207,16 @@ bool StenoUserDictionary::Add(const StenoChord *chords, size_t length,
   }
   lookup.Destroy();
 
-  AddToDataBlockResult data = AddToDataBlock(chords, (uint32_t)length, word);
+  AddToDataBlockResult data = AddToDataBlock(strokes, (uint32_t)length, word);
   if (data.length == 0) {
     return false;
   }
   AddToDescriptor(length, data.length);
-  return AddToHashTable(chords, length, data.offset);
+  return AddToHashTable(strokes, length, data.offset);
 }
 
 StenoUserDictionary::AddToDataBlockResult
-StenoUserDictionary::AddToDataBlock(const StenoChord *chords, uint32_t length,
+StenoUserDictionary::AddToDataBlock(const StenoStroke *strokes, uint32_t length,
                                     const char *word) {
   size_t wordLength = strlen(word);
 
@@ -226,7 +226,7 @@ StenoUserDictionary::AddToDataBlock(const StenoChord *chords, uint32_t length,
   size_t offset = activeDescriptor->data.dataBlockSize;
 
   size_t totalLength =
-      sizeof(uint32_t) + sizeof(StenoChord) * length + wordStorageLength;
+      sizeof(uint32_t) + sizeof(StenoStroke) * length + wordStorageLength;
 
   // Safeguard...
   if (totalLength > 256 || activeDescriptor->data.dataBlockSize + totalLength >
@@ -246,8 +246,8 @@ StenoUserDictionary::AddToDataBlock(const StenoChord *chords, uint32_t length,
   uint8_t *p = &buffer[originalData - originalDataPage];
   memcpy(p, &length, sizeof(length));
   p += sizeof(length);
-  memcpy(p, chords, sizeof(StenoChord) * length);
-  p += sizeof(StenoChord) * length;
+  memcpy(p, strokes, sizeof(StenoStroke) * length);
+  p += sizeof(StenoStroke) * length;
   memcpy(p, word, wordLength + 1);
   p += wordStorageLength;
 
@@ -262,7 +262,7 @@ StenoUserDictionary::AddToDataBlock(const StenoChord *chords, uint32_t length,
   return AddToDataBlockResult(offset, totalLength);
 }
 
-void StenoUserDictionary::AddToDescriptor(size_t chordLength,
+void StenoUserDictionary::AddToDescriptor(size_t strokeLength,
                                           size_t dataLength) {
   char *buffer = (char *)malloc(Flash::BLOCK_SIZE);
 
@@ -276,8 +276,8 @@ void StenoUserDictionary::AddToDescriptor(size_t chordLength,
          sizeof(StenoUserDictionaryDescriptor));
   freshDescriptor->data.dataBlockSize =
       activeDescriptor->data.dataBlockSize + dataLength;
-  if (chordLength > activeDescriptor->data.maximumStrokeCount) {
-    freshDescriptor->data.maximumStrokeCount = (uint32_t)chordLength;
+  if (strokeLength > activeDescriptor->data.maximumStrokeCount) {
+    freshDescriptor->data.maximumStrokeCount = (uint32_t)strokeLength;
   }
   freshDescriptor->UpdateCrc32();
 
@@ -290,9 +290,9 @@ void StenoUserDictionary::AddToDescriptor(size_t chordLength,
                                         freshDescriptorOffset);
 }
 
-bool StenoUserDictionary::AddToHashTable(const StenoChord *chords,
+bool StenoUserDictionary::AddToHashTable(const StenoStroke *strokes,
                                          size_t length, size_t dataOffset) {
-  size_t entryIndex = StenoChord::Hash(chords, length);
+  size_t entryIndex = StenoStroke::Hash(strokes, length);
 
   for (int probeCount = 0; probeCount < 128; ++probeCount) {
     entryIndex = entryIndex & (activeDescriptor->data.hashTableSize - 1);
@@ -309,8 +309,8 @@ bool StenoUserDictionary::AddToHashTable(const StenoChord *chords,
           (const StenoUserDictionaryEntry *)(activeDescriptor->data.dataBlock +
                                              offset - OFFSET_DATA);
 
-      if (entry->chordLength == length &&
-          memcmp(chords, entry->chords, sizeof(StenoChord) * length) == 0) {
+      if (entry->strokeLength == length &&
+          memcmp(strokes, entry->strokes, sizeof(StenoStroke) * length) == 0) {
         WriteEntryIndex(entryIndex, dataOffset + OFFSET_DATA);
         return true;
       }
@@ -320,8 +320,8 @@ bool StenoUserDictionary::AddToHashTable(const StenoChord *chords,
   return false;
 }
 
-bool StenoUserDictionary::Remove(const StenoChord *chords, size_t length) {
-  size_t entryIndex = StenoChord::Hash(chords, length);
+bool StenoUserDictionary::Remove(const StenoStroke *strokes, size_t length) {
+  size_t entryIndex = StenoStroke::Hash(strokes, length);
   for (;;) {
     entryIndex = entryIndex & (activeDescriptor->data.hashTableSize - 1);
 
@@ -338,8 +338,8 @@ bool StenoUserDictionary::Remove(const StenoChord *chords, size_t length) {
           (const StenoUserDictionaryEntry *)(activeDescriptor->data.dataBlock +
                                              offset - OFFSET_DATA);
 
-      if (entry->chordLength == length &&
-          memcmp(chords, entry->chords, sizeof(StenoChord) * length) == 0) {
+      if (entry->strokeLength == length &&
+          memcmp(strokes, entry->strokes, sizeof(StenoStroke) * length) == 0) {
         WriteEntryIndex(entryIndex, OFFSET_DELETED);
         return true;
       }
@@ -399,7 +399,7 @@ void StenoUserDictionary::PrintJsonDictionary() const {
 void StenoUserDictionaryEntry::Print(char *buffer) const {
   char *p = buffer;
   *p++ = '\"';
-  p = StenoChord::ToString(chords, chordLength, p);
+  p = StenoStroke::ToString(strokes, strokeLength, p);
   *p++ = '\"';
   *p++ = ':';
   *p++ = ' ';
@@ -508,9 +508,9 @@ TEST_BEGIN("StenoUserDictionary add and lookup test") {
   StenoUserDictionary userDictionary(layout);
 
   // spellchecker: disable
-  const StenoChord KAT[] = {StenoChord("KAT")};
-  const StenoChord TKOG[] = {StenoChord("TKOG")};
-  const StenoChord KAPBG_RAO[] = {StenoChord("KAPBG"), StenoChord("RAO")};
+  const StenoStroke KAT[] = {StenoStroke("KAT")};
+  const StenoStroke TKOG[] = {StenoStroke("TKOG")};
+  const StenoStroke KAPBG_RAO[] = {StenoStroke("KAPBG"), StenoStroke("RAO")};
 
   userDictionary.Add(KAT, 1, "cat");
   userDictionary.Add(TKOG, 1, "dog");
@@ -540,9 +540,9 @@ TEST_BEGIN("StenoUserDictionary will dump Json dictionary") {
   StenoUserDictionary userDictionary(layout);
 
   // spellchecker: disable
-  const StenoChord KAT[] = {StenoChord("KAT")};
-  const StenoChord TKOG[] = {StenoChord("TKOG")};
-  const StenoChord KAPBG_RAO[] = {StenoChord("KAPBG"), StenoChord("RAO")};
+  const StenoStroke KAT[] = {StenoStroke("KAT")};
+  const StenoStroke TKOG[] = {StenoStroke("TKOG")};
+  const StenoStroke KAPBG_RAO[] = {StenoStroke("KAPBG"), StenoStroke("RAO")};
 
   userDictionary.Add(KAT, 1, "cat");
   userDictionary.Add(KAT, 1, "cat");

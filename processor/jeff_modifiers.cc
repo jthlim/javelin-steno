@@ -7,28 +7,28 @@
 
 //---------------------------------------------------------------------------
 
-constexpr StenoChord StenoJeffModifiers::TRIGGER_CHORD(ChordMask::TR |
-                                                       ChordMask::ZR);
-constexpr StenoChord StenoJeffModifiers::TRIGGER_MASK(ChordMask::GR |
-                                                      ChordMask::TR |
-                                                      ChordMask::SR |
-                                                      ChordMask::DR |
-                                                      ChordMask::ZR);
-constexpr StenoChord StenoJeffModifiers::DATA_MASK(
-    ChordMask::NUM | ChordMask::SL | ChordMask::TL | ChordMask::KL |
-    ChordMask::PL | ChordMask::WL | ChordMask::HL | ChordMask::RL |
-    ChordMask::A | ChordMask::O | ChordMask::STAR | ChordMask::E |
-    ChordMask::U | ChordMask::LR);
+constexpr StenoStroke StenoJeffModifiers::TRIGGER_STROKE(StrokeMask::TR |
+                                                         StrokeMask::ZR);
+constexpr StenoStroke StenoJeffModifiers::TRIGGER_MASK(StrokeMask::GR |
+                                                       StrokeMask::TR |
+                                                       StrokeMask::SR |
+                                                       StrokeMask::DR |
+                                                       StrokeMask::ZR);
+constexpr StenoStroke StenoJeffModifiers::DATA_MASK(
+    StrokeMask::NUM | StrokeMask::SL | StrokeMask::TL | StrokeMask::KL |
+    StrokeMask::PL | StrokeMask::WL | StrokeMask::HL | StrokeMask::RL |
+    StrokeMask::A | StrokeMask::O | StrokeMask::STAR | StrokeMask::E |
+    StrokeMask::U | StrokeMask::LR);
 
-constexpr StenoChord StenoJeffModifiers::IGNORE_MASK(
-    ChordMask::NUM | ChordMask::SL | ChordMask::TL | ChordMask::KL |
-    ChordMask::PL | ChordMask::WL | ChordMask::HL | ChordMask::RL |
-    ChordMask::A | ChordMask::O | ChordMask::STAR);
+constexpr StenoStroke StenoJeffModifiers::IGNORE_MASK(
+    StrokeMask::NUM | StrokeMask::SL | StrokeMask::TL | StrokeMask::KL |
+    StrokeMask::PL | StrokeMask::WL | StrokeMask::HL | StrokeMask::RL |
+    StrokeMask::A | StrokeMask::O | StrokeMask::STAR);
 
-constexpr StenoChord StenoJeffModifiers::CONTROL_MASK(ChordMask::FR);
-constexpr StenoChord StenoJeffModifiers::SHIFT_MASK(ChordMask::RR);
-constexpr StenoChord StenoJeffModifiers::SUPER_MASK(ChordMask::PR);
-constexpr StenoChord StenoJeffModifiers::ALT_MASK(ChordMask::BR);
+constexpr StenoStroke StenoJeffModifiers::CONTROL_MASK(StrokeMask::FR);
+constexpr StenoStroke StenoJeffModifiers::SHIFT_MASK(StrokeMask::RR);
+constexpr StenoStroke StenoJeffModifiers::SUPER_MASK(StrokeMask::PR);
+constexpr StenoStroke StenoJeffModifiers::ALT_MASK(StrokeMask::BR);
 
 //---------------------------------------------------------------------------
 
@@ -39,407 +39,419 @@ struct JeffModifiersData {
 
 const JeffModifiersData DATA[] = {
     {
-        .keyState = ChordMask::A,
+        .keyState = StrokeMask::A,
         .keyCode = KeyCode::A,
     },
     {
-        .keyState = ChordMask::PL | ChordMask::WL,
+        .keyState = StrokeMask::PL | StrokeMask::WL,
         .keyCode = KeyCode::B,
     },
     {
-        .keyState = ChordMask::KL | ChordMask::RL,
+        .keyState = StrokeMask::KL | StrokeMask::RL,
         .keyCode = KeyCode::C,
     },
     {
-        .keyState = ChordMask::TL | ChordMask::KL,
+        .keyState = StrokeMask::TL | StrokeMask::KL,
         .keyCode = KeyCode::D,
     },
     {
-        .keyState = ChordMask::E,
+        .keyState = StrokeMask::E,
         .keyCode = KeyCode::E,
     },
     {
-        .keyState = ChordMask::TL | ChordMask::PL,
+        .keyState = StrokeMask::TL | StrokeMask::PL,
         .keyCode = KeyCode::F,
     },
     {
         .keyState =
-            ChordMask::TL | ChordMask::KL | ChordMask::PL | ChordMask::WL,
+            StrokeMask::TL | StrokeMask::KL | StrokeMask::PL | StrokeMask::WL,
         .keyCode = KeyCode::G,
     },
     {
-        .keyState = ChordMask::HL,
+        .keyState = StrokeMask::HL,
         .keyCode = KeyCode::H,
     },
     {
-        .keyState = ChordMask::E | ChordMask::U,
+        .keyState = StrokeMask::E | StrokeMask::U,
         .keyCode = KeyCode::I,
     },
     {
         .keyState =
-            ChordMask::SL | ChordMask::KL | ChordMask::WL | ChordMask::RL,
+            StrokeMask::SL | StrokeMask::KL | StrokeMask::WL | StrokeMask::RL,
         .keyCode = KeyCode::J,
     },
     {
-        .keyState = ChordMask::KL,
+        .keyState = StrokeMask::KL,
         .keyCode = KeyCode::K,
     },
     {
-        .keyState = ChordMask::HL | ChordMask::RL,
+        .keyState = StrokeMask::HL | StrokeMask::RL,
         .keyCode = KeyCode::L,
     },
     {
-        .keyState = ChordMask::PL | ChordMask::HL,
+        .keyState = StrokeMask::PL | StrokeMask::HL,
         .keyCode = KeyCode::M,
     },
     {
-        .keyState = ChordMask::TL | ChordMask::PL | ChordMask::HL,
+        .keyState = StrokeMask::TL | StrokeMask::PL | StrokeMask::HL,
         .keyCode = KeyCode::N,
     },
     {
-        .keyState = ChordMask::O,
+        .keyState = StrokeMask::O,
         .keyCode = KeyCode::O,
     },
     {
-        .keyState = ChordMask::PL,
+        .keyState = StrokeMask::PL,
         .keyCode = KeyCode::P,
     },
     {
-        .keyState = ChordMask::KL | ChordMask::WL,
+        .keyState = StrokeMask::KL | StrokeMask::WL,
         .keyCode = KeyCode::Q,
     },
     {
-        .keyState = ChordMask::RL,
+        .keyState = StrokeMask::RL,
         .keyCode = KeyCode::R,
     },
     {
-        .keyState = ChordMask::SL,
+        .keyState = StrokeMask::SL,
         .keyCode = KeyCode::S,
     },
     {
-        .keyState = ChordMask::TL,
+        .keyState = StrokeMask::TL,
         .keyCode = KeyCode::T,
     },
     {
-        .keyState = ChordMask::U,
+        .keyState = StrokeMask::U,
         .keyCode = KeyCode::U,
     },
     {
-        .keyState = ChordMask::SL | ChordMask::RL,
+        .keyState = StrokeMask::SL | StrokeMask::RL,
         .keyCode = KeyCode::V,
     },
     {
-        .keyState = ChordMask::WL,
+        .keyState = StrokeMask::WL,
         .keyCode = KeyCode::W,
     },
     {
-        .keyState = ChordMask::KL | ChordMask::PL,
+        .keyState = StrokeMask::KL | StrokeMask::PL,
         .keyCode = KeyCode::X,
     },
     {
-        .keyState = ChordMask::KL | ChordMask::WL | ChordMask::RL,
+        .keyState = StrokeMask::KL | StrokeMask::WL | StrokeMask::RL,
         .keyCode = KeyCode::Y,
     },
     {
-        .keyState = ChordMask::SL | ChordMask::TL | ChordMask::KL |
-                    ChordMask::PL | ChordMask::WL,
+        .keyState = StrokeMask::SL | StrokeMask::TL | StrokeMask::KL |
+                    StrokeMask::PL | StrokeMask::WL,
         .keyCode = KeyCode::Z,
     },
 
     // Navigation layer.
     {
-        .keyState = ChordMask::PL | ChordMask::LR,
+        .keyState = StrokeMask::PL | StrokeMask::LR,
         .keyCode = KeyCode::UP,
     },
     {
-        .keyState = ChordMask::KL | ChordMask::LR,
+        .keyState = StrokeMask::KL | StrokeMask::LR,
         .keyCode = KeyCode::LEFT,
     },
     {
-        .keyState = ChordMask::WL | ChordMask::LR,
+        .keyState = StrokeMask::WL | StrokeMask::LR,
         .keyCode = KeyCode::DOWN,
     },
     {
-        .keyState = ChordMask::RL | ChordMask::LR,
+        .keyState = StrokeMask::RL | StrokeMask::LR,
         .keyCode = KeyCode::RIGHT,
     },
     {
         .keyState =
-            ChordMask::TL | ChordMask::PL | ChordMask::HL | ChordMask::LR,
+            StrokeMask::TL | StrokeMask::PL | StrokeMask::HL | StrokeMask::LR,
         .keyCode = KeyCode::PAGE_UP,
     },
     {
         .keyState =
-            ChordMask::KL | ChordMask::WL | ChordMask::RL | ChordMask::LR,
+            StrokeMask::KL | StrokeMask::WL | StrokeMask::RL | StrokeMask::LR,
         .keyCode = KeyCode::PAGE_DOWN,
     },
     {
-        .keyState = ChordMask::TL | ChordMask::KL | ChordMask::LR,
+        .keyState = StrokeMask::TL | StrokeMask::KL | StrokeMask::LR,
         .keyCode = KeyCode::HOME,
     },
     {
-        .keyState = ChordMask::HL | ChordMask::RL | ChordMask::LR,
+        .keyState = StrokeMask::HL | StrokeMask::RL | StrokeMask::LR,
         .keyCode = KeyCode::END,
     },
     {
-        .keyState = ChordMask::TL | ChordMask::LR,
+        .keyState = StrokeMask::TL | StrokeMask::LR,
         .keyCode = KeyCode::BACKSPACE,
     },
     {
-        .keyState = ChordMask::HL | ChordMask::LR,
+        .keyState = StrokeMask::HL | StrokeMask::LR,
         .keyCode = KeyCode::DELETE,
     },
 
     // Keys layer.
     {
         .keyState =
-            ChordMask::TL | ChordMask::KL | ChordMask::U | ChordMask::LR,
+            StrokeMask::TL | StrokeMask::KL | StrokeMask::U | StrokeMask::LR,
         .keyCode = KeyCode::ESC,
     },
     {
         .keyState =
-            ChordMask::HL | ChordMask::RL | ChordMask::U | ChordMask::LR,
+            StrokeMask::HL | StrokeMask::RL | StrokeMask::U | StrokeMask::LR,
         .keyCode = KeyCode::TAB,
     },
     {
-        .keyState = ChordMask::HL | ChordMask::U | ChordMask::LR,
+        .keyState = StrokeMask::HL | StrokeMask::U | StrokeMask::LR,
         .keyCode = KeyCode::APOSTROPHE,
     },
     {
-        .keyState = ChordMask::PL | ChordMask::U | ChordMask::LR,
+        .keyState = StrokeMask::PL | StrokeMask::U | StrokeMask::LR,
         .keyCode = KeyCode::GRAVE,
     },
     {
-        .keyState = ChordMask::KL | ChordMask::U | ChordMask::LR,
+        .keyState = StrokeMask::KL | StrokeMask::U | StrokeMask::LR,
         .keyCode = KeyCode::DOT,
     },
     {
-        .keyState = ChordMask::WL | ChordMask::U | ChordMask::LR,
+        .keyState = StrokeMask::WL | StrokeMask::U | StrokeMask::LR,
         .keyCode = KeyCode::COMMA,
     },
     {
         .keyState =
-            ChordMask::KL | ChordMask::WL | ChordMask::U | ChordMask::LR,
+            StrokeMask::KL | StrokeMask::WL | StrokeMask::U | StrokeMask::LR,
         .keyCode = KeyCode::SEMICOLON,
     },
     {
-        .keyState = ChordMask::TL | ChordMask::PL | ChordMask::KL |
-                    ChordMask::WL | ChordMask::U | ChordMask::LR,
+        .keyState = StrokeMask::TL | StrokeMask::PL | StrokeMask::KL |
+                    StrokeMask::WL | StrokeMask::U | StrokeMask::LR,
         .keyCode = KeyCode::EQUAL,
     },
     {
         .keyState =
-            ChordMask::PL | ChordMask::HL | ChordMask::U | ChordMask::LR,
+            StrokeMask::PL | StrokeMask::HL | StrokeMask::U | StrokeMask::LR,
         .keyCode = KeyCode::MINUS,
     },
     {
         .keyState =
-            ChordMask::WL | ChordMask::RL | ChordMask::U | ChordMask::LR,
+            StrokeMask::WL | StrokeMask::RL | StrokeMask::U | StrokeMask::LR,
         .keyCode = KeyCode::SPACE,
     },
     {
         .keyState =
-            ChordMask::KL | ChordMask::PL | ChordMask::U | ChordMask::LR,
+            StrokeMask::KL | StrokeMask::PL | StrokeMask::U | StrokeMask::LR,
         .keyCode = KeyCode::SLASH,
     },
     {
         .keyState =
-            ChordMask::TL | ChordMask::WL | ChordMask::U | ChordMask::LR,
+            StrokeMask::TL | StrokeMask::WL | StrokeMask::U | StrokeMask::LR,
         .keyCode = KeyCode::BACKSLASH,
     },
     {
-        .keyState = ChordMask::TL | ChordMask::PL | ChordMask::HL |
-                    ChordMask::U | ChordMask::LR,
+        .keyState = StrokeMask::TL | StrokeMask::PL | StrokeMask::HL |
+                    StrokeMask::U | StrokeMask::LR,
         .keyCode = KeyCode::L_BRACKET,
     },
     {
-        .keyState = ChordMask::KL | ChordMask::WL | ChordMask::RL |
-                    ChordMask::U | ChordMask::LR,
+        .keyState = StrokeMask::KL | StrokeMask::WL | StrokeMask::RL |
+                    StrokeMask::U | StrokeMask::LR,
         .keyCode = KeyCode::R_BRACKET,
     },
     {
-        .keyState = ChordMask::WL | ChordMask::HL | ChordMask::RL |
-                    ChordMask::U | ChordMask::LR,
+        .keyState = StrokeMask::WL | StrokeMask::HL | StrokeMask::RL |
+                    StrokeMask::U | StrokeMask::LR,
         .keyCode = KeyCode::ENTER,
     },
 
     // Number layer.
     {
-        .keyState = ChordMask::E | ChordMask::U | ChordMask::LR,
+        .keyState = StrokeMask::E | StrokeMask::U | StrokeMask::LR,
         .keyCode = KeyCode::_0,
     },
     {
-        .keyState = ChordMask::RL | ChordMask::E | ChordMask::U | ChordMask::LR,
+        .keyState =
+            StrokeMask::RL | StrokeMask::E | StrokeMask::U | StrokeMask::LR,
         .keyCode = KeyCode::_1,
     },
     {
-        .keyState = ChordMask::WL | ChordMask::E | ChordMask::U | ChordMask::LR,
+        .keyState =
+            StrokeMask::WL | StrokeMask::E | StrokeMask::U | StrokeMask::LR,
         .keyCode = KeyCode::_2,
     },
     {
-        .keyState = ChordMask::WL | ChordMask::RL | ChordMask::E |
-                    ChordMask::U | ChordMask::LR,
+        .keyState = StrokeMask::WL | StrokeMask::RL | StrokeMask::E |
+                    StrokeMask::U | StrokeMask::LR,
         .keyCode = KeyCode::_3,
     },
     {
-        .keyState = ChordMask::KL | ChordMask::E | ChordMask::U | ChordMask::LR,
+        .keyState =
+            StrokeMask::KL | StrokeMask::E | StrokeMask::U | StrokeMask::LR,
         .keyCode = KeyCode::_4,
     },
     {
-        .keyState = ChordMask::KL | ChordMask::RL | ChordMask::E |
-                    ChordMask::U | ChordMask::LR,
+        .keyState = StrokeMask::KL | StrokeMask::RL | StrokeMask::E |
+                    StrokeMask::U | StrokeMask::LR,
         .keyCode = KeyCode::_5,
     },
     {
-        .keyState = ChordMask::KL | ChordMask::WL | ChordMask::E |
-                    ChordMask::U | ChordMask::LR,
+        .keyState = StrokeMask::KL | StrokeMask::WL | StrokeMask::E |
+                    StrokeMask::U | StrokeMask::LR,
         .keyCode = KeyCode::_6,
     },
     {
-        .keyState = ChordMask::KL | ChordMask::WL | ChordMask::RL |
-                    ChordMask::E | ChordMask::U | ChordMask::LR,
+        .keyState = StrokeMask::KL | StrokeMask::WL | StrokeMask::RL |
+                    StrokeMask::E | StrokeMask::U | StrokeMask::LR,
         .keyCode = KeyCode::_7,
     },
     {
-        .keyState = ChordMask::SL | ChordMask::E | ChordMask::U | ChordMask::LR,
+        .keyState =
+            StrokeMask::SL | StrokeMask::E | StrokeMask::U | StrokeMask::LR,
         .keyCode = KeyCode::_8,
     },
     {
-        .keyState = ChordMask::SL | ChordMask::RL | ChordMask::E |
-                    ChordMask::U | ChordMask::LR,
+        .keyState = StrokeMask::SL | StrokeMask::RL | StrokeMask::E |
+                    StrokeMask::U | StrokeMask::LR,
         .keyCode = KeyCode::_9,
     },
 
     // Num pad numbers.
     {
-        .keyState = ChordMask::PL | ChordMask::E | ChordMask::U | ChordMask::LR,
+        .keyState =
+            StrokeMask::PL | StrokeMask::E | StrokeMask::U | StrokeMask::LR,
         .keyCode = KeyCode::KP_0,
     },
     {
-        .keyState = ChordMask::RL | ChordMask::PL | ChordMask::E |
-                    ChordMask::U | ChordMask::LR,
+        .keyState = StrokeMask::RL | StrokeMask::PL | StrokeMask::E |
+                    StrokeMask::U | StrokeMask::LR,
         .keyCode = KeyCode::KP_1,
     },
     {
-        .keyState = ChordMask::WL | ChordMask::PL | ChordMask::E |
-                    ChordMask::U | ChordMask::LR,
+        .keyState = StrokeMask::WL | StrokeMask::PL | StrokeMask::E |
+                    StrokeMask::U | StrokeMask::LR,
         .keyCode = KeyCode::KP_2,
     },
     {
-        .keyState = ChordMask::WL | ChordMask::RL | ChordMask::PL |
-                    ChordMask::E | ChordMask::U | ChordMask::LR,
+        .keyState = StrokeMask::WL | StrokeMask::RL | StrokeMask::PL |
+                    StrokeMask::E | StrokeMask::U | StrokeMask::LR,
         .keyCode = KeyCode::KP_3,
     },
     {
-        .keyState = ChordMask::KL | ChordMask::PL | ChordMask::E |
-                    ChordMask::U | ChordMask::LR,
+        .keyState = StrokeMask::KL | StrokeMask::PL | StrokeMask::E |
+                    StrokeMask::U | StrokeMask::LR,
         .keyCode = KeyCode::KP_4,
     },
     {
-        .keyState = ChordMask::KL | ChordMask::RL | ChordMask::PL |
-                    ChordMask::E | ChordMask::U | ChordMask::LR,
+        .keyState = StrokeMask::KL | StrokeMask::RL | StrokeMask::PL |
+                    StrokeMask::E | StrokeMask::U | StrokeMask::LR,
         .keyCode = KeyCode::KP_5,
     },
     {
-        .keyState = ChordMask::KL | ChordMask::WL | ChordMask::PL |
-                    ChordMask::E | ChordMask::U | ChordMask::LR,
+        .keyState = StrokeMask::KL | StrokeMask::WL | StrokeMask::PL |
+                    StrokeMask::E | StrokeMask::U | StrokeMask::LR,
         .keyCode = KeyCode::KP_6,
     },
     {
-        .keyState = ChordMask::KL | ChordMask::WL | ChordMask::RL |
-                    ChordMask::PL | ChordMask::E | ChordMask::U | ChordMask::LR,
+        .keyState = StrokeMask::KL | StrokeMask::WL | StrokeMask::RL |
+                    StrokeMask::PL | StrokeMask::E | StrokeMask::U |
+                    StrokeMask::LR,
         .keyCode = KeyCode::KP_7,
     },
     {
-        .keyState = ChordMask::SL | ChordMask::PL | ChordMask::E |
-                    ChordMask::U | ChordMask::LR,
+        .keyState = StrokeMask::SL | StrokeMask::PL | StrokeMask::E |
+                    StrokeMask::U | StrokeMask::LR,
         .keyCode = KeyCode::KP_8,
     },
     {
-        .keyState = ChordMask::SL | ChordMask::RL | ChordMask::PL |
-                    ChordMask::E | ChordMask::U | ChordMask::LR,
+        .keyState = StrokeMask::SL | StrokeMask::RL | StrokeMask::PL |
+                    StrokeMask::E | StrokeMask::U | StrokeMask::LR,
         .keyCode = KeyCode::KP_9,
     },
 
     // Function key layers.
     {
-        .keyState = ChordMask::RL | ChordMask::TL | ChordMask::PL |
-                    ChordMask::E | ChordMask::U | ChordMask::LR,
+        .keyState = StrokeMask::RL | StrokeMask::TL | StrokeMask::PL |
+                    StrokeMask::E | StrokeMask::U | StrokeMask::LR,
         .keyCode = KeyCode::F1,
     },
     {
-        .keyState = ChordMask::WL | ChordMask::TL | ChordMask::PL |
-                    ChordMask::E | ChordMask::U | ChordMask::LR,
+        .keyState = StrokeMask::WL | StrokeMask::TL | StrokeMask::PL |
+                    StrokeMask::E | StrokeMask::U | StrokeMask::LR,
         .keyCode = KeyCode::F2,
     },
     {
-        .keyState = ChordMask::WL | ChordMask::RL | ChordMask::TL |
-                    ChordMask::PL | ChordMask::E | ChordMask::U | ChordMask::LR,
+        .keyState = StrokeMask::WL | StrokeMask::RL | StrokeMask::TL |
+                    StrokeMask::PL | StrokeMask::E | StrokeMask::U |
+                    StrokeMask::LR,
         .keyCode = KeyCode::F3,
     },
     {
-        .keyState = ChordMask::KL | ChordMask::TL | ChordMask::PL |
-                    ChordMask::E | ChordMask::U | ChordMask::LR,
+        .keyState = StrokeMask::KL | StrokeMask::TL | StrokeMask::PL |
+                    StrokeMask::E | StrokeMask::U | StrokeMask::LR,
         .keyCode = KeyCode::F4,
     },
     {
-        .keyState = ChordMask::KL | ChordMask::RL | ChordMask::TL |
-                    ChordMask::PL | ChordMask::E | ChordMask::U | ChordMask::LR,
+        .keyState = StrokeMask::KL | StrokeMask::RL | StrokeMask::TL |
+                    StrokeMask::PL | StrokeMask::E | StrokeMask::U |
+                    StrokeMask::LR,
         .keyCode = KeyCode::F5,
     },
     {
-        .keyState = ChordMask::KL | ChordMask::WL | ChordMask::TL |
-                    ChordMask::PL | ChordMask::E | ChordMask::U | ChordMask::LR,
+        .keyState = StrokeMask::KL | StrokeMask::WL | StrokeMask::TL |
+                    StrokeMask::PL | StrokeMask::E | StrokeMask::U |
+                    StrokeMask::LR,
         .keyCode = KeyCode::F6,
     },
     {
-        .keyState = ChordMask::KL | ChordMask::WL | ChordMask::RL |
-                    ChordMask::TL | ChordMask::PL | ChordMask::E |
-                    ChordMask::U | ChordMask::LR,
+        .keyState = StrokeMask::KL | StrokeMask::WL | StrokeMask::RL |
+                    StrokeMask::TL | StrokeMask::PL | StrokeMask::E |
+                    StrokeMask::U | StrokeMask::LR,
         .keyCode = KeyCode::F7,
     },
     {
-        .keyState = ChordMask::SL | ChordMask::TL | ChordMask::PL |
-                    ChordMask::E | ChordMask::U | ChordMask::LR,
+        .keyState = StrokeMask::SL | StrokeMask::TL | StrokeMask::PL |
+                    StrokeMask::E | StrokeMask::U | StrokeMask::LR,
         .keyCode = KeyCode::F8,
     },
     {
-        .keyState = ChordMask::SL | ChordMask::RL | ChordMask::TL |
-                    ChordMask::PL | ChordMask::E | ChordMask::U | ChordMask::LR,
+        .keyState = StrokeMask::SL | StrokeMask::RL | StrokeMask::TL |
+                    StrokeMask::PL | StrokeMask::E | StrokeMask::U |
+                    StrokeMask::LR,
         .keyCode = KeyCode::F9,
     },
     {
-        .keyState = ChordMask::SL | ChordMask::WL | ChordMask::TL |
-                    ChordMask::PL | ChordMask::E | ChordMask::U | ChordMask::LR,
+        .keyState = StrokeMask::SL | StrokeMask::WL | StrokeMask::TL |
+                    StrokeMask::PL | StrokeMask::E | StrokeMask::U |
+                    StrokeMask::LR,
         .keyCode = KeyCode::F10,
     },
     {
-        .keyState = ChordMask::SL | ChordMask::WL | ChordMask::RL |
-                    ChordMask::TL | ChordMask::PL | ChordMask::E |
-                    ChordMask::U | ChordMask::LR,
+        .keyState = StrokeMask::SL | StrokeMask::WL | StrokeMask::RL |
+                    StrokeMask::TL | StrokeMask::PL | StrokeMask::E |
+                    StrokeMask::U | StrokeMask::LR,
         .keyCode = KeyCode::F11,
     },
     {
-        .keyState = ChordMask::SL | ChordMask::KL | ChordMask::TL |
-                    ChordMask::PL | ChordMask::E | ChordMask::U | ChordMask::LR,
+        .keyState = StrokeMask::SL | StrokeMask::KL | StrokeMask::TL |
+                    StrokeMask::PL | StrokeMask::E | StrokeMask::U |
+                    StrokeMask::LR,
         .keyCode = KeyCode::F12,
     },
     {
-        .keyState = ChordMask::SL | ChordMask::KL | ChordMask::RL |
-                    ChordMask::TL | ChordMask::PL | ChordMask::E |
-                    ChordMask::U | ChordMask::LR,
+        .keyState = StrokeMask::SL | StrokeMask::KL | StrokeMask::RL |
+                    StrokeMask::TL | StrokeMask::PL | StrokeMask::E |
+                    StrokeMask::U | StrokeMask::LR,
         .keyCode = KeyCode::F13,
     },
     {
-        .keyState = ChordMask::SL | ChordMask::KL | ChordMask::WL |
-                    ChordMask::TL | ChordMask::PL | ChordMask::E |
-                    ChordMask::U | ChordMask::LR,
+        .keyState = StrokeMask::SL | StrokeMask::KL | StrokeMask::WL |
+                    StrokeMask::TL | StrokeMask::PL | StrokeMask::E |
+                    StrokeMask::U | StrokeMask::LR,
         .keyCode = KeyCode::F14,
     },
     {
-        .keyState = ChordMask::SL | ChordMask::KL | ChordMask::WL |
-                    ChordMask::RL | ChordMask::TL | ChordMask::PL |
-                    ChordMask::E | ChordMask::U | ChordMask::LR,
+        .keyState = StrokeMask::SL | StrokeMask::KL | StrokeMask::WL |
+                    StrokeMask::RL | StrokeMask::TL | StrokeMask::PL |
+                    StrokeMask::E | StrokeMask::U | StrokeMask::LR,
         .keyCode = KeyCode::F15,
     },
 };
@@ -448,9 +460,9 @@ const JeffModifiersData DATA[] = {
 
 void StenoJeffModifiers::Process(const StenoKeyState &value,
                                  StenoAction action) {
-  const StenoChord chord = value.ToChord();
+  const StenoStroke stroke = value.ToStroke();
 
-  bool isModifier = (chord & TRIGGER_MASK) == TRIGGER_CHORD;
+  bool isModifier = (stroke & TRIGGER_MASK) == TRIGGER_STROKE;
 
   switch (action) {
   case StenoAction::PRESS:
@@ -459,11 +471,11 @@ void StenoJeffModifiers::Process(const StenoKeyState &value,
         wasModifier = true;
         nextProcessor.Process(value, StenoAction::CANCEL);
       }
-      UpdateModifiers(chord);
+      UpdateModifiers(stroke);
       return;
     } else if (wasModifier) {
       wasModifier = false;
-      UpdateModifiers(StenoChord());
+      UpdateModifiers(StenoStroke());
     }
     break;
 
@@ -472,22 +484,22 @@ void StenoJeffModifiers::Process(const StenoKeyState &value,
       if (value.IsEmpty()) {
         wasModifier = false;
       }
-      UpdateModifiers(chord);
+      UpdateModifiers(stroke);
       return;
     }
     break;
 
   case StenoAction::CANCEL:
     wasModifier = false;
-    UpdateModifiers(StenoChord());
+    UpdateModifiers(StenoStroke());
     break;
 
   case StenoAction::TRIGGER:
     if (wasModifier || isModifier) {
-      StenoChord previousChord = lastModifiers;
-      UpdateModifiers(chord);
-      bool result = TriggerSendKey(chord);
-      UpdateModifiers(previousChord);
+      StenoStroke previousStroke = lastModifiers;
+      UpdateModifiers(stroke);
+      bool result = TriggerSendKey(stroke);
+      UpdateModifiers(previousStroke);
       if (result) {
         return;
       }
@@ -502,9 +514,9 @@ void StenoJeffModifiers::PrintInfo() const {
   nextProcessor.PrintInfo();
 }
 
-void StenoJeffModifiers::UpdateModifiers(StenoChord chord) {
-  lastModifiers = chord;
-  bool isControl = (chord & CONTROL_MASK).IsNotEmpty();
+void StenoJeffModifiers::UpdateModifiers(StenoStroke stroke) {
+  lastModifiers = stroke;
+  bool isControl = (stroke & CONTROL_MASK).IsNotEmpty();
   if (isControl != wasControl) {
     wasControl = isControl;
     if (isControl) {
@@ -514,7 +526,7 @@ void StenoJeffModifiers::UpdateModifiers(StenoChord chord) {
     }
   }
 
-  bool isShift = (chord & SHIFT_MASK).IsNotEmpty();
+  bool isShift = (stroke & SHIFT_MASK).IsNotEmpty();
   if (isShift != wasShift) {
     wasShift = isShift;
     if (isShift) {
@@ -524,7 +536,7 @@ void StenoJeffModifiers::UpdateModifiers(StenoChord chord) {
     }
   }
 
-  bool isSuper = (chord & SUPER_MASK).IsNotEmpty();
+  bool isSuper = (stroke & SUPER_MASK).IsNotEmpty();
   if (isSuper != wasSuper) {
     wasSuper = isSuper;
     if (isSuper) {
@@ -534,7 +546,7 @@ void StenoJeffModifiers::UpdateModifiers(StenoChord chord) {
     }
   }
 
-  bool isAlt = (chord & ALT_MASK).IsNotEmpty();
+  bool isAlt = (stroke & ALT_MASK).IsNotEmpty();
   if (isAlt != wasAlt) {
     wasAlt = isAlt;
     if (isAlt) {
@@ -545,8 +557,8 @@ void StenoJeffModifiers::UpdateModifiers(StenoChord chord) {
   }
 }
 
-bool StenoJeffModifiers::TriggerSendKey(StenoChord chord) const {
-  const uint32_t keyState = (chord & DATA_MASK).GetKeyState();
+bool StenoJeffModifiers::TriggerSendKey(StenoStroke stroke) const {
+  const uint32_t keyState = (stroke & DATA_MASK).GetKeyState();
 
   for (size_t i = 0; i < sizeof(DATA) / sizeof(*DATA); ++i) {
     if (DATA[i].keyState == keyState) {
@@ -559,7 +571,7 @@ bool StenoJeffModifiers::TriggerSendKey(StenoChord chord) const {
 
   // Don't trigger if only the modifier keys and/or layer keys have been
   // pressed.
-  return (chord & IGNORE_MASK).IsEmpty();
+  return (stroke & IGNORE_MASK).IsEmpty();
 }
 
 //---------------------------------------------------------------------------

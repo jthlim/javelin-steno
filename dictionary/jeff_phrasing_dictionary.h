@@ -31,7 +31,7 @@ private:
   struct ReverseLookupContext;
 
   void RecurseCheckReverseLookup(ReverseLookupContext &context, const char *p,
-                                 StenoChord stroke, uint32_t hash,
+                                 StenoStroke stroke, uint32_t hash,
                                  uint8_t componentMask, uint8_t modeMask) const;
 };
 

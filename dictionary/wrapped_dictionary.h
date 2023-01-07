@@ -13,17 +13,17 @@ public:
   virtual StenoDictionaryLookupResult
   Lookup(const StenoDictionaryLookup &lookup) const;
 
-  inline StenoDictionaryLookupResult Lookup(const StenoChord *chords,
+  inline StenoDictionaryLookupResult Lookup(const StenoStroke *strokes,
                                             size_t length) const {
-    return Lookup(StenoDictionaryLookup(chords, length));
+    return Lookup(StenoDictionaryLookup(strokes, length));
   }
 
   virtual const StenoDictionary *
   GetLookupProvider(const StenoDictionaryLookup &lookup) const;
 
-  inline const StenoDictionary *GetLookupProvider(const StenoChord *chords,
+  inline const StenoDictionary *GetLookupProvider(const StenoStroke *strokes,
                                                   size_t length) const {
-    return GetLookupProvider(StenoDictionaryLookup(chords, length));
+    return GetLookupProvider(StenoDictionaryLookup(strokes, length));
   }
 
   virtual void ReverseLookup(StenoReverseDictionaryLookup &result) const;

@@ -12,7 +12,7 @@ public:
   void PrintInfo() const {}
 
   struct ProcessArguments {
-    StenoKeyState chord;
+    StenoKeyState stroke;
     StenoAction action;
   };
 

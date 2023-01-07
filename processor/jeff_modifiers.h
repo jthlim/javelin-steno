@@ -17,15 +17,15 @@ public:
   void Tick() { nextProcessor.Tick(); }
   void PrintInfo() const final;
 
-  static const StenoChord TRIGGER_CHORD;
-  static const StenoChord TRIGGER_MASK;
-  static const StenoChord DATA_MASK;
-  static const StenoChord IGNORE_MASK;
+  static const StenoStroke TRIGGER_STROKE;
+  static const StenoStroke TRIGGER_MASK;
+  static const StenoStroke DATA_MASK;
+  static const StenoStroke IGNORE_MASK;
 
-  static const StenoChord CONTROL_MASK;
-  static const StenoChord SHIFT_MASK;
-  static const StenoChord SUPER_MASK;
-  static const StenoChord ALT_MASK;
+  static const StenoStroke CONTROL_MASK;
+  static const StenoStroke SHIFT_MASK;
+  static const StenoStroke SUPER_MASK;
+  static const StenoStroke ALT_MASK;
 
 private:
   bool wasModifier = false;
@@ -35,11 +35,11 @@ private:
   bool wasSuper = false;
   bool wasAlt = false;
 
-  StenoChord lastModifiers;
+  StenoStroke lastModifiers;
   StenoProcessorElement &nextProcessor;
 
-  void UpdateModifiers(StenoChord chord);
-  bool TriggerSendKey(StenoChord chord) const;
+  void UpdateModifiers(StenoStroke stroke);
+  bool TriggerSendKey(StenoStroke stroke) const;
 };
 
 //---------------------------------------------------------------------------

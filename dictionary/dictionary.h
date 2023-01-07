@@ -1,8 +1,8 @@
 //---------------------------------------------------------------------------
 
 #pragma once
-#include "../chord.h"
 #include "../str.h"
+#include "../stroke.h"
 #include <stdint.h>
 #include <stdlib.h>
 
@@ -51,11 +51,11 @@ struct StenoDictionaryLookupResult {
 //---------------------------------------------------------------------------
 
 struct StenoDictionaryLookup {
-  StenoDictionaryLookup(const StenoChord *chords, size_t length)
-      : chords(chords), length(length), hash(StenoChord::Hash(chords, length)) {
-  }
+  StenoDictionaryLookup(const StenoStroke *strokes, size_t length)
+      : strokes(strokes), length(length),
+        hash(StenoStroke::Hash(strokes, length)) {}
 
-  const StenoChord *chords;
+  const StenoStroke *strokes;
   size_t length;
   uint32_t hash;
 };
@@ -64,7 +64,7 @@ struct StenoDictionaryLookup {
 
 struct StenoReverseDictionaryResult {
   size_t length;
-  StenoChord *chords;
+  StenoStroke *strokes;
   const StenoDictionary *lookupProvider;
 };
 
@@ -74,9 +74,9 @@ public:
       : strokeThreshold(strokeThreshold), lookup(lookup),
         lookupLength(strlen(lookup)) {}
 
-  void AddResult(const StenoChord *chords, size_t length,
+  void AddResult(const StenoStroke *strokes, size_t length,
                  const StenoDictionary *lookupProvider);
-  bool HasResult(const StenoChord *chords, size_t length) const;
+  bool HasResult(const StenoStroke *strokes, size_t length) const;
 
   // Results equal to, or above this will not be captured.
   size_t strokeThreshold;
@@ -84,12 +84,12 @@ public:
   size_t lookupLength;
 
   size_t resultCount = 0;
-  size_t chordsCount = 0;
+  size_t strokesCount = 0;
 
   StenoReverseDictionaryResult results[24];
 
-  static const size_t CHORD_COUNT = 64;
-  StenoChord chords[CHORD_COUNT];
+  static const size_t STROKE_COUNT = 64;
+  StenoStroke strokes[STROKE_COUNT];
 
   static const size_t MAX_STROKE_THRESHOLD = 31;
 };
@@ -102,7 +102,7 @@ struct StenoReverseMapDictionaryLookup {
   const void *data;
   const StenoDictionary *provider;
   size_t length;
-  StenoChord chords[32];
+  StenoStroke strokes[32];
 };
 
 //---------------------------------------------------------------------------
@@ -112,17 +112,17 @@ public:
   virtual StenoDictionaryLookupResult
   Lookup(const StenoDictionaryLookup &lookup) const = 0;
 
-  inline StenoDictionaryLookupResult Lookup(const StenoChord *chords,
+  inline StenoDictionaryLookupResult Lookup(const StenoStroke *strokes,
                                             size_t length) const {
-    return Lookup(StenoDictionaryLookup(chords, length));
+    return Lookup(StenoDictionaryLookup(strokes, length));
   }
 
   virtual const StenoDictionary *
   GetLookupProvider(const StenoDictionaryLookup &lookup) const;
 
-  inline const StenoDictionary *GetLookupProvider(const StenoChord *chords,
+  inline const StenoDictionary *GetLookupProvider(const StenoStroke *strokes,
                                                   size_t length) const {
-    return GetLookupProvider(StenoDictionaryLookup(chords, length));
+    return GetLookupProvider(StenoDictionaryLookup(strokes, length));
   }
 
   virtual void ReverseLookup(StenoReverseDictionaryLookup &result) const;

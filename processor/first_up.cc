@@ -17,7 +17,7 @@ void StenoFirstUp::Process(const StenoKeyState &value, StenoAction action) {
   case StenoAction::RELEASE:
     if (wasLastEventAPress) {
       wasLastEventAPress = false;
-      // Trigger the chord from before the release.
+      // Trigger the stroke from before the release.
       nextProcessor.Process(pressedKeyState, StenoAction::TRIGGER);
     }
     break;

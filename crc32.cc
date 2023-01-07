@@ -52,8 +52,8 @@ static constexpr uint32_t CRC32_TABLE[256] = {
 
 //---------------------------------------------------------------------------
 
-uint32_t Crc32(const void *v, size_t count) {
-  const unsigned char *p = (const unsigned char *)v;
+__attribute__((weak)) uint32_t Crc32(const void *v, size_t count) {
+  const uint8_t *p = (const uint8_t *)v;
   uint32_t hash = 0xffffffff;
   for (size_t i = 0; i < count; i++) {
     hash = CRC32_TABLE[(hash ^ *p++) & 0xff] ^ (hash >> 8);

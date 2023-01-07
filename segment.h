@@ -7,26 +7,26 @@
 
 //---------------------------------------------------------------------------
 
-// A steno segment is a mapping of List<Chord> -> Translation.
+// A steno segment is a mapping of List<Stroke> -> Translation.
 struct StenoSegment {
   StenoSegment();
-  StenoSegment(size_t chordLength, const StenoState *state,
+  StenoSegment(size_t strokeLength, const StenoState *state,
                StenoDictionaryLookupResult lookup)
-      : chordLength(chordLength), state(state), lookup(lookup) {}
+      : strokeLength(strokeLength), state(state), lookup(lookup) {}
 
   static StenoSegment CreateInvalid() {
     StenoSegment segment;
-    segment.chordLength = 0;
+    segment.strokeLength = 0;
     return segment;
   }
 
   bool ContainsKeyCode() const;
 
-  size_t chordLength;
+  size_t strokeLength;
   const StenoState *state;
   StenoDictionaryLookupResult lookup;
 
-  bool IsValid() const { return chordLength != 0; }
+  bool IsValid() const { return strokeLength != 0; }
 };
 
 //---------------------------------------------------------------------------

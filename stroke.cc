@@ -1,6 +1,6 @@
 //---------------------------------------------------------------------------
 
-#include "chord.h"
+#include "stroke.h"
 #include "crc32.h"
 #include <assert.h>
 #include <string.h>
@@ -9,7 +9,7 @@
 
 // Only for use in tests.
 #ifdef RUN_TESTS
-void StenoChord::Set(const char *string) {
+void StenoStroke::Set(const char *string) {
   keyState = 0;
   const char *rightStart = RightStart(string);
   const char *p = string;
@@ -17,98 +17,98 @@ void StenoChord::Set(const char *string) {
   while (p < rightStart) {
     switch (*p) {
     case '#':
-      keyState |= ChordMask::NUM;
+      keyState |= StrokeMask::NUM;
       break;
 
     case '1':
-      keyState |= ChordMask::NUM | ChordMask::SL;
+      keyState |= StrokeMask::NUM | StrokeMask::SL;
       break;
 
     case '2':
-      keyState |= ChordMask::NUM | ChordMask::TL;
+      keyState |= StrokeMask::NUM | StrokeMask::TL;
       break;
 
     case '3':
-      keyState |= ChordMask::NUM | ChordMask::PL;
+      keyState |= StrokeMask::NUM | StrokeMask::PL;
       break;
 
     case '4':
-      keyState |= ChordMask::NUM | ChordMask::HL;
+      keyState |= StrokeMask::NUM | StrokeMask::HL;
       break;
 
     case '5':
-      keyState |= ChordMask::NUM | ChordMask::A;
+      keyState |= StrokeMask::NUM | StrokeMask::A;
       break;
 
     case '0':
-      keyState |= ChordMask::NUM | ChordMask::O;
+      keyState |= StrokeMask::NUM | StrokeMask::O;
       break;
 
     case '6':
-      keyState |= ChordMask::NUM | ChordMask::FR;
+      keyState |= StrokeMask::NUM | StrokeMask::FR;
       break;
 
     case '7':
-      keyState |= ChordMask::NUM | ChordMask::PR;
+      keyState |= StrokeMask::NUM | StrokeMask::PR;
       break;
 
     case '8':
-      keyState |= ChordMask::NUM | ChordMask::LR;
+      keyState |= StrokeMask::NUM | StrokeMask::LR;
       break;
 
     case '9':
-      keyState |= ChordMask::NUM | ChordMask::TR;
+      keyState |= StrokeMask::NUM | StrokeMask::TR;
       break;
 
     case 'S':
-      keyState |= ChordMask::SL;
+      keyState |= StrokeMask::SL;
       break;
 
     case 'T':
-      keyState |= ChordMask::TL;
+      keyState |= StrokeMask::TL;
       break;
 
     case 'K':
-      keyState |= ChordMask::KL;
+      keyState |= StrokeMask::KL;
       break;
 
     case 'P':
-      keyState |= ChordMask::PL;
+      keyState |= StrokeMask::PL;
       break;
 
     case 'W':
-      keyState |= ChordMask::WL;
+      keyState |= StrokeMask::WL;
       break;
 
     case 'H':
-      keyState |= ChordMask::HL;
+      keyState |= StrokeMask::HL;
       break;
 
     case 'R':
-      keyState |= ChordMask::RL;
+      keyState |= StrokeMask::RL;
       break;
 
     case 'A':
-      keyState |= ChordMask::A;
+      keyState |= StrokeMask::A;
       break;
 
     case 'O':
-      keyState |= ChordMask::O;
+      keyState |= StrokeMask::O;
       break;
 
     case '*':
-      keyState |= ChordMask::STAR;
+      keyState |= StrokeMask::STAR;
       break;
 
     case '-':
       break;
 
     case 'E':
-      keyState |= ChordMask::E;
+      keyState |= StrokeMask::E;
       break;
 
     case 'U':
-      keyState |= ChordMask::U;
+      keyState |= StrokeMask::U;
       break;
     }
     p++;
@@ -117,66 +117,66 @@ void StenoChord::Set(const char *string) {
   while (*p) {
     switch (*p) {
     case '6':
-      keyState |= ChordMask::NUM | ChordMask::FR;
+      keyState |= StrokeMask::NUM | StrokeMask::FR;
       break;
 
     case '7':
-      keyState |= ChordMask::NUM | ChordMask::PR;
+      keyState |= StrokeMask::NUM | StrokeMask::PR;
       break;
 
     case '8':
-      keyState |= ChordMask::NUM | ChordMask::LR;
+      keyState |= StrokeMask::NUM | StrokeMask::LR;
       break;
 
     case '9':
-      keyState |= ChordMask::NUM | ChordMask::TR;
+      keyState |= StrokeMask::NUM | StrokeMask::TR;
       break;
 
     case 'F':
-      keyState |= ChordMask::FR;
+      keyState |= StrokeMask::FR;
       break;
 
     case 'R':
-      keyState |= ChordMask::RR;
+      keyState |= StrokeMask::RR;
       break;
 
     case 'P':
-      keyState |= ChordMask::PR;
+      keyState |= StrokeMask::PR;
       break;
 
     case 'B':
-      keyState |= ChordMask::BR;
+      keyState |= StrokeMask::BR;
       break;
 
     case 'L':
-      keyState |= ChordMask::LR;
+      keyState |= StrokeMask::LR;
       break;
 
     case 'G':
-      keyState |= ChordMask::GR;
+      keyState |= StrokeMask::GR;
       break;
 
     case 'T':
-      keyState |= ChordMask::TR;
+      keyState |= StrokeMask::TR;
       break;
 
     case 'S':
-      keyState |= ChordMask::SR;
+      keyState |= StrokeMask::SR;
       break;
 
     case 'D':
-      keyState |= ChordMask::DR;
+      keyState |= StrokeMask::DR;
       break;
 
     case 'Z':
-      keyState |= ChordMask::ZR;
+      keyState |= StrokeMask::ZR;
       break;
     }
     p++;
   }
 }
 
-const char *StenoChord::RightStart(const char *p) {
+const char *StenoStroke::RightStart(const char *p) {
   bool foundMiddle = false;
   for (;;) {
     switch (*p) {
@@ -211,32 +211,32 @@ const char *StenoChord::RightStart(const char *p) {
 }
 #endif
 
-char *StenoChord::ToString(char *buffer) const {
+char *StenoStroke::ToString(char *buffer) const {
   // cspell: disable-next-line
   const char *keys = "#STKPWHRAO*EUFRPBLGTSDZ";
 
-  for (int i = 0; i < ChordBitIndex::STAR; ++i) {
+  for (int i = 0; i < StrokeBitIndex::STAR; ++i) {
     if (keyState & (1UL << i)) {
       *buffer++ = keys[i];
     }
   }
 
-  const uint32_t remainderMask = ChordMask::A | ChordMask::O | ChordMask::STAR |
-                                 ChordMask::E | ChordMask::U | ChordMask::FR |
-                                 ChordMask::RR | ChordMask::PR | ChordMask::BR |
-                                 ChordMask::LR | ChordMask::GR | ChordMask::TR |
-                                 ChordMask::SR | ChordMask::DR | ChordMask::ZR;
+  const uint32_t remainderMask =
+      StrokeMask::A | StrokeMask::O | StrokeMask::STAR | StrokeMask::E |
+      StrokeMask::U | StrokeMask::FR | StrokeMask::RR | StrokeMask::PR |
+      StrokeMask::BR | StrokeMask::LR | StrokeMask::GR | StrokeMask::TR |
+      StrokeMask::SR | StrokeMask::DR | StrokeMask::ZR;
 
   if (keyState & remainderMask) {
-    const uint32_t centralKeyMask = ChordMask::A | ChordMask::O |
-                                    ChordMask::STAR | ChordMask::E |
-                                    ChordMask::U;
+    const uint32_t centralKeyMask = StrokeMask::A | StrokeMask::O |
+                                    StrokeMask::STAR | StrokeMask::E |
+                                    StrokeMask::U;
 
     if ((keyState & centralKeyMask) == 0) {
       *buffer++ = '-';
     }
 
-    for (int i = ChordBitIndex::STAR; i < ChordBitIndex::COUNT; ++i) {
+    for (int i = StrokeBitIndex::STAR; i < StrokeBitIndex::COUNT; ++i) {
       if (keyState & (1UL << i)) {
         *buffer++ = keys[i];
       }
@@ -247,36 +247,36 @@ char *StenoChord::ToString(char *buffer) const {
   return buffer;
 }
 
-char *StenoChord::ToWideString(char *buffer) const {
+char *StenoStroke::ToWideString(char *buffer) const {
   // cspell: disable-next-line
   const char *keys = "#STKPWHRAO*EUFRPBLGTSDZ";
 
-  for (int i = 0; i < ChordBitIndex::COUNT; ++i) {
+  for (int i = 0; i < StrokeBitIndex::COUNT; ++i) {
     *buffer++ = (keyState & (1UL << i)) ? keys[i] : ' ';
   }
   *buffer = '\0';
   return buffer;
 }
 
-uint32_t StenoChord::PopCount(const StenoChord *chords, size_t length) {
+uint32_t StenoStroke::PopCount(const StenoStroke *strokes, size_t length) {
   uint32_t result = 0;
   for (size_t i = 0; i < length; ++i) {
-    result += chords[i].PopCount();
+    result += strokes[i].PopCount();
   }
   return result;
 }
 
-uint32_t StenoChord::Hash(const StenoChord *chords, size_t length) {
-  return Crc32(chords, 4 * length);
+uint32_t StenoStroke::Hash(const StenoStroke *strokes, size_t length) {
+  return Crc32(strokes, sizeof(StenoStroke) * length);
 }
 
-char *StenoChord::ToString(const StenoChord *chords, size_t length,
-                           char *buffer) {
+char *StenoStroke::ToString(const StenoStroke *strokes, size_t length,
+                            char *buffer) {
   for (size_t i = 0; i < length; ++i) {
     if (i != 0) {
       *buffer++ = '/';
     }
-    buffer = chords[i].ToString(buffer);
+    buffer = strokes[i].ToString(buffer);
   }
   return buffer;
 }
@@ -285,18 +285,18 @@ char *StenoChord::ToString(const StenoChord *chords, size_t length,
 
 #include "unit_test.h"
 
-TEST_BEGIN("Chord tests") {
+TEST_BEGIN("Stroke tests") {
   char buffer[32];
 
-  const StenoChord hello(ChordMask::HL | ChordMask::LR);
+  const StenoStroke hello(StrokeMask::HL | StrokeMask::LR);
   hello.ToString(buffer);
   assert(strcmp(buffer, "H-L") == 0);
 
-  const StenoChord cat("KAT");
+  const StenoStroke cat("KAT");
   cat.ToString(buffer);
   assert(strcmp(buffer, "KAT") == 0);
 
-  const StenoChord star("STA*R");
+  const StenoStroke star("STA*R");
   star.ToString(buffer);
   assert(strcmp(buffer, "STA*R") == 0);
 }

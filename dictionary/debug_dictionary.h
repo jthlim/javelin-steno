@@ -23,7 +23,7 @@ public:
   static const StenoDebugDictionary instance;
 
 private:
-  static const StenoChord trigger;
+  static const StenoStroke trigger;
   const char *response = nullptr;
 };
 
