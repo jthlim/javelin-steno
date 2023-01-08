@@ -260,11 +260,12 @@ Pattern::BuildResult Pattern::ParseQuantifier(BuildContext &c,
 //---------------------------------------------------------------------------
 
 PatternMatch Pattern::Match(const char *text) const {
-  struct PatternMatch result;
+  PatternMatch result;
 
   if (EarlyReject(text)) {
     result.match = false;
   } else {
+    memset(result.captures, 0, sizeof(result.captures));
     PatternContext context = {
         .start = text,
         .captureList = result.captures,
@@ -292,7 +293,7 @@ bool Pattern::EarlyReject(const char *text) const {
 }
 
 PatternMatch Pattern::Search(const char *text) const {
-  struct PatternMatch result;
+  PatternMatch result;
   PatternContext context = {
       .start = text,
       .captureList = result.captures,
@@ -304,7 +305,7 @@ PatternMatch Pattern::Search(const char *text) const {
 }
 
 char *Pattern::Replace(char *text, const char *templ) const {
-  PatternMatch match = Search(text);
+  const PatternMatch match = Search(text);
   if (!match.match) {
     return text;
   }
@@ -362,7 +363,7 @@ char *PatternMatch::Replace(const char *s) const {
 TEST_BEGIN("Pattern: Simple test") {
   const Pattern pattern = Pattern::Compile("a(b|c)d");
   const char *abd = "abd";
-  PatternMatch match = pattern.Match(abd);
+  const PatternMatch match = pattern.Match(abd);
   assert(match.match);
   assert(match.captures[0] == abd);
   assert(match.captures[1] == abd + 3);

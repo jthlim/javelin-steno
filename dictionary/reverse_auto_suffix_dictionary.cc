@@ -53,7 +53,7 @@ void StenoReverseAutoSuffixDictionary::ProcessReverseAutoSuffix(
   // 1. To generate the word without suffix, run the regex on up to the last
   // 8 letters of the lookup.
   size_t lookupOffset = result.lookupLength > 8 ? result.lookupLength - 8 : 0;
-  PatternMatch match = reversePattern.Match(result.lookup + lookupOffset);
+  const PatternMatch match = reversePattern.Match(result.lookup + lookupOffset);
   if (!match.match) {
     return;
   }

@@ -154,7 +154,7 @@ char *StenoCompiledOrthography::AddSuffix(const char *word,
 
   char *text = Str::Asprintf("%s ^%s", word, suffix);
   for (size_t i = 0; i < data.ruleCount; ++i) {
-    const PatternMatch match = patterns[i].Match(text);
+    const PatternMatch &match = patterns[i].Match(text);
     if (!match.match) {
       continue;
     }

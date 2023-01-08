@@ -12,7 +12,7 @@ class PatternComponent;
 
 struct PatternMatch {
   bool match;
-  const char *captures[8] = {};
+  const char *captures[8];
 
   char *Replace(const char *s) const;
 
