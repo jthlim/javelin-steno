@@ -55,7 +55,7 @@ public:
   virtual const StenoDictionary *
   GetLookupProvider(const StenoDictionaryLookup &lookup) const;
 
-  virtual unsigned int GetMaximumMatchLength() const final;
+  virtual size_t GetMaximumOutlineLength() const final;
   virtual const char *GetName() const final;
   virtual void PrintInfo(int depth) const final;
   virtual bool PrintDictionary(bool hasData) const final;

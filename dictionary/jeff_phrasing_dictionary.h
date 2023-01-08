@@ -17,7 +17,7 @@ public:
   virtual const StenoDictionary *
   GetLookupProvider(const StenoDictionaryLookup &lookup) const;
 
-  virtual unsigned int GetMaximumMatchLength() const { return 1; }
+  virtual size_t GetMaximumOutlineLength() const { return 1; }
   virtual const char *GetName() const;
   virtual bool PrintDictionary(bool hasData) const { return false; }
   virtual void ReverseLookup(StenoReverseDictionaryLookup &result) const;

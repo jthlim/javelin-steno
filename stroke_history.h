@@ -22,7 +22,7 @@ struct BuildSegmentContext {
 
   StenoSegmentList &segmentList;
   const StenoDictionary &dictionary;
-  const size_t maximumMatchLength;
+  const size_t maximumOutlineLength;
   const StenoCompiledOrthography &orthography;
 };
 

@@ -24,7 +24,7 @@ public:
   virtual bool
   ReverseMapDictionaryLookup(StenoReverseMapDictionaryLookup &lookup) const;
 
-  virtual unsigned int GetMaximumMatchLength() const;
+  virtual size_t GetMaximumOutlineLength() const;
   virtual const char *GetName() const;
   virtual void PrintInfo(int depth) const;
   virtual bool PrintDictionary(bool hasData) const;

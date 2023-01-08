@@ -13,7 +13,7 @@ bool StenoDictionaryList::isSendDictionaryStatusEnabled = false;
 StenoDictionaryList::StenoDictionaryList(
     List<StenoDictionaryListEntry> &dictionaries)
     : dictionaries(dictionaries) {
-  UpdateMaximumMatchLength();
+  UpdateMaximumOutlineLength();
 }
 
 List<StenoDictionaryListEntry> &
@@ -38,7 +38,7 @@ StenoDictionaryList::Lookup(const StenoDictionaryLookup &lookup) const {
       continue;
     }
     const StenoDictionary *dictionary = dictionaries[i].dictionary;
-    if (dictionary->GetMaximumMatchLength() < lookup.length) {
+    if (dictionary->GetMaximumOutlineLength() < lookup.length) {
       continue;
     }
 
@@ -57,7 +57,7 @@ const StenoDictionary *StenoDictionaryList::GetLookupProvider(
       continue;
     }
     const StenoDictionary *dictionary = dictionaries[i].dictionary;
-    if (dictionary->GetMaximumMatchLength() < lookup.length) {
+    if (dictionary->GetMaximumOutlineLength() < lookup.length) {
       continue;
     }
 
@@ -97,22 +97,22 @@ bool StenoDictionaryList::ReverseMapDictionaryLookup(
   return false;
 }
 
-void StenoDictionaryList::UpdateMaximumMatchLength() {
-  unsigned int max = 0;
+void StenoDictionaryList::UpdateMaximumOutlineLength() {
+  size_t max = 0;
   for (size_t i = 0; i < dictionaries.GetCount(); ++i) {
     if (!dictionaries[i].enabled) {
       continue;
     }
-    unsigned int m = dictionaries[i].dictionary->GetMaximumMatchLength();
+    size_t m = dictionaries[i].dictionary->GetMaximumOutlineLength();
     if (m > max) {
       max = m;
     }
   }
-  maximumMatchLength = max;
+  maximumOutlineLength = max;
 }
 
-unsigned int StenoDictionaryList::GetMaximumMatchLength() const {
-  return maximumMatchLength;
+size_t StenoDictionaryList::GetMaximumOutlineLength() const {
+  return maximumOutlineLength;
 }
 
 const char *StenoDictionaryList::GetName() const { return "list"; }

@@ -199,7 +199,7 @@ StenoGeminiPacket StenoKeyState::ToGeminiPacket() const {
   uint64_t localKeyState = keyState;
   while (localKeyState) {
     int index = __builtin_ctzll(localKeyState);
-    unsigned int geminiIndex = GEMINI_LOOKUP[index];
+    uint8_t geminiIndex = GEMINI_LOOKUP[index];
 
     int byte = geminiIndex / 8;
     int offset = geminiIndex % 8;
@@ -215,7 +215,7 @@ StenoPloverHidPacket StenoKeyState::ToPloverHidPacket() const {
   uint64_t localKeyState = keyState;
   while (localKeyState) {
     int index = __builtin_ctzll(localKeyState);
-    unsigned int ploverHidIndex = PLOVER_HID_LOOKUP[index];
+    uint8_t ploverHidIndex = PLOVER_HID_LOOKUP[index];
 
     int byte = ploverHidIndex / 8;
     int offset = ploverHidIndex % 8;

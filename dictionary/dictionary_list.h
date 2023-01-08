@@ -31,7 +31,7 @@ public:
   virtual bool
   ReverseMapDictionaryLookup(StenoReverseMapDictionaryLookup &lookup) const;
 
-  virtual unsigned int GetMaximumMatchLength() const;
+  virtual size_t GetMaximumOutlineLength() const;
   virtual const char *GetName() const;
   virtual void PrintInfo(int depth) const;
   virtual bool PrintDictionary(bool hasData) const;
@@ -55,11 +55,11 @@ public:
 
 private:
   List<StenoDictionaryListEntry> &dictionaries;
-  uint32_t maximumMatchLength;
+  size_t maximumOutlineLength;
 
   static bool isSendDictionaryStatusEnabled;
 
-  void UpdateMaximumMatchLength();
+  void UpdateMaximumOutlineLength();
 
   void SendDictionaryStatus(const char *name, bool enabled) const;
 };

@@ -24,8 +24,8 @@ bool StenoWrappedDictionary::ReverseMapDictionaryLookup(
   return dictionary->ReverseMapDictionaryLookup(lookup);
 }
 
-unsigned int StenoWrappedDictionary::GetMaximumMatchLength() const {
-  return dictionary->GetMaximumMatchLength();
+size_t StenoWrappedDictionary::GetMaximumOutlineLength() const {
+  return dictionary->GetMaximumOutlineLength();
 }
 
 void StenoWrappedDictionary::PrintInfo(int depth) const {

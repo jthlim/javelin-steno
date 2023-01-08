@@ -12,7 +12,7 @@ BuildSegmentContext::BuildSegmentContext(
     StenoSegmentList &segmentList, const StenoDictionary &dictionary,
     const StenoCompiledOrthography &orthography)
     : segmentList(segmentList), dictionary(dictionary),
-      maximumMatchLength(dictionary.GetMaximumMatchLength()),
+      maximumOutlineLength(dictionary.GetMaximumOutlineLength()),
       orthography(orthography) {}
 
 //---------------------------------------------------------------------------
@@ -78,8 +78,8 @@ void StenoStrokeHistory::AddSegments(BuildSegmentContext &context,
 bool StenoStrokeHistory::DirectLookup(BuildSegmentContext &context,
                                       size_t &offset) {
   size_t startLength = count - offset;
-  if (startLength > context.maximumMatchLength) {
-    startLength = context.maximumMatchLength;
+  if (startLength > context.maximumOutlineLength) {
+    startLength = context.maximumOutlineLength;
   }
 
   for (size_t length = startLength; length > 0; --length) {
@@ -138,9 +138,9 @@ bool StenoStrokeHistory::AutoSuffixLookup(BuildSegmentContext &context,
 
   // See which historical translations can be extended with auto-suffixes.
   const StenoState *oldestState =
-      offset < context.maximumMatchLength
+      offset < context.maximumOutlineLength
           ? states
-          : states + offset + 1 - context.maximumMatchLength;
+          : states + offset + 1 - context.maximumOutlineLength;
   for (size_t segmentIndex = 0; segmentIndex < context.segmentList.GetCount();
        ++segmentIndex) {
     if (context.segmentList[segmentIndex].state < oldestState) {
@@ -164,11 +164,12 @@ bool StenoStrokeHistory::AutoSuffixLookup(BuildSegmentContext &context,
   }
 
   // No historical translations matched. Try auto suffixing at this offset.
-  StenoSegment segment = AutoSuffixTest(
-      context, offset,
-      count - offset > context.maximumMatchLength ? context.maximumMatchLength
-                                                  : count - offset,
-      1);
+  StenoSegment segment =
+      AutoSuffixTest(context, offset,
+                     count - offset > context.maximumOutlineLength
+                         ? context.maximumOutlineLength
+                         : count - offset,
+                     1);
 
   if (!segment.IsValid()) {
     return false;
@@ -184,8 +185,8 @@ StenoSegment StenoStrokeHistory::AutoSuffixTest(BuildSegmentContext &context,
                                                 const StenoSegment &segment,
                                                 size_t offset) {
   size_t lastStrokeOffset = segment.state - states;
-  size_t startLength = count - lastStrokeOffset > context.maximumMatchLength
-                           ? context.maximumMatchLength
+  size_t startLength = count - lastStrokeOffset > context.maximumOutlineLength
+                           ? context.maximumOutlineLength
                            : count - lastStrokeOffset;
   size_t minimumLength = offset - lastStrokeOffset + 1;
   return AutoSuffixTest(context, lastStrokeOffset, startLength, minimumLength);
@@ -236,7 +237,7 @@ void StenoStrokeHistory::ReevaluateSegments(BuildSegmentContext &context,
   while (context.segmentList.IsNotEmpty()) {
     StenoSegment &lastSegment = context.segmentList.Back();
     size_t lastOffset = lastSegment.state - states;
-    if (lastOffset + context.maximumMatchLength < currentOffset) {
+    if (lastOffset + context.maximumOutlineLength < currentOffset) {
       return;
     }
     lastSegment.lookup.Destroy();

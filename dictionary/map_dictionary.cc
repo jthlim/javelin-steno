@@ -233,7 +233,7 @@ bool StenoMapDictionary::PrintDictionary(bool hasData) const {
 
 //---------------------------------------------------------------------------
 
-unsigned int StenoMapDictionary::GetMaximumMatchLength() const {
+size_t StenoMapDictionary::GetMaximumOutlineLength() const {
   return definition.maximumStrokeCount;
 }
 

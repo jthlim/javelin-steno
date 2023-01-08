@@ -165,7 +165,7 @@ const StenoDictionary *StenoUserDictionary::GetLookupProvider(
   }
 }
 
-unsigned int StenoUserDictionary::GetMaximumMatchLength() const {
+size_t StenoUserDictionary::GetMaximumOutlineLength() const {
   return activeDescriptor->data.maximumStrokeCount;
 }
 

@@ -174,7 +174,7 @@ void StenoEngine::SendText(const uint8_t *p) {
 
 extern StenoOrthography testOrthography;
 extern StenoMapDictionaryDefinition testDictionaryDefinition;
-constexpr StenoMapDictionary testDictionary(testDictionaryDefinition);
+// constexpr StenoMapDictionary testDictionary(testDictionaryDefinition);
 
 constexpr StenoMapDictionary mainDictionary(MainDictionary::definition);
 
@@ -276,7 +276,7 @@ TEST_BEGIN("Engine: Random spam") {
   Key::DisableHistory();
 
   srand(0x1234);
-  for (size_t i = 0; i < 1000; ++i) {
+  for (size_t i = 0; i < 10000; ++i) {
     StenoStroke stroke(rand() & StrokeMask::ALL);
     engine.ProcessStroke(stroke);
   }

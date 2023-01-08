@@ -82,7 +82,7 @@ bool BackReferencePatternComponent::Match(const char *p,
 
 bool CharacterSetComponent::Match(const char *p,
                                   PatternContext &context) const {
-  unsigned int c = *(uint8_t *)p;
+  uint8_t c = *(uint8_t *)p;
   if (c >= 128) {
     return false;
   }
