@@ -24,6 +24,13 @@ void PatternComponent::RemoveEpsilon() {
   }
 }
 
+uint32_t PatternComponent::CreateAccelerator(uint32_t v) const {
+  if (!next) {
+    return v;
+  }
+  return next->CreateAccelerator(v);
+}
+
 bool EpsilonPatternComponent::Match(const char *p,
                                     PatternContext &context) const {
   return CallNext(p, context);
@@ -132,6 +139,17 @@ bool EndOfLinePatternComponent::Match(const char *p,
 }
 
 //---------------------------------------------------------------------------
+
+uint32_t LiteralPatternComponent::CreateAccelerator(uint32_t v) const {
+  const char *p = text;
+  while (*p) {
+    int c = *p++;
+    if ('a' <= c && c <= 'z') {
+      v |= 1 << (c - 'a');
+    }
+  }
+  return PatternComponent::CreateAccelerator(v);
+}
 
 bool LiteralPatternComponent::Match(const char *p,
                                     PatternContext &context) const {

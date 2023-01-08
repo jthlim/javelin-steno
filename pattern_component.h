@@ -24,6 +24,7 @@ public:
   virtual bool IsEpsilon() const { return false; }
 
   virtual void RemoveEpsilon();
+  virtual uint32_t CreateAccelerator(uint32_t v = 0) const;
 
   static void *operator new(size_t size);
 
@@ -116,6 +117,8 @@ private:
 class LiteralPatternComponent : public PatternComponent {
 public:
   LiteralPatternComponent(const char *text) : text(text) {}
+
+  virtual uint32_t CreateAccelerator(uint32_t v = 0) const;
 
   virtual bool Match(const char *p, PatternContext &context) const final;
 

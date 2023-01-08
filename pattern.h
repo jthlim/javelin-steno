@@ -1,6 +1,7 @@
 //---------------------------------------------------------------------------
 
 #pragma once
+#include <stdint.h>
 #include <stdlib.h>
 
 //---------------------------------------------------------------------------
@@ -45,11 +46,18 @@ public:
   char *Replace(char *text, const char *templ) const;
 
 private:
-  Pattern(PatternComponent *root) : root(root) {}
+  Pattern(PatternComponent *root, uint32_t accelerator)
+      : root(root), accelerator(accelerator) {}
+
   PatternComponent *root;
+
+  // This is a bit field of characters a-z that must be present in the text.
+  uint32_t accelerator;
 
   struct BuildContext;
   struct BuildResult;
+
+  bool EarlyReject(const char *text) const;
 
   static BuildResult ParseAlternate(BuildContext &c);
   static BuildResult ParseSequence(BuildContext &c);

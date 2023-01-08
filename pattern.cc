@@ -39,7 +39,7 @@ Pattern Pattern::Compile(const char *p) {
   assert(*context.p == '\0');
   captureStart->RemoveEpsilon();
 
-  return Pattern(captureStart);
+  return Pattern(captureStart, captureStart->CreateAccelerator());
 }
 
 //---------------------------------------------------------------------------
@@ -66,6 +66,7 @@ Pattern::BuildResult Pattern::ParseAlternate(BuildContext &c) {
     alternate->Add(result.head);
     result.tail->next = epsilon;
   }
+  alternate->next = epsilon;
 
   return BuildResult(alternate, epsilon);
 }
@@ -260,12 +261,34 @@ Pattern::BuildResult Pattern::ParseQuantifier(BuildContext &c,
 
 PatternMatch Pattern::Match(const char *text) const {
   struct PatternMatch result;
-  PatternContext context = {
-      .start = text,
-      .captureList = result.captures,
-  };
-  result.match = root->Match(text, context);
+
+  if (EarlyReject(text)) {
+    result.match = false;
+  } else {
+    PatternContext context = {
+        .start = text,
+        .captureList = result.captures,
+    };
+    result.match = root->Match(text, context);
+  }
   return result;
+}
+
+bool Pattern::EarlyReject(const char *text) const {
+  uint32_t v = accelerator;
+  if (v == 0) {
+    return false;
+  }
+
+  const char *p = text;
+  while (*p) {
+    int c = *p++;
+    if ('a' <= c && c <= 'z') {
+      v &= ~(1 << (c - 'a'));
+    }
+  }
+
+  return v != 0;
 }
 
 PatternMatch Pattern::Search(const char *text) const {

@@ -172,6 +172,10 @@ void StenoEngine::SendText(const uint8_t *p) {
 #include "dictionary/main_dictionary.h"
 #include "dictionary/map_dictionary.h"
 
+extern StenoOrthography testOrthography;
+extern StenoMapDictionaryDefinition testDictionaryDefinition;
+constexpr StenoMapDictionary testDictionary(testDictionaryDefinition);
+
 constexpr StenoMapDictionary mainDictionary(MainDictionary::definition);
 
 const StenoDictionary *const DICTIONARIES[] = {
@@ -259,12 +263,14 @@ TEST_BEGIN("Engine: Random spam") {
       &StenoJeffNumbersDictionary::instance,
       &StenoEmilySymbolsDictionary::instance,
       &mainDictionary,
+      // &testDictionary,
   };
 
   StenoDictionaryList dictionaryList(
       DICTIONARIES, sizeof(DICTIONARIES) / sizeof(*DICTIONARIES)); // NOLINT
 
   StenoCompiledOrthography orthography(StenoOrthography::emptyOrthography);
+  // StenoCompiledOrthography orthography(testOrthography);
   StenoEngine engine(dictionaryList, orthography);
 
   Key::DisableHistory();
