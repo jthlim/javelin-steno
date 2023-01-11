@@ -556,7 +556,7 @@ size_t StenoJeffPhrasingDictionary::CountNumberOfSpaces(const char *p) {
 #include "../unit_test.h"
 #include <stdio.h>
 
-void VerifyStroke(const char *stroke, const char *result) {
+static void VerifyStroke(const char *stroke, const char *result) {
   StenoStroke stenoStroke;
   stenoStroke.Set(stroke);
 
@@ -712,11 +712,11 @@ TEST_BEGIN("JeffPhrasing: Basic structures tests") {
   VerifyStroke("SWRA*EURB", "I still can't ask");
 
   VerifyStroke("SWRUFRB", "I just ask");
-  VerifyStroke("SWRAUFURB", "I can just ask");
+  VerifyStroke("SWRAUFRB", "I can just ask");
   VerifyStroke("SWRA*UFRB", "I just can't ask");
 
   VerifyStroke("SWREUFRB", "I never ask");
-  VerifyStroke("SWRAEUFURB", "I can never ask");
+  VerifyStroke("SWRAEUFRB", "I can never ask");
   VerifyStroke("SWRA*EUFRB", "I can't even ask");
 
   VerifyStroke("SWRA-G", "I can go");

@@ -58,10 +58,6 @@ struct TestFailure {
   }                                                                            \
   }
 
-#define VERIFY(actual, expected)                                               \
-  actual;                                                                      \
-  expected;
-
 #endif
 
 //---------------------------------------------------------------------------

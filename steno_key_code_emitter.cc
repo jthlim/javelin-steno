@@ -20,6 +20,7 @@ struct StenoKeyCodeEmitter::EmitterContext {
   bool isNumLockOn;
 
   static const uint8_t MASK_KEY_CODES[];
+  static const uint8_t HEX_KEY_CODES[];
   static const uint16_t ALT_HEX_KEY_CODES[];
   static const uint16_t KP_ALT_HEX_KEY_CODES[];
   static const uint16_t ASCII_KEY_CODES[];
@@ -52,12 +53,15 @@ struct StenoKeyCodeEmitter::EmitterContext {
   void EmitMacOsUnicodeHex(uint32_t unicode);
   void EmitWindowsAlt(uint32_t unicode);
   void RecurseEmitWindowsAlt(int alt);
+  void EmitIBus(uint32_t unicode);
+  void RecurseEmitIBus(uint32_t unicode);
+  static void EmitIBusDelay();
   void EmitWindowsHex(uint32_t unicode);
   void EmitUCS2AltHex(uint32_t unicode);
 };
 
 const char *const StenoKeyCodeEmitter::UNICODE_EMITTER_NAMES[] = {
-    "none", "macos_us", "macos_hex", "windows_alt", "windows_hex",
+    "none", "macos_us", "macos_hex", "windows_alt", "windows_hex", "linux_ibus",
 };
 
 const char *UnicodeModeName(UnicodeMode mode) {
@@ -84,6 +88,13 @@ bool StenoKeyCodeEmitter::SetUnicodeMode(const char *name) {
 const uint8_t StenoKeyCodeEmitter::EmitterContext::MASK_KEY_CODES[] = {
     KeyCode::L_CTRL, KeyCode::L_SHIFT, KeyCode::L_ALT, KeyCode::L_META,
     KeyCode::R_CTRL, KeyCode::R_SHIFT, KeyCode::R_ALT, KeyCode::R_META,
+};
+
+const uint8_t StenoKeyCodeEmitter::EmitterContext::HEX_KEY_CODES[] = {
+    KeyCode::_0, KeyCode::_1, KeyCode::_2, KeyCode::_3,
+    KeyCode::_4, KeyCode::_5, KeyCode::_6, KeyCode::_7,
+    KeyCode::_8, KeyCode::_9, KeyCode::A,  KeyCode::B,
+    KeyCode::C,  KeyCode::D,  KeyCode::E,  KeyCode::F,
 };
 
 #define M MODIFIER_L_ALT_FLAG
@@ -239,6 +250,10 @@ void StenoKeyCodeEmitter::EmitterContext::EmitNonAscii(uint32_t unicode) {
     EmitWindowsHex(unicode);
     break;
 
+  case UnicodeMode::LINUX_IBUS:
+    EmitIBus(unicode);
+    break;
+
   case UnicodeMode::NONE:
   default:
     // Can't emit this keycode..
@@ -269,6 +284,30 @@ void StenoKeyCodeEmitter::EmitterContext::EmitMacOsUnicodeHex(
     EmitUCS2AltHex(0xd800 | ((unicode >> 10) & 0x3ff));
     EmitUCS2AltHex(0xdc00 | (unicode & 0x3ff));
   }
+}
+
+void StenoKeyCodeEmitter::EmitterContext::EmitIBus(uint32_t unicode) {
+  EmitKeyCode(MODIFIER_L_CTRL_FLAG | MODIFIER_L_SHIFT_FLAG | KeyCode::U);
+  RecurseEmitIBus(unicode);
+  EmitKeyCode(KeyCode::ENTER);
+  EmitIBusDelay();
+  EmitIBusDelay();
+}
+
+void StenoKeyCodeEmitter::EmitterContext::EmitIBusDelay() {
+  for (int i = 0; i < 10; ++i) {
+    Key::Flush();
+  }
+}
+
+__attribute__((noinline)) void
+StenoKeyCodeEmitter::EmitterContext::RecurseEmitIBus(uint32_t code) {
+  uint32_t quotient = code / 16;
+  uint32_t remainder = code % 16;
+  if (quotient != 0) {
+    RecurseEmitIBus(quotient);
+  }
+  EmitKeyCode(HEX_KEY_CODES[remainder]);
 }
 
 void StenoKeyCodeEmitter::EmitterContext::EmitWindowsAlt(uint32_t unicode) {
@@ -338,6 +377,12 @@ StenoKeyCodeEmitter::EmitterContext::EmitKeyCode(uint32_t keyCode) {
 }
 
 void StenoKeyCodeEmitter::EmitterContext::PressModifiers(uint32_t modifiers) {
+  if (modifiers == 0) {
+    return;
+  }
+  if (emitterMode == UnicodeMode::LINUX_IBUS) {
+    EmitIBusDelay();
+  }
   while (modifiers != 0) {
     PressKey(MASK_KEY_CODES[__builtin_ctzl(modifiers) - MODIFIER_BIT_SHIFT]);
 
@@ -347,6 +392,12 @@ void StenoKeyCodeEmitter::EmitterContext::PressModifiers(uint32_t modifiers) {
 }
 
 void StenoKeyCodeEmitter::EmitterContext::ReleaseModifiers(uint32_t modifiers) {
+  if (modifiers == 0) {
+    return;
+  }
+  if (emitterMode == UnicodeMode::LINUX_IBUS) {
+    EmitIBusDelay();
+  }
   while (modifiers != 0) {
     ReleaseKey(MASK_KEY_CODES[__builtin_ctzl(modifiers) - MODIFIER_BIT_SHIFT]);
 

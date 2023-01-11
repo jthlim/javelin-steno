@@ -164,6 +164,8 @@ void Key::Press(uint8_t key) { PressRaw(TranslateKey(key)); }
 
 void Key::Release(uint8_t key) { ReleaseRaw(TranslateKey(key)); }
 
+__attribute__((weak)) void Key::Flush() {}
+
 uint8_t Key::TranslateKey(uint8_t key) {
   if (layoutTable == nullptr) {
     return key;

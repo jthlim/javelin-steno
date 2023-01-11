@@ -26,6 +26,47 @@ static_assert(sizeof(StenoUserDictionaryDescriptor) <= DESCRIPTOR_OFFSET,
 
 //---------------------------------------------------------------------------
 
+struct StrokeListParser {
+  StenoStroke strokes[StenoUserDictionary::MAX_STROKE_COUNT];
+  size_t length;
+  const char *failureOrEnd;
+
+  bool Set(const char *p);
+};
+
+bool StrokeListParser::Set(const char *p) {
+  length = 0;
+
+  for (;;) {
+    if (length >= StenoUserDictionary::MAX_STROKE_COUNT) {
+    }
+    const char *start = p;
+    while (*p != ' ' && *p != '\0' && *p != '/') {
+      ++p;
+    }
+
+    char *text = Str::DupN(start, p - start);
+    strokes[length].Set(text);
+    free(text);
+
+    if (strokes[length].IsEmpty()) {
+      failureOrEnd = start;
+      return false;
+    }
+    ++length;
+    int last = *p;
+    if (last != '\0') {
+      ++p;
+    }
+    if (last != '/') {
+      failureOrEnd = p;
+      return true;
+    }
+  }
+}
+
+//---------------------------------------------------------------------------
+
 struct StenoUserDictionaryEntry {
   uint32_t strokeLength;
   StenoStroke strokes[1];
@@ -447,6 +488,54 @@ void StenoUserDictionary::Reset_Binding(void *context,
                                         const char *commandLine) {
   StenoUserDictionary *userDictionary = (StenoUserDictionary *)context;
   userDictionary->Reset();
+  Console::Write("OK\n\n", 4);
+}
+
+void StenoUserDictionary::AddEntry_Binding(void *context,
+                                           const char *commandLine) {
+  const char *strokeStart = strchr(commandLine, ' ');
+  if (!strokeStart) {
+    Console::Printf("ERR No stroke specified\n\n");
+    return;
+  }
+
+  StrokeListParser parser;
+  if (!parser.Set(strokeStart + 1)) {
+    Console::Printf("ERR Cannot parse stroke near %s\n\n", parser.failureOrEnd);
+    return;
+  }
+
+  const char *translationStart = parser.failureOrEnd;
+  if (*translationStart == '\0') {
+    Console::Printf("ERR No translation specified\n\n");
+    return;
+  }
+
+  StenoUserDictionary *userDictionary = (StenoUserDictionary *)context;
+  if (!userDictionary->Add(parser.strokes, parser.length, translationStart)) {
+    Console::Printf("ERR Unable to write to user dictionary\n\n");
+    return;
+  }
+
+  Console::Write("OK\n\n", 4);
+}
+
+void StenoUserDictionary::RemoveEntry_Binding(void *context,
+                                              const char *commandLine) {
+  const char *strokeStart = strchr(commandLine, ' ');
+  if (!strokeStart) {
+    Console::Printf("ERR No stroke specified\n\n");
+    return;
+  }
+
+  StrokeListParser parser;
+  if (!parser.Set(strokeStart + 1)) {
+    Console::Printf("ERR Cannot parse stroke near %s\n\n", parser.failureOrEnd);
+    return;
+  }
+
+  StenoUserDictionary *userDictionary = (StenoUserDictionary *)context;
+  userDictionary->Remove(parser.strokes, parser.length);
   Console::Write("OK\n\n", 4);
 }
 

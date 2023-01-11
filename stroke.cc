@@ -7,209 +7,108 @@
 
 //---------------------------------------------------------------------------
 
-// Only for use in tests.
-#ifdef RUN_TESTS
+bool StenoStroke::ProcessCharacter(int c, const char *symbols,
+                                   const uint32_t *masks) {
+  const char *p = strchr(symbols, c);
+  if (!p) {
+    return false;
+  }
+
+  keyState |= masks[p - symbols];
+  return true;
+}
+
 void StenoStroke::Set(const char *string) {
+  // cspell: disable
+  static const char LEFT_SYMBOLS[] = "#1234506789STKPWHRAO*-EU";
+  static const char RIGHT_SYMBOLS[] = "6789FRPBLGTSDZ";
+  // cspell: enable
+
+  static const uint32_t LEFT_MASKS[] = {
+      StrokeMask::NUM,
+      StrokeMask::NUM | StrokeMask::SL,
+      StrokeMask::NUM | StrokeMask::TL,
+      StrokeMask::NUM | StrokeMask::PL,
+      StrokeMask::NUM | StrokeMask::HL,
+      StrokeMask::NUM | StrokeMask::A,
+      StrokeMask::NUM | StrokeMask::O,
+      StrokeMask::NUM | StrokeMask::FR,
+      StrokeMask::NUM | StrokeMask::PR,
+      StrokeMask::NUM | StrokeMask::LR,
+      StrokeMask::NUM | StrokeMask::TR,
+      StrokeMask::SL,
+      StrokeMask::TL,
+      StrokeMask::KL,
+      StrokeMask::PL,
+      StrokeMask::WL,
+      StrokeMask::HL,
+      StrokeMask::RL,
+      StrokeMask::A,
+      StrokeMask::O,
+      StrokeMask::STAR,
+      0,
+      StrokeMask::E,
+      StrokeMask::U,
+  };
+
+  static const uint32_t RIGHT_MASKS[] = {
+      StrokeMask::NUM | StrokeMask::FR,
+      StrokeMask::NUM | StrokeMask::PR,
+      StrokeMask::NUM | StrokeMask::LR,
+      StrokeMask::NUM | StrokeMask::TR,
+      StrokeMask::FR,
+      StrokeMask::RR,
+      StrokeMask::PR,
+      StrokeMask::BR,
+      StrokeMask::LR,
+      StrokeMask::GR,
+      StrokeMask::TR,
+      StrokeMask::SR,
+      StrokeMask::DR,
+      StrokeMask::ZR,
+  };
+
   keyState = 0;
   const char *rightStart = RightStart(string);
   const char *p = string;
 
   while (p < rightStart) {
-    switch (*p) {
-    case '#':
-      keyState |= StrokeMask::NUM;
-      break;
-
-    case '1':
-      keyState |= StrokeMask::NUM | StrokeMask::SL;
-      break;
-
-    case '2':
-      keyState |= StrokeMask::NUM | StrokeMask::TL;
-      break;
-
-    case '3':
-      keyState |= StrokeMask::NUM | StrokeMask::PL;
-      break;
-
-    case '4':
-      keyState |= StrokeMask::NUM | StrokeMask::HL;
-      break;
-
-    case '5':
-      keyState |= StrokeMask::NUM | StrokeMask::A;
-      break;
-
-    case '0':
-      keyState |= StrokeMask::NUM | StrokeMask::O;
-      break;
-
-    case '6':
-      keyState |= StrokeMask::NUM | StrokeMask::FR;
-      break;
-
-    case '7':
-      keyState |= StrokeMask::NUM | StrokeMask::PR;
-      break;
-
-    case '8':
-      keyState |= StrokeMask::NUM | StrokeMask::LR;
-      break;
-
-    case '9':
-      keyState |= StrokeMask::NUM | StrokeMask::TR;
-      break;
-
-    case 'S':
-      keyState |= StrokeMask::SL;
-      break;
-
-    case 'T':
-      keyState |= StrokeMask::TL;
-      break;
-
-    case 'K':
-      keyState |= StrokeMask::KL;
-      break;
-
-    case 'P':
-      keyState |= StrokeMask::PL;
-      break;
-
-    case 'W':
-      keyState |= StrokeMask::WL;
-      break;
-
-    case 'H':
-      keyState |= StrokeMask::HL;
-      break;
-
-    case 'R':
-      keyState |= StrokeMask::RL;
-      break;
-
-    case 'A':
-      keyState |= StrokeMask::A;
-      break;
-
-    case 'O':
-      keyState |= StrokeMask::O;
-      break;
-
-    case '*':
-      keyState |= StrokeMask::STAR;
-      break;
-
-    case '-':
-      break;
-
-    case 'E':
-      keyState |= StrokeMask::E;
-      break;
-
-    case 'U':
-      keyState |= StrokeMask::U;
-      break;
+    if (!ProcessCharacter(*p++, LEFT_SYMBOLS, LEFT_MASKS)) {
+      keyState = 0;
+      return;
     }
-    p++;
   }
 
   while (*p) {
-    switch (*p) {
-    case '6':
-      keyState |= StrokeMask::NUM | StrokeMask::FR;
-      break;
-
-    case '7':
-      keyState |= StrokeMask::NUM | StrokeMask::PR;
-      break;
-
-    case '8':
-      keyState |= StrokeMask::NUM | StrokeMask::LR;
-      break;
-
-    case '9':
-      keyState |= StrokeMask::NUM | StrokeMask::TR;
-      break;
-
-    case 'F':
-      keyState |= StrokeMask::FR;
-      break;
-
-    case 'R':
-      keyState |= StrokeMask::RR;
-      break;
-
-    case 'P':
-      keyState |= StrokeMask::PR;
-      break;
-
-    case 'B':
-      keyState |= StrokeMask::BR;
-      break;
-
-    case 'L':
-      keyState |= StrokeMask::LR;
-      break;
-
-    case 'G':
-      keyState |= StrokeMask::GR;
-      break;
-
-    case 'T':
-      keyState |= StrokeMask::TR;
-      break;
-
-    case 'S':
-      keyState |= StrokeMask::SR;
-      break;
-
-    case 'D':
-      keyState |= StrokeMask::DR;
-      break;
-
-    case 'Z':
-      keyState |= StrokeMask::ZR;
-      break;
+    if (!ProcessCharacter(*p++, RIGHT_SYMBOLS, RIGHT_MASKS)) {
+      keyState = 0;
+      return;
     }
-    p++;
   }
 }
 
 const char *StenoStroke::RightStart(const char *p) {
+  // cspell: disable
+  static const char MIDDLE_SYMBOLS[] = "AEOU-*";
+  static const char RIGHT_ONLY_SYMBOLS[] = "FBLGDZ";
+  // cspell: enable
+
   bool foundMiddle = false;
   for (;;) {
-    switch (*p) {
-    case '\0':
+    if (!*p) {
       return p;
+    }
 
-    case 'A':
-    case 'E':
-    case 'O':
-    case 'U':
-    case '-':
-    case '*':
+    if (strchr(MIDDLE_SYMBOLS, *p)) {
       foundMiddle = true;
-      break;
-
-    case 'F':
-    case 'B':
-    case 'L':
-    case 'G':
-    case 'D':
-    case 'Z':
+    } else if (strchr(RIGHT_ONLY_SYMBOLS, *p)) {
       return p;
-
-    default:
-      if (foundMiddle) {
-        return p;
-      }
-      break;
+    } else if (foundMiddle) {
+      return p;
     }
     ++p;
   }
 }
-#endif
 
 char *StenoStroke::ToString(char *buffer) const {
   // cspell: disable-next-line

@@ -23,16 +23,22 @@ UnitTest::UnitTest(void (*function)(), const char *name, const char *filename,
 }
 
 void UnitTest::main() {
+  size_t passedCount = 0;
+  size_t failedCount = 0;
   for (const UnitTest *test : GetTests()) {
     try {
       Key::history.clear();
       (*test->function)();
+      passedCount++;
       printf("[PASSED] %s\n", test->name);
     } catch (...) {
       printf("[FAILED] %s\n", test->name);
       printf("%s:%d: \n", test->filename, test->lineNumber);
+      failedCount++;
     }
   }
+  printf("\nFinished %zu tests, %zu passed, %zu failed\n",
+         passedCount + failedCount, passedCount, failedCount);
 }
 
 __attribute__((weak)) int main(int argc, const char **argv) {

@@ -14,6 +14,7 @@ enum class UnicodeMode : uint8_t {
   MACOS_UNICODE_HEX,
   WINDOWS_ALT,
   WINDOWS_HEX,
+  LINUX_IBUS,
   COUNT,
 };
 

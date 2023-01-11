@@ -224,6 +224,7 @@ public:
 
   static void Press(uint8_t key);
   static void Release(uint8_t key);
+  static void Flush();
 
   static bool IsNumLockOn();
   static void SetIsNumLockOn(bool value);

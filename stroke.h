@@ -123,6 +123,8 @@ private:
   // Returns pointer to the first character after vowels, '*' or '-'.
   // Points to a null if it doesn't exist.
   static const char *RightStart(const char *p);
+
+  bool ProcessCharacter(int c, const char *symbols, const uint32_t *masks);
 };
 
 static_assert(sizeof(StenoStroke) == 4);

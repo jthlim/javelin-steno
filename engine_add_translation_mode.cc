@@ -13,8 +13,6 @@ static const char ADD_TRANSLATION_PROMPT[] = " >>> Add/Delete Translation - "
 
 static const char TRANSLATION_PROMPT[] = "; Translation: ";
 
-const size_t MAX_USER_DICTIONARY_STROKE_COUNT = 10;
-
 //---------------------------------------------------------------------------
 
 void StenoEngine::InitiateAddTranslationMode() {
@@ -57,7 +55,8 @@ void StenoEngine::ProcessAddTranslationModeStroke(StenoStroke stroke) {
       return;
     }
   } else if (newlineIndex == 0) {
-    if (addTranslationHistory.GetCount() > MAX_USER_DICTIONARY_STROKE_COUNT) {
+    if (addTranslationHistory.GetCount() >
+        StenoUserDictionary::MAX_STROKE_COUNT) {
       return;
     }
   } else if (newlineIndex + 1 == addTranslationHistory.GetCount()) {
