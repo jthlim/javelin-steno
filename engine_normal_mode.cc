@@ -19,17 +19,14 @@ struct StenoEngine::UpdateNormalModeTextBufferThreadData {
   StenoSegmentList segmentList;
   size_t conversionLimit;
 
-  static void EntryPoint(void *data);
+  void Run() {
+    engine->UpdateNormalModeTextBuffer(sourceStrokeCount, *conversionBuffer,
+                                       conversionLimit, segmentList);
+  }
+  static void EntryPoint(void *data) {
+    ((UpdateNormalModeTextBufferThreadData *)data)->Run();
+  }
 };
-
-void StenoEngine::UpdateNormalModeTextBufferThreadData::EntryPoint(void *data) {
-  UpdateNormalModeTextBufferThreadData *threadData =
-      (UpdateNormalModeTextBufferThreadData *)data;
-
-  threadData->engine->UpdateNormalModeTextBuffer(
-      threadData->sourceStrokeCount, *threadData->conversionBuffer,
-      threadData->conversionLimit, threadData->segmentList);
-}
 
 #endif
 
@@ -172,22 +169,15 @@ void StenoEngine::UpdateNormalModeTextBuffer(size_t sourceStrokeCount,
 //---------------------------------------------------------------------------
 
 void StenoEngine::PrintPaperTapeUndo(size_t undoCount) {
-  static const char ASTERISKS[] = "********";
-
   if (!IsPaperTapeEnabled()) {
     return;
   }
 
   char buffer[32];
   UNDO_STROKE.ToWideString(buffer);
-  Console::Printf("PT | %s | ", buffer);
-
-  while (undoCount > 8) {
-    Console::Write(ASTERISKS, 8);
-    undoCount -= 8;
-  }
-
-  Console::Printf("%s\n\n", ASTERISKS + (8 - undoCount));
+  Console::Printf(
+      "EV {\"event\":\"paper_tape\",\"data\":\"%s\",\"undo\":%zu}\n\n", buffer,
+      undoCount);
 }
 
 void StenoEngine::PrintPaperTape(StenoStroke stroke,
@@ -199,7 +189,7 @@ void StenoEngine::PrintPaperTape(StenoStroke stroke,
 
   char buffer[256];
   stroke.ToWideString(buffer);
-  Console::Printf("PT | %s | ", buffer);
+  Console::Printf("EV {\"event\":\"paper_tape\",\"data\":\"%s\"", buffer);
 
   size_t commonIndex = 0;
   while (commonIndex < previousSegmentList.GetCount() &&
@@ -209,8 +199,9 @@ void StenoEngine::PrintPaperTape(StenoStroke stroke,
     ++commonIndex;
   }
 
-  for (size_t i = commonIndex; i < previousSegmentList.GetCount(); ++i) {
-    Console::Write("*", 1);
+  size_t undoCount = previousSegmentList.GetCount() - commonIndex;
+  if (undoCount > 0) {
+    Console::Printf(",\"undo\":%zu", undoCount);
   }
 
   StenoSegmentList newSegments;
@@ -218,6 +209,7 @@ void StenoEngine::PrintPaperTape(StenoStroke stroke,
     newSegments.Add(nextSegmentList[i]);
   }
 
+  Console::Printf(",\"text\":\"");
   StenoTokenizer *tokenizer = newSegments.CreateTokenizer();
   bool isFirstToken = true;
   while (tokenizer->HasMore()) {
@@ -226,13 +218,12 @@ void StenoEngine::PrintPaperTape(StenoStroke stroke,
     } else {
       Console::Write(" ", 1);
     }
-    char *end = Str::WriteJson(buffer, tokenizer->GetNext().text);
-    Console::Write(buffer, end - buffer);
+    Console::WriteAsJson(tokenizer->GetNext().text, buffer);
   }
   delete tokenizer;
 
   newSegments.Reset();
-  Console::Write("\n\n", 3);
+  Console::Write("\"}\n\n", 4);
 }
 
 void StenoEngine::PrintSuggestions(const StenoSegmentList &previousSegmentList,
@@ -288,41 +279,23 @@ void StenoEngine::PrintSuggestions(const StenoSegmentList &previousSegmentList,
 
 void StenoEngine::PrintSuggestion(const char *p, size_t arrowPrefixCount,
                                   char *buffer, size_t strokeThreshold) {
-  static const char ARROWS[] = ">>>>>>>>>>>>";
-
   StenoReverseDictionaryLookup result(strokeThreshold, p);
   ReverseLookup(result);
   if (result.resultCount == 0) {
     return;
   }
 
-  if (IsSuggestionsEnabled()) {
-    Console::Printf("SG  %-20s |", p);
-    size_t length = result.results[0].length;
-    for (size_t i = 0; i < result.resultCount; ++i) {
-      const StenoReverseDictionaryResult &lookup = result.results[i];
-      if (lookup.length != length) {
-        break;
-      }
-      StenoStroke::ToString(lookup.strokes, lookup.length, buffer);
-      Console::Printf(" %s", buffer);
-    }
-    Console::Write("\n\n", 3);
+  Console::Printf(
+      "EV {\"event\":\"suggestion\",\"combine_count\":%zu,\"text\":\"",
+      arrowPrefixCount);
+  Console::WriteAsJson(p, buffer);
+  Console::Printf("\",\"outlines\":[");
+  for (size_t i = 0; i < result.resultCount; ++i) {
+    const StenoReverseDictionaryResult &lookup = result.results[i];
+    StenoStroke::ToString(lookup.strokes, lookup.length, buffer);
+    Console::Printf(i == 0 ? "\"%s\"" : ",\"%s\"", buffer);
   }
-
-  if (IsPaperTapeEnabled()) {
-    StenoStroke().ToWideString(buffer);
-    Console::Printf("PT   %s   %s", buffer,
-                    ARROWS + sizeof(ARROWS) - 1 - arrowPrefixCount);
-
-    for (size_t i = 0; i < result.resultCount; ++i) {
-      const StenoReverseDictionaryResult &lookup = result.results[i];
-
-      StenoStroke::ToString(lookup.strokes, lookup.length, buffer);
-      Console::Printf(" %s", buffer);
-    }
-    Console::Write("\n\n", 3);
-  }
+  Console::Printf("]}\n\n");
 }
 
 char *StenoEngine::PrintSegmentSuggestion(size_t wordCount,

@@ -1,6 +1,7 @@
 //---------------------------------------------------------------------------
 
 #include "map_dictionary.h"
+#include "../bit.h"
 #include "../console.h"
 #include "../str.h"
 #include "../uint24.h"
@@ -11,7 +12,7 @@
 size_t StenoHashMapEntryBlock::PopCount() const {
   size_t result = 0;
   for (size_t i = 0; i < sizeof(masks) / sizeof(*masks); ++i) {
-    result += __builtin_popcount(masks[i]);
+    result += Bit<sizeof(uint32_t)>::PopCount(masks[i]);
   }
   return result;
 }
@@ -61,12 +62,26 @@ size_t StenoMapDictionaryStrokesDefinition::GetOffset(size_t index) const {
   }
 
   // mask << 1 prevents counting the current bit.
-  size_t result = __builtin_popcount(mask << 1) + block.baseOffset;
+  size_t result = Bit<sizeof(uint32_t)>::PopCount(mask << 1) + block.baseOffset;
   for (size_t i = 0; i < maskIndex; ++i) {
-    result += __builtin_popcount(block.masks[i]);
+    result += Bit<sizeof(uint32_t)>::PopCount(block.masks[i]);
   }
 
   return result;
+}
+
+bool StenoMapDictionaryStrokesDefinition::HasEntry(size_t index) const {
+  size_t blockIndex = index / 128;
+  size_t blockBitIndex = index % 128;
+  size_t maskIndex = blockBitIndex / 32;
+  size_t bitIndex = blockBitIndex % 32;
+
+  const StenoHashMapEntryBlock &block = offsets[blockIndex];
+
+  // Take advantage of sign bit to test presence.
+  uint32_t mask = block.masks[maskIndex];
+  mask <<= (31 - bitIndex);
+  return (mask & 0x80000000) != 0;
 }
 
 size_t StenoMapDictionaryStrokesDefinition::GetEntryCount() const {
@@ -123,16 +138,17 @@ StenoMapDictionary::Lookup(const StenoDictionaryLookup &lookup) const {
     return StenoDictionaryLookupResult::CreateInvalid();
   }
 
-  size_t entryIndex = lookup.hash;
+  size_t entryIndex = lookup.hash & (strokesDefinition.hashMapSize - 1);
+  const size_t offset = strokesDefinition.GetOffset(entryIndex);
+  if (offset == (size_t)-1) {
+    return StenoDictionaryLookupResult::CreateInvalid();
+  }
+
+  // Size of StenoMapDictionaryDataEntry for this length.
+  const size_t entrySize = 3 + 3 * lookup.length;
+  size_t dataIndex = offset * entrySize;
+
   for (;;) {
-    entryIndex = entryIndex & (strokesDefinition.hashMapSize - 1);
-
-    size_t offset = strokesDefinition.GetOffset(entryIndex);
-    if (offset == (size_t)-1) {
-      return StenoDictionaryLookupResult::CreateInvalid();
-    }
-
-    size_t dataIndex = 3 * offset * (1 + lookup.length);
     const StenoMapDictionaryDataEntry &entry =
         (const StenoMapDictionaryDataEntry &)strokesDefinition.data[dataIndex];
 
@@ -140,10 +156,18 @@ StenoMapDictionary::Lookup(const StenoDictionaryLookup &lookup) const {
       const uint8_t *text = definition.textBlock + entry.textOffset.ToUint32();
       return StenoDictionaryLookupResult::CreateStaticString(text);
     }
-    ++entryIndex;
+
+    dataIndex += entrySize;
+    if (++entryIndex >= strokesDefinition.hashMapSize) {
+      entryIndex = 0;
+      dataIndex = 0;
+    }
+
+    if (!strokesDefinition.HasEntry(entryIndex)) {
+      return StenoDictionaryLookupResult::CreateInvalid();
+    }
   }
 }
-
 const StenoDictionary *StenoMapDictionary::GetLookupProvider(
     const StenoDictionaryLookup &lookup) const {
   const StenoMapDictionaryStrokesDefinition &strokesDefinition =
@@ -152,23 +176,32 @@ const StenoDictionary *StenoMapDictionary::GetLookupProvider(
     return nullptr;
   }
 
-  size_t entryIndex = lookup.hash;
+  size_t entryIndex = lookup.hash & (strokesDefinition.hashMapSize - 1);
+  const size_t offset = strokesDefinition.GetOffset(entryIndex);
+  if (offset == (size_t)-1) {
+    return nullptr;
+  }
+
+  const size_t entrySize = 3 + 3 * lookup.length;
+  size_t dataIndex = offset * entrySize;
+
   for (;;) {
-    entryIndex = entryIndex & (strokesDefinition.hashMapSize - 1);
-
-    size_t offset = strokesDefinition.GetOffset(entryIndex);
-    if (offset == (size_t)-1) {
-      return nullptr;
-    }
-
-    size_t dataIndex = 3 * offset * (1 + lookup.length);
     const StenoMapDictionaryDataEntry &entry =
         (const StenoMapDictionaryDataEntry &)strokesDefinition.data[dataIndex];
 
     if (entry.Equals(lookup.strokes, lookup.length)) {
       return this;
     }
-    ++entryIndex;
+
+    dataIndex += entrySize;
+    if (++entryIndex >= strokesDefinition.hashMapSize) {
+      entryIndex = 0;
+      dataIndex = 0;
+    }
+
+    if (!strokesDefinition.HasEntry(entryIndex)) {
+      return nullptr;
+    }
   }
 }
 

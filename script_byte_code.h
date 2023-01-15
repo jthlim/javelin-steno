@@ -91,6 +91,9 @@ enum class StenoScriptOperator : uint8_t {
   BITWISE_XOR,              // 0xf
   AND,                      // 0x10
   OR,                       // 0x11
+  SHIFT_LEFT,               // 0x12
+  ARITHMETIC_SHIFT_RIGHT,   // 0x13
+  LOGICAL_SHIFT_RIGHT,      // 0x14
 };
 
 struct StenoScriptByteCodeData {

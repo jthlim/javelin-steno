@@ -50,6 +50,7 @@ struct StenoMapDictionaryStrokesDefinition {
 
   bool ContainsData(const void *p) const { return data <= p && p < offsets; }
   size_t GetOffset(size_t index) const;
+  bool HasEntry(size_t index) const;
   size_t GetEntryCount() const;
   bool PrintDictionary(bool hasData, size_t strokeLength, char *buffer,
                        const uint8_t *textBlock) const;

@@ -14,38 +14,53 @@ class StenoDictionary;
 
 // A class to wrap dictionary lookups, avoiding memory allocations in most
 // situations.
-struct StenoDictionaryLookupResult {
-  bool IsValid() const { return GetTextMethod != nullptr; }
+class StenoDictionaryLookupResult {
+private:
+  struct StenoDictionaryLookupResultVtbl {
+    const char *(*getTextMethod)(const StenoDictionaryLookupResult *);
+    void (*destroyMethod)(StenoDictionaryLookupResult *);
+  };
 
-  const char *GetText() const { return GetTextMethod(this); }
-  void Destroy() {
-    if (DestroyMethod != nullptr) {
-      DestroyMethod(this);
-    }
-  }
+  static const StenoDictionaryLookupResultVtbl invalidVtbl;
+  static const StenoDictionaryLookupResultVtbl staticVtbl;
+  static const StenoDictionaryLookupResultVtbl dynamicVtbl;
 
-  const char *(*GetTextMethod)(const StenoDictionaryLookupResult *);
-  void (*DestroyMethod)(StenoDictionaryLookupResult *);
+public:
+  bool IsValid() const { return vtbl->getTextMethod != nullptr; }
+
+  const char *GetText() const { return vtbl->getTextMethod(this); }
+  void Destroy() { vtbl->destroyMethod(this); }
+
+  const StenoDictionaryLookupResultVtbl *vtbl;
   const void *context;
 
   static StenoDictionaryLookupResult CreateInvalid() {
-    StenoDictionaryLookupResult result = {
-        .GetTextMethod = nullptr,
-        .DestroyMethod = nullptr,
-    };
+    StenoDictionaryLookupResult result;
+    result.vtbl = &invalidVtbl;
     return result;
   }
 
   static StenoDictionaryLookupResult CreateStaticString(const uint8_t *p) {
     return CreateStaticString((const char *)p);
   }
-  static StenoDictionaryLookupResult CreateStaticString(const char *p);
+
+  static StenoDictionaryLookupResult CreateStaticString(const char *p) {
+    StenoDictionaryLookupResult result;
+    result.vtbl = &staticVtbl;
+    result.context = p;
+    return result;
+  }
 
   // string will be free() when the Lookup is destroyed.
   static StenoDictionaryLookupResult CreateDynamicString(const uint8_t *p) {
     return CreateDynamicString((const char *)p);
   }
-  static StenoDictionaryLookupResult CreateDynamicString(const char *p);
+  static StenoDictionaryLookupResult CreateDynamicString(const char *p) {
+    StenoDictionaryLookupResult result;
+    result.vtbl = &dynamicVtbl;
+    result.context = p;
+    return result;
+  }
 };
 
 //---------------------------------------------------------------------------

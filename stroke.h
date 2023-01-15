@@ -1,8 +1,7 @@
 //---------------------------------------------------------------------------
 
 #pragma once
-#include <stdint.h>
-#include <stdlib.h>
+#include "bit.h"
 
 //---------------------------------------------------------------------------
 
@@ -109,7 +108,9 @@ public:
 
   uint32_t GetKeyState() const { return keyState; }
 
-  uint32_t PopCount() const { return __builtin_popcount(keyState); }
+  uint32_t PopCount() const {
+    return Bit<sizeof(keyState)>::PopCount(keyState);
+  }
   uint32_t Hash() const { return StenoStroke::Hash(this, 1); }
 
   static uint32_t PopCount(const StenoStroke *strokes, size_t length);

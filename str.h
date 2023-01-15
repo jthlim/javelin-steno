@@ -12,6 +12,8 @@ public:
   static bool IsJoinPrevious(const char *p);
   static bool ContainsKeyCode(const char *p);
 
+  static char *Join(const char *p, ...);
+
   // Returns an allocated string.
   static char *Asprintf(const char *p, ...) __printflike(1, 2);
 

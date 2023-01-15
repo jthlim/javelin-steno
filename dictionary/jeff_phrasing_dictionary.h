@@ -6,6 +6,8 @@
 
 //---------------------------------------------------------------------------
 
+struct JeffPhrasingReverseHashMapEntry;
+
 class StenoJeffPhrasingDictionary final : public StenoDictionary {
 public:
   constexpr StenoJeffPhrasingDictionary() {}
@@ -33,6 +35,11 @@ private:
   void RecurseCheckReverseLookup(ReverseLookupContext &context, const char *p,
                                  StenoStroke stroke, uint32_t hash,
                                  uint8_t componentMask, uint8_t modeMask) const;
+
+  void ProcessEntries(const JeffPhrasingReverseHashMapEntry *entry,
+                      uint32_t wordHash, ReverseLookupContext &context,
+                      const char *p, StenoStroke stroke, uint32_t hash,
+                      uint32_t componentMask, uint32_t modeMask) const;
 };
 
 //---------------------------------------------------------------------------

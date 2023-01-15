@@ -245,8 +245,8 @@ StenoEmilySymbolsDictionary::Lookup(const StenoDictionaryLookup &lookup) const {
   const char *r1 = (c & REPEAT_EXTRA_1).IsNotEmpty() ? text : "";
   const char *r2 = (c & REPEAT_EXTRA_2).IsNotEmpty() ? text : "";
 
-  return StenoDictionaryLookupResult::CreateDynamicString(Str::Asprintf(
-      "%s%s%s%s%s%s%s", leftSpace, text, r1, r2, r2, rightSpace, capitalize));
+  return StenoDictionaryLookupResult::CreateDynamicString(
+      Str::Join(leftSpace, text, r1, r2, r2, rightSpace, capitalize, nullptr));
 }
 
 const StenoDictionary *StenoEmilySymbolsDictionary::GetLookupProvider(

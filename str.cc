@@ -26,6 +26,39 @@ bool Str::IsJoinPrevious(const char *p) {
 
 bool Str::ContainsKeyCode(const char *p) { return strstr(p, "{#") != nullptr; }
 
+char *Str::Join(const char *p, ...) {
+  va_list v;
+  va_start(v, p);
+
+  char *result = (char *)malloc(64);
+  char *d = result;
+  char *guard = result + 64;
+
+  do {
+    while (*p) {
+      *d++ = *p++;
+      if (d == guard) {
+        // Expand the buffer.
+        size_t length = guard - result;
+        size_t newLength = length * 2;
+        char *newResult = (char *)malloc(newLength);
+        memcpy(newResult, result, length);
+        free(result);
+        result = newResult;
+        guard = result + newLength;
+        d = result + length;
+      }
+    }
+
+    p = va_arg(v, const char *);
+  } while (p);
+  *d++ = '\0';
+
+  va_end(v);
+
+  return result;
+}
+
 char *Str::Asprintf(const char *p, ...) {
   va_list v;
   va_start(v, p);

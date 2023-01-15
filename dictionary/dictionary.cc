@@ -14,11 +14,29 @@ static const char *ReturnContextAsString(const StenoDictionaryLookupResult *p) {
   return (const char *)p->context;
 }
 
-static void NoOp(StenoDictionaryLookupResult *) {}
-
 static void FreeString(StenoDictionaryLookupResult *p) {
   free((void *)p->context);
 }
+
+static void Nop(StenoDictionaryLookupResult *) {}
+
+const StenoDictionaryLookupResult::StenoDictionaryLookupResultVtbl
+    StenoDictionaryLookupResult::invalidVtbl = {
+        .getTextMethod = nullptr,
+        .destroyMethod = Nop,
+};
+
+const StenoDictionaryLookupResult::StenoDictionaryLookupResultVtbl
+    StenoDictionaryLookupResult::staticVtbl = {
+        .getTextMethod = ReturnContextAsString,
+        .destroyMethod = Nop,
+};
+
+const StenoDictionaryLookupResult::StenoDictionaryLookupResultVtbl
+    StenoDictionaryLookupResult::dynamicVtbl = {
+        .getTextMethod = ReturnContextAsString,
+        .destroyMethod = FreeString,
+};
 
 //---------------------------------------------------------------------------
 
@@ -61,29 +79,6 @@ bool StenoReverseDictionaryLookup::HasResult(const StenoStroke *c,
   }
 
   return false;
-}
-
-//---------------------------------------------------------------------------
-
-StenoDictionaryLookupResult
-StenoDictionaryLookupResult::CreateStaticString(const char *p) {
-  StenoDictionaryLookupResult result = {
-      .GetTextMethod = ReturnContextAsString,
-      .DestroyMethod = NoOp,
-      .context = p,
-  };
-  return result;
-}
-
-// string will be free() when the Lookup is destroyed.
-StenoDictionaryLookupResult
-StenoDictionaryLookupResult::CreateDynamicString(const char *p) {
-  StenoDictionaryLookupResult result = {
-      .GetTextMethod = ReturnContextAsString,
-      .DestroyMethod = FreeString,
-      .context = p,
-  };
-  return result;
 }
 
 //---------------------------------------------------------------------------

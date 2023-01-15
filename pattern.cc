@@ -265,7 +265,17 @@ PatternMatch Pattern::Match(const char *text) const {
   if (EarlyReject(text)) {
     result.match = false;
   } else {
-    memset(result.captures, 0, sizeof(result.captures));
+    // This code is in the hot path.
+    // Expand this to avoid calls to __wrap_memset on rp2040.
+    result.captures[0] = nullptr;
+    result.captures[1] = nullptr;
+    result.captures[2] = nullptr;
+    result.captures[3] = nullptr;
+    result.captures[4] = nullptr;
+    result.captures[5] = nullptr;
+    result.captures[6] = nullptr;
+    result.captures[7] = nullptr;
+
     PatternContext context = {
         .start = text,
         .captureList = result.captures,
@@ -277,16 +287,19 @@ PatternMatch Pattern::Match(const char *text) const {
 
 bool Pattern::EarlyReject(const char *text) const {
   uint32_t v = accelerator;
-  if (v == 0) {
-    return false;
-  }
 
   const char *p = text;
   while (*p) {
     int c = *p++;
+#if JAVELIN_ASSEMBLER_THUMB2
+    // On arm, shifting by more than the width results in 0.
+    v &= ~(1 << (c - 'a'));
+#else
+    // On x86, shifting only uses the lowest bits.
     if ('a' <= c && c <= 'z') {
       v &= ~(1 << (c - 'a'));
     }
+#endif
   }
 
   return v != 0;
@@ -314,7 +327,7 @@ char *Pattern::Replace(char *text, const char *templ) const {
       Str::DupN(match.captures[1], text + strlen(text) - match.captures[1]);
   char *replacement = match.Replace(templ);
 
-  char *result = Str::Asprintf("%s%s%s", prefix, replacement, suffix);
+  char *result = Str::Join(prefix, replacement, suffix, nullptr);
   free(prefix);
   free(suffix);
   free(replacement);

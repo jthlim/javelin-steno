@@ -81,7 +81,7 @@ StenoJeffNumbersDictionary::Lookup(const StenoDictionaryLookup &lookup) const {
 
     StenoStroke control = GetDigits(scratch, strokes[i]);
     if (result) {
-      char *updated = Str::Asprintf("%s%s", result, scratch);
+      char *updated = Str::Join(result, scratch, nullptr);
       free(result);
       result = updated;
     } else {
@@ -169,7 +169,7 @@ StenoJeffNumbersDictionary::Lookup(const StenoDictionaryLookup &lookup) const {
         suffix = (control & StrokeMask::STAR).IsNotEmpty() ? " p.m." : " a.m.";
       }
 
-      char *updated = Str::Asprintf("%s%s%s", result, minutes, suffix);
+      char *updated = Str::Join(result, minutes, suffix, nullptr);
       free(result);
       result = updated;
       control &=
@@ -512,13 +512,12 @@ char *ToWords(char *digits) {
     char *updatedResult;
     if (digitValues[0] != 0) {
       if (twoDigitValue == 0) {
-        updatedResult =
-            Str::Asprintf("%s%s%s%s%s", NUMBER_WORDS[digitValues[0]], HUNDRED,
-                          *largeSumWord, separator, result);
+        updatedResult = Str::Join(NUMBER_WORDS[digitValues[0]], HUNDRED,
+                                  *largeSumWord, separator, result, nullptr);
       } else {
-        updatedResult = Str::Asprintf(
-            "%s%s and %s%s%s%s", NUMBER_WORDS[digitValues[0]], HUNDRED,
-            twoDigitWord, *largeSumWord, separator, result);
+        updatedResult =
+            Str::Join(NUMBER_WORDS[digitValues[0]], HUNDRED, " and ",
+                      twoDigitWord, *largeSumWord, separator, result, nullptr);
       }
     } else {
       updatedResult = Str::Asprintf("%s%s%s%s", twoDigitWord, *largeSumWord,

@@ -40,11 +40,9 @@ void StenoOrthography::Print() const {
       Console::Write(",", 1);
     }
     Console::Printf("\n\t\t{\n\t\t\t\"pattern\": \"");
-    char *p = Str::WriteJson(buffer, rules[i].testPattern);
-    Console::Write(buffer, p - buffer);
+    Console::WriteAsJson(rules[i].testPattern, buffer);
     Console::Printf("\",\n\t\t\t\"replacement\": \"");
-    p = Str::WriteJson(buffer, rules[i].replacement);
-    Console::Write(buffer, p - buffer);
+    Console::WriteAsJson(rules[i].replacement, buffer);
     Console::Printf("\"\n\t\t}");
   }
   Console::Printf("\n\t],");
@@ -54,11 +52,9 @@ void StenoOrthography::Print() const {
       Console::Write(",", 1);
     }
     Console::Printf("\n\t\t{\n\t\t\t\"suffix\": \"");
-    char *p = Str::WriteJson(buffer, aliases[i].text);
-    Console::Write(buffer, p - buffer);
+    Console::WriteAsJson(aliases[i].text, buffer);
     Console::Printf("\",\n\t\t\t\"alias\": \"");
-    p = Str::WriteJson(buffer, aliases[i].alias);
-    Console::Write(buffer, p - buffer);
+    Console::WriteAsJson(aliases[i].alias, buffer);
     Console::Printf("\"\n\t\t}");
   }
   Console::Printf("\n\t],");
@@ -71,7 +67,7 @@ void StenoOrthography::Print() const {
     char *p = autoSuffixes[i].stroke.ToString(buffer);
     Console::Write(buffer, p - buffer);
     Console::Printf("\",\n\t\t\t\"suffix\": \"");
-    p = Str::WriteJson(buffer, autoSuffixes[i].text + 1);
+    Console::WriteAsJson(autoSuffixes[i].text + 1, buffer);
     Console::Write(buffer, p - buffer);
     Console::Printf("\"\n\t\t}");
   }
@@ -88,11 +84,9 @@ void StenoOrthography::Print() const {
     p = reverseAutoSuffixes[i].suppressMask.ToString(buffer);
     Console::Write(buffer, p - buffer);
     Console::Printf("\",\n\t\t\t\"pattern\": \"");
-    p = Str::WriteJson(buffer, reverseAutoSuffixes[i].testPattern);
-    Console::Write(buffer, p - buffer);
+    Console::WriteAsJson(reverseAutoSuffixes[i].testPattern, buffer);
     Console::Printf("\",\n\t\t\t\"replacement\": \"");
-    p = Str::WriteJson(buffer, reverseAutoSuffixes[i].replacement);
-    Console::Write(buffer, p - buffer);
+    Console::WriteAsJson(reverseAutoSuffixes[i].replacement, buffer);
     Console::Printf("\"\n\t\t}");
   }
   Console::Printf("\n\t]\n}\n\n");
@@ -124,7 +118,8 @@ char *StenoCompiledOrthography::AddSuffix(const char *word,
     }
   }
 
-  char *simple = Str::Asprintf("%s%s", word, suffix);
+  char *simple = Str::Join(word, suffix, nullptr);
+
   int score = WordList::GetWordRank(simple);
   if (score >= 0) {
     candidates.Add(SuffixEntry(simple, score));
@@ -152,7 +147,7 @@ char *StenoCompiledOrthography::AddSuffix(const char *word,
     free(candidates[i].text);
   }
 
-  char *text = Str::Asprintf("%s ^%s", word, suffix);
+  char *text = Str::Join(word, " ^", suffix, nullptr);
   for (size_t i = 0; i < data.ruleCount; ++i) {
     const PatternMatch &match = patterns[i].Match(text);
     if (!match.match) {
@@ -165,7 +160,7 @@ char *StenoCompiledOrthography::AddSuffix(const char *word,
   }
 
   free(text);
-  return Str::Asprintf("%s%s", word, suffix);
+  return Str::Join(word, suffix, nullptr);
 }
 
 void StenoCompiledOrthography::AddCandidates(List<SuffixEntry> &candidates,
@@ -176,7 +171,7 @@ void StenoCompiledOrthography::AddCandidates(List<SuffixEntry> &candidates,
   size_t offset = wordLength > MAXIMUM_PREFIX_LENGTH
                       ? wordLength - MAXIMUM_PREFIX_LENGTH
                       : 0;
-  char *text = Str::Asprintf("%s ^%s", word + offset, suffix);
+  char *text = Str::Join(word + offset, " ^", suffix, nullptr);
 
   for (size_t i = 0; i < data.ruleCount; ++i) {
     const PatternMatch match = patterns[i].Match(text);

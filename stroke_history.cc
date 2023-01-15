@@ -219,7 +219,7 @@ StenoSegment StenoStrokeHistory::AutoSuffixTest(BuildSegmentContext &context,
 
       if (lookup.IsValid()) {
         const char *text = lookup.GetText();
-        const char *result = Str::Asprintf("%s%s", text, suffix.text);
+        const char *result = Str::Join(text, suffix.text, nullptr);
         lookup.Destroy();
         return StenoSegment(
             length, states + offset,

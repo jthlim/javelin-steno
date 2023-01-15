@@ -8,14 +8,11 @@
 
 //---------------------------------------------------------------------------
 
-class Script::Executor {
+class Script::ExecutionContext {
 public:
-  Executor(Script &script) : script(script) {}
-
-  void Run(size_t offset);
+  void Run(Script &script, size_t offset);
 
 private:
-  Script &script;
   int locals[4];
   int params[8];
 };
@@ -50,8 +47,8 @@ void Script::BinaryOp(int (*op)(int, int)) {
 void Script::ExecuteScriptIndex(size_t index) {
   const StenoScriptByteCodeData *data =
       (const StenoScriptByteCodeData *)byteCode;
-  Executor executor(*this);
-  executor.Run(data->offsets[index]);
+  ExecutionContext context;
+  context.Run(*this, data->offsets[index]);
 }
 
 bool Script::CheckButtonState(const uint8_t *text) const {
@@ -89,7 +86,7 @@ __attribute__((weak)) void Script::SendText(const uint8_t *text) const {}
 
 //---------------------------------------------------------------------------
 
-void Script::Executor::Run(size_t offset) {
+void Script::ExecutionContext::Run(Script &script, size_t offset) {
   using BC = StenoScriptByteCode;
   using OP = StenoScriptOperator;
   using SF = StenoScriptFunction;
@@ -159,6 +156,15 @@ void Script::Executor::Run(size_t offset) {
       case OP::OR:
         script.BinaryOp([](int a, int b) -> int { return a || b; });
         break;
+      case OP::SHIFT_LEFT:
+        script.BinaryOp([](int a, int b) -> int { return a << b; });
+        break;
+      case OP::ARITHMETIC_SHIFT_RIGHT:
+        script.BinaryOp([](int a, int b) -> int { return a >> b; });
+        break;
+      case OP::LOGICAL_SHIFT_RIGHT:
+        script.BinaryOp([](int a, int b) -> int { return uint32_t(a) >> b; });
+        break;
       }
       continue;
     }
@@ -214,8 +220,8 @@ void Script::Executor::Run(size_t offset) {
     case BC::CALL: {
       size_t offset = p[0] + 256 * p[1];
       p += 2;
-      Executor localExecutor(script);
-      localExecutor.Run(offset);
+      ExecutionContext localContext;
+      localContext.Run(script, offset);
       continue;
     }
     case BC::JUMP_LONG:

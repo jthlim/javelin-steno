@@ -14,7 +14,11 @@ public:
     return __builtin_ctz(v);
   }
 
+#if JAVELIN_USE_CUSTOM_POP_COUNT
+  static uint32_t PopCount(uint32_t v);
+#else
   static inline uint32_t PopCount(uint32_t v) { return __builtin_popcount(v); }
+#endif
 };
 
 template <> class Bit<8> {

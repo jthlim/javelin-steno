@@ -85,6 +85,11 @@ void Console::Write(const char *data, size_t length) {
   }
 }
 
+void Console::WriteAsJson(const char *data, char *buffer) {
+  char *p = Str::WriteJson(buffer, data);
+  Console::Write(buffer, p - buffer);
+}
+
 __attribute__((weak)) void Console::Flush() {}
 
 //---------------------------------------------------------------------------

@@ -183,9 +183,14 @@ bool StenoDictionaryList::ToggleDictionary(const char *name) {
 
 void StenoDictionaryList::SendDictionaryStatus(const char *name,
                                                bool enabled) const {
-  if (isSendDictionaryStatusEnabled) {
-    Console::Printf(enabled ? "DS %s: true\n\n" : "DS %s: false\n\n", name);
+  if (!isSendDictionaryStatusEnabled) {
+    return;
   }
+
+  char buffer[256];
+  Console::Printf("EV {\"event\":\"dictionary_status\",\"dictionary\":\"");
+  Console::WriteAsJson(name, buffer);
+  Console::Printf("\",\"enabled\":%s}\n\n", enabled ? "true" : "false");
 }
 
 //---------------------------------------------------------------------------
@@ -202,3 +207,5 @@ void StenoDictionaryList::DisableDictionaryStatus_Binding(
   DisableSendDictionaryStatus();
   Console::Write("OK\n\n", 4);
 }
+
+//---------------------------------------------------------------------------

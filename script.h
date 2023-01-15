@@ -49,7 +49,7 @@ private:
 
   void ExecuteScriptIndex(size_t index);
 
-  class Executor;
+  class ExecutionContext;
 
   friend class ScriptTestHelper;
 

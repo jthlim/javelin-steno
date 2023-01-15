@@ -458,26 +458,19 @@ void StenoJeffPhrasingDictionary::RecurseCheckReverseLookup(
     const JeffPhrasingReverseHashMapEntry *entry2 =
         phrasingData.LookupReverseWord(wordHash2);
     if (entry2) {
-      for (; entry2->hash == wordHash2; ++entry2) {
-        uint8_t updatedModeMask2 = entry2->modeMask & modeMask;
-        if ((updatedModeMask2 & (ModeMask::FULL | ModeMask::SIMPLE)) == 0 ||
-            (updatedModeMask2 & (ModeMask::PRESENT | ModeMask::PAST)) == 0) {
-          continue;
-        }
-        if (componentMask & entry2->componentMask) {
-          continue;
-        }
-
-        if (entry2->replaceHash != 0) {
-          RecurseCheckReverseLookup(context, pEnd2, stroke | entry2->stroke,
-                                    hash + entry2->replaceHash,
-                                    componentMask | entry2->componentMask,
-                                    updatedModeMask2);
-        }
-      }
+      ProcessEntries(entry2, wordHash2, context, pEnd2, stroke, hash,
+                     componentMask, modeMask);
     }
   }
 
+  ProcessEntries(entry, wordHash, context, pEnd, stroke, hash, componentMask,
+                 modeMask);
+}
+
+void StenoJeffPhrasingDictionary::ProcessEntries(
+    const JeffPhrasingReverseHashMapEntry *entry, uint32_t wordHash,
+    ReverseLookupContext &context, const char *p, StenoStroke stroke,
+    uint32_t hash, uint32_t componentMask, uint32_t modeMask) const {
   for (; entry->hash == wordHash; ++entry) {
     // Don't proceed if the phrase component has already been used.
     if (componentMask & entry->componentMask) {
@@ -507,7 +500,7 @@ void StenoJeffPhrasingDictionary::RecurseCheckReverseLookup(
 
     if (entry->replaceHash != 0) {
       RecurseCheckReverseLookup(
-          context, pEnd, stroke | entry->stroke, hash + entry->replaceHash,
+          context, p, stroke | entry->stroke, hash + entry->replaceHash,
           componentMask | entry->componentMask, updatedModeMask);
     }
   }
@@ -1626,6 +1619,7 @@ void VerifyReverseLookup(const char *text, StenoStroke expected) {
 
 TEST_BEGIN("JeffPhrasing: Reverse lookups") {
   // spellchecker: disable
+  VerifyReverseLookup("I have been going", StenoStroke("SWREFG"));
   VerifyReverseLookup("if I did it", StenoStroke("STPAEURPTD"));
   VerifyReverseLookup("I heard", StenoStroke("SWR-PGD"));
   VerifyReverseLookup("I didn't like", StenoStroke("SWR*BLGD"));

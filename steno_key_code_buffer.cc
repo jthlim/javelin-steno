@@ -86,6 +86,9 @@ void StenoKeyCodeBuffer::AppendTextNoCaseModeOverride(const char *p, size_t n,
       case '\"':
       case '\'':
         break;
+      case 'b':
+        c = '\b';
+        break;
       case 'n':
         c = '\n';
         break;
