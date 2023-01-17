@@ -203,6 +203,7 @@ enum class KeyboardLayout : uint8_t {
   QWERTY,
   DVORAK,
   COLEMAK,
+  WORKMAN,
   COUNT,
 };
 
