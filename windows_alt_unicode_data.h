@@ -6,7 +6,7 @@
 //---------------------------------------------------------------------------
 
 struct WindowsAltUnicodeData {
-  static int GetAltCodeForUnicode(uint32_t unicode);
+  static uint32_t GetAltCodeForUnicode(uint32_t unicode);
 };
 
 //---------------------------------------------------------------------------

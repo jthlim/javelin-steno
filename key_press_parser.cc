@@ -3,7 +3,7 @@
 #include "key_press_parser.h"
 
 #include "key_code.h"
-#include "steno_key_code.h"
+#include "unicode.h"
 #include <string.h>
 
 //---------------------------------------------------------------------------
@@ -271,7 +271,7 @@ static const KeyCodeName *GetKeyCodeName(const char *name) {
 //---------------------------------------------------------------------------
 
 void StenoKeyPressTokenizer::ProcessNextToken() {
-  while (p < end && IsWhitespace(*p)) {
+  while (p < end && Unicode::IsWhitespace(*p)) {
     ++p;
   }
 
@@ -292,7 +292,7 @@ void StenoKeyPressTokenizer::ProcessNextToken() {
     return;
   }
 
-  if (!IsWordCharacter(*p)) {
+  if (!Unicode::IsWordCharacter(*p)) {
     ++p;
     nextToken.type = StenoKeyPressToken::Type::UNKNOWN;
     return;
@@ -300,9 +300,9 @@ void StenoKeyPressTokenizer::ProcessNextToken() {
 
   char buffer[32];
   char *write = buffer;
-  while (p < end && IsWordCharacter(*p)) {
+  while (p < end && Unicode::IsWordCharacter(*p)) {
     if (write < buffer + 31) {
-      *write++ = ToLower(*p);
+      *write++ = Unicode::ToLower(*p);
     }
     ++p;
   }
@@ -317,6 +317,7 @@ void StenoKeyPressTokenizer::ProcessNextToken() {
   nextToken.keyCode = entry->keyCode;
 }
 
+//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
 #include "unit_test.h"
@@ -349,3 +350,5 @@ TEST_BEGIN("KeyPressParser tests") {
          StenoKeyPressToken(StenoKeyPressToken::Type::END));
 }
 TEST_END
+
+//---------------------------------------------------------------------------

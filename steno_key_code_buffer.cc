@@ -117,7 +117,7 @@ void StenoKeyCodeBuffer::AppendTextNoCaseModeOverride(const char *p, size_t n,
 bool StenoKeyCodeBuffer::IsGlue(const char *p) {
   // Pure digits are considered glue.
   while (*p) {
-    if (!IsAsciiDigit(*p)) {
+    if (!Unicode::IsAsciiDigit(*p)) {
       return false;
     }
     ++p;

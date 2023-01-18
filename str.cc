@@ -8,11 +8,29 @@
 //---------------------------------------------------------------------------
 
 bool Str::IsFingerSpellingCommand(const char *p) {
-  const char *start = strstr(p, "{&");
-  if (start == nullptr) {
-    return false;
+  bool result = false;
+
+  while (*p) {
+    int c = *p++;
+    if (c == ' ') {
+      continue;
+    }
+    result = false;
+    if (c == '{') {
+      if (*p == '&') {
+        p++;
+        result = true;
+      }
+      while (*p) {
+        int c = *p++;
+        if (c == '}') {
+          break;
+        }
+      }
+    }
   }
-  return strchr(start, '}') != nullptr;
+
+  return result;
 }
 
 bool Str::IsJoinNext(const char *p) {
@@ -24,7 +42,18 @@ bool Str::IsJoinPrevious(const char *p) {
   return p[0] == '{' && p[1] == '^' && !strchr(p, '\n');
 }
 
-bool Str::ContainsKeyCode(const char *p) { return strstr(p, "{#") != nullptr; }
+bool Str::ContainsKeyCode(const char *p) {
+  while (*p) {
+    int c = *p++;
+    if (c == '{') {
+      if (*p == '#') {
+        return true;
+      }
+    }
+  }
+
+  return false;
+}
 
 char *Str::Join(const char *p, ...) {
   va_list v;

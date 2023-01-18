@@ -1,7 +1,7 @@
 //---------------------------------------------------------------------------
 
 #include "steno_key_code_emitter.h"
-#include "key_code.h"
+#include "key.h"
 #include "macos_us_unicode_data.h"
 #include "steno_key_code.h"
 #include "str.h"
@@ -52,7 +52,7 @@ struct StenoKeyCodeEmitter::EmitterContext {
   void EmitMacOsUs(uint32_t unicode);
   void EmitMacOsUnicodeHex(uint32_t unicode);
   void EmitWindowsAlt(uint32_t unicode);
-  void RecurseEmitWindowsAlt(int alt);
+  void RecurseEmitWindowsAlt(uint32_t alt);
   void EmitIBus(uint32_t unicode);
   void RecurseEmitIBus(uint32_t unicode);
   static void EmitIBusDelay();
@@ -311,7 +311,7 @@ StenoKeyCodeEmitter::EmitterContext::RecurseEmitIBus(uint32_t code) {
 }
 
 void StenoKeyCodeEmitter::EmitterContext::EmitWindowsAlt(uint32_t unicode) {
-  int alt = WindowsAltUnicodeData::GetAltCodeForUnicode(unicode);
+  uint32_t alt = WindowsAltUnicodeData::GetAltCodeForUnicode(unicode);
   if (alt == 0) {
     EmitKeyCode(ASCII_KEY_CODES['?']);
     return;
@@ -331,9 +331,9 @@ void StenoKeyCodeEmitter::EmitterContext::EmitWindowsAlt(uint32_t unicode) {
 }
 
 __attribute__((noinline)) void
-StenoKeyCodeEmitter::EmitterContext::RecurseEmitWindowsAlt(int alt) {
-  int quotient = alt / 10;
-  int remainder = alt % 10;
+StenoKeyCodeEmitter::EmitterContext::RecurseEmitWindowsAlt(uint32_t alt) {
+  uint32_t quotient = alt / 10;
+  uint32_t remainder = alt % 10;
   if (quotient != 0) {
     RecurseEmitWindowsAlt(quotient);
   }

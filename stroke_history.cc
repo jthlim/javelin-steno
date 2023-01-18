@@ -88,22 +88,20 @@ bool StenoStrokeHistory::DirectLookup(BuildSegmentContext &context,
 
     if (lookup.IsValid()) {
       const char *lookupText = lookup.GetText();
-      if (strstr(lookupText, "{*")) {
-        if (strstr(lookupText, "{*?}")) {
+      if (lookupText[0] == '{' && lookupText[1] == '*') {
+        if (lookupText[2] == '?' && lookupText[3] == '}') { // {*?}
           lookup.Destroy();
           RemoveOffset(context, offset, length);
           HandleRetroactiveInsertSpace(context, offset);
           ReevaluateSegments(context, offset);
           return true;
-        }
-        if (strstr(lookupText, "{*}")) {
+        } else if (lookupText[2] == '}') { // {*}
           lookup.Destroy();
           RemoveOffset(context, offset, length);
           HandleRetroactiveToggleAsterisk(context, offset);
           ReevaluateSegments(context, offset);
           return true;
-        }
-        if (strstr(lookupText, "{*+}")) {
+        } else if (lookupText[2] == '+' && lookupText[3] == '}') { // {*+}
           StenoState state = states[offset];
           lookup.Destroy();
           RemoveOffset(context, offset, length);

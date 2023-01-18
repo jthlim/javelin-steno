@@ -26,6 +26,18 @@ public:
   static inline bool Eq(const char *a, const char *b) {
     return strcmp(a, b) == 0;
   }
+
+  static inline bool ShortEq(const char *a, const char *b) {
+    while (*a == *b) {
+      if (!*a) {
+        return true;
+      }
+      ++a;
+      ++b;
+    }
+    return false;
+  }
+
   static bool HasPrefix(const char *p, const char *prefix);
 
   // Returns the end of the write area. p must have enough space to store

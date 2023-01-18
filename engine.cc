@@ -6,7 +6,7 @@
 #include "console.h"
 #include "dictionary/user_dictionary.h"
 #include "flash.h"
-#include "key_code.h"
+#include "key.h"
 #include "list.h"
 #include "orthography.h"
 #include "pattern.h"
@@ -90,7 +90,8 @@ void StenoEngine::PrintInfo() const {
   Console::Printf("  Javelin Steno Engine\n");
   Console::Printf("    Strokes: %u\n", strokeCount);
   Console::Printf("    Unicode mode: %s\n", emitter.GetUnicodeModeName());
-  Console::Printf("    Keyboard layout: %s\n", Key::GetKeyboardLayoutName());
+  Console::Printf("    Keyboard layout: %s\n",
+                  KeyboardLayout::GetActiveLayout().GetName());
 
   orthography.PrintInfo();
 

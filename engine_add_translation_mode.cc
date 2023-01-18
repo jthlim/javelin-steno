@@ -188,11 +188,15 @@ void StenoEngine::DeleteTranslation(size_t newlineIndex) {
 //---------------------------------------------------------------------------
 
 bool StenoEngine::IsNewline(StenoStroke stroke) const {
+  if (stroke == StenoStroke(StrokeMask::LR | StrokeMask::RR)) {
+    return true;
+  }
+
   StenoDictionaryLookupResult lookup = dictionary.Lookup(&stroke, 1);
 
   bool result =
       lookup.IsValid() && (strchr(lookup.GetText(), '\n') != nullptr ||
-                           strstr(lookup.GetText(), "{#Return}") != nullptr);
+                           Str::Eq(lookup.GetText(), "{#Return}"));
   lookup.Destroy();
   return result;
 }

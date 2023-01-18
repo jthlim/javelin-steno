@@ -2,7 +2,7 @@
 
 #include "script.h"
 #include "console.h"
-#include "key_code.h"
+#include "key.h"
 #include "script_byte_code.h"
 #include <assert.h>
 

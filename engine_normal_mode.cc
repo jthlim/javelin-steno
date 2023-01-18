@@ -2,7 +2,7 @@
 
 #include "console.h"
 #include "engine.h"
-#include "key_code.h"
+#include "key.h"
 #include "segment.h"
 #include "str.h"
 #include "thread.h"

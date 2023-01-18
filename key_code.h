@@ -3,7 +3,8 @@
 //---------------------------------------------------------------------------
 
 #pragma once
-#include <stdint.h>
+
+//---------------------------------------------------------------------------
 
 // pico-sdk defines F# macros, that interfere with the KeyCodes
 #undef F1
@@ -21,6 +22,8 @@
 #undef F13
 #undef F14
 #undef F15
+
+//---------------------------------------------------------------------------
 
 struct KeyCode {
   enum Value {
@@ -193,61 +196,6 @@ struct KeyCode {
     MEDIA_REFRESH = 0xfa,
     MEDIA_CALC = 0xfb,
   };
-};
-
-#if RUN_TESTS
-#include <vector>
-#endif
-
-enum class KeyboardLayout : uint8_t {
-  QWERTY,
-  DVORAK,
-  COLEMAK,
-  COUNT,
-};
-
-const char *KeyboardLayoutName(KeyboardLayout layout);
-
-class Key {
-public:
-  struct HistoryEntry {
-    HistoryEntry() = default;
-    HistoryEntry(uint8_t code, bool isPress)
-        : code((KeyCode::Value)code), isPress(isPress) {}
-
-    KeyCode::Value code;
-    bool isPress;
-  };
-
-  static void PressRaw(uint8_t key);
-  static void ReleaseRaw(uint8_t key);
-
-  static void Press(uint8_t key);
-  static void Release(uint8_t key);
-  static void Flush();
-
-  static bool IsNumLockOn();
-  static void SetIsNumLockOn(bool value);
-
-  static void EnableHistory() { historyEnabled = true; }
-  static void DisableHistory() { historyEnabled = false; }
-
-  static KeyboardLayout GetKeyboardLayout();
-  static const char *GetKeyboardLayoutName() {
-    return KeyboardLayoutName(GetKeyboardLayout());
-  }
-  static bool SetKeyboardLayout(const char *name);
-  static void SetKeyboardLayout(KeyboardLayout layout);
-  static uint8_t TranslateKey(uint8_t key);
-
-  static bool historyEnabled;
-
-#if RUN_TESTS
-  static std::vector<HistoryEntry> history;
-#endif
-private:
-  static bool isNumLockOn;
-  static const uint8_t *layoutTable;
 };
 
 //---------------------------------------------------------------------------

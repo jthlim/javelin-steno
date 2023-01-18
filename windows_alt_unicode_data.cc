@@ -176,7 +176,7 @@ static const WindowsAltUnicodeEntry DATA[] = {
 
 //---------------------------------------------------------------------------
 
-int WindowsAltUnicodeData::GetAltCodeForUnicode(uint32_t unicode) {
+uint32_t WindowsAltUnicodeData::GetAltCodeForUnicode(uint32_t unicode) {
   const WindowsAltUnicodeEntry *left = DATA;
   const WindowsAltUnicodeEntry *right = DATA + sizeof(DATA) / sizeof(*DATA);
 

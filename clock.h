@@ -20,9 +20,9 @@ private:
 class Clock {
 public:
   static uint32_t GetCurrentTime();
-  static void AdvanceTime(uint32_t amount) { }
+  static void AdvanceTime(uint32_t amount) {}
 };
 
-#endif 
+#endif
 
 //---------------------------------------------------------------------------

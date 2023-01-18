@@ -6,6 +6,9 @@
 #if RUN_TESTS
 #include <vector>
 #endif
+
+//---------------------------------------------------------------------------
+
 class SerialPort {
 public:
 #if RUN_TESTS

@@ -1,7 +1,7 @@
 //---------------------------------------------------------------------------
 
 #include "engine.h"
-#include "key_code.h"
+#include "key.h"
 #include "str.h"
 
 //---------------------------------------------------------------------------
@@ -456,7 +456,17 @@ bool StenoKeyCodeBuffer::SetCaseFunction(const List<char *> &parameters) {
     // This is needed because orthographic suffixes can make the case mode
     // take on the overriden case mode. This is not a problem for the other
     // cases as the override will kick in.
-    state.caseMode = StenoCaseMode::NORMAL;
+    switch (state.caseMode) {
+    case StenoCaseMode::NORMAL:
+    case StenoCaseMode::LOWER_ONCE:
+    case StenoCaseMode::UPPER_ONCE:
+    case StenoCaseMode::TITLE_ONCE:
+      // Don't do anything
+      break;
+    default:
+      state.caseMode = StenoCaseMode::NORMAL;
+      break;
+    }
     state.overrideCaseMode = StenoCaseMode::NORMAL;
     return true;
   }
@@ -536,7 +546,7 @@ bool StenoKeyCodeBuffer::KeyboardLayoutFunction(
     return false;
   }
 
-  return Key::SetKeyboardLayout(parameters[1]);
+  return KeyboardLayout::SetActiveLayout(parameters[1]);
 }
 
 //---------------------------------------------------------------------------

@@ -16,7 +16,7 @@ public:
   void Tick() { next->Tick(); }
   void PrintInfo() const { next->PrintInfo(); }
 
-  void UpdateNext(StenoProcessorElement *value) { next = value; }
+  void SetNext(StenoProcessorElement *value) { next = value; }
 
 private:
   StenoProcessorElement *next;

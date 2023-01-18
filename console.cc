@@ -1,8 +1,8 @@
 //---------------------------------------------------------------------------
 
 #include "console.h"
-#include "steno_key_code_emitter.h"
 #include "str.h"
+#include "unicode.h"
 #include <assert.h>
 #include <stdarg.h>
 #include <stdio.h>
@@ -128,7 +128,7 @@ void Console::ProcessLineBuffer() {
 const ConsoleCommand *Console::GetCommand(const char *buffer) {
   for (size_t i = 0; i < commandCount; ++i) {
     if (Str::HasPrefix(buffer, commands[i].command) &&
-        IsWhitespace(buffer[strlen(commands[i].command)])) {
+        Unicode::IsWhitespace(buffer[strlen(commands[i].command)])) {
       return &commands[i];
     }
   }

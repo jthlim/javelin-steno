@@ -53,7 +53,7 @@ bool WordList::ContainsEmoji(const uint8_t *word) {
 int WordList::Compare(const uint8_t *word, const uint8_t *data) {
   for (;;) {
     if (IsValueByte(*data)) {
-      return *word != '\0' ? 1 : 0;
+      return *word;
     }
     // This case folds into the below case.
     // if (*word == '\0') {

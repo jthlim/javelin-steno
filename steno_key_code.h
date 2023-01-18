@@ -2,16 +2,7 @@
 
 #pragma once
 #include "state.h"
-#include <stdint.h>
-
-//---------------------------------------------------------------------------
-
-uint32_t ToUpper(uint32_t c);
-uint32_t ToLower(uint32_t c);
-bool IsAsciiDigit(uint32_t c);
-bool IsLetter(uint32_t c);
-bool IsWhitespace(uint32_t c);
-bool IsWordCharacter(uint32_t c);
+#include "unicode.h"
 
 //---------------------------------------------------------------------------
 
@@ -38,9 +29,11 @@ public:
   }
 
   bool IsRawKeyCode() const { return isRawKeyCode; }
-  bool IsWhitespace() const { return !isRawKeyCode && ::IsWhitespace(unicode); }
+  bool IsWhitespace() const {
+    return !isRawKeyCode && Unicode::IsWhitespace(unicode);
+  }
 
-  bool IsLetter() const { return !isRawKeyCode && ::IsLetter(unicode); }
+  bool IsLetter() const { return !isRawKeyCode && Unicode::IsLetter(unicode); }
 
   bool IsPress() const { return isPress; }
   uint32_t GetRawKeyCode() { return rawKeyCode; }
