@@ -33,11 +33,6 @@ bool Str::IsFingerSpellingCommand(const char *p) {
   return result;
 }
 
-bool Str::IsJoinNext(const char *p) {
-  size_t len = strlen(p);
-  return len > 3 && p[len - 1] == '}' && p[len - 2] == '^' && !strchr(p, '\n');
-}
-
 bool Str::IsJoinPrevious(const char *p) {
   return p[0] == '{' && p[1] == '^' && !strchr(p, '\n');
 }
@@ -161,5 +156,63 @@ char *Str::WriteJson(char *p, const char *text) {
   }
   return p;
 }
+
+#if JAVELIN_ASSEMBLER_THUMB2
+extern "C" __attribute((naked)) size_t strlen(const char *p) {
+  // spell-checker: disable
+  asm volatile(R"(
+    push  {r0, r4}
+
+    lsl   r1, r0, #30
+    beq   2f            // p is aligned
+
+  1:
+    ldrb  r3, [r0]
+    cmp   r3, #0
+    beq   5f            // terminating '\0' found
+
+    add   r0, #1
+    lsl   r1, r0, #30
+    bne   1b            // Loop until aligned.
+
+  2:                    // p is aligned
+    ldr   r1, [r0]
+    ldr   r2, =#0x01010101
+    lsl   r3, r2, #7
+    sub   r4, r1, r2
+    bic   r4, r1
+    and   r4, r3
+    bne   4f
+
+  3:                    // Process 4 bytes
+    ldr   r1, [r0, #4]
+    sub   r4, r1, r2
+    add   r0, #4
+    bic   r4, r1
+    and   r4, r3
+    beq   3b
+
+   4:                   // Trailer of loop
+    lsl   r1, r4, #24
+    bne   5f
+
+    add   r0, #1
+    lsl   r1, r4, #16
+    bne   5f
+
+    add   r0, #1
+    lsl   r1, r4, #8
+    bne   5f
+
+    add   r0, #1
+
+  5:
+    pop   {r1, r4}
+    sub   r0, r1
+    bx    lr
+  )");
+  // spell-checker: enable
+}
+#endif
 
 //---------------------------------------------------------------------------
