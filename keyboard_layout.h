@@ -16,6 +16,7 @@ public:
     QWERTY,
     DVORAK,
     COLEMAK,
+    WORKMAN,
     COUNT,
   };
 
