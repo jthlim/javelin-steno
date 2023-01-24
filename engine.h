@@ -40,7 +40,7 @@ public:
   bool EnableDictionary(const char *name);
   bool DisableDictionary(const char *name);
   bool ToggleDictionary(const char *name);
-  void ReverseLookup(StenoReverseDictionaryLookup &result);
+  void ReverseLookup(StenoReverseDictionaryLookup &result) const;
 
   bool IsPaperTapeEnabled() const { return paperTapeEnabled; }
   void EnablePaperTape() { paperTapeEnabled = true; }
@@ -49,6 +49,10 @@ public:
   bool IsSuggestionsEnabled() const { return suggestionsEnabled; }
   void EnableSuggestions() { suggestionsEnabled = true; }
   void DisableSuggestions() { suggestionsEnabled = false; }
+
+  bool IsTextLogEnabled() const { return textLogEnabled; }
+  void EnableTextLog() { textLogEnabled = true; }
+  void DisableTextLog() { textLogEnabled = false; }
 
   static void ListDictionaries_Binding(void *context, const char *commandLine);
   static void EnableDictionary_Binding(void *context, const char *commandLine);
@@ -60,6 +64,8 @@ public:
   static void EnableSuggestions_Binding(void *context, const char *commandLine);
   static void DisableSuggestions_Binding(void *context,
                                          const char *commandLine);
+  static void EnableTextLog_Binding(void *context, const char *commandLine);
+  static void DisableTextLog_Binding(void *context, const char *commandLine);
   static void Lookup_Binding(void *context, const char *commandLine);
 
 private:
@@ -69,6 +75,7 @@ private:
 
   bool paperTapeEnabled = false;
   bool suggestionsEnabled = false;
+  bool textLogEnabled = false;
   StenoEngineMode mode = StenoEngineMode::NORMAL;
 
   uint32_t strokeCount = 0;
@@ -113,15 +120,17 @@ private:
 
   void PrintPaperTape(StenoStroke stroke,
                       const StenoSegmentList &previousSegmentList,
-                      const StenoSegmentList &nextSegmentList);
-  void PrintPaperTapeUndo(size_t undoCount);
+                      const StenoSegmentList &nextSegmentList) const;
+  void PrintPaperTapeUndo(size_t undoCount) const;
   void PrintSuggestions(const StenoSegmentList &previousSegmentList,
                         const StenoSegmentList &nextSegmentList);
   void PrintSuggestion(const char *p, size_t arrowPrefixCount, char *buffer,
-                       size_t strokeThreshold);
+                       size_t strokeThreshold) const;
   char *PrintSegmentSuggestion(size_t wordCount,
                                const StenoSegmentList &segmentList,
                                char *buffer, char *lastLookup);
+  void PrintTextLog(const StenoKeyCodeBuffer &previousKeyCodeBuffer,
+                    const StenoKeyCodeBuffer &nextKeyCodeBuffer) const;
 
   size_t UpdateAddTranslationModeTextBuffer(ConversionBuffer &buffer);
 

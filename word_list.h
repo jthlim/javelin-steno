@@ -13,7 +13,7 @@ public:
     return GetWordRank((const uint8_t *)word);
   }
 
-  static void SetData(const uint8_t* newData, size_t length) {
+  static void SetData(const uint8_t *newData, size_t length) {
     instance.data = newData + 1;
     instance.dataEnd = newData + length;
   }
@@ -21,7 +21,7 @@ public:
   static WordList instance;
 
 private:
-  WordList() : data(DATA+1), dataEnd(DATA+1) {}
+  WordList() : data(DATA + 1), dataEnd(DATA + 1) {}
 
   const uint8_t *data;
   const uint8_t *dataEnd;
@@ -29,8 +29,10 @@ private:
   static const uint8_t DATA[];
 
   static int Compare(const uint8_t *word, const uint8_t *data);
-  static bool IsValueByte(uint8_t b) { return (b & 0xf0) == 0xf0; };
+  static bool IsValueByte(uint8_t b) { return b >= 0xf0; };
   static bool ContainsEmoji(const uint8_t *word);
+  static const uint8_t *FindValueByteForward(const uint8_t *p);
+  static const uint8_t *FindWordStart(const uint8_t *p);
 };
 
 //---------------------------------------------------------------------------

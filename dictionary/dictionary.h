@@ -14,29 +14,65 @@ class StenoDictionary;
 
 // A class to wrap dictionary lookups, avoiding memory allocations in most
 // situations.
+
+#if JAVELIN_PLATFORM_PICO_SDK
+
+// An implementation that requires that the top bit of the address is never
+// used, and packs the entire result into a register.
 class StenoDictionaryLookupResult {
 private:
-  struct StenoDictionaryLookupResultVtbl {
-    const char *(*getTextMethod)(const StenoDictionaryLookupResult *);
-    void (*destroyMethod)(StenoDictionaryLookupResult *);
-  };
+  StenoDictionaryLookupResult(size_t text) : text(text) {}
 
-  static const StenoDictionaryLookupResultVtbl invalidVtbl;
-  static const StenoDictionaryLookupResultVtbl staticVtbl;
-  static const StenoDictionaryLookupResultVtbl dynamicVtbl;
+  size_t text;
 
 public:
-  bool IsValid() const { return vtbl->getTextMethod != nullptr; }
+  bool IsValid() const { return text != 0; }
 
-  const char *GetText() const { return vtbl->getTextMethod(this); }
-  void Destroy() { vtbl->destroyMethod(this); }
+  const char *GetText() const { return (char *)(text >> 1); }
+  void Destroy();
 
-  const StenoDictionaryLookupResultVtbl *vtbl;
-  const void *context;
+  static StenoDictionaryLookupResult CreateInvalid() {
+    return StenoDictionaryLookupResult(0);
+  }
+
+  static StenoDictionaryLookupResult CreateStaticString(const uint8_t *p) {
+    return CreateStaticString((const char *)p);
+  }
+
+  static StenoDictionaryLookupResult CreateStaticString(const char *p) {
+    return StenoDictionaryLookupResult(intptr_t(p) << 1);
+  }
+
+  // string will be free() when the Lookup is destroyed.
+  static StenoDictionaryLookupResult CreateDynamicString(const uint8_t *p) {
+    return CreateDynamicString((const char *)p);
+  }
+  static StenoDictionaryLookupResult CreateDynamicString(const char *p) {
+    return StenoDictionaryLookupResult((intptr_t(p) << 1) + 1);
+  }
+};
+#else
+class StenoDictionaryLookupResult {
+private:
+  const char *text;
+  void (*destroyMethod)(StenoDictionaryLookupResult *);
+
+  static void Nop(StenoDictionaryLookupResult *);
+  static void FreeText(StenoDictionaryLookupResult *);
+
+public:
+  bool IsValid() const { return text != nullptr; }
+
+  const char *GetText() const { return text; }
+  void Destroy() {
+    if (text) {
+      (*destroyMethod)(this);
+    }
+  }
 
   static StenoDictionaryLookupResult CreateInvalid() {
     StenoDictionaryLookupResult result;
-    result.vtbl = &invalidVtbl;
+    result.text = nullptr;
     return result;
   }
 
@@ -46,8 +82,8 @@ public:
 
   static StenoDictionaryLookupResult CreateStaticString(const char *p) {
     StenoDictionaryLookupResult result;
-    result.vtbl = &staticVtbl;
-    result.context = p;
+    result.text = p;
+    result.destroyMethod = &Nop;
     return result;
   }
 
@@ -57,11 +93,12 @@ public:
   }
   static StenoDictionaryLookupResult CreateDynamicString(const char *p) {
     StenoDictionaryLookupResult result;
-    result.vtbl = &dynamicVtbl;
-    result.context = p;
+    result.text = p;
+    result.destroyMethod = &FreeText;
     return result;
   }
 };
+#endif
 
 //---------------------------------------------------------------------------
 

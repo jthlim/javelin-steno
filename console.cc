@@ -9,6 +9,8 @@
 
 //---------------------------------------------------------------------------
 
+Console Console::instance;
+
 static const ConsoleCommand HELP_COMMAND = {
     .command = "help",
     .description = "Provides a list of commands",
@@ -116,9 +118,23 @@ void Console::ProcessLineBuffer() {
   lineBuffer[lineBufferCount] = '\0';
   lineBufferCount = 0;
 
-  const ConsoleCommand *command = GetCommand(lineBuffer);
+  size_t commandOffset = 0;
+  while (commandOffset < 12 &&
+         Unicode::IsAsciiDigit(lineBuffer[commandOffset])) {
+    ++commandOffset;
+  }
+  if (lineBuffer[commandOffset] == ' ') {
+    commandOffset++;
+    Write(lineBuffer, commandOffset);
+  } else {
+    commandOffset = 0;
+  }
+
+  char *lineBufferWithoutId = lineBuffer + commandOffset;
+
+  const ConsoleCommand *command = GetCommand(lineBufferWithoutId);
   if (command) {
-    (*command->handler)(command->context, lineBuffer);
+    (*command->handler)(command->context, lineBufferWithoutId);
   } else {
     Console::Printf(
         "ERR Invalid command. Use \"help\" for a list of commands\n\n");
@@ -147,12 +163,14 @@ void Console::RunCommand(const char *command) {
   enableConsoleWrite = previousEnableConsoleWrite;
 }
 
+void Console::SendOk() { Write("OK\n\n", 4); }
+
 // Used to flush the output buffer and ensure a stable connection.
 void Console::HelloCommand(void *context, const char *line) {
   char buffer[256];
   memset(buffer, 0, 256);
   Console::Write(buffer, 256);
-  Console::Write("Hello\n\n", 7);
+  Console::Write("ID Hello\n\n", 10);
 }
 
 void Console::HelpCommand(void *context, const char *line) {

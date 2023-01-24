@@ -1,7 +1,7 @@
 //---------------------------------------------------------------------------
 
 #pragma once
-#include <stdint.h>
+#include "pattern_quick_reject.h"
 #include <stdlib.h>
 
 //---------------------------------------------------------------------------
@@ -40,24 +40,25 @@ public:
   static Pattern Compile(const char *pattern);
 
   PatternMatch Match(const char *text) const;
+  PatternMatch MatchBypassingQuickReject(const char *text) const;
   PatternMatch Search(const char *text) const;
 
   // Will free text if there's a replacement and return a new string.
   char *Replace(char *text, const char *templ) const;
 
+  bool IsPossibleMatch(PatternQuickReject inputQuickReject) const {
+    return inputQuickReject.IsPossibleMatch(quickReject);
+  }
+
 private:
-  Pattern(PatternComponent *root, uint32_t accelerator)
-      : root(root), accelerator(accelerator) {}
+  Pattern(PatternComponent *root, PatternQuickReject quickReject)
+      : root(root), quickReject(quickReject) {}
 
   PatternComponent *root;
-
-  // This is a bit field of characters a-z that must be present in the text.
-  uint32_t accelerator;
+  PatternQuickReject quickReject;
 
   struct BuildContext;
   struct BuildResult;
-
-  bool EarlyReject(const char *text) const;
 
   static BuildResult ParseAlternate(BuildContext &c);
   static BuildResult ParseSequence(BuildContext &c);

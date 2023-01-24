@@ -20,6 +20,8 @@ struct ConsoleCommand {
 class Console {
 public:
   void HandleInput(const char *data, size_t length);
+  static void SendOk();
+
   static void RunCommand(const char *command);
 
   static void RegisterCommand(const ConsoleCommand &command);
@@ -40,6 +42,8 @@ public:
 #if RUN_TESTS
   static std::vector<char> history;
 #endif
+
+  static Console instance;
 
 private:
   size_t lineBufferCount = 0;

@@ -20,7 +20,12 @@ void StenoReverseMapDictionary::AddMapDictionaryResults(
   const uint8_t *right = textBlock + textBlockLength;
 
   while (left < right) {
-    const uint8_t *mid = left + (right - left) / 2;
+#if JAVELIN_PLATFORM_PICO_SDK
+    // Optimization when top bit of pointer cannot be set.
+    const uint8_t *mid = (const uint8_t *)((size_t(left) + size_t(right)) / 2);
+#else
+    const uint8_t *mid = left + size_t(right - left) / 2;
+#endif
 
     const uint8_t *wordStart = mid;
     while (wordStart[-1] != 0xff) {
@@ -60,7 +65,8 @@ void StenoReverseMapDictionary::AddValidLookupProviders(
     StenoReverseDictionaryLookup &value) const {
   for (size_t i = 0; i < value.resultCount; ++i) {
     const StenoReverseDictionaryResult &v = value.results[i];
-    if (dictionary->GetLookupProvider(v.strokes, v.length) == v.lookupProvider) {
+    if (dictionary->GetLookupProvider(v.strokes, v.length) ==
+        v.lookupProvider) {
       result.AddResult(v.strokes, v.length, v.lookupProvider);
     }
   }

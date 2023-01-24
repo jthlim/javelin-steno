@@ -300,11 +300,12 @@ void StenoKeyCodeBuffer::ProcessCommand(const char *p) {
     }
 
     bool handled = ProcessFunction(parameters);
-    for (size_t i = 0; i < parameters.GetCount(); ++i) {
-      free(parameters[i]);
+    for (char *parameter : parameters) {
+      free(parameter);
     }
-    if (handled)
+    if (handled) {
       return;
+    }
   }
 
   if (p[1] == '#') {
@@ -370,9 +371,10 @@ void StenoKeyCodeBuffer::ProcessOrthographicSuffix(const char *text,
 
 //---------------------------------------------------------------------------
 
-char *StenoKeyCodeBuffer::ToString() {
+char *StenoKeyCodeBuffer::ToString(size_t startingOffset) const {
+  // Start with space for the terminating null.
   size_t length = 1;
-  for (size_t i = 0; i < count; ++i) {
+  for (size_t i = startingOffset; i < count; ++i) {
     if (!buffer[i].IsRawKeyCode()) {
       length +=
           Utf8Pointer::BytesForCharacterCode(buffer[i].ResolveOutputUnicode());
@@ -380,7 +382,7 @@ char *StenoKeyCodeBuffer::ToString() {
   }
   char *result = (char *)malloc(length);
   Utf8Pointer utf8p(result);
-  for (size_t i = 0; i < count; ++i) {
+  for (size_t i = startingOffset; i < count; ++i) {
     if (!buffer[i].IsRawKeyCode()) {
       utf8p.SetAndAdvance(buffer[i].ResolveOutputUnicode());
     }
@@ -390,7 +392,7 @@ char *StenoKeyCodeBuffer::ToString() {
   return result;
 }
 
-char *StenoKeyCodeBuffer::ToUnresolvedString() {
+char *StenoKeyCodeBuffer::ToUnresolvedString() const {
   size_t length = 1;
   for (size_t i = 0; i < count; ++i) {
     if (!buffer[i].IsRawKeyCode()) {

@@ -53,7 +53,7 @@ static char *ReplaceSuffix(char *original, size_t length, size_t offset,
                            const char *suffix) {
   assert(offset <= length);
   original[length - offset] = '\0';
-  char *updatedResult = Str::Asprintf("%s%s", original, suffix);
+  char *updatedResult = Str::Join(original, suffix, nullptr);
   free(original);
   return updatedResult;
 }
@@ -101,7 +101,7 @@ StenoJeffNumbersDictionary::Lookup(const StenoDictionaryLookup &lookup) const {
         return StenoDictionaryLookupResult::CreateInvalid();
       }
       control &= ~RB;
-      char *updated = Str::Asprintf("$%s", result);
+      char *updated = Str::Join("$", result, nullptr);
       free(result);
       result = updated;
     } else if ((control & WR) == WR) {
@@ -111,7 +111,7 @@ StenoJeffNumbersDictionary::Lookup(const StenoDictionaryLookup &lookup) const {
         return StenoDictionaryLookupResult::CreateInvalid();
       }
       control &= ~WR;
-      char *updated = Str::Asprintf("$%s", result);
+      char *updated = Str::Join("$", result, nullptr);
       free(result);
       result = updated;
     } else if ((control & KR) == KR) {
@@ -121,7 +121,7 @@ StenoJeffNumbersDictionary::Lookup(const StenoDictionaryLookup &lookup) const {
         return StenoDictionaryLookupResult::CreateInvalid();
       }
       control &= ~KR;
-      char *updated = Str::Asprintf("%s%%", result);
+      char *updated = Str::Join(result, "%", nullptr);
       free(result);
       result = updated;
     } else if ((control & RG) == RG) {
@@ -131,7 +131,7 @@ StenoJeffNumbersDictionary::Lookup(const StenoDictionaryLookup &lookup) const {
         return StenoDictionaryLookupResult::CreateInvalid();
       }
       control &= ~RG;
-      char *updated = Str::Asprintf("%s%%", result);
+      char *updated = Str::Join(result, "%", nullptr);
       free(result);
       result = updated;
     } else if ((control & DZ) == DZ) {
@@ -141,7 +141,7 @@ StenoJeffNumbersDictionary::Lookup(const StenoDictionaryLookup &lookup) const {
         return StenoDictionaryLookupResult::CreateInvalid();
       }
       control &= ~DZ;
-      char *updated = Str::Asprintf("$%s00", result);
+      char *updated = Str::Join("$", result, "00", nullptr);
       free(result);
       result = updated;
     } else if ((control & StrokeMask::KL).IsNotEmpty() ||
@@ -237,7 +237,7 @@ StenoJeffNumbersDictionary::Lookup(const StenoDictionaryLookup &lookup) const {
         }
       }
 
-      char *updated = Str::Asprintf("%s%s", result, suffix);
+      char *updated = Str::Join(result, suffix, nullptr);
       free(result);
       result = updated;
 
@@ -354,13 +354,17 @@ constexpr RomanNumeralData ROMAN_NUMERAL_DATA[] = {
 // outBuffer must have at least 16 bytes capacity.
 static void ToRoman(char *outBuffer, int value) {
   assert(1 <= value && value <= 3999);
-  outBuffer[0] = '\0';
+  char *d = outBuffer;
   for (const RomanNumeralData &data : ROMAN_NUMERAL_DATA) {
     while (value >= data.value) {
       value -= data.value;
-      strcat(outBuffer, data.symbol);
+      const char *s = data.symbol;
+      while (*s) {
+        *d++ = *s++;
+      }
     }
   }
+  *d = '\0';
 }
 
 const char *const NUMBER_WORDS[] = {
@@ -460,8 +464,8 @@ char *ToWords(char *digits) {
     return Str::Dup(NUMBER_WORDS[0]);
   }
 
-  size_t length = strlen(p);
   char *result = Str::Dup("");
+  size_t length = strlen(p);
   char *end = p + length;
   bool needsAnd = false;
   bool needsComma = false;
@@ -498,8 +502,8 @@ char *ToWords(char *digits) {
       } else if (digitValues[2] == 0) {
         twoDigitWord = TENS[digitValues[1]];
       } else {
-        twoDigitWord = Str::Asprintf("%s-%s", TENS[digitValues[1]],
-                                     NUMBER_WORDS[digitValues[2]]);
+        twoDigitWord = Str::Join(TENS[digitValues[1]], "-",
+                                 NUMBER_WORDS[digitValues[2]], nullptr);
         freeTwoDigitWord = true;
       }
     }
@@ -520,8 +524,8 @@ char *ToWords(char *digits) {
                       twoDigitWord, *largeSumWord, separator, result, nullptr);
       }
     } else {
-      updatedResult = Str::Asprintf("%s%s%s%s", twoDigitWord, *largeSumWord,
-                                    separator, result);
+      updatedResult =
+          Str::Join(twoDigitWord, *largeSumWord, separator, result, nullptr);
     }
     free(result);
     result = updatedResult;

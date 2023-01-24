@@ -143,8 +143,8 @@ char *StenoCompiledOrthography::AddSuffix(const char *word,
     }
     return candidates[0].text;
   }
-  for (size_t i = 0; i < candidates.GetCount(); ++i) {
-    free(candidates[i].text);
+  for (SuffixEntry &entry : candidates) {
+    free(entry.text);
   }
 
   char *text = Str::Join(word, " ^", suffix, nullptr);
@@ -173,8 +173,15 @@ void StenoCompiledOrthography::AddCandidates(List<SuffixEntry> &candidates,
                       : 0;
   char *text = Str::Join(word + offset, " ^", suffix, nullptr);
 
+  PatternQuickReject inputQuickReject(text);
+
   for (size_t i = 0; i < data.ruleCount; ++i) {
-    const PatternMatch match = patterns[i].Match(text);
+    const Pattern &pattern = patterns[i];
+    if (!pattern.IsPossibleMatch(inputQuickReject)) {
+      continue;
+    }
+
+    const PatternMatch match = pattern.MatchBypassingQuickReject(text);
     if (!match.match) {
       continue;
     }

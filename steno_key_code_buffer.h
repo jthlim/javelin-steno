@@ -47,8 +47,8 @@ public:
   void AppendTextNoCaseModeOverride(const char *p, size_t n,
                                     StenoCaseMode outputCaseMode);
 
-  char *ToString();
-  char *ToUnresolvedString();
+  char *ToString(size_t startingOffset = 0) const;
+  char *ToUnresolvedString() const;
 
   static bool IsGlue(const char *p);
 

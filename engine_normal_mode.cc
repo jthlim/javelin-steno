@@ -90,6 +90,8 @@ void StenoEngine::ProcessNormalModeStroke(StenoStroke stroke) {
     }
   }
 
+  PrintTextLog(previousConversionBuffer.keyCodeBuffer,
+               nextConversionBuffer.keyCodeBuffer);
   PrintPaperTape(stroke, previousSegmentList, nextSegmentList);
   if (printSuggestions) {
     PrintSuggestions(previousSegmentList, nextSegmentList);
@@ -148,6 +150,8 @@ void StenoEngine::ProcessNormalModeUndo() {
   emitter.Process(previousConversionBuffer.keyCodeBuffer,
                   nextConversionBuffer.keyCodeBuffer);
 
+  PrintTextLog(previousConversionBuffer.keyCodeBuffer,
+               nextConversionBuffer.keyCodeBuffer);
   PrintPaperTapeUndo(undoCount);
 }
 
@@ -168,7 +172,7 @@ void StenoEngine::UpdateNormalModeTextBuffer(size_t sourceStrokeCount,
 
 //---------------------------------------------------------------------------
 
-void StenoEngine::PrintPaperTapeUndo(size_t undoCount) {
+void StenoEngine::PrintPaperTapeUndo(size_t undoCount) const {
   if (!IsPaperTapeEnabled()) {
     return;
   }
@@ -180,9 +184,9 @@ void StenoEngine::PrintPaperTapeUndo(size_t undoCount) {
       undoCount);
 }
 
-void StenoEngine::PrintPaperTape(StenoStroke stroke,
-                                 const StenoSegmentList &previousSegmentList,
-                                 const StenoSegmentList &nextSegmentList) {
+void StenoEngine::PrintPaperTape(
+    StenoStroke stroke, const StenoSegmentList &previousSegmentList,
+    const StenoSegmentList &nextSegmentList) const {
   if (!IsPaperTapeEnabled()) {
     return;
   }
@@ -278,7 +282,7 @@ void StenoEngine::PrintSuggestions(const StenoSegmentList &previousSegmentList,
 }
 
 void StenoEngine::PrintSuggestion(const char *p, size_t arrowPrefixCount,
-                                  char *buffer, size_t strokeThreshold) {
+                                  char *buffer, size_t strokeThreshold) const {
   StenoReverseDictionaryLookup result(strokeThreshold, p);
   ReverseLookup(result);
   if (result.resultCount == 0) {
@@ -384,6 +388,54 @@ char *StenoEngine::PrintSegmentSuggestion(size_t wordCount,
     return nullptr;
   }
   return lookup;
+}
+
+void StenoEngine::PrintTextLog(
+    const StenoKeyCodeBuffer &previousKeyCodeBuffer,
+    const StenoKeyCodeBuffer &nextKeyCodeBuffer) const {
+  if (!IsTextLogEnabled()) {
+    return;
+  }
+
+  const StenoKeyCode *previousData = previousKeyCodeBuffer.buffer;
+  size_t previousLength = previousKeyCodeBuffer.count;
+  const StenoKeyCode *nextData = nextKeyCodeBuffer.buffer;
+  size_t nextLength = nextKeyCodeBuffer.count;
+  size_t i = 0;
+  while (i < previousLength && i < nextLength &&
+         previousData[i] == nextData[i]) {
+    ++i;
+  }
+
+  size_t backspaceCount = 0;
+  for (size_t j = i; j < previousLength; ++j) {
+    if (!previousData[j].IsRawKeyCode()) {
+      ++backspaceCount;
+    }
+  }
+
+  Console::Printf("EV {\"event\":\"text_log\",\"text\":\"");
+  static const char BACKSPACES[] =
+      "\\b\\b\\b\\b\\b\\b\\b\\b\\b\\b\\b\\b\\b\\b\\b\\b";
+
+  while (backspaceCount > 0) {
+    size_t writeCount = backspaceCount > 16 ? 16 : backspaceCount;
+    Console::Write(BACKSPACES, 2 * writeCount);
+    backspaceCount -= writeCount;
+  }
+
+  if (i < nextLength) {
+    char *text = nextKeyCodeBuffer.ToString(i);
+
+    size_t bufferSize = 2 * strlen(text) + 1;
+    char *jsonBuffer = (char *)malloc(bufferSize);
+    char *end = Str::WriteJson(jsonBuffer, text);
+    Console::Write(jsonBuffer, end - jsonBuffer);
+    free(jsonBuffer);
+
+    free(text);
+  }
+  Console::Write("\"}\n\n", 4);
 }
 
 //---------------------------------------------------------------------------

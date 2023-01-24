@@ -3,6 +3,7 @@
 #include "macos_us_unicode_data.h"
 #include "key_code.h"
 #include "steno_key_code.h"
+#include <stdlib.h>
 
 //---------------------------------------------------------------------------
 
@@ -156,13 +157,18 @@ static constexpr uint16_t DATA[] = {
 
 //---------------------------------------------------------------------------
 
-const uint16_t *
-MacOsUsUnicodeData::GetSequenceForUnicode(uint32_t unicode) {
+const uint16_t *MacOsUsUnicodeData::GetSequenceForUnicode(uint32_t unicode) {
   const uint16_t *left = DATA + 1;
   const uint16_t *right = DATA + sizeof(DATA) / sizeof(*DATA) - 1;
 
   while (left < right) {
-    const uint16_t *mid = left + (right - left) / 2;
+#if JAVELIN_PLATFORM_PICO_SDK
+    // Optimization when top bit of pointer cannot be set.
+    const uint16_t *mid =
+        (const uint16_t *)((size_t(left) + size_t(right)) / 2);
+#else
+    const uint16_t *mid = left + size_t(right - left) / 2;
+#endif
 
     const uint16_t *entryStart = mid;
     while (entryStart[-1] != 0) {

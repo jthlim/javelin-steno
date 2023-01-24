@@ -4,6 +4,20 @@
 
 //---------------------------------------------------------------------------
 
+inline const uint8_t *WordList::FindWordStart(const uint8_t *p) {
+  while (!IsValueByte(p[-1])) {
+    --p;
+  }
+  return p;
+}
+
+inline const uint8_t *WordList::FindValueByteForward(const uint8_t *p) {
+  while (!IsValueByte(*p)) {
+    ++p;
+  }
+  return p;
+}
+
 int WordList::GetWordRank(const uint8_t *word) {
   if (ContainsEmoji(word)) {
     return -1;
@@ -13,21 +27,19 @@ int WordList::GetWordRank(const uint8_t *word) {
   const uint8_t *right = instance.dataEnd;
 
   while (left < right) {
-    const uint8_t *mid = left + (right - left) / 2;
-
-    const uint8_t *wordStart = mid;
-    while (!IsValueByte(wordStart[-1])) {
-      --wordStart;
-    }
+#if JAVELIN_PLATFORM_PICO_SDK
+    // Optimization when top bit of pointer cannot be set.
+    const uint8_t *mid = (const uint8_t *)((size_t(left) + size_t(right)) / 2);
+#else
+    const uint8_t *mid = left + size_t(right - left) / 2;
+#endif
+    const uint8_t *wordStart = FindWordStart(mid);
 
     int compare = Compare(word, wordStart);
     if (compare < 0) {
       right = wordStart;
     } else {
-      const uint8_t *wordEnd = mid;
-      while (!IsValueByte(*wordEnd)) {
-        ++wordEnd;
-      }
+      const uint8_t *wordEnd = FindValueByteForward(mid);
 
       if (compare > 0) {
         left = wordEnd + 1;
@@ -42,7 +54,7 @@ int WordList::GetWordRank(const uint8_t *word) {
 
 bool WordList::ContainsEmoji(const uint8_t *word) {
   while (*word) {
-    if ((*word & 0xf8) == 0xf0) {
+    if (*word >= 0xf0) {
       return true;
     }
     ++word;

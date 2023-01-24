@@ -577,6 +577,8 @@ bool StenoJeffModifiers::TriggerSendKey(StenoStroke stroke) const {
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+#if RUN_TESTS
+
 #include "../key_code.h"
 #include "../unit_test.h"
 #include "fake_processor.h"
@@ -594,5 +596,7 @@ TEST_BEGIN("JeffModifiers tests") {
   assert(Key::history[0].code == KeyCode::L_META);
 }
 TEST_END
+
+#endif // RUN_TESTS
 
 //---------------------------------------------------------------------------

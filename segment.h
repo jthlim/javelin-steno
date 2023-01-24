@@ -9,16 +9,9 @@
 
 // A steno segment is a mapping of List<Stroke> -> Translation.
 struct StenoSegment {
-  StenoSegment();
   StenoSegment(size_t strokeLength, const StenoState *state,
                StenoDictionaryLookupResult lookup)
       : strokeLength(strokeLength), state(state), lookup(lookup) {}
-
-  static StenoSegment CreateInvalid() {
-    StenoSegment segment;
-    segment.strokeLength = 0;
-    return segment;
-  }
 
   bool ContainsKeyCode() const;
 

@@ -2,6 +2,7 @@
 
 #pragma once
 #include <stdint.h>
+#include <stdlib.h>
 
 #if RUN_TESTS
 #include <vector>

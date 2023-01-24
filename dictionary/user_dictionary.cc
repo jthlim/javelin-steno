@@ -488,7 +488,7 @@ void StenoUserDictionary::Reset_Binding(void *context,
                                         const char *commandLine) {
   StenoUserDictionary *userDictionary = (StenoUserDictionary *)context;
   userDictionary->Reset();
-  Console::Write("OK\n\n", 4);
+  Console::SendOk();
 }
 
 void StenoUserDictionary::AddEntry_Binding(void *context,
@@ -517,7 +517,7 @@ void StenoUserDictionary::AddEntry_Binding(void *context,
     return;
   }
 
-  Console::Write("OK\n\n", 4);
+  Console::SendOk();
 }
 
 void StenoUserDictionary::RemoveEntry_Binding(void *context,
@@ -536,7 +536,7 @@ void StenoUserDictionary::RemoveEntry_Binding(void *context,
 
   StenoUserDictionary *userDictionary = (StenoUserDictionary *)context;
   userDictionary->Remove(parser.strokes, parser.length);
-  Console::Write("OK\n\n", 4);
+  Console::SendOk();
 }
 
 //---------------------------------------------------------------------------

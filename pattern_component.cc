@@ -1,6 +1,7 @@
 //---------------------------------------------------------------------------
 
 #include "pattern_component.h"
+#include "pattern_quick_reject.h"
 #include <string.h>
 
 //---------------------------------------------------------------------------
@@ -24,11 +25,12 @@ void PatternComponent::RemoveEpsilon() {
   }
 }
 
-uint32_t PatternComponent::CreateAccelerator(uint32_t v) const {
+void PatternComponent::UpdateQuickReject(
+    PatternQuickReject &quickReject) const {
   if (!next) {
-    return v;
+    return;
   }
-  return next->CreateAccelerator(v);
+  next->UpdateQuickReject(quickReject);
 }
 
 bool EpsilonPatternComponent::Match(const char *p,
@@ -140,15 +142,25 @@ bool EndOfLinePatternComponent::Match(const char *p,
 
 //---------------------------------------------------------------------------
 
-uint32_t LiteralPatternComponent::CreateAccelerator(uint32_t v) const {
-  const char *p = text;
-  while (*p) {
-    int c = *p++;
-    if ('a' <= c && c <= 'z') {
-      v |= 1 << (c - 'a');
-    }
+void BytePatternComponent::UpdateQuickReject(
+    PatternQuickReject &quickReject) const {
+  quickReject.Update(byte);
+  PatternComponent::UpdateQuickReject(quickReject);
+}
+
+bool BytePatternComponent::Match(const char *p, PatternContext &context) const {
+  if (*p != byte) {
+    return false;
   }
-  return PatternComponent::CreateAccelerator(v);
+  return CallNext(p + 1, context);
+}
+
+//---------------------------------------------------------------------------
+
+void LiteralPatternComponent::UpdateQuickReject(
+    PatternQuickReject &quickReject) const {
+  quickReject.Update(text);
+  PatternComponent::UpdateQuickReject(quickReject);
 }
 
 bool LiteralPatternComponent::Match(const char *p,

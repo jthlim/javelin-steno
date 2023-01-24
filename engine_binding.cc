@@ -23,7 +23,7 @@ void StenoEngine::EnableDictionary_Binding(void *context,
 
   StenoEngine *engine = (StenoEngine *)context;
   if (engine->EnableDictionary(dictionary)) {
-    Console::Write("OK\n\n", 4);
+    Console::SendOk();
   } else {
     Console::Printf("ERR Unable to enable dictionary: \"%s\"\n\n", dictionary);
   }
@@ -40,7 +40,7 @@ void StenoEngine::DisableDictionary_Binding(void *context,
 
   StenoEngine *engine = (StenoEngine *)context;
   if (engine->DisableDictionary(dictionary)) {
-    Console::Write("OK\n\n", 4);
+    Console::SendOk();
   } else {
     Console::Printf("ERR Unable to disable dictionary: \"%s\"\n\n", dictionary);
   }
@@ -57,7 +57,7 @@ void StenoEngine::ToggleDictionary_Binding(void *context,
 
   StenoEngine *engine = (StenoEngine *)context;
   if (engine->ToggleDictionary(dictionary)) {
-    Console::Write("OK\n\n", 4);
+    Console::SendOk();
   } else {
     Console::Printf("ERR Unable to toggle dictionary: \"%s\"\n\n", dictionary);
   }
@@ -73,28 +73,42 @@ void StenoEngine::EnablePaperTape_Binding(void *context,
                                           const char *commandLine) {
   StenoEngine *engine = (StenoEngine *)context;
   engine->EnablePaperTape();
-  Console::Write("OK\n\n", 4);
+  Console::SendOk();
 }
 
 void StenoEngine::DisablePaperTape_Binding(void *context,
                                            const char *commandLine) {
   StenoEngine *engine = (StenoEngine *)context;
   engine->DisablePaperTape();
-  Console::Write("OK\n\n", 4);
+  Console::SendOk();
 }
 
 void StenoEngine::EnableSuggestions_Binding(void *context,
                                             const char *commandLine) {
   StenoEngine *engine = (StenoEngine *)context;
   engine->EnableSuggestions();
-  Console::Write("OK\n\n", 4);
+  Console::SendOk();
 }
 
 void StenoEngine::DisableSuggestions_Binding(void *context,
                                              const char *commandLine) {
   StenoEngine *engine = (StenoEngine *)context;
   engine->DisableSuggestions();
-  Console::Write("OK\n\n", 4);
+  Console::SendOk();
+}
+
+void StenoEngine::EnableTextLog_Binding(void *context,
+                                        const char *commandLine) {
+  StenoEngine *engine = (StenoEngine *)context;
+  engine->EnableTextLog();
+  Console::SendOk();
+}
+
+void StenoEngine::DisableTextLog_Binding(void *context,
+                                         const char *commandLine) {
+  StenoEngine *engine = (StenoEngine *)context;
+  engine->DisableTextLog();
+  Console::SendOk();
 }
 
 void StenoEngine::Lookup_Binding(void *context, const char *commandLine) {
@@ -102,6 +116,7 @@ void StenoEngine::Lookup_Binding(void *context, const char *commandLine) {
   const char *lookup = strchr(commandLine, ' ');
   if (lookup == nullptr) {
     Console::Printf("ERR Unable to lookup empty word\n\n");
+    return;
   }
 
   ++lookup;

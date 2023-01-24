@@ -8,24 +8,26 @@
 
 #if JAVELIN_ASSEMBLER_THUMB2
 __attribute__((naked)) uint32_t Bit<4>::PopCount(uint32_t v) {
-  asm volatile("ldr r1,=#0x49249249 \n\t"
-               "lsr r2,r0,#1        \n\t"
-               "and r2,r1           \n\t"
-               "lsr r3,r0,#2        \n\t"
-               "and r3,r1           \n\t"
-               "and r0,r1           \n\t"
-               "add r0,r2           \n\t"
-               "add r0,r3           \n\t"
-               "lsr r1,r0,#3        \n\t"
-               "add r0,r1           \n\t"
-               "ldr r1,=#0xC71C71C7 \n\t"
-               "and r0,r1           \n\t"
-               "lsr r1,r0,#6        \n\t"
-               "add r0,r1           \n\t"
-               "ldr r1,=#0x04004004 \n\t"
-               "mul r0,r1           \n\t"
-               "lsr r0,#26          \n\t"
-               "bx lr               \n\t");
+  asm volatile(R"(
+    ldr  r1, =#0x49249249
+    lsr  r2, r0, #1
+    and  r2, r1
+    lsr  r3, r0, #2
+    and  r3, r1
+    and  r0, r1
+    add  r0, r2
+    add  r0, r3
+    lsr  r1, r0, #3
+    add  r0, r1
+    ldr  r1, =#0xC71C71C7
+    and  r0, r1
+    lsr  r1, r0, #6
+    add  r0, r1
+    ldr  r1, =#0x04004004
+    mul  r0, r1
+    lsr  r0, #26
+    bx   lr
+  )");
 }
 #else
 

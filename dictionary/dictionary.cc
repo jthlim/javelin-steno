@@ -10,35 +10,41 @@
 
 const char StenoDictionary::SPACES[SPACES_COUNT + 1] = "                ";
 
-static const char *ReturnContextAsString(const StenoDictionaryLookupResult *p) {
-  return (const char *)p->context;
-}
-
-static void FreeString(StenoDictionaryLookupResult *p) {
-  free((void *)p->context);
-}
-
-static void Nop(StenoDictionaryLookupResult *) {}
-
-const StenoDictionaryLookupResult::StenoDictionaryLookupResultVtbl
-    StenoDictionaryLookupResult::invalidVtbl = {
-        .getTextMethod = nullptr,
-        .destroyMethod = Nop,
-};
-
-const StenoDictionaryLookupResult::StenoDictionaryLookupResultVtbl
-    StenoDictionaryLookupResult::staticVtbl = {
-        .getTextMethod = ReturnContextAsString,
-        .destroyMethod = Nop,
-};
-
-const StenoDictionaryLookupResult::StenoDictionaryLookupResultVtbl
-    StenoDictionaryLookupResult::dynamicVtbl = {
-        .getTextMethod = ReturnContextAsString,
-        .destroyMethod = FreeString,
-};
-
 //---------------------------------------------------------------------------
+
+#if JAVELIN_PLATFORM_PICO_SDK
+
+#if JAVELIN_ASSEMBLER_THUMB2
+
+__attribute__((naked)) void StenoDictionaryLookupResult::Destroy() {
+  asm volatile(R"(
+    ldr r0, [r0]
+    lsr r0, #1
+    bcs 1f
+    bx  lr
+  1:
+    ldr r1, =free
+    bx r1
+  )");
+}
+
+#else
+
+void StenoDictionaryLookupResult::Destroy() {
+  if (text & 1) {
+    free((void *)(text >> 1));
+  }
+}
+
+#endif
+
+#else
+void StenoDictionaryLookupResult::Nop(StenoDictionaryLookupResult *) {}
+
+void StenoDictionaryLookupResult::FreeText(StenoDictionaryLookupResult *p) {
+  free((char *)p->text);
+}
+#endif
 
 void StenoReverseDictionaryLookup::AddResult(
     const StenoStroke *c, size_t length,

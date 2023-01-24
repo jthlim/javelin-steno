@@ -7,7 +7,7 @@
 //---------------------------------------------------------------------------
 
 struct KeyboardLayoutTable {
-  uint8_t values[256];
+  uint8_t values[128];
 };
 
 class KeyboardLayout {

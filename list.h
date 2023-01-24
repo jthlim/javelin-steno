@@ -73,8 +73,6 @@ public:
     return false;
   }
 
-  T *GetData() const { return (T *)buffer; }
-
   T &operator[](size_t i) {
     assert(i < count);
     return ((T *)buffer)[i];
@@ -85,6 +83,12 @@ public:
   }
   T &Back() { return (*this)[count - 1]; }
   const T &Back() const { return (*this)[count - 1]; }
+
+  friend const T *begin(const List &list) { return (const T *)list.buffer; }
+  friend const T *end(const List &list) { return begin(list) + list.count; }
+
+  friend T *begin(List &list) { return (T *)list.buffer; }
+  friend T *end(List &list) { return begin(list) + list.count; }
 };
 
 //---------------------------------------------------------------------------

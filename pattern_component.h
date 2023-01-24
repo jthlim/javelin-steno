@@ -3,10 +3,15 @@
 #pragma once
 #include "pool_allocate.h"
 #include <assert.h>
+#include <string.h>
 
 //---------------------------------------------------------------------------
 
 constexpr size_t PATTERN_COMPONENT_BLOCK_SIZE = 1024;
+
+//---------------------------------------------------------------------------
+
+class PatternQuickReject;
 
 //---------------------------------------------------------------------------
 
@@ -24,7 +29,7 @@ public:
   virtual bool IsEpsilon() const { return false; }
 
   virtual void RemoveEpsilon();
-  virtual uint32_t CreateAccelerator(uint32_t v = 0) const;
+  virtual void UpdateQuickReject(PatternQuickReject &quickReject) const;
 
   static void *operator new(size_t size);
 
@@ -114,16 +119,37 @@ private:
   size_t index;
 };
 
-class LiteralPatternComponent : public PatternComponent {
+class BytePatternComponent : public PatternComponent {
 public:
-  LiteralPatternComponent(const char *text) : text(text) {}
+  BytePatternComponent(uint8_t byte) : byte(byte) {}
 
-  virtual uint32_t CreateAccelerator(uint32_t v = 0) const;
+  virtual void UpdateQuickReject(PatternQuickReject &quickReject) const;
 
   virtual bool Match(const char *p, PatternContext &context) const final;
 
 private:
-  const char *text;
+  uint8_t byte;
+};
+
+class LiteralPatternComponent : public PatternComponent {
+public:
+  LiteralPatternComponent(const char *text, size_t length) {
+    char *mutableText = (char *)this->text;
+    mutableText[length] = '\0';
+    memcpy(mutableText, text, length);
+  }
+
+  virtual void UpdateQuickReject(PatternQuickReject &quickReject) const;
+
+  virtual bool Match(const char *p, PatternContext &context) const final;
+
+  static void *operator new(size_t size, size_t textLength) {
+    return PatternComponent::operator new((size + textLength + sizeof(size_t)) &
+                                          -sizeof(size_t));
+  }
+
+private:
+  const char text[];
 };
 
 class ContainerPatternComponent : public PatternComponent {

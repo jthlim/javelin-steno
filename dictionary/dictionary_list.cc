@@ -32,12 +32,11 @@ StenoDictionaryList::StenoDictionaryList(
 
 StenoDictionaryLookupResult
 StenoDictionaryList::Lookup(const StenoDictionaryLookup &lookup) const {
-
-  for (size_t i = 0; i < dictionaries.GetCount(); ++i) {
-    if (!dictionaries[i].enabled) {
+  for (const StenoDictionaryListEntry &entry : dictionaries) {
+    if (!entry.enabled) {
       continue;
     }
-    const StenoDictionary *dictionary = dictionaries[i].dictionary;
+    const StenoDictionary *dictionary = entry.dictionary;
     if (dictionary->GetMaximumOutlineLength() < lookup.length) {
       continue;
     }
@@ -52,11 +51,11 @@ StenoDictionaryList::Lookup(const StenoDictionaryLookup &lookup) const {
 
 const StenoDictionary *StenoDictionaryList::GetLookupProvider(
     const StenoDictionaryLookup &lookup) const {
-  for (size_t i = 0; i < dictionaries.GetCount(); ++i) {
-    if (!dictionaries[i].enabled) {
+  for (const StenoDictionaryListEntry &entry : dictionaries) {
+    if (!entry.enabled) {
       continue;
     }
-    const StenoDictionary *dictionary = dictionaries[i].dictionary;
+    const StenoDictionary *dictionary = entry.dictionary;
     if (dictionary->GetMaximumOutlineLength() < lookup.length) {
       continue;
     }
@@ -71,22 +70,22 @@ const StenoDictionary *StenoDictionaryList::GetLookupProvider(
 
 void StenoDictionaryList::ReverseLookup(
     StenoReverseDictionaryLookup &result) const {
-  for (size_t i = 0; i < dictionaries.GetCount(); ++i) {
-    if (!dictionaries[i].enabled) {
+  for (const StenoDictionaryListEntry &entry : dictionaries) {
+    if (!entry.enabled) {
       continue;
     }
-    const StenoDictionary *dictionary = dictionaries[i].dictionary;
+    const StenoDictionary *dictionary = entry.dictionary;
     dictionary->ReverseLookup(result);
   }
 }
 
 bool StenoDictionaryList::ReverseMapDictionaryLookup(
     StenoReverseMapDictionaryLookup &lookup) const {
-  for (size_t i = 0; i < dictionaries.GetCount(); ++i) {
-    if (!dictionaries[i].enabled) {
+  for (const StenoDictionaryListEntry &entry : dictionaries) {
+    if (!entry.enabled) {
       continue;
     }
-    const StenoDictionary *dictionary = dictionaries[i].dictionary;
+    const StenoDictionary *dictionary = entry.dictionary;
     if (dictionary->ReverseMapDictionaryLookup(lookup)) {
       StenoDictionaryLookup testLookup(lookup.strokes, lookup.length);
       if (GetLookupProvider(testLookup) == dictionary) {
@@ -99,11 +98,11 @@ bool StenoDictionaryList::ReverseMapDictionaryLookup(
 
 void StenoDictionaryList::UpdateMaximumOutlineLength() {
   size_t max = 0;
-  for (size_t i = 0; i < dictionaries.GetCount(); ++i) {
-    if (!dictionaries[i].enabled) {
+  for (const StenoDictionaryListEntry &entry : dictionaries) {
+    if (!entry.enabled) {
       continue;
     }
-    size_t m = dictionaries[i].dictionary->GetMaximumOutlineLength();
+    size_t m = entry.dictionary->GetMaximumOutlineLength();
     if (m > max) {
       max = m;
     }
@@ -118,8 +117,8 @@ size_t StenoDictionaryList::GetMaximumOutlineLength() const {
 const char *StenoDictionaryList::GetName() const { return "list"; }
 
 void StenoDictionaryList::PrintInfo(int depth) const {
-  for (size_t i = 0; i < dictionaries.GetCount(); ++i) {
-    dictionaries[i].dictionary->PrintInfo(depth + 2);
+  for (const StenoDictionaryListEntry &entry : dictionaries) {
+    entry.dictionary->PrintInfo(depth + 2);
   }
 }
 
@@ -141,17 +140,17 @@ bool StenoDictionaryList::PrintDictionary(bool hasData) const {
 //---------------------------------------------------------------------------
 
 void StenoDictionaryList::ListDictionaries() const {
-  for (size_t i = 0; i < dictionaries.GetCount(); ++i) {
-    Console::Printf("%s: %s\n", dictionaries[i].dictionary->GetName(),
-                    dictionaries[i].enabled ? "true" : "false");
+  for (const StenoDictionaryListEntry &entry : dictionaries) {
+    Console::Printf("%s: %s\n", entry.dictionary->GetName(),
+                    entry.enabled ? "true" : "false");
   }
   Console::Printf("\n");
 }
 
 bool StenoDictionaryList::EnableDictionary(const char *name) {
-  for (size_t i = 0; i < dictionaries.GetCount(); ++i) {
-    if (Str::Eq(name, dictionaries[i].dictionary->GetName())) {
-      dictionaries[i].enabled = true;
+  for (StenoDictionaryListEntry &entry : dictionaries) {
+    if (Str::Eq(name, entry.dictionary->GetName())) {
+      entry.enabled = true;
       SendDictionaryStatus(name, true);
       return true;
     }
@@ -160,9 +159,9 @@ bool StenoDictionaryList::EnableDictionary(const char *name) {
 }
 
 bool StenoDictionaryList::DisableDictionary(const char *name) {
-  for (size_t i = 0; i < dictionaries.GetCount(); ++i) {
-    if (Str::Eq(name, dictionaries[i].dictionary->GetName())) {
-      dictionaries[i].enabled = false;
+  for (StenoDictionaryListEntry &entry : dictionaries) {
+    if (Str::Eq(name, entry.dictionary->GetName())) {
+      entry.enabled = false;
       SendDictionaryStatus(name, false);
       return true;
     }
@@ -171,10 +170,10 @@ bool StenoDictionaryList::DisableDictionary(const char *name) {
 }
 
 bool StenoDictionaryList::ToggleDictionary(const char *name) {
-  for (size_t i = 0; i < dictionaries.GetCount(); ++i) {
-    if (Str::Eq(name, dictionaries[i].dictionary->GetName())) {
-      dictionaries[i].enabled = !dictionaries[i].enabled;
-      SendDictionaryStatus(name, dictionaries[i].enabled);
+  for (StenoDictionaryListEntry &entry : dictionaries) {
+    if (Str::Eq(name, entry.dictionary->GetName())) {
+      entry.enabled = !entry.enabled;
+      SendDictionaryStatus(name, entry.enabled);
       return true;
     }
   }
@@ -198,14 +197,14 @@ void StenoDictionaryList::SendDictionaryStatus(const char *name,
 void StenoDictionaryList::EnableDictionaryStatus_Binding(
     void *context, const char *commandLine) {
   EnableSendDictionaryStatus();
-  Console::Write("OK\n\n", 4);
+  Console::SendOk();
 }
 
 void StenoDictionaryList::DisableDictionaryStatus_Binding(
     void *context, const char *commandLine) {
 
   DisableSendDictionaryStatus();
-  Console::Write("OK\n\n", 4);
+  Console::SendOk();
 }
 
 //---------------------------------------------------------------------------

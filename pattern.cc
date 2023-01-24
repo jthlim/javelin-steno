@@ -39,7 +39,9 @@ Pattern Pattern::Compile(const char *p) {
   assert(*context.p == '\0');
   captureStart->RemoveEpsilon();
 
-  return Pattern(captureStart, captureStart->CreateAccelerator());
+  PatternQuickReject quickReject;
+  captureStart->UpdateQuickReject(quickReject);
+  return Pattern(captureStart, quickReject);
 }
 
 //---------------------------------------------------------------------------
@@ -153,7 +155,7 @@ Pattern::BuildResult Pattern::ParseAtom(BuildContext &c) {
     switch (*c.p) {
     case '^':
     case '\\':
-      return BuildResult(new LiteralPatternComponent(Str::DupN(c.p++, 1)));
+      return BuildResult(new BytePatternComponent(*c.p++));
 
     case '1':
     case '2':
@@ -193,8 +195,14 @@ Pattern::BuildResult Pattern::ParseAtom(BuildContext &c) {
   default:
     const char *pStart = c.p;
     c.p = FindLiteralEnd(pStart);
-    return BuildResult(
-        new LiteralPatternComponent(Str::DupN(pStart, c.p - pStart)));
+    size_t length = c.p - pStart;
+    PatternComponent *component;
+    if (length == 1) {
+      component = new BytePatternComponent(*pStart);
+    } else {
+      component = new (length) LiteralPatternComponent(pStart, length);
+    }
+    return BuildResult(component);
   }
 }
 
@@ -260,49 +268,36 @@ Pattern::BuildResult Pattern::ParseQuantifier(BuildContext &c,
 //---------------------------------------------------------------------------
 
 PatternMatch Pattern::Match(const char *text) const {
-  PatternMatch result;
-
-  if (EarlyReject(text)) {
+  PatternQuickReject textReject(text);
+  if (!textReject.IsPossibleMatch(quickReject)) {
+    PatternMatch result;
     result.match = false;
+    return result;
   } else {
-    // This code is in the hot path.
-    // Expand this to avoid calls to __wrap_memset on rp2040.
-    result.captures[0] = nullptr;
-    result.captures[1] = nullptr;
-    result.captures[2] = nullptr;
-    result.captures[3] = nullptr;
-    result.captures[4] = nullptr;
-    result.captures[5] = nullptr;
-    result.captures[6] = nullptr;
-    result.captures[7] = nullptr;
-
-    PatternContext context = {
-        .start = text,
-        .captureList = result.captures,
-    };
-    result.match = root->Match(text, context);
+    return MatchBypassingQuickReject(text);
   }
-  return result;
 }
 
-bool Pattern::EarlyReject(const char *text) const {
-  uint32_t v = accelerator;
+PatternMatch Pattern::MatchBypassingQuickReject(const char *text) const {
+  PatternMatch result;
 
-  const char *p = text;
-  while (*p) {
-    int c = *p++;
-#if JAVELIN_ASSEMBLER_THUMB2
-    // On arm, shifting by more than the width results in 0.
-    v &= ~(1 << (c - 'a'));
-#else
-    // On x86, shifting only uses the lowest bits.
-    if ('a' <= c && c <= 'z') {
-      v &= ~(1 << (c - 'a'));
-    }
-#endif
-  }
+  // This code is in the hot path.
+  // Expand this to avoid calls to __wrap_memset on rp2040.
+  result.captures[0] = nullptr;
+  result.captures[1] = nullptr;
+  result.captures[2] = nullptr;
+  result.captures[3] = nullptr;
+  result.captures[4] = nullptr;
+  result.captures[5] = nullptr;
+  result.captures[6] = nullptr;
+  result.captures[7] = nullptr;
 
-  return v != 0;
+  PatternContext context = {
+      .start = text,
+      .captureList = result.captures,
+  };
+  result.match = root->Match(text, context);
+  return result;
 }
 
 PatternMatch Pattern::Search(const char *text) const {

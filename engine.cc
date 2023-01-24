@@ -119,7 +119,7 @@ bool StenoEngine::ToggleDictionary(const char *name) {
   return dictionary.ToggleDictionary(name);
 }
 
-void StenoEngine::ReverseLookup(StenoReverseDictionaryLookup &result) {
+void StenoEngine::ReverseLookup(StenoReverseDictionaryLookup &result) const {
   dictionary.ReverseLookup(result);
   if (result.resultCount == 0) {
     return;

@@ -109,40 +109,49 @@ char *Str::Dup(const char *p) {
 }
 
 bool Str::HasPrefix(const char *p, const char *prefix) {
-  return strncmp(prefix, p, strlen(prefix)) == 0;
+  for (;;) {
+    if (*prefix == '\0') {
+      return true;
+    }
+    if (*prefix != *p) {
+      return false;
+    }
+    ++prefix;
+    ++p;
+  }
 }
 
 char *Str::WriteJson(char *p, const char *text) {
   while (*text) {
-    switch (*text) {
+    switch (int c = *text++; c) {
     case '\f':
       *p++ = '\\';
       *p++ = 'f';
-      text += 2;
+      ++text;
       break;
 
     case '\b':
       *p++ = '\\';
       *p++ = 'b';
-      text += 2;
+      ++text;
       break;
 
     case '\r':
       *p++ = '\\';
       *p++ = 'r';
-      text += 2;
+      ++text;
       break;
 
     case '\n':
       *p++ = '\\';
       *p++ = 'n';
-      text += 2;
+      ++text;
       break;
 
     case '\t':
       *p++ = '\\';
       *p++ = 't';
-      text += 2;
+      ++text;
       break;
 
     case '\\':
@@ -150,7 +159,7 @@ char *Str::WriteJson(char *p, const char *text) {
       *p++ = '\\';
       [[clang::fallthrough]];
     default:
-      *p++ = *text++;
+      *p++ = c;
       break;
     }
   }
@@ -173,36 +182,31 @@ extern "C" __attribute((naked)) size_t strlen(const char *p) {
 
     add   r0, #1
     lsl   r1, r0, #30
-    bne   1b            // Loop until aligned.
+    bne   1b            // Loop until aligned
 
   2:                    // p is aligned
-    ldr   r1, [r0]
     ldr   r2, =#0x01010101
     lsl   r3, r2, #7
-    sub   r4, r1, r2
-    bic   r4, r1
-    and   r4, r3
-    bne   4f
 
   3:                    // Process 4 bytes
-    ldr   r1, [r0, #4]
+    ldmia r0!, {r1}
     sub   r4, r1, r2
-    add   r0, #4
     bic   r4, r1
     and   r4, r3
     beq   3b
 
-   4:                   // Trailer of loop
-    lsl   r1, r4, #24
-    bne   5f
+  4:                    // Trailer of loop.
+    sub   r0, #4
+    lsr   r4, #8
+    bcs   5f
 
     add   r0, #1
-    lsl   r1, r4, #16
-    bne   5f
+    lsr   r4, #8
+    bcs   5f
 
     add   r0, #1
-    lsl   r1, r4, #8
-    bne   5f
+    lsr   r4, #8
+    bcs   5f
 
     add   r0, #1
 
