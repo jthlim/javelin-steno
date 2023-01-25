@@ -43,6 +43,9 @@ public:
   void ProcessCommand(const char *command);
   void ProcessOrthographicSuffix(const char *text, size_t length);
 
+  void AppendSpace() {
+    buffer[count++] = StenoKeyCode(' ', StenoCaseMode::NORMAL);
+  }
   void AppendText(const char *p, size_t n, StenoCaseMode outputCaseMode);
   void AppendTextNoCaseModeOverride(const char *p, size_t n,
                                     StenoCaseMode outputCaseMode);

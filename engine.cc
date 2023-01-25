@@ -92,6 +92,8 @@ void StenoEngine::PrintInfo() const {
   Console::Printf("    Unicode mode: %s\n", emitter.GetUnicodeModeName());
   Console::Printf("    Keyboard layout: %s\n",
                   KeyboardLayout::GetActiveLayout().GetName());
+  Console::Printf("    Space position: %s\n",
+                  placeSpaceAfter ? "after" : "before");
 
   orthography.PrintInfo();
 

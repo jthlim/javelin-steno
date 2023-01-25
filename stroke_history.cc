@@ -86,35 +86,37 @@ bool StenoStrokeHistory::DirectLookup(BuildSegmentContext &context,
     StenoDictionaryLookupResult lookup =
         context.dictionary.Lookup(strokes + offset, length);
 
-    if (lookup.IsValid()) {
-      const char *lookupText = lookup.GetText();
-      if (lookupText[0] == '{' && lookupText[1] == '*') {
-        if (lookupText[2] == '?' && lookupText[3] == '}') { // {*?}
-          lookup.Destroy();
-          RemoveOffset(context, offset, length);
-          HandleRetroactiveInsertSpace(context, offset);
-          ReevaluateSegments(context, offset);
-          return true;
-        } else if (lookupText[2] == '}') { // {*}
-          lookup.Destroy();
-          RemoveOffset(context, offset, length);
-          HandleRetroactiveToggleAsterisk(context, offset);
-          ReevaluateSegments(context, offset);
-          return true;
-        } else if (lookupText[2] == '+' && lookupText[3] == '}') { // {*+}
-          StenoState state = states[offset];
-          lookup.Destroy();
-          RemoveOffset(context, offset, length);
-          HandleRepeatLastStroke(context, offset, state);
-          ReevaluateSegments(context, offset);
-          return true;
-        }
-      }
-
-      context.segmentList.Add(StenoSegment(length, states + offset, lookup));
-      offset += length;
-      return true;
+    if (!lookup.IsValid()) {
+      continue;
     }
+
+    const char *lookupText = lookup.GetText();
+    if (lookupText[0] == '{' && lookupText[1] == '*') {
+      if (lookupText[2] == '?' && lookupText[3] == '}') { // {*?}
+        lookup.Destroy();
+        RemoveOffset(context, offset, length);
+        HandleRetroactiveInsertSpace(context, offset);
+        ReevaluateSegments(context, offset);
+        return true;
+      } else if (lookupText[2] == '}') { // {*}
+        lookup.Destroy();
+        RemoveOffset(context, offset, length);
+        HandleRetroactiveToggleAsterisk(context, offset);
+        ReevaluateSegments(context, offset);
+        return true;
+      } else if (lookupText[2] == '+' && lookupText[3] == '}') { // {*+}
+        StenoState state = states[offset];
+        lookup.Destroy();
+        RemoveOffset(context, offset, length);
+        HandleRepeatLastStroke(context, offset, state);
+        ReevaluateSegments(context, offset);
+        return true;
+      }
+    }
+
+    context.segmentList.Add(StenoSegment(length, states + offset, lookup));
+    offset += length;
+    return true;
   }
 
   return false;
@@ -139,24 +141,27 @@ bool StenoStrokeHistory::AutoSuffixLookup(BuildSegmentContext &context,
       offset < context.maximumOutlineLength
           ? states
           : states + offset + 1 - context.maximumOutlineLength;
-  for (size_t segmentIndex = 0; segmentIndex < context.segmentList.GetCount();
-       ++segmentIndex) {
-    if (context.segmentList[segmentIndex].state < oldestState) {
+  for (StenoSegment &existingSegment : context.segmentList) {
+    if (existingSegment.state < oldestState) {
       continue;
     }
 
-    StenoSegment segment =
-        AutoSuffixTest(context, context.segmentList[segmentIndex], offset);
+    StenoSegment segment = AutoSuffixTest(context, existingSegment, offset);
+    if (!segment.IsValid()) {
+      continue;
+    }
 
-    if (segment.IsValid()) {
-      // There's a match! Pop off history.
-      while (context.segmentList.GetCount() > segmentIndex + 1) {
-        context.segmentList.Back().lookup.Destroy();
-        context.segmentList.Pop();
+    // There's a match! Pop off history.
+    offset = segment.state - states + segment.strokeLength;
+    StenoSegmentList &segmentList = context.segmentList;
+    for (;;) {
+      StenoSegment &back = segmentList.Back();
+      back.lookup.Destroy();
+      if (&back != &existingSegment) {
+        segmentList.Pop();
+        continue;
       }
-      context.segmentList.Back().lookup.Destroy();
-      context.segmentList.Back() = segment;
-      offset = segment.state - states + segment.strokeLength;
+      existingSegment = segment;
       return true;
     }
   }

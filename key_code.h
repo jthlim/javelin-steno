@@ -81,7 +81,7 @@ struct KeyCode {
     COMMA = 0x36,
     DOT = 0x37,
     SLASH = 0x38,
-    CAPS = 0x39,
+    CAPS_LOCK = 0x39,
 
     F1 = 0x3a,
     F2 = 0x3b,
@@ -96,7 +96,7 @@ struct KeyCode {
     F11 = 0x44,
     F12 = 0x45,
 
-    SYS_RQ = 0x46,
+    PRINT_SCREEN = 0x46,
     SCROLL_LOCK = 0x47,
     PAUSE = 0x48,
     INSERT = 0x49,
@@ -162,9 +162,41 @@ struct KeyCode {
     VOLUME_DOWN = 0x81,
 
     KP_COMMA = 0x85,
+    RO = 0x87,
+    KANA = 0x88,
+    YEN = 0x89,
+    HENKAN = 0x8a,
+    MUHENKAN = 0x8b,
+    KP_JP_COMMA = 0x8c,
+
+    HANGEUL = 0x90,
+    HANJA = 0x91,
+    KATAKANA = 0x92,
+    HIRAGANA = 0x93,
+    HANKAKU_ZENKAKU = 0x94,
+    FURIGANA = 0x95,
+
+    CLEAR = 0x9c,
+
+    CURRENCY_UNIT = 0xb4,
+    CURRENCY_SUB_UNIT = 0xb5,
 
     KP_LEFT_PAREN = 0xb6,
     KP_RIGHT_PAREN = 0xb7,
+    KP_LEFT_BRACE = 0xb8,
+    KP_RIGHT_BRACE = 0xb9,
+    KP_TAB = 0xba,
+    KP_BACKSPACE = 0xbb,
+    KP_A = 0xbc,
+    KP_B = 0xbd,
+    KP_C = 0xbe,
+    KP_D = 0xbf,
+    KP_E = 0xc0,
+    KP_F = 0xc1,
+
+    KP_PLUS_MINUS = 0xd7,
+    KP_CLEAR = 0xd8,
+    KP_CLEAR_ENTRY = 0xd9,
 
     L_CTRL = 0xe0,
     L_SHIFT = 0xe1,
@@ -194,7 +226,7 @@ struct KeyCode {
     MEDIA_SLEEP = 0xf8,
     MEDIA_COFFEE = 0xf9,
     MEDIA_REFRESH = 0xfa,
-    MEDIA_CALC = 0xfb,
+    MEDIA_CALCULATOR = 0xfb,
   };
 };
 

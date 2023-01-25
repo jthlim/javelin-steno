@@ -141,6 +141,10 @@ StenoEngine::UpdateAddTranslationModeTextBuffer(ConversionBuffer &buffer) {
   StenoTokenizer *tokenizer = segmentList.CreateTokenizer();
   buffer.keyCodeBuffer.Append(tokenizer);
   delete tokenizer;
+  if (placeSpaceAfter && !buffer.keyCodeBuffer.state.joinNext &&
+      buffer.strokeHistory.IsNotEmpty()) {
+    buffer.keyCodeBuffer.AppendSpace();
+  }
   return i + segmentList.GetCount();
 }
 

@@ -29,7 +29,11 @@ public:
       PrepareNextP();
     }
   }
-  virtual ~StenoSegmentListTokenizer() { free(scratch); }
+  virtual ~StenoSegmentListTokenizer() {
+    if (scratch) {
+      free(scratch);
+    }
+  }
 
   bool HasMore() const final { return p != nullptr; }
 

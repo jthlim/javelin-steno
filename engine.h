@@ -54,6 +54,9 @@ public:
   void EnableTextLog() { textLogEnabled = true; }
   void DisableTextLog() { textLogEnabled = false; }
 
+  void SetSpaceAfter(bool spaceAfter) { placeSpaceAfter = spaceAfter; }
+
+  static void SetSpacePosition_Binding(void *context, const char *commandLine);
   static void ListDictionaries_Binding(void *context, const char *commandLine);
   static void EnableDictionary_Binding(void *context, const char *commandLine);
   static void DisableDictionary_Binding(void *context, const char *commandLine);
@@ -76,6 +79,7 @@ private:
   bool paperTapeEnabled = false;
   bool suggestionsEnabled = false;
   bool textLogEnabled = false;
+  bool placeSpaceAfter = false;
   StenoEngineMode mode = StenoEngineMode::NORMAL;
 
   uint32_t strokeCount = 0;

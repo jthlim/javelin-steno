@@ -167,6 +167,10 @@ void StenoEngine::UpdateNormalModeTextBuffer(size_t sourceStrokeCount,
 
   StenoTokenizer *tokenizer = segmentList.CreateTokenizer();
   buffer.keyCodeBuffer.Populate(tokenizer);
+  if (placeSpaceAfter && !buffer.keyCodeBuffer.state.joinNext &&
+      buffer.strokeHistory.IsNotEmpty()) {
+    buffer.keyCodeBuffer.AppendSpace();
+  }
   delete tokenizer;
 }
 
@@ -250,6 +254,11 @@ void StenoEngine::PrintSuggestions(const StenoSegmentList &previousSegmentList,
     const StenoKeyCode *skc =
         &nextConversionBuffer.keyCodeBuffer
              .buffer[nextConversionBuffer.keyCodeBuffer.count - 1];
+
+    if (placeSpaceAfter && skc > nextConversionBuffer.keyCodeBuffer.buffer) {
+      skc--;
+    }
+
     size_t keyCodeCount = 0;
     while (skc >= nextConversionBuffer.keyCodeBuffer.buffer &&
            !skc->IsWhitespace() && !skc->IsRawKeyCode()) {

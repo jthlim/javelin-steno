@@ -6,6 +6,27 @@
 
 //---------------------------------------------------------------------------
 
+void StenoEngine::SetSpacePosition_Binding(void *context,
+                                           const char *commandLine) {
+  const char *stenoMode = strchr(commandLine, ' ');
+  if (!stenoMode) {
+    Console::Printf("ERR No space position specified\n\n");
+    return;
+  }
+
+  ++stenoMode;
+  if (Str::Eq(stenoMode, "before")) {
+    ((StenoEngine *)context)->placeSpaceAfter = false;
+  } else if (Str::Eq(stenoMode, "after")) {
+    ((StenoEngine *)context)->placeSpaceAfter = true;
+  } else {
+    Console::Printf("ERR Unable to set space position: \"%s\"\n\n", stenoMode);
+    return;
+  }
+
+  Console::SendOk();
+}
+
 void StenoEngine::ListDictionaries_Binding(void *context,
                                            const char *commandLine) {
   StenoEngine *engine = (StenoEngine *)context;

@@ -18,11 +18,14 @@ struct StenoConfigBlock {
   UnicodeMode unicodeMode;
   KeyboardLayout keyboardLayout;
   bool hidCompatibilityMode;
+  bool useSpaceAfter;
+
+  bool _reserved[21];
 
   int8_t keyMap[(int)StenoKey::COUNT];
 };
 
-static_assert(sizeof(StenoConfigBlock) == 52,
+static_assert(sizeof(StenoConfigBlock) == 74,
               "Config block is of unexpected size");
 
 //---------------------------------------------------------------------------
