@@ -127,31 +127,26 @@ char *Str::WriteJson(char *p, const char *text) {
     case '\f':
       *p++ = '\\';
       *p++ = 'f';
-      ++text;
       break;
 
     case '\b':
       *p++ = '\\';
       *p++ = 'b';
-      ++text;
       break;
 
     case '\r':
       *p++ = '\\';
       *p++ = 'r';
-      ++text;
       break;
 
     case '\n':
       *p++ = '\\';
       *p++ = 'n';
-      ++text;
       break;
 
     case '\t':
       *p++ = '\\';
       *p++ = 't';
-      ++text;
       break;
 
     case '\\':

@@ -42,12 +42,17 @@ void StenoEngine::EnableDictionary_Binding(void *context,
   }
   ++dictionary;
 
+  BufferWriter bufferWriter;
+  IWriter::Push(&bufferWriter);
   StenoEngine *engine = (StenoEngine *)context;
-  if (engine->EnableDictionary(dictionary)) {
+  bool result = engine->EnableDictionary(dictionary);
+  IWriter::Pop();
+  if (result) {
     Console::SendOk();
   } else {
     Console::Printf("ERR Unable to enable dictionary: \"%s\"\n\n", dictionary);
   }
+  bufferWriter.WriteBufferToStackTop();
 }
 
 void StenoEngine::DisableDictionary_Binding(void *context,
@@ -59,12 +64,17 @@ void StenoEngine::DisableDictionary_Binding(void *context,
   }
   ++dictionary;
 
+  BufferWriter bufferWriter;
+  IWriter::Push(&bufferWriter);
   StenoEngine *engine = (StenoEngine *)context;
-  if (engine->DisableDictionary(dictionary)) {
+  bool result = engine->DisableDictionary(dictionary);
+  IWriter::Pop();
+  if (result) {
     Console::SendOk();
   } else {
     Console::Printf("ERR Unable to disable dictionary: \"%s\"\n\n", dictionary);
   }
+  bufferWriter.WriteBufferToStackTop();
 }
 
 void StenoEngine::ToggleDictionary_Binding(void *context,
@@ -76,12 +86,17 @@ void StenoEngine::ToggleDictionary_Binding(void *context,
   }
   ++dictionary;
 
+  BufferWriter bufferWriter;
+  IWriter::Push(&bufferWriter);
   StenoEngine *engine = (StenoEngine *)context;
-  if (engine->ToggleDictionary(dictionary)) {
+  bool result = engine->ToggleDictionary(dictionary);
+  IWriter::Pop();
+  if (result) {
     Console::SendOk();
   } else {
     Console::Printf("ERR Unable to toggle dictionary: \"%s\"\n\n", dictionary);
   }
+  bufferWriter.WriteBufferToStackTop();
 }
 
 void StenoEngine::PrintDictionary_Binding(void *context,

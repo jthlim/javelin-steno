@@ -1,5 +1,6 @@
 //---------------------------------------------------------------------------
 
+#include "console.h"
 #include "engine.h"
 #include "key.h"
 #include "str.h"
@@ -13,6 +14,7 @@ struct KeyCodeFunctionEntry {
 
 constexpr KeyCodeFunctionEntry HANDLERS[] = {
     {"add_translation", &StenoKeyCodeBuffer::AddTranslationFunction},
+    {"console", &StenoKeyCodeBuffer::ConsoleFunction},
     {"disable_dictionary", &StenoKeyCodeBuffer::DisableDictionaryFunction},
     {"enable_dictionary", &StenoKeyCodeBuffer::EnableDictionaryFunction},
     {"keyboard_layout", &StenoKeyCodeBuffer::KeyboardLayoutFunction},
@@ -547,6 +549,15 @@ bool StenoKeyCodeBuffer::KeyboardLayoutFunction(
   }
 
   return KeyboardLayout::SetActiveLayout(parameters[1]);
+}
+
+bool StenoKeyCodeBuffer::ConsoleFunction(const List<char *> &parameters) {
+  if (parameters.GetCount() != 2) {
+    return false;
+  }
+
+  Console::RunCommand(parameters[1]);
+  return true;
 }
 
 //---------------------------------------------------------------------------

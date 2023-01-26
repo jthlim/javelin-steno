@@ -85,6 +85,7 @@ public:
   bool SetSpaceFunction(const List<char *> &parameters);
   bool ToggleDictionaryFunction(const List<char *> &parameters);
   bool UnicodeFunction(const List<char *> &parameters);
+  bool ConsoleFunction(const List<char *> &parameters);
 
   void operator=(const StenoKeyCodeBuffer &o);
 

@@ -26,7 +26,6 @@ static const ConsoleCommand HELLO_COMMAND = {
 };
 
 static const size_t MAX_COMMAND_COUNT = 32;
-static bool enableConsoleWrite = true;
 static size_t commandCount = 2;
 static ConsoleCommand commands[MAX_COMMAND_COUNT] = {
     HELLO_COMMAND,
@@ -53,21 +52,7 @@ void Console::RegisterCommand(const char *command, const char *description,
 
 //---------------------------------------------------------------------------
 
-#ifdef RUN_TESTS
-
-std::vector<char> Console::history;
-
-void Console::RawWrite(const char *data, size_t length) {
-  std::copy(data, data + length, std::back_inserter(history));
-}
-
-#endif
-
 void Console::Printf(const char *format, ...) {
-  if (!enableConsoleWrite) {
-    return;
-  }
-
   va_list v;
   va_start(v, format);
 
@@ -76,15 +61,9 @@ void Console::Printf(const char *format, ...) {
   vsnprintf(buffer, length, format, v);
   va_end(v);
 
-  RawWrite(buffer, length - 1);
+  Write(buffer, length - 1);
 
   free(buffer);
-}
-
-void Console::Write(const char *data, size_t length) {
-  if (enableConsoleWrite) {
-    RawWrite(data, length);
-  }
 }
 
 void Console::WriteAsJson(const char *data, char *buffer) {
@@ -157,10 +136,9 @@ void Console::RunCommand(const char *command) {
     return;
   }
 
-  const bool previousEnableConsoleWrite = enableConsoleWrite;
-  enableConsoleWrite = false;
+  IWriter::Push(&EmptyWriter::instance);
   (*consoleCommand->handler)(consoleCommand->context, command);
-  enableConsoleWrite = previousEnableConsoleWrite;
+  IWriter::Pop();
 }
 
 void Console::SendOk() { Write("OK\n\n", 4); }

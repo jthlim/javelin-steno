@@ -39,9 +39,9 @@ public:
 
   static bool HasPrefix(const char *p, const char *prefix);
 
-  // Returns the end of the write area. p must have enough space to store
+  // Returns the end of the write area. buffer must have enough space to store
   // the result;
-  static char *WriteJson(char *p, const char *text);
+  static char *WriteJson(char *buffer, const char *text);
 };
 
 //---------------------------------------------------------------------------

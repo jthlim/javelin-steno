@@ -1,6 +1,7 @@
 //---------------------------------------------------------------------------
 
 #pragma once
+#include "writer.h"
 #include <stdlib.h>
 #if RUN_TESTS
 #include <vector>
@@ -32,7 +33,9 @@ public:
   static void HelloCommand(void *context, const char *line);
   static void HelpCommand(void *context, const char *line);
 
-  static void Write(const char *data, size_t length);
+  static void Write(const char *data, size_t length) {
+    IWriter::WriteToStackTop(data, length);
+  }
   static void WriteAsJson(const char *data, char *buffer);
 
   static void Printf(const char *format, ...) __printflike(1, 2);
@@ -52,7 +55,6 @@ private:
   void ProcessLineBuffer();
 
   static const ConsoleCommand *GetCommand(const char *command);
-  static void RawWrite(const char *data, size_t length);
 };
 
 //---------------------------------------------------------------------------
