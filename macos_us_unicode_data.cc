@@ -162,14 +162,7 @@ const uint16_t *MacOsUsUnicodeData::GetSequenceForUnicode(uint32_t unicode) {
   const uint16_t *right = DATA + sizeof(DATA) / sizeof(*DATA) - 1;
 
   while (left < right) {
-#if JAVELIN_PLATFORM_PICO_SDK
-    // Optimization when top bit of pointer cannot be set.
-    const uint16_t *mid =
-        (const uint16_t *)((size_t(left) + size_t(right)) / 2);
-#else
     const uint16_t *mid = left + size_t(right - left) / 2;
-#endif
-
     const uint16_t *entryStart = mid;
     while (entryStart[-1] != 0) {
       --entryStart;
@@ -202,6 +195,7 @@ TEST_BEGIN("MacOsUsUnicodeData tests") {
   assert(MacOsUsUnicodeData::GetSequenceForUnicode(0x59) == nullptr);
   assert(MacOsUsUnicodeData::GetSequenceForUnicode(0x60)[-1] == 0x60);
   assert(MacOsUsUnicodeData::GetSequenceForUnicode(0x61) == nullptr);
+  assert(MacOsUsUnicodeData::GetSequenceForUnicode(0x2013)[-1] == 0x2013);
   assert(MacOsUsUnicodeData::GetSequenceForUnicode(0xfb02)[-1] == 0xfb02);
   assert(MacOsUsUnicodeData::GetSequenceForUnicode(0xfb03) == nullptr);
 }

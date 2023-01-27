@@ -182,13 +182,7 @@ uint32_t WindowsAltUnicodeData::GetAltCodeForUnicode(uint32_t unicode) {
   const WindowsAltUnicodeEntry *right = DATA + sizeof(DATA) / sizeof(*DATA);
 
   while (left < right) {
-#if JAVELIN_PLATFORM_PICO_SDK
-    // Optimization when top bit of pointer cannot be set.
-    const WindowsAltUnicodeEntry *mid =
-        (const WindowsAltUnicodeEntry *)((size_t(left) + size_t(right)) / 2);
-#else
     const WindowsAltUnicodeEntry *mid = left + size_t(right - left) / 2;
-#endif
 
     int compare = (int)unicode - (int)mid->unicode;
     if (compare < 0) {

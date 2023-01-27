@@ -633,9 +633,10 @@ TEST_BEGIN("StenoKeyCodeEmitter: MacOS US Unicode test") {
 
   StenoKeyCode codes[] = {
       StenoKeyCode(0x00c4, StenoCaseMode::NORMAL), // 'Ä'
+      StenoKeyCode(0x2013, StenoCaseMode::NORMAL), // endash
   };
 
-  emitter.Process(nullptr, 0, codes, 1);
+  emitter.Process(nullptr, 0, codes, 2);
 
   assert_begin();
   assert_press(KeyCode::L_ALT);
@@ -644,6 +645,9 @@ TEST_BEGIN("StenoKeyCodeEmitter: MacOS US Unicode test") {
   assert_press(KeyCode::L_SHIFT);
   assert_tap(KeyCode::A);
   assert_release(KeyCode::L_SHIFT);
+  assert_press(KeyCode::L_ALT);
+  assert_tap(KeyCode::MINUS);
+  assert_release(KeyCode::L_ALT);
   assert_end();
 }
 TEST_END
