@@ -4,11 +4,14 @@
 
 //---------------------------------------------------------------------------
 
+// Returns true if successfully parsed, ERR otherwise.
 bool StrokeListParser::Set(const char *p) {
   length = 0;
 
   for (;;) {
     if (length >= StenoUserDictionary::MAX_STROKE_COUNT) {
+      failureOrEnd = p;
+      return false;
     }
     const char *start = p;
     while (*p != ' ' && *p != '\0' && *p != '/') {

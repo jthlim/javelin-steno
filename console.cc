@@ -68,7 +68,7 @@ void Console::Printf(const char *format, ...) {
 
 void Console::WriteAsJson(const char *data, char *buffer) {
   char *p = Str::WriteJson(buffer, data);
-  Console::Write(buffer, p - buffer);
+  Write(buffer, p - buffer);
 }
 
 void Console::WriteAsJson(const char *data) {
@@ -122,8 +122,7 @@ void Console::ProcessLineBuffer() {
   if (command) {
     (*command->handler)(command->context, lineBufferWithoutId);
   } else {
-    Console::Printf(
-        "ERR Invalid command. Use \"help\" for a list of commands\n\n");
+    Printf("ERR Invalid command. Use \"help\" for a list of commands\n\n");
   }
 }
 
@@ -154,15 +153,15 @@ void Console::SendOk() { Write("OK\n\n", 4); }
 void Console::HelloCommand(void *context, const char *line) {
   char buffer[256];
   memset(buffer, 0, 256);
-  Console::Write(buffer, 256);
-  Console::Write("ID Hello\n\n", 10);
+  Write(buffer, 256);
+  Write("ID Hello\n\n", 10);
 }
 
 void Console::HelpCommand(void *context, const char *line) {
   for (size_t i = 0; i < commandCount; ++i) {
-    Console::Printf("%s: %s\n", commands[i].command, commands[i].description);
+    Printf("%s: %s\n", commands[i].command, commands[i].description);
   }
-  Console::Write("\n", 1);
+  Write("\n", 1);
 }
 
 //---------------------------------------------------------------------------
