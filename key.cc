@@ -39,7 +39,7 @@ void Key::Release(uint8_t key) { ReleaseRaw(TranslateKey(key)); }
 __attribute__((weak)) void Key::Flush() {}
 
 uint8_t Key::TranslateKey(uint8_t key) {
-  if (key >= 128) {
+  if (key >= 64) {
     return key;
   }
   const KeyboardLayoutTable *layoutTable =

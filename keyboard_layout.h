@@ -7,7 +7,7 @@
 //---------------------------------------------------------------------------
 
 struct KeyboardLayoutTable {
-  uint8_t values[128];
+  uint8_t values[64];
 };
 
 class KeyboardLayout {
@@ -17,6 +17,7 @@ public:
     DVORAK,
     COLEMAK,
     WORKMAN,
+    QGMLWY,
     COUNT,
   };
 
