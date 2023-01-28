@@ -7,7 +7,7 @@
 
 class Pattern;
 class StenoCompiledOrthography;
-class StenoOrthography;
+struct StenoOrthography;
 struct StenoOrthographyReverseAutoSuffix;
 
 //---------------------------------------------------------------------------

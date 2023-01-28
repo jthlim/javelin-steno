@@ -1,8 +1,8 @@
 //---------------------------------------------------------------------------
 
-#include "engine.h"
-
 #include "console.h"
+#include "engine.h"
+#include "stroke_list_parser.h"
 
 //---------------------------------------------------------------------------
 
@@ -148,7 +148,6 @@ void StenoEngine::DisableTextLog_Binding(void *context,
 }
 
 void StenoEngine::Lookup_Binding(void *context, const char *commandLine) {
-  StenoEngine *engine = (StenoEngine *)context;
   const char *lookup = strchr(commandLine, ' ');
   if (lookup == nullptr) {
     Console::Printf("ERR Unable to lookup empty word\n\n");
@@ -158,6 +157,7 @@ void StenoEngine::Lookup_Binding(void *context, const char *commandLine) {
   ++lookup;
   StenoReverseDictionaryLookup result(
       StenoReverseDictionaryLookup::MAX_STROKE_THRESHOLD, lookup);
+  StenoEngine *engine = (StenoEngine *)context;
   engine->ReverseLookup(result);
 
   char buffer[256];
@@ -170,6 +170,32 @@ void StenoEngine::Lookup_Binding(void *context, const char *commandLine) {
   }
 
   Console::Write("\n]\n\n", 4);
+}
+
+void StenoEngine::LookupStroke_Binding(void *context, const char *commandLine) {
+  const char *strokeStart = strchr(commandLine, ' ');
+  if (!strokeStart) {
+    Console::Printf("ERR No stroke specified\n\n");
+    return;
+  }
+
+  StrokeListParser parser;
+  if (!parser.Set(strokeStart + 1)) {
+    Console::Printf("ERR Cannot parse stroke near %s\n\n", parser.failureOrEnd);
+    return;
+  }
+
+  StenoEngine *engine = (StenoEngine *)context;
+  StenoDictionaryLookupResult result =
+      engine->dictionary.Lookup(parser.strokes, parser.length);
+
+  if (result.IsValid()) {
+    Console::Write("\"", 1);
+    Console::WriteAsJson(result.GetText());
+    Console::Write("\"\n\n", 3);
+  } else {
+    Console::Printf("null\n\n");
+  }
 }
 
 //---------------------------------------------------------------------------

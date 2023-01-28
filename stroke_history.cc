@@ -231,7 +231,7 @@ StenoSegment StenoStrokeHistory::AutoSuffixTest(BuildSegmentContext &context,
     }
   }
 
-  return StenoSegment(0, nullptr, StenoDictionaryLookupResult::CreateInvalid());
+  return StenoSegment::CreateInvalid();
 }
 
 void StenoStrokeHistory::ReevaluateSegments(BuildSegmentContext &context,

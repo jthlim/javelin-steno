@@ -71,6 +71,13 @@ void Console::WriteAsJson(const char *data, char *buffer) {
   Console::Write(buffer, p - buffer);
 }
 
+void Console::WriteAsJson(const char *data) {
+  size_t length = strlen(data);
+  char *buffer = (char *)malloc(2 * length);
+  WriteAsJson(data, buffer);
+  free(buffer);
+}
+
 __attribute__((weak)) void Console::Flush() {}
 
 //---------------------------------------------------------------------------

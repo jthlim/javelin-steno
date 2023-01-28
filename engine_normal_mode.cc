@@ -435,11 +435,7 @@ void StenoEngine::PrintTextLog(
 
   if (i < nextLength) {
     char *text = nextKeyCodeBuffer.ToString(i);
-    size_t bufferSize = 2 * strlen(text) + 1;
-    char *jsonBuffer = (char *)malloc(bufferSize);
-    Console::WriteAsJson(text, jsonBuffer);
-    free(jsonBuffer);
-
+    Console::WriteAsJson(text);
     free(text);
   }
   Console::Write("\"}\n\n", 4);

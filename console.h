@@ -37,6 +37,7 @@ public:
     IWriter::WriteToStackTop(data, length);
   }
   static void WriteAsJson(const char *data, char *buffer);
+  static void WriteAsJson(const char *data);
 
   static void Printf(const char *format, ...) __printflike(1, 2);
 

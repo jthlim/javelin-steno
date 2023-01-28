@@ -186,9 +186,8 @@ void StenoDictionaryList::SendDictionaryStatus(const char *name,
     return;
   }
 
-  char buffer[256];
   Console::Printf("EV {\"event\":\"dictionary_status\",\"dictionary\":\"");
-  Console::WriteAsJson(name, buffer);
+  Console::WriteAsJson(name);
   Console::Printf("\",\"enabled\":%s}\n\n", enabled ? "true" : "false");
 }
 

@@ -9,6 +9,8 @@
 
 //---------------------------------------------------------------------------
 
+const uint32_t QUESTION_MARK_KEY_CODE = MODIFIER_L_SHIFT_FLAG | KeyCode::SLASH;
+
 UnicodeMode StenoKeyCodeEmitter::emitterMode = UnicodeMode::MACOS_US;
 
 //---------------------------------------------------------------------------
@@ -229,7 +231,7 @@ void StenoKeyCodeEmitter::EmitterContext::ProcessStenoKeyCode(
 void StenoKeyCodeEmitter::EmitterContext::EmitNonAscii(uint32_t unicode) {
   if (0xd800 <= unicode && unicode <= 0xdfff) {
     // Emit question mark. Can't display surrogate pairs.
-    return EmitKeyCode(MODIFIER_L_SHIFT_FLAG | KeyCode::SLASH);
+    return EmitKeyCode(QUESTION_MARK_KEY_CODE);
   }
 
   // Unicode point.
@@ -257,7 +259,7 @@ void StenoKeyCodeEmitter::EmitterContext::EmitNonAscii(uint32_t unicode) {
   case UnicodeMode::NONE:
   default:
     // Can't emit this keycode..
-    EmitKeyCode(ASCII_KEY_CODES['?']);
+    EmitKeyCode(QUESTION_MARK_KEY_CODE);
     break;
   }
 }
@@ -266,7 +268,7 @@ void StenoKeyCodeEmitter::EmitterContext::EmitMacOsUs(uint32_t unicode) {
   const uint16_t *sequence = MacOsUsUnicodeData::GetSequenceForUnicode(unicode);
   if (sequence == nullptr) {
     // Can't emit this keycode..
-    EmitKeyCode(ASCII_KEY_CODES['?']);
+    EmitKeyCode(QUESTION_MARK_KEY_CODE);
     return;
   }
 
@@ -313,7 +315,7 @@ StenoKeyCodeEmitter::EmitterContext::RecurseEmitIBus(uint32_t code) {
 void StenoKeyCodeEmitter::EmitterContext::EmitWindowsAlt(uint32_t unicode) {
   uint32_t alt = WindowsAltUnicodeData::GetAltCodeForUnicode(unicode);
   if (alt == 0) {
-    EmitKeyCode(ASCII_KEY_CODES['?']);
+    EmitKeyCode(QUESTION_MARK_KEY_CODE);
     return;
   }
 
@@ -343,7 +345,7 @@ StenoKeyCodeEmitter::EmitterContext::RecurseEmitWindowsAlt(uint32_t alt) {
 void StenoKeyCodeEmitter::EmitterContext::EmitWindowsHex(uint32_t unicode) {
   if (unicode >= 0x10000) {
     // Can't emit this keycode..
-    EmitKeyCode(ASCII_KEY_CODES['?']);
+    EmitKeyCode(QUESTION_MARK_KEY_CODE);
     return;
   }
 

@@ -17,9 +17,17 @@ struct StenoSegment {
 
   size_t strokeLength;
   const StenoState *state;
-  StenoDictionaryLookupResult lookup;
+  union {
+    size_t _suppressLookupConstructor;
+    StenoDictionaryLookupResult lookup;
+  };
 
   bool IsValid() const { return strokeLength != 0; }
+
+  static StenoSegment CreateInvalid() { return StenoSegment(); }
+
+private:
+  StenoSegment() : strokeLength(0) {}
 };
 
 //---------------------------------------------------------------------------

@@ -70,6 +70,7 @@ public:
   static void EnableTextLog_Binding(void *context, const char *commandLine);
   static void DisableTextLog_Binding(void *context, const char *commandLine);
   static void Lookup_Binding(void *context, const char *commandLine);
+  static void LookupStroke_Binding(void *context, const char *commandLine);
 
 private:
   static const StenoStroke UNDO_STROKE;
