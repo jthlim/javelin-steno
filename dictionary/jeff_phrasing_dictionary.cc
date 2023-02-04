@@ -214,17 +214,21 @@ JeffPhrasingDictionaryData::LookupReverseStructure(uint32_t hash) const {
 #define phrasingData JeffPhrasingDictionaryData::instance
 
 PhrasingParts DetermineParts(StenoStroke stroke) {
-  if ((stroke & StrokeMask::NUM).IsNotEmpty()) {
+  if ((stroke & SIMPLE_STARTER_MASK).IsEmpty()) {
     return PhrasingParts::CreateInvalid();
   }
 
-  if (!phrasingData.IsValidPhraseStroke(stroke)) {
+  if ((stroke & StrokeMask::NUM).IsNotEmpty()) {
     return PhrasingParts::CreateInvalid();
   }
 
   const JeffPhrasingEnder *ender =
       phrasingData.LookupEnder(stroke & ENDER_MASK);
   if (!ender) {
+    return PhrasingParts::CreateInvalid();
+  }
+
+  if (!phrasingData.IsValidPhraseStroke(stroke)) {
     return PhrasingParts::CreateInvalid();
   }
 

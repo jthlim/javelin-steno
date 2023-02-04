@@ -16,12 +16,14 @@ public:
 
   virtual size_t GetMaximumOutlineLength() const { return 10; }
   virtual const char *GetName() const;
-  virtual bool PrintDictionary(bool hasData) const { return false; }
 
   static const StenoJeffNumbersDictionary instance;
 
 private:
   StenoStroke GetDigits(char *scratch, StenoStroke stroke) const;
+
+  StenoDictionaryLookupResult
+  LookupInternal(const StenoDictionaryLookup &lookup) const;
 };
 
 //---------------------------------------------------------------------------

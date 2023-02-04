@@ -36,6 +36,7 @@ struct StenoHashMapEntryBlock {
   uint32_t masks[4];
   uint32_t baseOffset;
 
+  bool IsBitSet(uint32_t bitIndex) const;
   size_t PopCount() const;
 };
 
@@ -60,7 +61,7 @@ struct StenoMapDictionaryStrokesDefinition {
 
 struct StenoMapDictionaryDefinition {
   bool defaultEnabled;
-  uint8_t maximumStrokeCount;
+  uint8_t maximumOutlineLength;
   uint16_t _padding2;
   const char *name;
   const uint8_t *textBlock;

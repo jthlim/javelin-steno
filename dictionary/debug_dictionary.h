@@ -16,7 +16,6 @@ public:
 
   virtual size_t GetMaximumOutlineLength() const { return 1; }
   virtual const char *GetName() const;
-  virtual bool PrintDictionary(bool hasData) const { return false; }
 
   void SetResponse(const char *p) { response = p; }
 

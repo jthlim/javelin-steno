@@ -18,14 +18,14 @@ struct StenoUserDictionaryData {
     hashTableSize = size / 32;
     dataBlock = mem + size / 8;
     dataBlockSize = size - 4 * hashTableSize - Flash::BLOCK_SIZE;
-    maximumStrokeCount = 0;
+    maximumOutlineLength = 0;
   }
 
   const uint32_t *hashTable;
   size_t hashTableSize; // Number of uint32_t, not number of bytes
   const uint8_t *dataBlock;
   size_t dataBlockSize;
-  uint32_t maximumStrokeCount;
+  uint32_t maximumOutlineLength;
 
   const StenoUserDictionaryDescriptor *GetDescriptor() const {
     return (const StenoUserDictionaryDescriptor *)(dataBlock + dataBlockSize);

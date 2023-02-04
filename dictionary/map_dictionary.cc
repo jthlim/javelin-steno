@@ -9,6 +9,10 @@
 
 //---------------------------------------------------------------------------
 
+inline bool StenoHashMapEntryBlock::IsBitSet(uint32_t bitIndex) const {
+  return (masks[bitIndex / 32] & (1 << (bitIndex & 31))) != 0;
+}
+
 size_t StenoHashMapEntryBlock::PopCount() const {
   size_t result = 0;
   for (size_t i = 0; i < sizeof(masks) / sizeof(*masks); ++i) {
@@ -73,15 +77,8 @@ size_t StenoMapDictionaryStrokesDefinition::GetOffset(size_t index) const {
 bool StenoMapDictionaryStrokesDefinition::HasEntry(size_t index) const {
   size_t blockIndex = index / 128;
   size_t blockBitIndex = index % 128;
-  size_t maskIndex = blockBitIndex / 32;
-  size_t bitIndex = blockBitIndex % 32;
 
-  const StenoHashMapEntryBlock &block = offsets[blockIndex];
-
-  // Take advantage of sign bit to test presence.
-  uint32_t mask = block.masks[maskIndex];
-  mask <<= (31 - bitIndex);
-  return (mask & 0x80000000) != 0;
+  return offsets[blockIndex].IsBitSet(blockBitIndex);
 }
 
 size_t StenoMapDictionaryStrokesDefinition::GetEntryCount() const {
@@ -168,6 +165,7 @@ StenoMapDictionary::Lookup(const StenoDictionaryLookup &lookup) const {
     }
   }
 }
+
 const StenoDictionary *StenoMapDictionary::GetLookupProvider(
     const StenoDictionaryLookup &lookup) const {
   const StenoMapDictionaryStrokesDefinition &strokesDefinition =
@@ -213,11 +211,11 @@ bool StenoMapDictionary::ReverseMapDictionaryLookup(
   if (data < definition.strokes[0].data) {
     return false;
   }
-  if (data >= definition.strokes[definition.maximumStrokeCount - 1].offsets) {
+  if (data >= definition.strokes[definition.maximumOutlineLength - 1].offsets) {
     return false;
   }
 
-  for (size_t i = 0; i < definition.maximumStrokeCount; ++i) {
+  for (size_t i = 0; i < definition.maximumOutlineLength; ++i) {
     const StenoMapDictionaryStrokesDefinition &strokeDefinition =
         definition.strokes[i];
 
@@ -243,7 +241,7 @@ void StenoMapDictionary::PrintInfo(int depth) const {
   const uint8_t *start = (const uint8_t *)&definition;
 
   const StenoMapDictionaryStrokesDefinition &lastStrokeDefinition =
-      definition.strokes[definition.maximumStrokeCount - 1];
+      definition.strokes[definition.maximumOutlineLength - 1];
 
   const uint8_t *end =
       (const uint8_t *)(lastStrokeDefinition.offsets +
@@ -254,7 +252,7 @@ void StenoMapDictionary::PrintInfo(int depth) const {
 
 bool StenoMapDictionary::PrintDictionary(bool hasData) const {
   char *buffer = (char *)malloc(2048);
-  for (size_t i = 0; i < definition.maximumStrokeCount; ++i) {
+  for (size_t i = 0; i < definition.maximumOutlineLength; ++i) {
     if (definition.strokes[i].PrintDictionary(hasData, i + 1, buffer,
                                               definition.textBlock)) {
       hasData = true;
@@ -267,7 +265,7 @@ bool StenoMapDictionary::PrintDictionary(bool hasData) const {
 //---------------------------------------------------------------------------
 
 size_t StenoMapDictionary::GetMaximumOutlineLength() const {
-  return definition.maximumStrokeCount;
+  return definition.maximumOutlineLength;
 }
 
 //---------------------------------------------------------------------------

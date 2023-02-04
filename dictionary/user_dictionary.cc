@@ -99,10 +99,6 @@ size_t StenoUserDictionary::GetNextDescriptorToWriteOffset() const {
 
 StenoDictionaryLookupResult
 StenoUserDictionary::Lookup(const StenoDictionaryLookup &lookup) const {
-  if (lookup.length > activeDescriptor->data.maximumStrokeCount) {
-    return StenoDictionaryLookupResult::CreateInvalid();
-  }
-
   size_t entryIndex = lookup.hash;
   for (;;) {
     entryIndex = entryIndex & (activeDescriptor->data.hashTableSize - 1);
@@ -134,10 +130,6 @@ StenoUserDictionary::Lookup(const StenoDictionaryLookup &lookup) const {
 
 const StenoDictionary *StenoUserDictionary::GetLookupProvider(
     const StenoDictionaryLookup &lookup) const {
-  if (lookup.length > activeDescriptor->data.maximumStrokeCount) {
-    return nullptr;
-  }
-
   size_t entryIndex = lookup.hash;
   for (;;) {
     entryIndex = entryIndex & (activeDescriptor->data.hashTableSize - 1);
@@ -167,7 +159,7 @@ const StenoDictionary *StenoUserDictionary::GetLookupProvider(
 }
 
 size_t StenoUserDictionary::GetMaximumOutlineLength() const {
-  return activeDescriptor->data.maximumStrokeCount;
+  return activeDescriptor->data.maximumOutlineLength;
 }
 
 //---------------------------------------------------------------------------
@@ -187,7 +179,7 @@ void StenoUserDictionary::Reset() {
   freshDescriptor->data.hashTableSize = layout.hashTableSize;
   freshDescriptor->data.dataBlock = layout.dataBlock;
   freshDescriptor->data.dataBlockSize = 0;
-  freshDescriptor->data.maximumStrokeCount = 0;
+  freshDescriptor->data.maximumOutlineLength = 0;
   freshDescriptor->UpdateCrc32();
 
   Flash::Write(descriptorBase, freshDescriptor, Flash::BLOCK_SIZE);
@@ -277,8 +269,8 @@ void StenoUserDictionary::AddToDescriptor(size_t strokeLength,
          sizeof(StenoUserDictionaryDescriptor));
   freshDescriptor->data.dataBlockSize =
       activeDescriptor->data.dataBlockSize + dataLength;
-  if (strokeLength > activeDescriptor->data.maximumStrokeCount) {
-    freshDescriptor->data.maximumStrokeCount = (uint32_t)strokeLength;
+  if (strokeLength > activeDescriptor->data.maximumOutlineLength) {
+    freshDescriptor->data.maximumOutlineLength = (uint32_t)strokeLength;
   }
   freshDescriptor->UpdateCrc32();
 
@@ -295,7 +287,7 @@ bool StenoUserDictionary::AddToHashTable(const StenoStroke *strokes,
                                          size_t length, size_t dataOffset) {
   size_t entryIndex = StenoStroke::Hash(strokes, length);
 
-  for (int probeCount = 0; probeCount < 128; ++probeCount) {
+  for (int probeCount = 0; probeCount < 64; ++probeCount) {
     entryIndex = entryIndex & (activeDescriptor->data.hashTableSize - 1);
 
     uint32_t offset = activeDescriptor->data.hashTable[entryIndex];
@@ -536,7 +528,7 @@ TEST_BEGIN("StenoUserDictionary will reset if descriptor is invalid") {
   assert(descriptor->data.dataBlock ==
          (void *)&userDictionaryBuffer[64 * 1024]);
   assert(descriptor->data.dataBlockSize == 0);
-  assert(descriptor->data.maximumStrokeCount == 0);
+  assert(descriptor->data.maximumOutlineLength == 0);
   assert(descriptor->IsValid(layout));
 }
 TEST_END

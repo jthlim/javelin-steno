@@ -67,6 +67,16 @@ bool EndsWith(char *p, size_t length, const char (&suffix)[N]) {
 
 StenoDictionaryLookupResult
 StenoJeffNumbersDictionary::Lookup(const StenoDictionaryLookup &lookup) const {
+  if ((lookup.strokes[0] & StrokeMask::NUM).IsEmpty()) {
+    return StenoDictionaryLookupResult::CreateInvalid();
+  }
+  return LookupInternal(lookup);
+}
+
+// Split off to no-inline to help gcc generate better early-out code.
+__attribute__((noinline)) StenoDictionaryLookupResult
+StenoJeffNumbersDictionary::LookupInternal(
+    const StenoDictionaryLookup &lookup) const {
   char *result = nullptr;
   char scratch[32];
 

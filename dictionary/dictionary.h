@@ -185,7 +185,7 @@ public:
   virtual const char *GetName() const = 0;
 
   virtual void PrintInfo(int depth) const;
-  virtual bool PrintDictionary(bool hasData) const = 0;
+  virtual bool PrintDictionary(bool hasData) const { return hasData; }
 
   virtual void ListDictionaries() const {}
   virtual bool EnableDictionary(const char *name) { return false; }

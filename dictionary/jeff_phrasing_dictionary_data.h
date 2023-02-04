@@ -19,7 +19,7 @@ enum class VerbForm : uint16_t {
   PAST_PARTICIPLE,
 };
 
-enum class Tense {
+enum class Tense : uint16_t {
   // These values should have no overlap with VerbForm
   PRESENT = 0x8000,
   PAST,

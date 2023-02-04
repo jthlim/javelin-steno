@@ -13,7 +13,6 @@ public:
 
   virtual size_t GetMaximumOutlineLength() const { return 1; }
   virtual const char *GetName() const { return "#bad"; }
-  virtual bool PrintDictionary(bool hasData) const { return hasData; }
 
   static const StenoCorruptedDictionary instance;
 };

@@ -18,11 +18,17 @@ const StenoJeffShowStrokeDictionary StenoJeffShowStrokeDictionary::instance;
 
 StenoDictionaryLookupResult StenoJeffShowStrokeDictionary::Lookup(
     const StenoDictionaryLookup &lookup) const {
-  const StenoStroke *strokes = lookup.strokes;
-  if (strokes[0] != trigger) {
+  if (lookup.strokes[0] != trigger) {
     return StenoDictionaryLookupResult::CreateInvalid();
   }
+  return LookupInternal(lookup);
+}
 
+// Split off to no-inline to help gcc generate better early-out code.
+__attribute__((noinline)) StenoDictionaryLookupResult
+StenoJeffShowStrokeDictionary::LookupInternal(
+    const StenoDictionaryLookup &lookup) const {
+  const StenoStroke *strokes = lookup.strokes;
   size_t length = lookup.length;
   if (length == 1) {
     return StenoDictionaryLookupResult::CreateStaticString("`");

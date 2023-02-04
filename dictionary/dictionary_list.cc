@@ -131,8 +131,7 @@ bool StenoDictionaryList::PrintDictionary(bool hasData) const {
       continue;
     }
 
-    bool result = dictionaries[i].dictionary->PrintDictionary(hasData);
-    hasData = hasData | result;
+    hasData = dictionaries[i].dictionary->PrintDictionary(hasData);
   }
   return hasData;
 }
@@ -140,11 +139,19 @@ bool StenoDictionaryList::PrintDictionary(bool hasData) const {
 //---------------------------------------------------------------------------
 
 void StenoDictionaryList::ListDictionaries() const {
+  bool first = true;
   for (const StenoDictionaryListEntry &entry : dictionaries) {
-    Console::Printf("%s: %s\n", entry.dictionary->GetName(),
-                    entry.enabled ? "true" : "false");
+    if (first) {
+      Console::Write("[\n", 2);
+      first = false;
+    } else {
+      Console::Write(",\n", 2);
+    }
+    Console::Printf(" {\"dictionary\":\"");
+    Console::WriteAsJson(entry.dictionary->GetName());
+    Console::Printf("\",\"enabled\":%s}", entry.enabled ? "true" : "false");
   }
-  Console::Printf("\n");
+  Console::Write("\n]\n\n", 4);
 }
 
 bool StenoDictionaryList::EnableDictionary(const char *name) {
