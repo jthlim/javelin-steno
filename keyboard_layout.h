@@ -39,6 +39,8 @@ public:
     return activeInstance.layoutTable;
   }
 
+  static void SetKeyboardLayout_Binding(void *context, const char *commandLine);
+
 private:
   Value value;
 

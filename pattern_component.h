@@ -32,6 +32,7 @@ public:
   virtual void UpdateQuickReject(PatternQuickReject &quickReject) const;
 
   static void *operator new(size_t size);
+  static void operator delete(void *p) {}
 
 protected:
   bool CallNext(const char *p, PatternContext &context) const;

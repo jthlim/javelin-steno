@@ -9,7 +9,7 @@
 
 //---------------------------------------------------------------------------
 
-inline bool StenoHashMapEntryBlock::IsBitSet(uint32_t bitIndex) const {
+inline bool StenoHashMapEntryBlock::IsBitSet(size_t bitIndex) const {
   return (masks[bitIndex / 32] & (1 << (bitIndex & 31))) != 0;
 }
 

@@ -36,7 +36,7 @@ struct StenoHashMapEntryBlock {
   uint32_t masks[4];
   uint32_t baseOffset;
 
-  bool IsBitSet(uint32_t bitIndex) const;
+  bool IsBitSet(size_t bitIndex) const;
   size_t PopCount() const;
 };
 

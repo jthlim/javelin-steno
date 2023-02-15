@@ -9,15 +9,17 @@
 
 class Console;
 struct StenoUserDictionaryDescriptor;
+struct StenoUserDictionaryEntry;
 
 struct StenoUserDictionaryData {
   StenoUserDictionaryData();
   StenoUserDictionaryData(const uint8_t *mem, size_t size) {
     assert((size & (size - 1)) == 0);
     hashTable = (uint32_t *)mem;
+    reverseHashTable = (const uint32_t *)(mem + size / 8);
     hashTableSize = size / 32;
-    dataBlock = mem + size / 8;
-    dataBlockSize = size - 4 * hashTableSize - Flash::BLOCK_SIZE;
+    dataBlock = mem + size / 4;
+    dataBlockSize = 3 * size / 4 - Flash::BLOCK_SIZE;
     maximumOutlineLength = 0;
   }
 
@@ -26,6 +28,9 @@ struct StenoUserDictionaryData {
   const uint8_t *dataBlock;
   size_t dataBlockSize;
   uint32_t maximumOutlineLength;
+
+  // New field in reverseLookupVersion
+  const uint32_t *reverseHashTable;
 
   const StenoUserDictionaryDescriptor *GetDescriptor() const {
     return (const StenoUserDictionaryDescriptor *)(dataBlock + dataBlockSize);
@@ -54,6 +59,8 @@ public:
 
   virtual const StenoDictionary *
   GetLookupProvider(const StenoDictionaryLookup &lookup) const;
+
+  virtual void ReverseLookup(StenoReverseDictionaryLookup &result) const;
 
   virtual size_t GetMaximumOutlineLength() const final;
   virtual const char *GetName() const final;
@@ -94,10 +101,19 @@ private:
                                       uint32_t length, const char *word);
   void AddToDescriptor(size_t strokeLength, size_t dataLength);
   bool AddToHashTable(const StenoStroke *strokes, size_t length, size_t offset);
+  bool AddToReverseHashTable(const char *word, size_t offset);
   void WriteEntryIndex(size_t entryIndex, size_t offset);
+  void WriteReverseEntryIndex(size_t entryIndex, size_t offset);
+
+  const StenoUserDictionaryEntry *
+  RemoveFromHashTable(const StenoStroke *strokes, size_t length);
+
+  bool RemoveFromReverseHashTable(const StenoUserDictionaryEntry *entry);
 
   const StenoUserDictionaryDescriptor *FindMostRecentDescriptor() const;
   size_t GetNextDescriptorToWriteOffset() const;
+
+  void UpgradeToVersionWithReverseLookup();
 };
 
 //---------------------------------------------------------------------------

@@ -34,10 +34,11 @@ private:
   static const size_t MAX_STACK_SIZE = 32;
 
   bool cancelStenoState = false;
+  int inPressAllCount = 0;
   const uint8_t *byteCode;
   int *stackTop = stack;
   StenoKeyState stenoState;
-  int globals[4];
+  int globals[64];
   BitField<256> buttonState;
   BitField<256> keyState;
   int stack[MAX_STACK_SIZE];

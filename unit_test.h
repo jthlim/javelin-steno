@@ -2,11 +2,15 @@
 
 #pragma once
 #include <assert.h>
+
+#ifdef RUN_TESTS
 #include <string>
 #include <vector>
+#endif
 
 //---------------------------------------------------------------------------
 
+#ifdef RUN_TESTS
 class UnitTest {
 public:
   UnitTest(void (*function)(), const char *name, const char *filename,
@@ -20,7 +24,7 @@ private:
   const char *filename;
   int lineNumber;
 
-  static std::vector<const UnitTest *>& GetTests();
+  static std::vector<const UnitTest *> &GetTests();
 };
 
 struct TestFailure {
@@ -28,6 +32,7 @@ struct TestFailure {
 
   std::string message;
 };
+#endif
 
 //---------------------------------------------------------------------------
 

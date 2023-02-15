@@ -557,6 +557,7 @@ char *ToWords(char *digits) {
 
 #include "../unit_test.h"
 #include <assert.h>
+#include <stdio.h>
 
 static void TestLookup(const char *textStroke, const char *expected) {
   StenoStroke stroke;

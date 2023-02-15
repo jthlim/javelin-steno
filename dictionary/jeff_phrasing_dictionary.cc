@@ -1608,7 +1608,7 @@ TEST_BEGIN("JeffPhrasing: Include all past tense results when there's no "
 }
 TEST_END
 
-void VerifyReverseLookup(const char *text, StenoStroke expected) {
+static void VerifyReverseLookup(const char *text, StenoStroke expected) {
   StenoReverseDictionaryLookup lookup(2, text);
   StenoJeffPhrasingDictionary::instance.ReverseLookup(lookup);
   assert(lookup.resultCount > 0);

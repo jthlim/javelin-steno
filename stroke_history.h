@@ -6,7 +6,6 @@
 #include "state.h"
 #include "stroke.h"
 #include <assert.h>
-#include <string.h>
 
 //---------------------------------------------------------------------------
 

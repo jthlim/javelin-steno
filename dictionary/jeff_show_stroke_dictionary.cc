@@ -2,8 +2,8 @@
 
 #include "jeff_show_stroke_dictionary.h"
 #include "../console.h"
+#include "../str.h"
 #include "../stroke.h"
-#include <string.h>
 
 //---------------------------------------------------------------------------
 
@@ -109,7 +109,7 @@ TEST_BEGIN("JeffShowStroke: First quote test") {
 
   auto lookup = StenoJeffShowStrokeDictionary::instance.Lookup(strokes, 1);
   assert(lookup.IsValid());
-  assert(strcmp(lookup.GetText(), "`") == 0);
+  assert(Str::Eq(lookup.GetText(), "`"));
   lookup.Destroy();
 }
 TEST_END
@@ -122,7 +122,7 @@ TEST_BEGIN("JeffShowStroke: In-progress quote") {
 
   auto lookup = StenoJeffShowStrokeDictionary::instance.Lookup(strokes, 2);
   assert(lookup.IsValid());
-  assert(strcmp(lookup.GetText(), "`KAT") == 0);
+  assert(Str::Eq(lookup.GetText(), "`KAT"));
   lookup.Destroy();
 }
 TEST_END
@@ -136,7 +136,7 @@ TEST_BEGIN("JeffShowStroke: In-progress, multiple stroke test") {
 
   auto lookup = StenoJeffShowStrokeDictionary::instance.Lookup(strokes, 3);
   assert(lookup.IsValid());
-  assert(strcmp(lookup.GetText(), "`KAT/TKOG") == 0);
+  assert(Str::Eq(lookup.GetText(), "`KAT/TKOG"));
   lookup.Destroy();
 }
 TEST_END
@@ -151,7 +151,7 @@ TEST_BEGIN("JeffShowStroke: Completed quote test") {
 
   auto lookup = StenoJeffShowStrokeDictionary::instance.Lookup(strokes, 4);
   assert(lookup.IsValid());
-  assert(strcmp(lookup.GetText(), "`KAT/TKOG`") == 0);
+  assert(Str::Eq(lookup.GetText(), "`KAT/TKOG`"));
   lookup.Destroy();
 }
 TEST_END

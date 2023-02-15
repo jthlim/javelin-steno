@@ -1,6 +1,7 @@
 //---------------------------------------------------------------------------
 
 #include "keyboard_layout.h"
+#include "console.h"
 #include "key_code.h"
 #include "str.h"
 
@@ -108,6 +109,25 @@ bool KeyboardLayout::SetActiveLayout(const char *name) {
     }
   }
   return false;
+}
+
+//---------------------------------------------------------------------------
+
+void KeyboardLayout::SetKeyboardLayout_Binding(void *context,
+                                               const char *commandLine) {
+  const char *keyboardLayout = strchr(commandLine, ' ');
+  if (!keyboardLayout) {
+    Console::Printf("ERR No keyboard layout specified\n\n");
+    return;
+  }
+  ++keyboardLayout;
+
+  if (SetActiveLayout(keyboardLayout)) {
+    Console::SendOk();
+  } else {
+    Console::Printf("ERR Unable to set keyboard layout: \"%s\"\n\n",
+                    keyboardLayout);
+  }
 }
 
 //---------------------------------------------------------------------------

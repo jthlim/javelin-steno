@@ -236,7 +236,7 @@ void StenoEngine::PrintPaperTape(
 
 void StenoEngine::PrintSuggestions(const StenoSegmentList &previousSegmentList,
                                    const StenoSegmentList &nextSegmentList) {
-  if (!IsPaperTapeEnabled() && !IsSuggestionsEnabled()) {
+  if (!IsSuggestionsEnabled()) {
     return;
   }
 

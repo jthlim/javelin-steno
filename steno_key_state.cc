@@ -2,7 +2,6 @@
 
 #include "steno_key_state.h"
 #include <assert.h>
-#include <string.h>
 
 //---------------------------------------------------------------------------
 

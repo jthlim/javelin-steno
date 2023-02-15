@@ -1,8 +1,10 @@
 //---------------------------------------------------------------------------
 
 #include "script.h"
+#include "clock.h"
 #include "console.h"
 #include "key.h"
+#include "pixel.h"
 #include "script_byte_code.h"
 #include <assert.h>
 
@@ -246,6 +248,16 @@ void Script::ExecutionContext::Run(Script &script, size_t offset) {
     case BC::POP:
       script.Pop();
       continue;
+    case BC::GLOBAL_LOAD_PARAM: {
+      int globalIndex = *p++;
+      script.Push(script.globals[globalIndex]);
+      break;
+    }
+    case BC::GLOBAL_STORE_PARAM: {
+      int globalIndex = *p++;
+      script.globals[globalIndex] = script.Pop();
+      break;
+    }
     case BC::PARAM_LOAD_START... BC::PARAM_LOAD_END:
       script.Push(params[c - BC::PARAM_LOAD_START]);
       continue;
@@ -353,9 +365,11 @@ void Script::ExecutionContext::Run(Script &script, size_t offset) {
         break;
       }
       case SF::PRESS_ALL:
+        script.inPressAllCount++;
         for (size_t buttonIndex : script.buttonState) {
           script.HandlePress(buttonIndex);
         }
+        script.inPressAllCount--;
         break;
       case SF::SEND_TEXT: {
         int offset = script.Pop();
@@ -375,6 +389,20 @@ void Script::ExecutionContext::Run(Script &script, size_t offset) {
         script.Push(script.CheckButtonState(text));
         break;
       }
+      case SF::IS_IN_PRESS_ALL:
+        script.Push(script.inPressAllCount);
+        break;
+      case SF::SET_PIXEL: {
+        int b = script.Pop();
+        int g = script.Pop();
+        int r = script.Pop();
+        int id = script.Pop();
+        Pixel::SetPixel(id, r, g, b);
+        break;
+      }
+      case SF::GET_TIME:
+        script.Push(Clock::GetCurrentTime());
+        break;
       }
       continue;
     }

@@ -15,7 +15,6 @@
 #include "str.h"
 #include "stroke.h"
 #include "word_list.h"
-#include <string.h>
 
 //---------------------------------------------------------------------------
 
@@ -39,8 +38,9 @@ StenoEngine::StenoEngine(StenoDictionary &dictionary,
 //---------------------------------------------------------------------------
 
 void StenoEngine::Process(const StenoKeyState &value, StenoAction action) {
-  if (action != StenoAction::TRIGGER)
+  if (action != StenoAction::TRIGGER) {
     return;
+  }
 
   ++strokeCount;
   StenoStroke stroke = value.ToStroke();
