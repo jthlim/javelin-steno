@@ -30,4 +30,6 @@ void Pixel::SetPixel_Binding(void *context, const char *commandLine) {
   Console::SendOk();
 }
 
+__attribute__((weak)) size_t Pixel::GetCount() { return 0; }
+
 //---------------------------------------------------------------------------
