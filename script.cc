@@ -3,6 +3,7 @@
 #include "script.h"
 #include "clock.h"
 #include "console.h"
+#include "gpio.h"
 #include "key.h"
 #include "pixel.h"
 #include "script_byte_code.h"
@@ -258,6 +259,24 @@ void Script::ExecutionContext::Run(Script &script, size_t offset) {
       script.globals[globalIndex] = script.Pop();
       break;
     }
+    case BC::EXTENDED_CALL_FUNCTION: {
+      StenoExtendedScriptFunction function = StenoExtendedScriptFunction(*p++);
+
+      switch (function) {
+      case StenoExtendedScriptFunction::GET_LED_STATUS: {
+        int index = script.Pop();
+        script.Push(Key::GetLedStatus(index));
+        break;
+      }
+      case StenoExtendedScriptFunction::SET_GPIO_PIN: {
+        int enable = script.Pop() != 0;
+        int pin = script.Pop();
+        Gpio::SetPin(pin, enable);
+        break;
+      }
+      }
+      break;
+    }
     case BC::PARAM_LOAD_START... BC::PARAM_LOAD_END:
       script.Push(params[c - BC::PARAM_LOAD_START]);
       continue;
@@ -324,7 +343,7 @@ void Script::ExecutionContext::Run(Script &script, size_t offset) {
       }
       case SF::PRESS_STENO_KEY: {
         uint32_t stenoKey = script.Pop();
-        if (stenoKey < (int)StenoKey::COUNT) {
+        if (stenoKey < (uint32_t)StenoKey::COUNT) {
           script.stenoState |= (1ULL << stenoKey);
         }
         script.OnStenoKeyPressed();
@@ -332,7 +351,7 @@ void Script::ExecutionContext::Run(Script &script, size_t offset) {
       }
       case SF::RELEASE_STENO_KEY: {
         uint32_t stenoKey = script.Pop();
-        if (stenoKey < (int)StenoKey::COUNT) {
+        if (stenoKey < (uint32_t)StenoKey::COUNT) {
           script.stenoState &= ~StenoKeyState(1ULL << stenoKey);
         }
         script.OnStenoKeyReleased();
@@ -341,7 +360,7 @@ void Script::ExecutionContext::Run(Script &script, size_t offset) {
       case SF::IS_STENO_KEY_PRESSED: {
         uint32_t stenoKey = script.Pop();
         int isPressed = 0;
-        if (stenoKey < (int)StenoKey::COUNT) {
+        if (stenoKey < (uint32_t)StenoKey::COUNT) {
           isPressed = (script.stenoState & (1ULL << stenoKey)).IsNotEmpty();
         }
         script.Push(isPressed);
@@ -449,10 +468,10 @@ void Script::ExecutionContext::Run(Script &script, size_t offset) {
 // }
 
 const uint8_t TEST_BYTE_CODE[] = {
-    0x4a, 0x53, 0x53, 0x30, 0x28, 0x00, 0x0e, 0x00, 0x18, 0x00, 0x22,
-    0x00, 0x27, 0x00, 0xe8, 0x01, 0x47, 0x82, 0x04, 0xf0, 0x61, 0x00,
-    0xf4, 0xc4, 0xe8, 0x01, 0x47, 0x82, 0x04, 0xf1, 0x61, 0x00, 0xf5,
-    0xc4, 0xf7, 0xe8, 0x40, 0xec, 0xc4, 0xc4, 0x00, 0xec, 0xc4,
+    0x4a, 0x53, 0x53, 0x30, 0x2a, 0x00, 0x2d, 0x00, 0x10, 0x00, 0x1a, 0x00,
+    0x24, 0x00, 0x29, 0x00, 0xe8, 0x01, 0x47, 0x82, 0x04, 0xf0, 0xc4, 0x00,
+    0xf4, 0xc4, 0xe8, 0x01, 0x47, 0x82, 0x04, 0xf1, 0xc4, 0x00, 0xf5, 0xc4,
+    0xf7, 0xe8, 0x40, 0xec, 0xc4, 0xc4, 0x00, 0xec, 0xc4, 0xc4,
 };
 
 class ScriptTestHelper {

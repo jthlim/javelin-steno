@@ -39,6 +39,8 @@ public:
     GLOBAL_LOAD_PARAM = 0xca,
     GLOBAL_STORE_PARAM = 0xcb,
 
+    EXTENDED_CALL_FUNCTION = 0xcc,
+
     PARAM_LOAD_START = 0xd0, // 0xd0-0xd7
     PARAM_LOAD_END = 0xd7,
     PARAM_STORE_COUNT_START = 0xd8,
@@ -76,6 +78,11 @@ enum class StenoScriptFunction : uint8_t {
   IS_IN_PRESS_ALL,
   SET_PIXEL,
   GET_TIME,
+};
+
+enum class StenoExtendedScriptFunction : uint8_t {
+  GET_LED_STATUS,
+  SET_GPIO_PIN,
 };
 
 enum class StenoScriptOperator : uint8_t {

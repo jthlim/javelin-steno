@@ -19,15 +19,16 @@ public:
   Script(const uint8_t *byteCode);
 
   void ExecuteInitScript() { ExecuteScriptIndex(0); }
+  void ExecuteTickScript() { ExecuteScriptIndex(1); }
 
   void HandlePress(size_t keyIndex) {
     buttonState.Set(keyIndex);
-    ExecuteScriptIndex(keyIndex * 2 + 1);
+    ExecuteScriptIndex(keyIndex * 2 + 2);
   }
 
   void HandleRelease(size_t keyIndex) {
     buttonState.Clear(keyIndex);
-    ExecuteScriptIndex(keyIndex * 2 + 2);
+    ExecuteScriptIndex(keyIndex * 2 + 3);
   }
 
 private:

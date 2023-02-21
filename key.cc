@@ -5,7 +5,7 @@
 
 //---------------------------------------------------------------------------
 
-bool Key::isNumLockOn = false;
+KeyboardLedStatus Key::ledStatus;
 
 //---------------------------------------------------------------------------
 
@@ -45,14 +45,6 @@ uint8_t Key::TranslateKey(uint8_t key) {
   const KeyboardLayoutTable *layoutTable =
       KeyboardLayout::GetActiveLayoutTable();
   return layoutTable == nullptr ? key : layoutTable->values[key];
-}
-
-//---------------------------------------------------------------------------
-
-__attribute__((weak)) bool Key::IsNumLockOn() { return isNumLockOn; }
-
-__attribute__((weak)) void Key::SetIsNumLockOn(bool value) {
-  isNumLockOn = value;
 }
 
 //---------------------------------------------------------------------------
