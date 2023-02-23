@@ -38,6 +38,9 @@ void Key::Release(uint8_t key) { ReleaseRaw(TranslateKey(key)); }
 
 __attribute__((weak)) void Key::Flush() {}
 
+__attribute__((weak))   bool Key::IsNumLockOn() { return ledStatus.numLock; }
+
+
 uint8_t Key::TranslateKey(uint8_t key) {
   if (key >= 64) {
     return key;

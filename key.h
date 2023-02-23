@@ -35,7 +35,7 @@ public:
   static void Release(uint8_t key);
   static void Flush();
 
-  static bool IsNumLockOn() { return ledStatus.numLock; }
+  static bool IsNumLockOn();
   static bool IsCapsLockOn() { return ledStatus.capsLock; }
   static bool IsScrollLockOn() { return ledStatus.scrollLock; }
   static bool IsComposeOn() { return ledStatus.compose; }
