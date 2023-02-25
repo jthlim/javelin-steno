@@ -227,7 +227,7 @@ void StenoUserDictionary::UpgradeToVersionWithReverseLookup() {
     }
     ~ReverseHashTable() { delete[] data; }
 
-    void Add(const char *word, size_t dataOffset) {
+    void Add(const char *word, uint32_t dataOffset) {
       size_t entryIndex = Crc32(word, strlen(word));
 
       for (int probeCount = 0; probeCount < 64; ++probeCount) {

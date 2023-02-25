@@ -76,13 +76,21 @@ enum class StenoScriptFunction : uint8_t {
   CONSOLE,
   CHECK_BUTTON_STATE,
   IS_IN_PRESS_ALL,
-  SET_PIXEL,
+  SET_RGB,
   GET_TIME,
 };
 
 enum class StenoExtendedScriptFunction : uint8_t {
   GET_LED_STATUS,
   SET_GPIO_PIN,
+  CLEAR_DISPLAY,
+  SET_AUTO_DRAW,
+  TURN_ON_DISPLAY,
+  TURN_OFF_DISPLAY,
+  DRAW_PIXEL,
+  DRAW_LINE,
+  DRAW_IMAGE,
+  DRAW_TEXT,
 };
 
 enum class StenoScriptOperator : uint8_t {

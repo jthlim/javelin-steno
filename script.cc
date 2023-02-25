@@ -3,6 +3,7 @@
 #include "script.h"
 #include "clock.h"
 #include "console.h"
+#include "display.h"
 #include "gpio.h"
 #include "key.h"
 #include "pixel.h"
@@ -274,6 +275,66 @@ void Script::ExecutionContext::Run(Script &script, size_t offset) {
         Gpio::SetPin(pin, enable);
         break;
       }
+      case StenoExtendedScriptFunction::CLEAR_DISPLAY: {
+        int displayId = script.Pop();
+        Display::Clear(displayId);
+        break;
+      }
+      case StenoExtendedScriptFunction::SET_AUTO_DRAW: {
+        int autoDrawId = script.Pop();
+        int displayId = script.Pop();
+        Display::SetAutoDraw(displayId, autoDrawId);
+        break;
+      }
+      case StenoExtendedScriptFunction::TURN_ON_DISPLAY: {
+        int displayId = script.Pop();
+        Display::TurnOn(displayId);
+        break;
+      }
+      case StenoExtendedScriptFunction::TURN_OFF_DISPLAY: {
+        int displayId = script.Pop();
+        Display::TurnOff(displayId);
+        break;
+      }
+      case StenoExtendedScriptFunction::DRAW_PIXEL: {
+        int on = script.Pop();
+        int y = script.Pop();
+        int x = script.Pop();
+        int displayId = script.Pop();
+        Display::DrawPixel(displayId, x, y, on != 0);
+        break;
+      }
+      case StenoExtendedScriptFunction::DRAW_LINE: {
+        int on = script.Pop();
+        int y2 = script.Pop();
+        int x2 = script.Pop();
+        int y1 = script.Pop();
+        int x1 = script.Pop();
+        int displayId = script.Pop();
+        Display::DrawLine(displayId, x1, y1, x2, y2, on != 0);
+        break;
+      }
+      case StenoExtendedScriptFunction::DRAW_IMAGE: {
+        int offset = script.Pop();
+        const uint8_t *data = (const uint8_t *)script.byteCode + offset;
+        int height = script.Pop();
+        int width = script.Pop();
+        int y = script.Pop();
+        int x = script.Pop();
+        int displayId = script.Pop();
+        Display::DrawImage(displayId, x, y, width, height, data);
+        break;
+      }
+      case StenoExtendedScriptFunction::DRAW_TEXT: {
+        int offset = script.Pop();
+        const uint8_t *text = (const uint8_t *)script.byteCode + offset;
+        int fontId = script.Pop();
+        int y = script.Pop();
+        int x = script.Pop();
+        int displayId = script.Pop();
+        Display::DrawText(displayId, x, y, fontId, text);
+        break;
+      }
       }
       break;
     }
@@ -345,16 +406,16 @@ void Script::ExecutionContext::Run(Script &script, size_t offset) {
         uint32_t stenoKey = script.Pop();
         if (stenoKey < (uint32_t)StenoKey::COUNT) {
           script.stenoState |= (1ULL << stenoKey);
+          script.OnStenoKeyPressed();
         }
-        script.OnStenoKeyPressed();
         break;
       }
       case SF::RELEASE_STENO_KEY: {
         uint32_t stenoKey = script.Pop();
         if (stenoKey < (uint32_t)StenoKey::COUNT) {
           script.stenoState &= ~StenoKeyState(1ULL << stenoKey);
+          script.OnStenoKeyReleased();
         }
-        script.OnStenoKeyReleased();
         break;
       }
       case SF::IS_STENO_KEY_PRESSED: {
@@ -411,7 +472,7 @@ void Script::ExecutionContext::Run(Script &script, size_t offset) {
       case SF::IS_IN_PRESS_ALL:
         script.Push(script.inPressAllCount);
         break;
-      case SF::SET_PIXEL: {
+      case SF::SET_RGB: {
         int b = script.Pop();
         int g = script.Pop();
         int r = script.Pop();

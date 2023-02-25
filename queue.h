@@ -1,6 +1,7 @@
 //---------------------------------------------------------------------------
 
 #pragma once
+#include <stdlib.h>
 
 //---------------------------------------------------------------------------
 
@@ -8,6 +9,11 @@ template <typename T> struct QueueEntry {
   QueueEntry *next;
 
   T data;
+
+  static void *operator new(size_t n, size_t extra) {
+    return ::operator new(n + extra);
+  }
+  static void operator delete(void *p, size_t extra) { ::operator delete(p); }
 };
 
 template <typename T> class Queue {
@@ -17,6 +23,15 @@ public:
   void AddEntry(QueueEntry<T> *entry) {
     *tail = entry;
     tail = &entry->next;
+  }
+
+  void RemoveHead() {
+    QueueEntry<T> *entry = head;
+    head = entry->next;
+    if (head == nullptr) {
+      tail = &head;
+    }
+    delete entry;
   }
 
 protected:

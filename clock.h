@@ -3,6 +3,8 @@
 #pragma once
 #include <stdint.h>
 
+//---------------------------------------------------------------------------
+
 #if RUN_TESTS
 
 class Clock {

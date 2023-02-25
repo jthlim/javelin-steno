@@ -5,7 +5,7 @@
 
 //---------------------------------------------------------------------------
 
-class StenoPassthrough final : public StenoProcessorElement {
+class StenoPassthrough : public StenoProcessorElement {
 public:
   StenoPassthrough(StenoProcessorElement *next) : next(next) {}
 
