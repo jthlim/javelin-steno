@@ -85,12 +85,14 @@ enum class StenoExtendedScriptFunction : uint8_t {
   SET_GPIO_PIN,
   CLEAR_DISPLAY,
   SET_AUTO_DRAW,
-  TURN_ON_DISPLAY,
-  TURN_OFF_DISPLAY,
+  SET_SCREEN_ON,
+  SET_SCREEN_CONTRAST,
   DRAW_PIXEL,
   DRAW_LINE,
   DRAW_IMAGE,
   DRAW_TEXT,
+  SET_DRAW_COLOR,
+  DRAW_RECT,
 };
 
 enum class StenoScriptOperator : uint8_t {

@@ -230,4 +230,10 @@ struct KeyCode {
   };
 };
 
+inline bool IsWritingKeyCode(int c) {
+  return (KeyCode::A <= c && c <= KeyCode::ENTER) ||
+         (KeyCode::TAB <= c && c <= KeyCode::SLASH) ||
+         (KeyCode::KP_SLASH <= c && c <= KeyCode::BACKSLASH_PIPE);
+}
+
 //---------------------------------------------------------------------------

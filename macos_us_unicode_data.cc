@@ -15,26 +15,26 @@
 static constexpr uint16_t DATA[] = {
     0,                                                          // Marker
     0x0060, _A | _S | KeyCode::GRAVE,      0,                   // `
-    0x00a1, _A | KeyCode::_0,              0,                   // ¡
-    0x00a2, _A | KeyCode::_3,              0,                   // ¢
-    0x00a3, _A | KeyCode::_2,              0,                   // £
+    0x00a1, _A | KeyCode::_1,              0,                   // ¡
+    0x00a2, _A | KeyCode::_4,              0,                   // ¢
+    0x00a3, _A | KeyCode::_3,              0,                   // £
     0x00a5, _A | KeyCode::Y,               0,                   // ¥
-    0x00a7, _A | KeyCode::_5,              0,                   // §
+    0x00a7, _A | KeyCode::_6,              0,                   // §
     0x00a8, _A | _S | KeyCode::U,          0,                   // ¨
     0x00a9, _A | KeyCode::G,               0,                   // ©
-    0x00aa, _A | KeyCode::_8,              0,                   // ª
+    0x00aa, _A | KeyCode::_9,              0,                   // ª
     0x00ab, _A | KeyCode::BACKSLASH,       0,                   // «
     0x00ac, _A | KeyCode::L,               0,                   // ¬
     0x00ae, _A | KeyCode::R,               0,                   // ®
     0x00af, _A | _S | KeyCode::COMMA,      0,                   // ¯
-    0x00b0, _A | _S | KeyCode::_7,         0,                   // °
+    0x00b0, _A | _S | KeyCode::_8,         0,                   // °
     0x00b1, _A | _S | KeyCode::EQUAL,      0,                   // ±
     0x00b4, _A | _S | KeyCode::E,          0,                   // ´
     0x00b5, _A | KeyCode::M,               0,                   // µ
-    0x00b6, _A | KeyCode::_6,              0,                   // ¶
-    0x00b7, _A | _S | KeyCode::_8,         0,                   // ·
+    0x00b6, _A | KeyCode::_7,              0,                   // ¶
+    0x00b7, _A | _S | KeyCode::_9,         0,                   // ·
     0x00b8, _A | _S | KeyCode::Z,          0,                   // ¸
-    0x00ba, _A | KeyCode::_9,              0,                   // º
+    0x00ba, _A | KeyCode::_0,              0,                   // º
     0x00bb, _A | _S | KeyCode::BACKSLASH,  0,                   // »
     0x00bf, _A | _S | KeyCode::SLASH,      0,                   // ¿
     0x00c0, _A | KeyCode::GRAVE,           _S | KeyCode::A, 0,  // À
@@ -122,26 +122,26 @@ static constexpr uint16_t DATA[] = {
     0x2014, _A | _S | KeyCode::MINUS,      0,                   // —
     0x2018, _A | KeyCode::R_BRACKET,       0,                   // ‘
     0x2019, _A | _S | KeyCode::R_BRACKET,  0,                   // ’
-    0x201a, _A | _S | KeyCode::_9,         0,                   // ‚
+    0x201a, _A | _S | KeyCode::_0,         0,                   // ‚
     0x201c, _A | KeyCode::L_BRACKET,       0,                   // “
     0x201d, _A | _S | KeyCode::L_BRACKET,  0,                   // ”
     0x201e, _A | _S | KeyCode::W,          0,                   // „
     0x2020, _A | KeyCode::T,               0,                   // †
-    0x2021, _A | _S | KeyCode::_6,         0,                   // ‡
-    0x2022, _A | KeyCode::_7,              0,                   // •
+    0x2021, _A | _S | KeyCode::_7,         0,                   // ‡
+    0x2022, _A | KeyCode::_8,              0,                   // •
     0x2026, _A | KeyCode::SEMICOLON,       0,                   // …
     0x2030, _A | _S | KeyCode::R,          0,                   // ‰
-    0x2039, _A | _S | KeyCode::_2,         0,                   // ‹
-    0x203a, _A | _S | KeyCode::_3,         0,                   // ›
-    0x2044, _A | _S | KeyCode::_0,         0,                   // ⁄
-    0x20ac, _A | _S | KeyCode::_1,         0,                   // €
-    0x2122, _A | KeyCode::_1,              0,                   // ™
+    0x2039, _A | _S | KeyCode::_3,         0,                   // ‹
+    0x203a, _A | _S | KeyCode::_4,         0,                   // ›
+    0x2044, _A | _S | KeyCode::_1,         0,                   // ⁄
+    0x20ac, _A | _S | KeyCode::_2,         0,                   // €
+    0x2122, _A | KeyCode::_2,              0,                   // ™
     0x2202, _A | KeyCode::D,               0,                   // ∂
     0x2206, _A | KeyCode::J,               0,                   // ∆
     0x220f, _A | _S | KeyCode::P,          0,                   // ∏
     0x2211, _A | KeyCode::W,               0,                   // ∑
     0x221a, _A | KeyCode::V,               0,                   // √
-    0x221e, _A | KeyCode::_4,              0,                   // ∞
+    0x221e, _A | KeyCode::_5,              0,                   // ∞
     0x222b, _A | KeyCode::B,               0,                   // ∫
     0x2248, _A | KeyCode::X,               0,                   // ≈
     0x2260, _A | KeyCode::EQUAL,           0,                   // ≠
@@ -149,8 +149,8 @@ static constexpr uint16_t DATA[] = {
     0x2265, _A | KeyCode::DOT,             0,                   // ≥
     0x25ca, _A | _S | KeyCode::V,          0,                   // ◊
     0xf8ff, _A | _S | KeyCode::K,          0,                   // 
-    0xfb01, _A | _S | KeyCode::_4,         0,                   // ﬁ
-    0xfb02, _A | _S | KeyCode::_5,         0,                   // ﬂ
+    0xfb01, _A | _S | KeyCode::_5,         0,                   // ﬁ
+    0xfb02, _A | _S | KeyCode::_6,         0,                   // ﬂ
     0,
 };
 // clang-format on

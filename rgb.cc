@@ -1,14 +1,14 @@
 //---------------------------------------------------------------------------
 
-#include "pixel.h"
+#include "rgb.h"
 #include "console.h"
 #include <string.h>
 
 //---------------------------------------------------------------------------
 
-__attribute__((weak)) void Pixel::SetPixel(size_t id, int r, int g, int b) {}
+__attribute__((weak)) void Rgb::SetRgb(size_t id, int r, int g, int b) {}
 
-void Pixel::SetPixel_Binding(void *context, const char *commandLine) {
+void Rgb::SetRgb_Binding(void *context, const char *commandLine) {
   int values[4];
   const char *p = strchr(commandLine, ' ');
   if (!p) {
@@ -26,10 +26,10 @@ void Pixel::SetPixel_Binding(void *context, const char *commandLine) {
     values[i] = value;
   }
 
-  SetPixel(values[0], values[1], values[2], values[3]);
+  SetRgb(values[0], values[1], values[2], values[3]);
   Console::SendOk();
 }
 
-__attribute__((weak)) size_t Pixel::GetCount() { return 0; }
+__attribute__((weak)) size_t Rgb::GetCount() { return 0; }
 
 //---------------------------------------------------------------------------

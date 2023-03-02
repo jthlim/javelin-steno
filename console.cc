@@ -25,7 +25,7 @@ static const ConsoleCommand HELLO_COMMAND = {
     .context = nullptr,
 };
 
-static const size_t MAX_COMMAND_COUNT = 32;
+static const size_t MAX_COMMAND_COUNT = 64;
 static size_t commandCount = 2;
 static ConsoleCommand commands[MAX_COMMAND_COUNT] = {
     HELLO_COMMAND,
