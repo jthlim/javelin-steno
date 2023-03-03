@@ -328,11 +328,12 @@ void Script::ExecutionContext::Run(Script &script, size_t offset) {
       case StenoExtendedScriptFunction::DRAW_TEXT: {
         int offset = script.Pop();
         const char *text = (const char *)script.byteCode + offset;
-        int fontId = script.Pop();
+        TextAlignment alignment = (TextAlignment)script.Pop();
+        FontId fontId = (FontId)script.Pop();
         int y = script.Pop();
         int x = script.Pop();
         int displayId = script.Pop();
-        Display::DrawText(displayId, x, y, fontId, text);
+        Display::DrawText(displayId, x, y, fontId, alignment, text);
         break;
       }
       case StenoExtendedScriptFunction::SET_DRAW_COLOR: {

@@ -18,7 +18,9 @@ __attribute__((weak)) void Display::DrawImage(int displayId, int x, int y,
                                               int width, int height,
                                               const uint8_t *data) {}
 __attribute__((weak)) void Display::DrawText(int displayId, int x, int y,
-                                             int fontId, const char *text) {}
+                                             FontId fontId,
+                                             TextAlignment alignment,
+                                             const char *text) {}
 __attribute__((weak)) void Display::DrawRect(int displayId, int left, int top,
                                              int right, int bottom) {}
 __attribute__((weak)) void Display::SetDrawColor(int displayId, int color) {}
