@@ -13,6 +13,7 @@ public:
   void Process(const StenoKeyState &value, StenoAction action);
   void Tick();
   void PrintInfo() const;
+  bool ProcessScanCode(int scanCodeAndModifiers, ScanCodeAction action);
 
 private:
   StenoProcessorElement *const *processors;

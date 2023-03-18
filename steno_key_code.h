@@ -118,4 +118,7 @@ const uint32_t MODIFIER_R_SHIFT_FLAG = 0x2000;
 const uint32_t MODIFIER_R_ALT_FLAG = 0x4000;
 const uint32_t MODIFIER_R_SUPER_FLAG = 0x8000;
 
+const uint32_t MODIFIER_SHIFT_FLAG =
+    MODIFIER_L_SHIFT_FLAG | MODIFIER_R_SHIFT_FLAG;
+
 //---------------------------------------------------------------------------

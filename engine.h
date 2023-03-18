@@ -30,7 +30,7 @@ public:
   void Process(const StenoKeyState &value, StenoAction action);
   void ProcessUndo();
   void ProcessStroke(StenoStroke stroke);
-  void Tick() {}
+  bool ProcessScanCode(int scanCodeAndModifiers, ScanCodeAction action);
 
   void SendText(const uint8_t *p);
   void PrintInfo() const;
@@ -111,6 +111,8 @@ private:
   void InitiateAddTranslationMode();
   void ProcessAddTranslationModeUndo();
   void ProcessAddTranslationModeStroke(StenoStroke stroke);
+  bool HandleAddTranslationModeScanCode(int scanCodeAndModifiers,
+                                        ScanCodeAction action);
   bool IsNewline(StenoStroke stroke) const;
   void EndAddTranslationMode();
   void AddTranslation(size_t newlineIndex);

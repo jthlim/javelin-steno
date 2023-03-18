@@ -118,15 +118,37 @@ StenoReversePrefixDictionary::StenoReversePrefixDictionary(
 void StenoReversePrefixDictionary::ProcessTextBlock(const uint8_t *textBlock,
                                                     size_t textBlockLength,
                                                     TextBlockHandler &handler) {
+  // Binary search to find the start of all commands.
+  const uint8_t *left = textBlock + 1;
+  const uint8_t *right = textBlock + textBlockLength;
+
+  while (left < right) {
+#if JAVELIN_PLATFORM_PICO_SDK
+    // Optimization when top bit of pointer cannot be set.
+    const uint8_t *mid = (const uint8_t *)((size_t(left) + size_t(right)) / 2);
+#else
+    const uint8_t *mid = left + size_t(right - left) / 2;
+#endif
+
+    const uint8_t *wordStart = mid;
+    while (wordStart[-1] != 0xff) {
+      --wordStart;
+    }
+
+    if (*wordStart >= '{') {
+      right = wordStart;
+    } else {
+      while (*wordStart != 0xff) {
+        ++wordStart;
+      }
+      left = wordStart + 1;
+    }
+  }
+
   // Iterate text block and find all prefixes.
-  const uint8_t *p = textBlock;
-  const uint8_t *pEnd = textBlock + textBlockLength;
+  const uint8_t *p = right;
 
-  // Initial guard
-  assert(*p == 0xff);
-  ++p;
-
-  while (p < pEnd) {
+  while (*p == '{') {
     const uint8_t *wordStart = p;
     int braceCounter = 0;
     int caretCounter = 0;

@@ -218,7 +218,7 @@ PhrasingParts DetermineParts(StenoStroke stroke) {
     return PhrasingParts::CreateInvalid();
   }
 
-  if ((stroke & StrokeMask::NUM).IsNotEmpty()) {
+  if ((stroke & (StrokeMask::NUM | StrokeMask::UNICODE)).IsNotEmpty()) {
     return PhrasingParts::CreateInvalid();
   }
 

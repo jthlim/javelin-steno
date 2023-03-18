@@ -7,7 +7,7 @@
 //---------------------------------------------------------------------------
 
 void StenoRepeat::Process(const StenoKeyState &value, StenoAction action) {
-  nextProcessor.Process(value, action);
+  next->Process(value, action);
 
   switch (action) {
   case StenoAction::PRESS:
@@ -47,7 +47,7 @@ void StenoRepeat::Process(const StenoKeyState &value, StenoAction action) {
 }
 
 void StenoRepeat::Tick() {
-  nextProcessor.Tick();
+  next->Tick();
 
   if (!isRepeating) {
     return;
@@ -59,7 +59,7 @@ void StenoRepeat::Tick() {
   }
 
   nextTriggerTime = now + REPEAT_DELAY;
-  nextProcessor.Process(pressedKeyState, StenoAction::TRIGGER);
+  next->Process(pressedKeyState, StenoAction::TRIGGER);
   now = Clock::GetCurrentTime();
   if (nextTriggerTime < now + REPEAT_DELAY_MINIMUM) {
     nextTriggerTime = now + REPEAT_DELAY_MINIMUM;
@@ -68,7 +68,7 @@ void StenoRepeat::Tick() {
 
 void StenoRepeat::PrintInfo() const {
   Console::Printf("  Repeat\n");
-  nextProcessor.PrintInfo();
+  next->PrintInfo();
 }
 
 //---------------------------------------------------------------------------

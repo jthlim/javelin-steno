@@ -32,6 +32,7 @@ struct StrokeBitIndex {
     ZR,
     COUNT,
 
+    UNICODE = 31,
     NONE = -1
   };
 };
@@ -63,6 +64,8 @@ struct StrokeMask {
     ZR = (uint32_t)1 << StrokeBitIndex::ZR,
 
     ALL = ((uint32_t)1 << StrokeBitIndex::COUNT) - 1,
+
+    UNICODE = (uint32_t)1 << StrokeBitIndex::UNICODE,
   };
 };
 

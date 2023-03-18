@@ -19,6 +19,9 @@ const StenoJeffNumbersDictionary StenoJeffNumbersDictionary::instance;
 static void ToRoman(char *outBuffer, int value);
 char *ToWords(char *p);
 
+const StenoStroke ACTIVATION_MASK(StrokeMask::NUM | StrokeMask::UNICODE);
+const StenoStroke ACTIVATION_MATCH(StrokeMask::NUM);
+
 const StenoStroke ALL_DIGITS_MASK(StrokeMask::SL | StrokeMask::TL |
                                   StrokeMask::PL | StrokeMask::HL |
                                   StrokeMask::A | StrokeMask::O |
@@ -67,7 +70,7 @@ bool EndsWith(char *p, size_t length, const char (&suffix)[N]) {
 
 StenoDictionaryLookupResult
 StenoJeffNumbersDictionary::Lookup(const StenoDictionaryLookup &lookup) const {
-  if ((lookup.strokes[0] & StrokeMask::NUM).IsEmpty()) {
+  if ((lookup.strokes[0] & ACTIVATION_MASK) != ACTIVATION_MATCH) {
     return StenoDictionaryLookupResult::CreateInvalid();
   }
   return LookupInternal(lookup);
@@ -84,7 +87,7 @@ StenoJeffNumbersDictionary::LookupInternal(
   size_t length = lookup.length;
 
   for (size_t i = 0; i < length; ++i) {
-    if ((strokes[i] & StrokeMask::NUM).IsEmpty()) {
+    if ((strokes[i] & ACTIVATION_MASK) != ACTIVATION_MATCH) {
       free(result);
       return StenoDictionaryLookupResult::CreateInvalid();
     }

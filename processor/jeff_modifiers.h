@@ -1,6 +1,6 @@
 //---------------------------------------------------------------------------
 
-#include "processor.h"
+#include "passthrough.h"
 
 //---------------------------------------------------------------------------
 
@@ -8,13 +8,12 @@
 //
 // One key difference is that the modifier keys state is *held down*, so that
 // actions such as alt-tab can be achieved (when using first-up triggering).
-class StenoJeffModifiers final : public StenoProcessorElement {
+class StenoJeffModifiers final : public StenoPassthrough {
 public:
   StenoJeffModifiers(StenoProcessorElement &nextProcessor)
-      : nextProcessor(nextProcessor) {}
+      : StenoPassthrough(&nextProcessor) {}
 
   void Process(const StenoKeyState &value, StenoAction action);
-  void Tick() { nextProcessor.Tick(); }
   void PrintInfo() const final;
 
   static const StenoStroke TRIGGER_STROKE;
@@ -36,7 +35,6 @@ private:
   bool wasAlt = false;
 
   StenoStroke lastModifiers;
-  StenoProcessorElement &nextProcessor;
 
   void UpdateModifiers(StenoStroke stroke);
   bool TriggerSendKey(StenoStroke stroke) const;

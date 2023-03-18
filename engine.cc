@@ -75,6 +75,18 @@ void StenoEngine::ProcessUndo() {
   }
 }
 
+bool StenoEngine::ProcessScanCode(int scanCodeAndModifiers,
+                                  ScanCodeAction action) {
+  switch (mode) {
+  case StenoEngineMode::NORMAL:
+    return false;
+
+  case StenoEngineMode::ADD_TRANSLATION:
+    return HandleAddTranslationModeScanCode(scanCodeAndModifiers, action);
+  }
+  return false;
+}
+
 //---------------------------------------------------------------------------
 
 void StenoEngine::ResetState() {

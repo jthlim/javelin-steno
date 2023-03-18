@@ -37,6 +37,12 @@ int Script::Pop() {
   return *--stackTop;
 }
 
+const int *Script::Pop(int count) {
+  assert(stackTop >= stack + count);
+  stackTop -= count;
+  return stackTop;
+}
+
 void Script::UnaryOp(int (*op)(int)) {
   assert(stackTop > stack);
   stackTop[-1] = op(stackTop[-1]);
@@ -86,6 +92,10 @@ bool Script::CheckButtonState(const uint8_t *text) const {
 __attribute__((weak)) void Script::OnStenoKeyPressed() {}
 __attribute__((weak)) void Script::OnStenoKeyReleased() {}
 __attribute__((weak)) void Script::OnStenoStateCancelled() {}
+__attribute__((weak)) bool Script::ProcessScanCode(int scanCode,
+                                                   ScanCodeAction action) {
+  return false;
+}
 __attribute__((weak)) void Script::SendText(const uint8_t *text) const {}
 
 //---------------------------------------------------------------------------
@@ -169,6 +179,20 @@ void Script::ExecutionContext::Run(Script &script, size_t offset) {
       case OP::LOGICAL_SHIFT_RIGHT:
         script.BinaryOp([](int a, int b) -> int { return uint32_t(a) >> b; });
         break;
+      case OP::BYTE_LOOKUP: {
+        int index = script.Pop();
+        int offset = script.Pop();
+        const uint8_t *data = script.byteCode + offset;
+        script.Push(data[index]);
+        break;
+      }
+      case OP::WORD_LOOKUP: {
+        int index = script.Pop();
+        int offset = script.Pop();
+        const int32_t *data = (const int32_t *)(script.byteCode + offset);
+        script.Push(data[index]);
+        break;
+      }
       }
       continue;
     }
@@ -250,12 +274,12 @@ void Script::ExecutionContext::Run(Script &script, size_t offset) {
     case BC::POP:
       script.Pop();
       continue;
-    case BC::GLOBAL_LOAD_PARAM: {
+    case BC::GLOBAL_LOAD: {
       int globalIndex = *p++;
       script.Push(script.globals[globalIndex]);
       break;
     }
-    case BC::GLOBAL_STORE_PARAM: {
+    case BC::GLOBAL_STORE: {
       int globalIndex = *p++;
       script.globals[globalIndex] = script.Pop();
       break;
@@ -351,20 +375,57 @@ void Script::ExecutionContext::Run(Script &script, size_t offset) {
         Display::DrawRect(displayId, left, top, right, bottom);
         break;
       }
+      case StenoExtendedScriptFunction::SET_HSV: {
+        int v = script.Pop();
+        int s = script.Pop();
+        int h = script.Pop();
+        int id = script.Pop();
+        Rgb::SetHsv(id, h, s, v);
+        break;
       }
+      }
+      break;
+    }
+    case BC::GLOBAL_LOAD_INDEX: {
+      int globalBaseIndex = *p++;
+      int index = script.Pop();
+      script.Push(script.globals[globalBaseIndex + index]);
+      break;
+    }
+    case BC::GLOBAL_STORE_INDEX: {
+      int globalBaseIndex = *p++;
+      int value = script.Pop();
+      int index = script.Pop();
+      script.globals[globalBaseIndex + index] = value;
       break;
     }
     case BC::PARAM_LOAD_START... BC::PARAM_LOAD_END:
       script.Push(params[c - BC::PARAM_LOAD_START]);
       continue;
-    case BC::PARAM_STORE_COUNT_START... BC::PARAM_STORE_COUNT_END: {
-      int paramIndex = c - BC::PARAM_STORE_COUNT_START;
-      while (paramIndex >= 0) {
-        params[paramIndex] = script.Pop();
-        --paramIndex;
-      }
+    case BC::PARAM_STORE_COUNT_START + 7:
+      params[7] = script.Pop();
+      [[fallthrough]];
+    case BC::PARAM_STORE_COUNT_START + 6:
+      params[6] = script.Pop();
+      [[fallthrough]];
+    case BC::PARAM_STORE_COUNT_START + 5:
+      params[5] = script.Pop();
+      [[fallthrough]];
+    case BC::PARAM_STORE_COUNT_START + 4:
+      params[4] = script.Pop();
+      [[fallthrough]];
+    case BC::PARAM_STORE_COUNT_START + 3:
+      params[3] = script.Pop();
+      [[fallthrough]];
+    case BC::PARAM_STORE_COUNT_START + 2:
+      params[2] = script.Pop();
+      [[fallthrough]];
+    case BC::PARAM_STORE_COUNT_START + 1:
+      params[1] = script.Pop();
+      [[fallthrough]];
+    case BC::PARAM_STORE_COUNT_START:
+      params[0] = script.Pop();
       continue;
-    }
     case BC::LOCAL_LOAD_START... BC::LOCAL_LOAD_END:
       script.Push(locals[c - BC::LOCAL_LOAD_START]);
       continue;
@@ -385,27 +446,33 @@ void Script::ExecutionContext::Run(Script &script, size_t offset) {
       case SF::PRESS_SCAN_CODE: {
         uint32_t key = script.Pop();
         if (key < 256 && !script.keyState.IsSet(key)) {
-          script.keyState.Set(key);
-          Key::Press(key);
+          if (!script.ProcessScanCode(key, ScanCodeAction::PRESS)) {
+            script.keyState.Set(key);
+            Key::Press(key);
+          }
         }
         break;
       }
       case SF::RELEASE_SCAN_CODE: {
         uint32_t key = script.Pop();
         if (key < 256 && script.keyState.IsSet(key)) {
-          script.keyState.Clear(key);
-          Key::Release(key);
+          if (!script.ProcessScanCode(key, ScanCodeAction::RELEASE)) {
+            script.keyState.Clear(key);
+            Key::Release(key);
+          }
         }
         break;
       }
       case SF::TAP_SCAN_CODE: {
         uint32_t key = script.Pop();
         if (key < 256) {
-          if (!script.keyState.IsSet(key)) {
-            script.keyState.Clear(key);
-            Key::Press(key);
+          if (!script.ProcessScanCode(key, ScanCodeAction::TAP)) {
+            if (!script.keyState.IsSet(key)) {
+              script.keyState.Clear(key);
+              Key::Press(key);
+            }
+            Key::Release(key);
           }
-          Key::Release(key);
         }
         break;
       }

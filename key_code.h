@@ -228,12 +228,23 @@ struct KeyCode {
     MEDIA_REFRESH = 0xfa,
     MEDIA_CALCULATOR = 0xfb,
   };
-};
 
-inline bool IsWritingKeyCode(int c) {
-  return (KeyCode::A <= c && c <= KeyCode::ENTER) ||
-         (KeyCode::TAB <= c && c <= KeyCode::SLASH) ||
-         (KeyCode::KP_SLASH <= c && c <= KeyCode::BACKSLASH_PIPE);
-}
+  inline static bool IsVisible(int keyCode) {
+    return (A <= keyCode && keyCode <= ENTER) ||
+           (TAB <= keyCode && keyCode <= SLASH) ||
+           (KP_SLASH <= keyCode && keyCode <= BACKSLASH_PIPE);
+  }
+
+  inline static bool IsModifier(int keyCode) {
+    return L_CTRL <= keyCode && keyCode <= R_META;
+  }
+
+  // keyCode is in the lower 8 bits.
+  // modifiers are in the next 8 bits and uses the values defined in
+  // steno_key_code.h.
+  //
+  // Returns 0 if there's no simple conversion.
+  static int ConvertToUnicode(int keyCodeAndModifiers);
+};
 
 //---------------------------------------------------------------------------

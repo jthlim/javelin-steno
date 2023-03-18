@@ -1,13 +1,13 @@
 //---------------------------------------------------------------------------
 
-#include "processor.h"
+#include "passthrough.h"
 
 //---------------------------------------------------------------------------
 
-class StenoRepeat final : public StenoProcessorElement {
+class StenoRepeat final : public StenoPassthrough {
 public:
   StenoRepeat(StenoProcessorElement &nextProcessor)
-      : nextProcessor(nextProcessor) {}
+      : StenoPassthrough(&nextProcessor) {}
 
   void Process(const StenoKeyState &value, StenoAction action);
   void Tick();
@@ -29,8 +29,6 @@ private:
 
   StenoKeyState pressedKeyState;
   StenoKeyState releasedKeyState;
-
-  StenoProcessorElement &nextProcessor;
 };
 
 //---------------------------------------------------------------------------

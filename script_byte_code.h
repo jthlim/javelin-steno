@@ -36,10 +36,13 @@ public:
     JUMP_IF_NOT_ZERO_LONG = 0xc8, // 0xc8 - 2 byte absolute offset
     POP = 0xc9,
 
-    GLOBAL_LOAD_PARAM = 0xca,
-    GLOBAL_STORE_PARAM = 0xcb,
+    GLOBAL_LOAD = 0xca,
+    GLOBAL_STORE = 0xcb,
 
     EXTENDED_CALL_FUNCTION = 0xcc,
+
+    GLOBAL_LOAD_INDEX = 0xcd,
+    GLOBAL_STORE_INDEX = 0xce,
 
     PARAM_LOAD_START = 0xd0, // 0xd0-0xd7
     PARAM_LOAD_END = 0xd7,
@@ -93,6 +96,7 @@ enum class StenoExtendedScriptFunction : uint8_t {
   DRAW_TEXT,
   SET_DRAW_COLOR,
   DRAW_RECT,
+  SET_HSV,
 };
 
 enum class StenoScriptOperator : uint8_t {
@@ -117,6 +121,8 @@ enum class StenoScriptOperator : uint8_t {
   SHIFT_LEFT,               // 0x12
   ARITHMETIC_SHIFT_RIGHT,   // 0x13
   LOGICAL_SHIFT_RIGHT,      // 0x14
+  BYTE_LOOKUP,              // 0x15
+  WORD_LOOKUP,              // 0x16
 };
 
 struct StenoScriptByteCodeData {

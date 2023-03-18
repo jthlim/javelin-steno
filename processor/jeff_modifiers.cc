@@ -469,7 +469,7 @@ void StenoJeffModifiers::Process(const StenoKeyState &value,
     if (isModifier) {
       if (!wasModifier) {
         wasModifier = true;
-        nextProcessor.Process(value, StenoAction::CANCEL);
+        next->Process(value, StenoAction::CANCEL);
       }
       UpdateModifiers(stroke);
       return;
@@ -506,12 +506,12 @@ void StenoJeffModifiers::Process(const StenoKeyState &value,
     }
     break;
   }
-  nextProcessor.Process(value, action);
+  next->Process(value, action);
 }
 
 void StenoJeffModifiers::PrintInfo() const {
   Console::Printf("  Jeff's Modifiers\n");
-  nextProcessor.PrintInfo();
+  next->PrintInfo();
 }
 
 void StenoJeffModifiers::UpdateModifiers(StenoStroke stroke) {

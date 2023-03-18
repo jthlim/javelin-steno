@@ -26,8 +26,6 @@ public:
 
   Debounced<T> Update(T input);
 
-  const T &GetState() const { return lastDebouncedState; }
-
 private:
   T lastDebouncedState;
   T lastState;

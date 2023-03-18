@@ -59,7 +59,11 @@ public:
     data[n / BITS_PER_WORD] &= ~(1ULL << n % BITS_PER_WORD);
   }
 
-  void ClearAll() { memset(data, 0, sizeof(data)); }
+  void ClearAll() {
+    for (size_t i = 0; i < NUMBER_OF_WORDS; ++i) {
+      data[i] = 0;
+    }
+  }
 
   BitField operator&(const BitField &other) const {
     BitField result;

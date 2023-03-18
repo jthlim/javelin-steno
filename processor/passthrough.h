@@ -15,10 +15,13 @@ public:
 
   void Tick() { next->Tick(); }
   void PrintInfo() const { next->PrintInfo(); }
+  bool ProcessScanCode(int scanCodeAndModifiers, ScanCodeAction action) {
+    return next->ProcessScanCode(scanCodeAndModifiers, action);
+  }
 
   void SetNext(StenoProcessorElement *value) { next = value; }
 
-private:
+protected:
   StenoProcessorElement *next;
 };
 

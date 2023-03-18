@@ -141,6 +141,9 @@ bool StenoDictionaryList::PrintDictionary(bool hasData) const {
 void StenoDictionaryList::ListDictionaries() const {
   bool first = true;
   for (const StenoDictionaryListEntry &entry : dictionaries) {
+    if (entry.dictionary->GetName()[0] == '#') {
+      continue;
+    }
     if (first) {
       Console::Write("[\n", 2);
       first = false;

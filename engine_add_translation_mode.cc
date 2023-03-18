@@ -1,8 +1,10 @@
 //---------------------------------------------------------------------------
 
 #include "dictionary/dictionary.h"
+#include "dictionary/unicode_dictionary.h"
 #include "dictionary/user_dictionary.h"
 #include "engine.h"
+#include "key_code.h"
 #include "steno_key_code_buffer.h"
 #include "steno_key_code_emitter.h"
 
@@ -57,6 +59,10 @@ void StenoEngine::ProcessAddTranslationModeStroke(StenoStroke stroke) {
   } else if (newlineIndex == 0) {
     if (addTranslationHistory.GetCount() >
         StenoUserDictionary::MAX_STROKE_COUNT) {
+      return;
+    }
+    if ((stroke & StrokeMask::UNICODE).IsNotEmpty()) {
+      // Don't allow unicode when defining the stroke.
       return;
     }
   } else if (newlineIndex + 1 == addTranslationHistory.GetCount()) {
@@ -187,6 +193,28 @@ void StenoEngine::DeleteTranslation(size_t newlineIndex) {
   }
 
   userDictionary->Remove(&addTranslationHistory.GetStroke(0), newlineIndex);
+}
+
+//---------------------------------------------------------------------------
+
+bool StenoEngine::HandleAddTranslationModeScanCode(int scanCodeAndModifiers,
+                                                   ScanCodeAction action) {
+  int scanCode = scanCodeAndModifiers & 0xff;
+  if (KeyCode::IsModifier(scanCode)) {
+    return false;
+  }
+
+  if (action == ScanCodeAction::PRESS || action == ScanCodeAction::TAP) {
+    int unicode = KeyCode::ConvertToUnicode(scanCodeAndModifiers);
+    if (unicode == '\b') {
+      ProcessAddTranslationModeUndo();
+    } else if (unicode != 0) {
+      const StenoStroke unicodeStroke =
+          StenoUnicodeDictionary::CreateUnicodeStroke(unicode);
+      ProcessAddTranslationModeStroke(unicodeStroke);
+    }
+  }
+  return true;
 }
 
 //---------------------------------------------------------------------------

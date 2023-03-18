@@ -2,6 +2,7 @@
 
 #pragma once
 #include "bit_field.h"
+#include "scan_code_action.h"
 #include "steno_key_state.h"
 #include <stdint.h>
 #include <stdlib.h>
@@ -46,6 +47,7 @@ private:
 
   void Push(int value);
   int Pop();
+  const int *Pop(int count);
   void UnaryOp(int (*op)(int));
   void BinaryOp(int (*op)(int, int));
 
@@ -58,6 +60,7 @@ private:
   void OnStenoKeyPressed();
   void OnStenoKeyReleased();
   void OnStenoStateCancelled();
+  bool ProcessScanCode(int scanCode, ScanCodeAction action);
 
   void SendText(const uint8_t *text) const;
   bool CheckButtonState(const uint8_t *text) const;

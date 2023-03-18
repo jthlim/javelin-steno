@@ -23,4 +23,15 @@ void StenoProcessorList::PrintInfo() const {
   }
 }
 
+bool StenoProcessorList::ProcessScanCode(int scanCodeAndModifiers,
+                                         ScanCodeAction action) {
+  for (size_t i = 0; i < processorCount; ++i) {
+    if (processors[i]->ProcessScanCode(scanCodeAndModifiers, action)) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
 //---------------------------------------------------------------------------

@@ -5,6 +5,13 @@
 
 //---------------------------------------------------------------------------
 
+bool StenoProcessorElement::ProcessScanCode(int scanCodeAndModifiers,
+                                            ScanCodeAction action) {
+  return false;
+}
+
+//---------------------------------------------------------------------------
+
 void StenoProcessor::Process(StenoKey key, bool isPress) {
   state.Process(key, isPress);
   next.Process(state, isPress ? StenoAction::PRESS : StenoAction::RELEASE);
