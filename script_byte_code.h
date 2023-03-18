@@ -123,6 +123,8 @@ enum class StenoScriptOperator : uint8_t {
   LOGICAL_SHIFT_RIGHT,      // 0x14
   BYTE_LOOKUP,              // 0x15
   WORD_LOOKUP,              // 0x16
+  INCREMENT,                // 0x17
+  DECREMENT,                // 0x18
 };
 
 struct StenoScriptByteCodeData {

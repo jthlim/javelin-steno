@@ -193,6 +193,12 @@ void Script::ExecutionContext::Run(Script &script, size_t offset) {
         script.Push(data[index]);
         break;
       }
+      case OP::INCREMENT:
+        script.UnaryOp([](int a) -> int { return a + 1; });
+        break;
+      case OP::DECREMENT:
+        script.UnaryOp([](int a) -> int { return a - 1; });
+        break;
       }
       continue;
     }
