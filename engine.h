@@ -30,13 +30,13 @@ public:
   void Process(const StenoKeyState &value, StenoAction action);
   void ProcessUndo();
   void ProcessStroke(StenoStroke stroke);
-  bool ProcessScanCode(int scanCodeAndModifiers, ScanCodeAction action);
+  bool ProcessScanCode(uint32_t scanCodeAndModifiers, ScanCodeAction action);
 
   void SendText(const uint8_t *p);
   void PrintInfo() const;
   void PrintDictionary() const;
 
-  void ListDictionaries();
+  void ListDictionaries() const;
   bool EnableDictionary(const char *name);
   bool DisableDictionary(const char *name);
   bool ToggleDictionary(const char *name);
@@ -111,7 +111,7 @@ private:
   void InitiateAddTranslationMode();
   void ProcessAddTranslationModeUndo();
   void ProcessAddTranslationModeStroke(StenoStroke stroke);
-  bool HandleAddTranslationModeScanCode(int scanCodeAndModifiers,
+  bool HandleAddTranslationModeScanCode(uint32_t scanCodeAndModifiers,
                                         ScanCodeAction action);
   bool IsNewline(StenoStroke stroke) const;
   void EndAddTranslationMode();

@@ -1,8 +1,7 @@
 //---------------------------------------------------------------------------
 
 #pragma once
-#include <stdint.h>
-#include <stdlib.h>
+#include "key_code.h"
 
 //---------------------------------------------------------------------------
 
@@ -16,7 +15,7 @@ struct StenoKeyPressToken {
   };
 
   StenoKeyPressToken() = default;
-  StenoKeyPressToken(Type type, uint32_t keyCode = 0)
+  StenoKeyPressToken(Type type, KeyCode keyCode = 0)
       : type(type), keyCode(keyCode) {}
 
   bool operator==(const StenoKeyPressToken &other) const {
@@ -29,7 +28,7 @@ struct StenoKeyPressToken {
   }
 
   Type type;
-  uint32_t keyCode;
+  KeyCode keyCode;
 };
 
 //---------------------------------------------------------------------------

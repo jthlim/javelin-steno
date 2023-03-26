@@ -75,7 +75,7 @@ void StenoEngine::ProcessUndo() {
   }
 }
 
-bool StenoEngine::ProcessScanCode(int scanCodeAndModifiers,
+bool StenoEngine::ProcessScanCode(uint32_t scanCodeAndModifiers,
                                   ScanCodeAction action) {
   switch (mode) {
   case StenoEngineMode::NORMAL:
@@ -119,7 +119,7 @@ void StenoEngine::PrintDictionary() const {
   Console::Write("\n}\n\n", 4);
 }
 
-void StenoEngine::ListDictionaries() { dictionary.ListDictionaries(); }
+void StenoEngine::ListDictionaries() const { dictionary.ListDictionaries(); }
 
 bool StenoEngine::EnableDictionary(const char *name) {
   return dictionary.EnableDictionary(name);

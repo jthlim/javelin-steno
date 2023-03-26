@@ -27,7 +27,7 @@ public:
     }
   }
 
-  bool IsPossibleMatch(const PatternQuickReject patternQuickReject) {
+  bool IsPossibleMatch(const PatternQuickReject patternQuickReject) const {
     return (patternQuickReject.mask & ~mask) == 0;
   }
 

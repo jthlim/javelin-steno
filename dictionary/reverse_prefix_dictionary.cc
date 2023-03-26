@@ -221,6 +221,7 @@ void StenoReversePrefixDictionary::AddPrefixReverseLookup(
     context.Narrow(*lookup++);
   }
 
+  // Do reverse ordering to find longest matches first.
   for (size_t i = prefixTests.GetCount(); i > 0; --i) {
     const PrefixTest &test = prefixTests[i - 1];
     StenoReverseDictionaryLookup *suffixLookup =
@@ -243,14 +244,17 @@ void StenoReversePrefixDictionary::AddPrefixReverseLookup(
 
         StenoReverseMapDictionaryLookup prefixLookup(data);
         if (dictionary->ReverseMapDictionaryLookup(prefixLookup)) {
-          StenoStroke strokes[prefixLookup.length + suffix.length];
+          size_t combinedLength = prefixLookup.length + suffix.length;
+          StenoStroke strokes[combinedLength];
           memcpy(strokes, prefixLookup.strokes,
                  prefixLookup.length * sizeof(StenoStroke));
           memcpy(strokes + prefixLookup.length, suffix.strokes,
                  suffix.length * sizeof(StenoStroke));
 
-          result.AddResult(strokes, prefixLookup.length + suffix.length, this);
-          hasResult = true;
+          if (!IsStrokeDefined(strokes, prefixLookup.length, combinedLength)) {
+            result.AddResult(strokes, combinedLength, this);
+            hasResult = true;
+          }
         }
       }
     }
@@ -260,6 +264,17 @@ void StenoReversePrefixDictionary::AddPrefixReverseLookup(
       return;
     }
   }
+}
+
+bool StenoReversePrefixDictionary::IsStrokeDefined(
+    const StenoStroke *strokes, size_t prefixStrokeCount,
+    size_t combinedStrokeCount) const {
+  for (size_t i = prefixStrokeCount + 1; i <= combinedStrokeCount; ++i) {
+    if (dictionary->GetLookupProvider(strokes, i)) {
+      return true;
+    }
+  }
+  return false;
 }
 
 const char *StenoReversePrefixDictionary::GetName() const {

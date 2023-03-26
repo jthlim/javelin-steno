@@ -21,8 +21,8 @@ struct StenoKeyCodeEmitter::EmitterContext {
   bool hasDeterminedNumLockState = false;
   bool isNumLockOn;
 
-  static const uint8_t MASK_KEY_CODES[];
-  static const uint8_t HEX_KEY_CODES[];
+  static const KeyCode::Value MASK_KEY_CODES[];
+  static const KeyCode::Value HEX_KEY_CODES[];
   static const uint16_t ALT_HEX_KEY_CODES[];
   static const uint16_t KP_ALT_HEX_KEY_CODES[];
   static const uint16_t ASCII_KEY_CODES[];
@@ -37,10 +37,10 @@ struct StenoKeyCodeEmitter::EmitterContext {
 
   void ProcessStenoKeyCode(StenoKeyCode stenoKeyCode);
 
-  static void PressKey(int keyCode) { Key::Press(keyCode); }
-  static void ReleaseKey(int keyCode) { Key::Release(keyCode); };
+  static void PressKey(KeyCode keyCode) { Key::Press(keyCode); }
+  static void ReleaseKey(KeyCode keyCode) { Key::Release(keyCode); };
 
-  static void TapKey(int keyCode) {
+  static void TapKey(KeyCode keyCode) {
     PressKey(keyCode);
     ReleaseKey(keyCode);
   }
@@ -87,12 +87,12 @@ bool StenoKeyCodeEmitter::SetUnicodeMode(const char *name) {
 
 //---------------------------------------------------------------------------
 
-const uint8_t StenoKeyCodeEmitter::EmitterContext::MASK_KEY_CODES[] = {
+const KeyCode::Value StenoKeyCodeEmitter::EmitterContext::MASK_KEY_CODES[] = {
     KeyCode::L_CTRL, KeyCode::L_SHIFT, KeyCode::L_ALT, KeyCode::L_META,
     KeyCode::R_CTRL, KeyCode::R_SHIFT, KeyCode::R_ALT, KeyCode::R_META,
 };
 
-const uint8_t StenoKeyCodeEmitter::EmitterContext::HEX_KEY_CODES[] = {
+const KeyCode::Value StenoKeyCodeEmitter::EmitterContext::HEX_KEY_CODES[] = {
     KeyCode::_0, KeyCode::_1, KeyCode::_2, KeyCode::_3,
     KeyCode::_4, KeyCode::_5, KeyCode::_6, KeyCode::_7,
     KeyCode::_8, KeyCode::_9, KeyCode::A,  KeyCode::B,
@@ -375,7 +375,7 @@ StenoKeyCodeEmitter::EmitterContext::EmitKeyCode(uint32_t keyCode) {
   ReleaseModifiers(modifiers & ~keyCode);
   PressModifiers((keyCode & ~modifiers) & MODIFIER_MASK);
   modifiers = keyCode & MODIFIER_MASK;
-  TapKey(keyCode & 0xff);
+  TapKey(KeyCode::Value(keyCode & 0xff));
 }
 
 void StenoKeyCodeEmitter::EmitterContext::PressModifiers(uint32_t modifiers) {

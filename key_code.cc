@@ -70,13 +70,13 @@ constexpr uint8_t KEY_CODE_TO_UNICODE[256][2] = {
 
 //---------------------------------------------------------------------------
 
-int KeyCode::ConvertToUnicode(int keyCodeAndModifiers) {
+uint32_t KeyCode::ConvertToUnicode(uint32_t keyCodeAndModifiers) {
   if (keyCodeAndModifiers & (MODIFIER_MASK & ~MODIFIER_SHIFT_FLAG)) {
     // If there's a non-shift modifier held, don't try and convert to unicode.
     return 0;
   }
-  int caseIndex = (keyCodeAndModifiers & MODIFIER_SHIFT_FLAG) ? 1 : 0;
-  int keyCodeIndex = keyCodeAndModifiers & 0xff;
+  uint32_t caseIndex = (keyCodeAndModifiers & MODIFIER_SHIFT_FLAG) ? 1 : 0;
+  uint32_t keyCodeIndex = keyCodeAndModifiers & 0xff;
 
   return KEY_CODE_TO_UNICODE[keyCodeIndex][caseIndex];
 }

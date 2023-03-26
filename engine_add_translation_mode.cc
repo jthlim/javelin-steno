@@ -197,15 +197,15 @@ void StenoEngine::DeleteTranslation(size_t newlineIndex) {
 
 //---------------------------------------------------------------------------
 
-bool StenoEngine::HandleAddTranslationModeScanCode(int scanCodeAndModifiers,
-                                                   ScanCodeAction action) {
-  int scanCode = scanCodeAndModifiers & 0xff;
-  if (KeyCode::IsModifier(scanCode)) {
+bool StenoEngine::HandleAddTranslationModeScanCode(
+    uint32_t scanCodeAndModifiers, ScanCodeAction action) {
+  KeyCode keyCode = KeyCode::Value(scanCodeAndModifiers & 0xff);
+  if (keyCode.IsModifier()) {
     return false;
   }
 
   if (action == ScanCodeAction::PRESS || action == ScanCodeAction::TAP) {
-    int unicode = KeyCode::ConvertToUnicode(scanCodeAndModifiers);
+    uint32_t unicode = KeyCode::ConvertToUnicode(scanCodeAndModifiers);
     if (unicode == '\b') {
       ProcessAddTranslationModeUndo();
     } else if (unicode != 0) {

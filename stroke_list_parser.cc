@@ -4,8 +4,8 @@
 
 //---------------------------------------------------------------------------
 
-// Returns true if successfully parsed, ERR otherwise.
-bool StrokeListParser::Set(const char *p) {
+// Returns true if successfully parsed, false otherwise.
+bool StrokeListParser::Parse(const char *p) {
   length = 0;
 
   for (;;) {

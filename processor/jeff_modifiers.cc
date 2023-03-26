@@ -34,7 +34,7 @@ constexpr StenoStroke StenoJeffModifiers::ALT_MASK(StrokeMask::BR);
 
 struct JeffModifiersData {
   uint32_t keyState : 24;
-  uint8_t keyCode : 8;
+  KeyCode::Value keyCode : 8;
 };
 
 const JeffModifiersData DATA[] = {
@@ -562,7 +562,7 @@ bool StenoJeffModifiers::TriggerSendKey(StenoStroke stroke) const {
 
   for (size_t i = 0; i < sizeof(DATA) / sizeof(*DATA); ++i) {
     if (DATA[i].keyState == keyState) {
-      uint8_t code = DATA[i].keyCode;
+      KeyCode code = DATA[i].keyCode;
       Key::Press(code);
       Key::Release(code);
       return true;

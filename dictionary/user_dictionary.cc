@@ -678,7 +678,7 @@ void StenoUserDictionary::AddEntry_Binding(void *context,
   }
 
   StrokeListParser parser;
-  if (!parser.Set(strokeStart + 1)) {
+  if (!parser.Parse(strokeStart + 1)) {
     Console::Printf("ERR Cannot parse stroke near %s\n\n", parser.failureOrEnd);
     return;
   }
@@ -707,7 +707,7 @@ void StenoUserDictionary::RemoveEntry_Binding(void *context,
   }
 
   StrokeListParser parser;
-  if (!parser.Set(strokeStart + 1)) {
+  if (!parser.Parse(strokeStart + 1)) {
     Console::Printf("ERR Cannot parse stroke near %s\n\n", parser.failureOrEnd);
     return;
   }

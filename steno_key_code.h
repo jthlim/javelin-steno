@@ -1,6 +1,7 @@
 //---------------------------------------------------------------------------
 
 #pragma once
+#include "key_code.h"
 #include "state.h"
 #include "unicode.h"
 
@@ -16,15 +17,15 @@ public:
       : unicode(unicode), outputCaseMode(uint8_t(outputCaseMode)),
         selectedCaseMode(uint8_t(selectedCaseMode)) {}
 
-  static StenoKeyCode CreateRawKeyCodePress(uint32_t v) {
+  static StenoKeyCode CreateRawKeyCodePress(KeyCode keyCode) {
     StenoKeyCode result;
-    result.value = v | 0xc0000000; // Set isRawKeyCode
+    result.value = keyCode.value | 0xc0000000; // Set isRawKeyCode
     return result;
   }
 
-  static StenoKeyCode CreateRawKeyCodeRelease(uint32_t v) {
+  static StenoKeyCode CreateRawKeyCodeRelease(KeyCode keyCode) {
     StenoKeyCode result;
-    result.value = v | 0x80000000; // Set isRawKeyCode
+    result.value = keyCode.value | 0x80000000; // Set isRawKeyCode
     return result;
   }
 
@@ -36,7 +37,7 @@ public:
   bool IsLetter() const { return !isRawKeyCode && Unicode::IsLetter(unicode); }
 
   bool IsPress() const { return isPress; }
-  uint32_t GetRawKeyCode() { return rawKeyCode; }
+  KeyCode::Value GetRawKeyCode() const { return rawKeyCode; }
 
   uint32_t GetUnicode() const { return isRawKeyCode ? 0 : unicode; }
   StenoCaseMode GetOutputCaseMode() const {
@@ -82,7 +83,7 @@ public:
 private:
   union {
     struct {
-      uint32_t rawKeyCode : 8;
+      KeyCode::Value rawKeyCode : 8;
       uint32_t reserved : 22;
       bool isPress : 1;
       bool isRawKeyCode : 1;

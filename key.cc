@@ -14,14 +14,14 @@ KeyboardLedStatus Key::ledStatus;
 bool Key::historyEnabled = true;
 std::vector<Key::HistoryEntry> Key::history;
 
-void Key::PressRaw(uint8_t key) {
+void Key::PressRaw(KeyCode key) {
   if (!historyEnabled) {
     return;
   }
   history.push_back(HistoryEntry(key, true));
 }
 
-void Key::ReleaseRaw(uint8_t key) {
+void Key::ReleaseRaw(KeyCode key) {
   if (!historyEnabled) {
     return;
   }
@@ -32,22 +32,23 @@ void Key::ReleaseRaw(uint8_t key) {
 
 //---------------------------------------------------------------------------
 
-void Key::Press(uint8_t key) { PressRaw(TranslateKey(key)); }
+void Key::Press(KeyCode key) { PressRaw(TranslateKey(key)); }
 
-void Key::Release(uint8_t key) { ReleaseRaw(TranslateKey(key)); }
+void Key::Release(KeyCode key) { ReleaseRaw(TranslateKey(key)); }
 
 __attribute__((weak)) void Key::Flush() {}
 
-__attribute__((weak))   bool Key::IsNumLockOn() { return ledStatus.numLock; }
+__attribute__((weak)) bool Key::IsNumLockOn() { return ledStatus.numLock; }
 
-
-uint8_t Key::TranslateKey(uint8_t key) {
-  if (key >= 64) {
+KeyCode Key::TranslateKey(KeyCode key) {
+  if (key.value >= 64) {
     return key;
   }
   const KeyboardLayoutTable *layoutTable =
       KeyboardLayout::GetActiveLayoutTable();
-  return layoutTable == nullptr ? key : layoutTable->values[key];
+  return layoutTable == nullptr
+             ? key
+             : KeyCode::Value(layoutTable->values[key.value]);
 }
 
 //---------------------------------------------------------------------------

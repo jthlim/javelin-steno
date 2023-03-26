@@ -180,7 +180,7 @@ void StenoEngine::LookupStroke_Binding(void *context, const char *commandLine) {
   }
 
   StrokeListParser parser;
-  if (!parser.Set(strokeStart + 1)) {
+  if (!parser.Parse(strokeStart + 1)) {
     Console::Printf("ERR Cannot parse stroke near %s\n\n", parser.failureOrEnd);
     return;
   }

@@ -54,6 +54,15 @@ public:
     return v != 0;
   }
 
+  // Returns the bitmask for the specified range [startIndex, endIndex).
+  // Undefined results if it crosses a size_t boundary.
+  size_t GetRange(size_t startIndex, size_t endIndex) const {
+    size_t value = data[startIndex / BITS_PER_WORD];
+    size_t topClearShift = BITS_PER_WORD - endIndex % BITS_PER_WORD;
+    size_t bottomClearShift = startIndex % BITS_PER_WORD;
+    return value << topClearShift >> (bottomClearShift + topClearShift);
+  }
+
   void Set(size_t n) { data[n / BITS_PER_WORD] |= 1ULL << n % BITS_PER_WORD; }
   void Clear(size_t n) {
     data[n / BITS_PER_WORD] &= ~(1ULL << n % BITS_PER_WORD);

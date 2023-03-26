@@ -28,11 +28,11 @@ static_assert(sizeof(KeyboardLedStatus) == 1,
 
 class Key {
 public:
-  static void PressRaw(uint8_t key);
-  static void ReleaseRaw(uint8_t key);
+  static void PressRaw(KeyCode key);
+  static void ReleaseRaw(KeyCode key);
 
-  static void Press(uint8_t key);
-  static void Release(uint8_t key);
+  static void Press(KeyCode key);
+  static void Release(KeyCode key);
   static void Flush();
 
   static bool IsNumLockOn();
@@ -57,10 +57,9 @@ public:
 #if RUN_TESTS
   struct HistoryEntry {
     HistoryEntry() = default;
-    HistoryEntry(uint8_t code, bool isPress)
-        : code((KeyCode::Value)code), isPress(isPress) {}
+    HistoryEntry(KeyCode code, bool isPress) : code(code), isPress(isPress) {}
 
-    KeyCode::Value code;
+    KeyCode code;
     bool isPress;
   };
 
@@ -70,7 +69,7 @@ public:
 private:
   static KeyboardLedStatus ledStatus;
 
-  static uint8_t TranslateKey(uint8_t key);
+  static KeyCode TranslateKey(KeyCode key);
 };
 
 //---------------------------------------------------------------------------

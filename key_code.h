@@ -3,6 +3,7 @@
 //---------------------------------------------------------------------------
 
 #pragma once
+#include <stdint.h>
 
 //---------------------------------------------------------------------------
 
@@ -26,7 +27,7 @@
 //---------------------------------------------------------------------------
 
 struct KeyCode {
-  enum Value {
+  enum Value : uint8_t {
     A = 0x04,
     B = 0x05,
     C = 0x06,
@@ -229,22 +230,27 @@ struct KeyCode {
     MEDIA_CALCULATOR = 0xfb,
   };
 
-  inline static bool IsVisible(int keyCode) {
-    return (A <= keyCode && keyCode <= ENTER) ||
-           (TAB <= keyCode && keyCode <= SLASH) ||
-           (KP_SLASH <= keyCode && keyCode <= BACKSLASH_PIPE);
+  KeyCode() = default;
+  constexpr KeyCode(uint32_t value) : value(value) {}
+
+  bool IsVisible() const {
+    return (A <= value && value <= ENTER) || (TAB <= value && value <= SLASH) ||
+           (KP_SLASH <= value && value <= BACKSLASH_PIPE);
   }
 
-  inline static bool IsModifier(int keyCode) {
-    return L_CTRL <= keyCode && keyCode <= R_META;
-  }
+  bool IsModifier() const { return L_CTRL <= value && value <= R_META; }
 
   // keyCode is in the lower 8 bits.
   // modifiers are in the next 8 bits and uses the values defined in
   // steno_key_code.h.
   //
   // Returns 0 if there's no simple conversion.
-  static int ConvertToUnicode(int keyCodeAndModifiers);
+  static uint32_t ConvertToUnicode(uint32_t keyCodeAndModifiers);
+
+  bool operator==(const KeyCode &other) const { return value == other.value; }
+  bool operator!=(const KeyCode &other) const { return value != other.value; }
+
+  uint32_t value;
 };
 
 //---------------------------------------------------------------------------

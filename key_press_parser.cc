@@ -10,7 +10,7 @@
 
 struct KeyCodeName {
   const char *name;
-  uint32_t keyCode;
+  KeyCode keyCode;
 };
 
 // Alphabetically sorted for binary search to work.

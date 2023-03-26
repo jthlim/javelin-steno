@@ -7,12 +7,13 @@
 
 //---------------------------------------------------------------------------
 
+// Parses a stroke list, e.g. "TEFT/-G" into StenoStroke array.
 struct StrokeListParser {
   StenoStroke strokes[StenoUserDictionary::MAX_STROKE_COUNT];
   size_t length;
   const char *failureOrEnd;
 
-  bool Set(const char *p);
+  bool Parse(const char *p);
 };
 
 //---------------------------------------------------------------------------

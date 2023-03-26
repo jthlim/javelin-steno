@@ -438,13 +438,13 @@ void StenoKeyCodeBuffer::Reverse(StenoKeyCode *start, StenoKeyCode *end) {
 
 bool StenoKeyCodeBuffer::ProcessKeyPresses(const char *p, const char *end) {
   StenoKeyPressTokenizer tokenizer(p, end);
-  List<uint32_t> keyPressStack;
+  List<KeyCode> keyPressStack;
 
   for (;;) {
     StenoKeyPressToken token = tokenizer.GetNext();
     switch (token.type) {
     case StenoKeyPressToken::Type::KEY: {
-      uint32_t keyCode = token.keyCode;
+      KeyCode keyCode = token.keyCode;
       if (keyCode != 0) {
         buffer[count++] = StenoKeyCode::CreateRawKeyCodePress(keyCode);
       }
@@ -466,7 +466,7 @@ bool StenoKeyCodeBuffer::ProcessKeyPresses(const char *p, const char *end) {
       if (keyPressStack.IsEmpty()) {
         return false;
       }
-      uint32_t keyCode = keyPressStack.Back();
+      KeyCode keyCode = keyPressStack.Back();
       if (keyCode != 0) {
         buffer[count++] = StenoKeyCode::CreateRawKeyCodeRelease(keyCode);
       }
@@ -476,10 +476,9 @@ bool StenoKeyCodeBuffer::ProcessKeyPresses(const char *p, const char *end) {
     case StenoKeyPressToken::Type::END:
       // If unmatched trailing brackets, just close them out..
       while (keyPressStack.IsNotEmpty()) {
-        uint32_t keyCode = keyPressStack.Back();
+        KeyCode keyCode = keyPressStack.Back();
         if (keyCode != 0) {
-          buffer[count++] =
-              StenoKeyCode::CreateRawKeyCodeRelease(keyPressStack.Back());
+          buffer[count++] = StenoKeyCode::CreateRawKeyCodeRelease(keyCode);
         }
         keyPressStack.Pop();
       }
