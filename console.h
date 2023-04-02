@@ -23,7 +23,8 @@ public:
   void HandleInput(const char *data, size_t length);
   static void SendOk();
 
-  static const uint8_t *RunCommand(const char *command);
+  // Returns true if successful.
+  static bool RunCommand(const char *command, IWriter &writer);
 
   static void RegisterCommand(const ConsoleCommand &command);
   static void RegisterCommand(const char *command, const char *description,

@@ -556,7 +556,7 @@ bool StenoKeyCodeBuffer::ConsoleFunction(const List<char *> &parameters) {
     return false;
   }
 
-  Console::RunCommand(parameters[1]);
+  Console::RunCommand(parameters[1], EmptyWriter::instance);
   return true;
 }
 

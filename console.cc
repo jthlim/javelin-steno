@@ -136,21 +136,17 @@ const ConsoleCommand *Console::GetCommand(const char *buffer) {
   return nullptr;
 }
 
-static LimitedBufferWriter runCommandWriter;
-
-const uint8_t *Console::RunCommand(const char *command) {
+bool Console::RunCommand(const char *command, IWriter &writer) {
   const ConsoleCommand *consoleCommand = GetCommand(command);
   if (!consoleCommand) {
-    return (const uint8_t *)"ERR - Invalid command";
+    return false;
   }
 
-  runCommandWriter.Reset();
-  IWriter::Push(&runCommandWriter);
+  IWriter::Push(&writer);
   (*consoleCommand->handler)(consoleCommand->context, command);
   IWriter::Pop();
 
-  runCommandWriter.AddTrailingNull();
-  return runCommandWriter.buffer;
+  return true;
 }
 
 void Console::SendOk() { Write("OK\n\n", 4); }

@@ -4,6 +4,7 @@
 #include "bit_field.h"
 #include "scan_code_action.h"
 #include "steno_key_state.h"
+#include "writer.h"
 #include <stdint.h>
 #include <stdlib.h>
 
@@ -44,6 +45,7 @@ private:
   BitField<256> buttonState;
   BitField<256> keyState;
   int stack[MAX_STACK_SIZE];
+  LimitedBufferWriter consoleWriter;
 
   void Push(int value);
   int Pop();

@@ -558,7 +558,16 @@ void Script::ExecutionContext::Run(Script &script, size_t offset) {
       case SF::CONSOLE: {
         int offset = script.Pop();
         const char *text = (const char *)script.byteCode + offset;
-        const uint8_t *result = Console::RunCommand(text);
+        script.consoleWriter.Reset();
+
+        const uint8_t *result;
+        if (Console::RunCommand(text, script.consoleWriter)) {
+          script.consoleWriter.AddTrailingNull();
+          result = script.consoleWriter.buffer;
+        } else {
+          result = (const uint8_t *)"Invalid console command";
+        }
+
         script.Push(result - script.byteCode);
         break;
       }
