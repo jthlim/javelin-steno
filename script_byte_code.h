@@ -6,6 +6,8 @@
 
 //---------------------------------------------------------------------------
 
+const size_t SCRIPT_BYTE_CODE_REVISION = 1;
+
 class StenoScriptByteCode {
 public:
   enum Value {

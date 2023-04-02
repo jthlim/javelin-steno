@@ -27,6 +27,8 @@ public:
               const StenoCompiledOrthography &orthography,
               StenoUserDictionary *userDictionary = nullptr);
 
+  size_t GetStrokeCount() const { return strokeCount; }
+
   void Process(const StenoKeyState &value, StenoAction action);
   void ProcessUndo();
   void ProcessStroke(StenoStroke stroke);
@@ -83,7 +85,7 @@ private:
   bool placeSpaceAfter = false;
   StenoEngineMode mode = StenoEngineMode::NORMAL;
 
-  uint32_t strokeCount = 0;
+  size_t strokeCount = 0;
   StenoDictionary &dictionary;
   const StenoCompiledOrthography orthography;
   StenoUserDictionary *userDictionary;
