@@ -558,7 +558,8 @@ void Script::ExecutionContext::Run(Script &script, size_t offset) {
       case SF::CONSOLE: {
         int offset = script.Pop();
         const char *text = (const char *)script.byteCode + offset;
-        Console::RunCommand(text);
+        const uint8_t *result = Console::RunCommand(text);
+        script.Push(result - script.byteCode);
         break;
       }
       case SF::CHECK_BUTTON_STATE: {

@@ -66,3 +66,20 @@ void BufferWriter::Write(const char *data, size_t length) {
 }
 
 //---------------------------------------------------------------------------
+
+void LimitedBufferWriter::Write(const char *data, size_t length) {
+  if (bufferUsedCount + length > BUFFER_SIZE) {
+    length = BUFFER_SIZE - bufferUsedCount;
+  }
+  memcpy(buffer + bufferUsedCount, data, length);
+  bufferUsedCount += length;
+}
+
+void LimitedBufferWriter::AddTrailingNull() {
+  while (bufferUsedCount > 0 && buffer[bufferUsedCount - 1] == '\n') {
+    --bufferUsedCount;
+  }
+  buffer[bufferUsedCount] = '\0';
+}
+
+//---------------------------------------------------------------------------

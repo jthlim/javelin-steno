@@ -1,6 +1,7 @@
 //---------------------------------------------------------------------------
 
 #pragma once
+#include <stdint.h>
 #include <stdlib.h>
 #if RUN_TESTS
 #include <vector>
@@ -72,6 +73,20 @@ private:
   size_t bufferUsedCount;
   size_t bufferSize;
   char *buffer;
+};
+
+class LimitedBufferWriter final : public IWriter {
+public:
+  void Reset() { bufferUsedCount = 0; }
+
+  void Write(const char *data, size_t length) final;
+
+  void AddTrailingNull();
+
+  static const size_t BUFFER_SIZE = 64;
+
+  size_t bufferUsedCount = 0;
+  uint8_t buffer[BUFFER_SIZE + 1];
 };
 
 //---------------------------------------------------------------------------
