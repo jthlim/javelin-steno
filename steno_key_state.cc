@@ -229,6 +229,7 @@ StenoPloverHidPacket StenoKeyState::ToPloverHidPacket() const {
 //---------------------------------------------------------------------------
 
 #include "unit_test.h"
+#include <string.h>
 
 TEST_BEGIN("StenoKeyState tests") {
   char buffer[32];

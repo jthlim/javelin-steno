@@ -199,8 +199,7 @@ StenoSegment StenoStrokeHistory::AutoSuffixTest(BuildSegmentContext &context,
                                                 size_t offset,
                                                 size_t startLength,
                                                 size_t minimumLength) {
-  StenoStroke *localStrokes =
-      (StenoStroke *)alloca(sizeof(StenoStroke) * startLength);
+  StenoStroke localStrokes[startLength];
   memcpy(localStrokes, strokes + offset, sizeof(StenoStroke) * startLength);
 
   const StenoOrthography &orthography = context.orthography.data;

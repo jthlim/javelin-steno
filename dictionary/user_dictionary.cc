@@ -2,7 +2,7 @@
 
 #include "user_dictionary.h"
 #include "../console.h"
-#include "../crc32.h"
+#include "../crc.h"
 #include "../flash.h"
 #include "../str.h"
 #include "../stroke.h"

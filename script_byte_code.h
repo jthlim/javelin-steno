@@ -44,6 +44,8 @@ public:
     GLOBAL_LOAD_INDEX = 0xcd,
     GLOBAL_STORE_INDEX = 0xce,
 
+    PARAM_STORE = 0xcf,
+
     PARAM_LOAD_START = 0xd0, // 0xd0-0xd7
     PARAM_LOAD_END = 0xd7,
     PARAM_STORE_COUNT_START = 0xd8,
@@ -97,6 +99,7 @@ enum class StenoExtendedScriptFunction : uint8_t {
   SET_DRAW_COLOR,
   DRAW_RECT,
   SET_HSV,
+  RAND,
 };
 
 enum class StenoScriptOperator : uint8_t {

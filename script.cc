@@ -6,6 +6,7 @@
 #include "display.h"
 #include "gpio.h"
 #include "key.h"
+#include "random.h"
 #include "rgb.h"
 #include "script_byte_code.h"
 #include <assert.h>
@@ -389,6 +390,9 @@ void Script::ExecutionContext::Run(Script &script, size_t offset) {
         Rgb::SetHsv(id, h, s, v);
         break;
       }
+      case StenoExtendedScriptFunction::RAND:
+        script.Push(Random::GenerateUint32());
+        break;
       }
       break;
     }
@@ -403,6 +407,11 @@ void Script::ExecutionContext::Run(Script &script, size_t offset) {
       int value = script.Pop();
       int index = script.Pop();
       script.globals[globalBaseIndex + index] = value;
+      break;
+    }
+    case BC::PARAM_STORE: {
+      int paramIndex = *p++;
+      params[paramIndex] = script.Pop();
       break;
     }
     case BC::PARAM_LOAD_START... BC::PARAM_LOAD_END:

@@ -1,7 +1,7 @@
 //---------------------------------------------------------------------------
 
 #include "stroke.h"
-#include "crc32.h"
+#include "crc.h"
 #include <assert.h>
 #include <string.h>
 

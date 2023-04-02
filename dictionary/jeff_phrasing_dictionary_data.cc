@@ -1,7 +1,7 @@
 //---------------------------------------------------------------------------
 
 #include "jeff_phrasing_dictionary_data.h"
-#include "../crc32.h"
+#include "../crc.h"
 #include "dictionary.h"
 #include <string.h>
 

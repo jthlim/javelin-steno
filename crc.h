@@ -8,4 +8,7 @@
 
 uint32_t Crc32(const void *p, size_t count);
 
+//
+uint32_t Crc16Ccitt(const void *p, size_t count);
+
 //---------------------------------------------------------------------------
