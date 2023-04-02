@@ -18,8 +18,8 @@ public:
   void Run(Script &script, size_t offset);
 
 private:
-  int locals[4];
-  int params[8];
+  intptr_t locals[4];
+  intptr_t params[8];
 };
 
 //---------------------------------------------------------------------------
@@ -28,28 +28,28 @@ Script::Script(const uint8_t *byteCode) : byteCode(byteCode) {
   keyState.ClearAll();
 }
 
-void Script::Push(int value) {
+void Script::Push(intptr_t value) {
   assert(stackTop < stack + MAX_STACK_SIZE);
   *stackTop++ = value;
 }
 
-int Script::Pop() {
+intptr_t Script::Pop() {
   assert(stackTop > stack);
   return *--stackTop;
 }
 
-const int *Script::Pop(int count) {
+const intptr_t *Script::Pop(size_t count) {
   assert(stackTop >= stack + count);
   stackTop -= count;
   return stackTop;
 }
 
-void Script::UnaryOp(int (*op)(int)) {
+void Script::UnaryOp(intptr_t (*op)(intptr_t)) {
   assert(stackTop > stack);
   stackTop[-1] = op(stackTop[-1]);
 }
 
-void Script::BinaryOp(int (*op)(int, int)) {
+void Script::BinaryOp(intptr_t (*op)(intptr_t, intptr_t)) {
   assert(stackTop >= stack + 2);
   --stackTop;
   stackTop[-1] = op(stackTop[-1], stackTop[0]);
@@ -118,87 +118,106 @@ void Script::ExecutionContext::Run(Script &script, size_t offset) {
       StenoScriptOperator op = StenoScriptOperator(c - BC::OPERATOR_START);
       switch (op) {
       case OP::NOT:
-        script.UnaryOp([](int a) -> int { return !a; });
+        script.UnaryOp([](intptr_t a) -> intptr_t { return !a; });
         break;
       case OP::NEGATIVE:
-        script.UnaryOp([](int a) -> int { return -a; });
+        script.UnaryOp([](intptr_t a) -> intptr_t { return -a; });
         break;
       case OP::MULTIPLY:
         script.Push(script.Pop() * script.Pop());
         break;
       case OP::QUOTIENT:
-        script.BinaryOp([](int a, int b) -> int { return a / b; });
+        script.BinaryOp(
+            [](intptr_t a, intptr_t b) -> intptr_t { return a / b; });
         break;
       case OP::REMAINDER:
-        script.BinaryOp([](int a, int b) -> int { return a % b; });
+        script.BinaryOp(
+            [](intptr_t a, intptr_t b) -> intptr_t { return a % b; });
         break;
       case OP::ADD:
-        script.BinaryOp([](int a, int b) -> int { return a + b; });
+        script.BinaryOp(
+            [](intptr_t a, intptr_t b) -> intptr_t { return a + b; });
         break;
       case OP::SUBTRACT:
-        script.BinaryOp([](int a, int b) -> int { return a - b; });
+        script.BinaryOp(
+            [](intptr_t a, intptr_t b) -> intptr_t { return a - b; });
         break;
       case OP::EQUALS:
-        script.BinaryOp([](int a, int b) -> int { return a == b; });
+        script.BinaryOp(
+            [](intptr_t a, intptr_t b) -> intptr_t { return a == b; });
         break;
       case OP::NOT_EQUALS:
-        script.BinaryOp([](int a, int b) -> int { return a != b; });
+        script.BinaryOp(
+            [](intptr_t a, intptr_t b) -> intptr_t { return a != b; });
         break;
       case OP::LESS_THAN:
-        script.BinaryOp([](int a, int b) -> int { return a < b; });
+        script.BinaryOp(
+            [](intptr_t a, intptr_t b) -> intptr_t { return a < b; });
         break;
       case OP::GREATER_THAN:
-        script.BinaryOp([](int a, int b) -> int { return a > b; });
+        script.BinaryOp(
+            [](intptr_t a, intptr_t b) -> intptr_t { return a > b; });
         break;
       case OP::LESS_THAN_OR_EQUAL_TO:
-        script.BinaryOp([](int a, int b) -> int { return a <= b; });
+        script.BinaryOp(
+            [](intptr_t a, intptr_t b) -> intptr_t { return a <= b; });
         break;
       case OP::GREATER_THAN_OR_EQUAL_TO:
-        script.BinaryOp([](int a, int b) -> int { return a >= b; });
+        script.BinaryOp(
+            [](intptr_t a, intptr_t b) -> intptr_t { return a >= b; });
         break;
       case OP::BITWISE_AND:
-        script.BinaryOp([](int a, int b) -> int { return a & b; });
+        script.BinaryOp(
+            [](intptr_t a, intptr_t b) -> intptr_t { return a & b; });
         break;
       case OP::BITWISE_OR:
-        script.BinaryOp([](int a, int b) -> int { return a | b; });
+        script.BinaryOp(
+            [](intptr_t a, intptr_t b) -> intptr_t { return a | b; });
         break;
       case OP::BITWISE_XOR:
-        script.BinaryOp([](int a, int b) -> int { return a ^ b; });
+        script.BinaryOp(
+            [](intptr_t a, intptr_t b) -> intptr_t { return a ^ b; });
         break;
       case OP::AND:
-        script.BinaryOp([](int a, int b) -> int { return a && b; });
+        script.BinaryOp(
+            [](intptr_t a, intptr_t b) -> intptr_t { return a && b; });
         break;
       case OP::OR:
-        script.BinaryOp([](int a, int b) -> int { return a || b; });
+        script.BinaryOp(
+            [](intptr_t a, intptr_t b) -> intptr_t { return a || b; });
         break;
       case OP::SHIFT_LEFT:
-        script.BinaryOp([](int a, int b) -> int { return a << b; });
+        script.BinaryOp(
+            [](intptr_t a, intptr_t b) -> intptr_t { return a << b; });
         break;
       case OP::ARITHMETIC_SHIFT_RIGHT:
-        script.BinaryOp([](int a, int b) -> int { return a >> b; });
+        script.BinaryOp(
+            [](intptr_t a, intptr_t b) -> intptr_t { return a >> b; });
         break;
       case OP::LOGICAL_SHIFT_RIGHT:
-        script.BinaryOp([](int a, int b) -> int { return uint32_t(a) >> b; });
+        script.BinaryOp([](intptr_t a, intptr_t b) -> intptr_t {
+          return uintptr_t(a) >> b;
+        });
         break;
       case OP::BYTE_LOOKUP: {
-        int index = script.Pop();
-        int offset = script.Pop();
+        intptr_t index = script.Pop();
+        intptr_t offset = script.Pop();
         const uint8_t *data = script.byteCode + offset;
         script.Push(data[index]);
         break;
       }
       case OP::WORD_LOOKUP: {
-        int index = script.Pop();
-        int offset = script.Pop();
+        intptr_t index = script.Pop();
+        intptr_t offset = script.Pop();
         const int32_t *data = (const int32_t *)(script.byteCode + offset);
         script.Push(data[index]);
         break;
       }
       case OP::INCREMENT:
-        script.UnaryOp([](int a) -> int { return a + 1; });
+        script.UnaryOp([](intptr_t a) -> intptr_t { return a + 1; });
         break;
       case OP::DECREMENT:
-        script.UnaryOp([](int a) -> int { return a - 1; });
+        script.UnaryOp([](intptr_t a) -> intptr_t { return a - 1; });
         break;
       }
       continue;
@@ -296,97 +315,97 @@ void Script::ExecutionContext::Run(Script &script, size_t offset) {
 
       switch (function) {
       case StenoExtendedScriptFunction::GET_LED_STATUS: {
-        int index = script.Pop();
+        int index = (int)script.Pop();
         script.Push(Key::GetLedStatus(index));
         break;
       }
       case StenoExtendedScriptFunction::SET_GPIO_PIN: {
         int enable = script.Pop() != 0;
-        int pin = script.Pop();
+        int pin = (int)script.Pop();
         Gpio::SetPin(pin, enable);
         break;
       }
       case StenoExtendedScriptFunction::CLEAR_DISPLAY: {
-        int displayId = script.Pop();
+        int displayId = (int)script.Pop();
         Display::Clear(displayId);
         break;
       }
       case StenoExtendedScriptFunction::SET_AUTO_DRAW: {
-        int autoDrawId = script.Pop();
-        int displayId = script.Pop();
+        int autoDrawId = (int)script.Pop();
+        int displayId = (int)script.Pop();
         Display::SetAutoDraw(displayId, autoDrawId);
         break;
       }
       case StenoExtendedScriptFunction::SET_SCREEN_ON: {
-        int on = script.Pop();
-        int displayId = script.Pop();
-        Display::SetScreenOn(displayId, on != 0);
+        bool on = script.Pop() != 0;
+        int displayId = (int)script.Pop();
+        Display::SetScreenOn(displayId, on);
         break;
       }
       case StenoExtendedScriptFunction::SET_SCREEN_CONTRAST: {
-        int contrast = script.Pop();
-        int displayId = script.Pop();
+        int contrast = (int)script.Pop();
+        int displayId = (int)script.Pop();
         Display::SetContrast(displayId, contrast);
         break;
       }
       case StenoExtendedScriptFunction::DRAW_PIXEL: {
-        int y = script.Pop();
-        int x = script.Pop();
-        int displayId = script.Pop();
+        int y = (int)script.Pop();
+        int x = (int)script.Pop();
+        int displayId = (int)script.Pop();
         Display::DrawPixel(displayId, x, y);
         break;
       }
       case StenoExtendedScriptFunction::DRAW_LINE: {
-        int y2 = script.Pop();
-        int x2 = script.Pop();
-        int y1 = script.Pop();
-        int x1 = script.Pop();
-        int displayId = script.Pop();
+        int y2 = (int)script.Pop();
+        int x2 = (int)script.Pop();
+        int y1 = (int)script.Pop();
+        int x1 = (int)script.Pop();
+        int displayId = (int)script.Pop();
         Display::DrawLine(displayId, x1, y1, x2, y2);
         break;
       }
       case StenoExtendedScriptFunction::DRAW_IMAGE: {
-        int offset = script.Pop();
+        intptr_t offset = script.Pop();
         const uint8_t *data = (const uint8_t *)script.byteCode + offset;
-        int y = script.Pop();
-        int x = script.Pop();
-        int displayId = script.Pop();
+        int y = (int)script.Pop();
+        int x = (int)script.Pop();
+        int displayId = (int)script.Pop();
         int width = *data++;
         int height = *data++;
         Display::DrawImage(displayId, x, y, width, height, data);
         break;
       }
       case StenoExtendedScriptFunction::DRAW_TEXT: {
-        int offset = script.Pop();
+        intptr_t offset = script.Pop();
         const char *text = (const char *)script.byteCode + offset;
         TextAlignment alignment = (TextAlignment)script.Pop();
         FontId fontId = (FontId)script.Pop();
-        int y = script.Pop();
-        int x = script.Pop();
-        int displayId = script.Pop();
+        int y = (int)script.Pop();
+        int x = (int)script.Pop();
+        int displayId = (int)script.Pop();
         Display::DrawText(displayId, x, y, fontId, alignment, text);
         break;
       }
       case StenoExtendedScriptFunction::SET_DRAW_COLOR: {
-        int color = script.Pop();
-        int displayId = script.Pop();
+        int color = (int)script.Pop();
+        int displayId = (int)script.Pop();
         Display::SetDrawColor(displayId, color);
         break;
       }
       case StenoExtendedScriptFunction::DRAW_RECT: {
-        int bottom = script.Pop();
-        int right = script.Pop();
-        int top = script.Pop();
-        int left = script.Pop();
-        int displayId = script.Pop();
+        int bottom = (int)script.Pop();
+        int right = (int)script.Pop();
+        int top = (int)script.Pop();
+        int left = (int)script.Pop();
+        int displayId = (int)script.Pop();
         Display::DrawRect(displayId, left, top, right, bottom);
         break;
       }
       case StenoExtendedScriptFunction::SET_HSV: {
-        int v = script.Pop();
-        int s = script.Pop();
-        int h = script.Pop();
-        int id = script.Pop();
+        int v = (int)script.Pop();
+        int s = (int)script.Pop();
+        int h = (int)script.Pop();
+        int id = (int)script.Pop();
         Rgb::SetHsv(id, h, s, v);
         break;
       }
@@ -397,15 +416,15 @@ void Script::ExecutionContext::Run(Script &script, size_t offset) {
       break;
     }
     case BC::GLOBAL_LOAD_INDEX: {
-      int globalBaseIndex = *p++;
-      int index = script.Pop();
+      intptr_t globalBaseIndex = *p++;
+      intptr_t index = script.Pop();
       script.Push(script.globals[globalBaseIndex + index]);
       break;
     }
     case BC::GLOBAL_STORE_INDEX: {
       int globalBaseIndex = *p++;
-      int value = script.Pop();
-      int index = script.Pop();
+      intptr_t value = script.Pop();
+      intptr_t index = script.Pop();
       script.globals[globalBaseIndex + index] = value;
       break;
     }
@@ -459,7 +478,7 @@ void Script::ExecutionContext::Run(Script &script, size_t offset) {
 
       switch (function) {
       case SF::PRESS_SCAN_CODE: {
-        uint32_t key = script.Pop();
+        uint32_t key = (uint32_t)script.Pop();
         if (key < 256 && !script.keyState.IsSet(key)) {
           if (!script.ProcessScanCode(key, ScanCodeAction::PRESS)) {
             script.keyState.Set(key);
@@ -469,7 +488,7 @@ void Script::ExecutionContext::Run(Script &script, size_t offset) {
         break;
       }
       case SF::RELEASE_SCAN_CODE: {
-        uint32_t key = script.Pop();
+        uint32_t key = (uint32_t)script.Pop();
         if (key < 256 && script.keyState.IsSet(key)) {
           if (!script.ProcessScanCode(key, ScanCodeAction::RELEASE)) {
             script.keyState.Clear(key);
@@ -479,7 +498,7 @@ void Script::ExecutionContext::Run(Script &script, size_t offset) {
         break;
       }
       case SF::TAP_SCAN_CODE: {
-        uint32_t key = script.Pop();
+        uint32_t key = (uint32_t)script.Pop();
         if (key < 256) {
           if (!script.ProcessScanCode(key, ScanCodeAction::TAP)) {
             if (!script.keyState.IsSet(key)) {
@@ -492,7 +511,7 @@ void Script::ExecutionContext::Run(Script &script, size_t offset) {
         break;
       }
       case SF::IS_SCAN_CODE_PRESSED: {
-        uint32_t key = script.Pop();
+        uint32_t key = (uint32_t)script.Pop();
         int isPressed = 0;
         if (key < 256) {
           isPressed = script.keyState.IsSet(key);
@@ -501,7 +520,7 @@ void Script::ExecutionContext::Run(Script &script, size_t offset) {
         break;
       }
       case SF::PRESS_STENO_KEY: {
-        uint32_t stenoKey = script.Pop();
+        uint32_t stenoKey = (uint32_t)script.Pop();
         if (stenoKey < (uint32_t)StenoKey::COUNT) {
           script.stenoState |= (1ULL << stenoKey);
           script.OnStenoKeyPressed();
@@ -509,7 +528,7 @@ void Script::ExecutionContext::Run(Script &script, size_t offset) {
         break;
       }
       case SF::RELEASE_STENO_KEY: {
-        uint32_t stenoKey = script.Pop();
+        uint32_t stenoKey = (uint32_t)script.Pop();
         if (stenoKey < (uint32_t)StenoKey::COUNT) {
           script.stenoState &= ~StenoKeyState(1ULL << stenoKey);
           script.OnStenoKeyReleased();
@@ -517,7 +536,7 @@ void Script::ExecutionContext::Run(Script &script, size_t offset) {
         break;
       }
       case SF::IS_STENO_KEY_PRESSED: {
-        uint32_t stenoKey = script.Pop();
+        uint32_t stenoKey = (uint32_t)script.Pop();
         int isPressed = 0;
         if (stenoKey < (uint32_t)StenoKey::COUNT) {
           isPressed = (script.stenoState & (1ULL << stenoKey)).IsNotEmpty();
@@ -527,14 +546,14 @@ void Script::ExecutionContext::Run(Script &script, size_t offset) {
       }
       case SF::RELEASE_ALL:
         for (size_t keyIndex : script.keyState) {
-          Key::Release(keyIndex);
+          Key::Release(uint32_t(keyIndex));
         }
         script.keyState.ClearAll();
         script.stenoState = 0;
         script.OnStenoStateCancelled();
         break;
       case SF::IS_BUTTON_PRESSED: {
-        uint32_t buttonIndex = script.Pop();
+        uint32_t buttonIndex = (uint32_t)script.Pop();
         int isPressed = 0;
         if (buttonIndex < 256) {
           isPressed = script.buttonState.IsSet(buttonIndex);
@@ -550,13 +569,13 @@ void Script::ExecutionContext::Run(Script &script, size_t offset) {
         script.inPressAllCount--;
         break;
       case SF::SEND_TEXT: {
-        int offset = script.Pop();
+        intptr_t offset = script.Pop();
         const uint8_t *text = script.byteCode + offset;
         script.SendText(text);
         break;
       }
       case SF::CONSOLE: {
-        int offset = script.Pop();
+        intptr_t offset = script.Pop();
         const char *text = (const char *)script.byteCode + offset;
         script.consoleWriter.Reset();
 
@@ -568,11 +587,11 @@ void Script::ExecutionContext::Run(Script &script, size_t offset) {
           result = (const uint8_t *)"Invalid console command";
         }
 
-        script.Push(result - script.byteCode);
+        script.Push(int(result - script.byteCode));
         break;
       }
       case SF::CHECK_BUTTON_STATE: {
-        int offset = script.Pop();
+        intptr_t offset = script.Pop();
         const uint8_t *text = script.byteCode + offset;
         script.Push(script.CheckButtonState(text));
         break;
@@ -581,10 +600,10 @@ void Script::ExecutionContext::Run(Script &script, size_t offset) {
         script.Push(script.inPressAllCount);
         break;
       case SF::SET_RGB: {
-        int b = script.Pop();
-        int g = script.Pop();
-        int r = script.Pop();
-        int id = script.Pop();
+        int b = script.Pop() & 0xff;
+        int g = script.Pop() & 0xff;
+        int r = script.Pop() & 0xff;
+        int id = (int)script.Pop();
         Rgb::SetRgb(id, r, g, b);
         break;
       }

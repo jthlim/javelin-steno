@@ -100,7 +100,7 @@ void StenoEngine::ResetState() {
 
 void StenoEngine::PrintInfo() const {
   Console::Printf("  Javelin Steno Engine\n");
-  Console::Printf("    Strokes: %u\n", strokeCount);
+  Console::Printf("    Strokes: %zu\n", strokeCount);
   Console::Printf("    Unicode mode: %s\n", emitter.GetUnicodeModeName());
   Console::Printf("    Keyboard layout: %s\n",
                   KeyboardLayout::GetActiveLayout().GetName());

@@ -39,19 +39,19 @@ private:
   bool cancelStenoState = false;
   int inPressAllCount = 0;
   const uint8_t *byteCode;
-  int *stackTop = stack;
+  intptr_t *stackTop = stack;
   StenoKeyState stenoState;
-  int globals[64];
+  intptr_t globals[64];
   BitField<256> buttonState;
   BitField<256> keyState;
-  int stack[MAX_STACK_SIZE];
+  intptr_t stack[MAX_STACK_SIZE];
   LimitedBufferWriter consoleWriter;
 
-  void Push(int value);
-  int Pop();
-  const int *Pop(int count);
-  void UnaryOp(int (*op)(int));
-  void BinaryOp(int (*op)(int, int));
+  void Push(intptr_t value);
+  intptr_t Pop();
+  const intptr_t *Pop(size_t count);
+  void UnaryOp(intptr_t (*op)(intptr_t));
+  void BinaryOp(intptr_t (*op)(intptr_t, intptr_t));
 
   void ExecuteScriptIndex(size_t index);
 
