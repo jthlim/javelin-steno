@@ -152,11 +152,12 @@ void StenoKeyCodeBuffer::ProcessCommand(const char *p) {
       caseMode = state.caseMode;
     }
 
-    if (*p == '}') {
+    if (p == end) {
       // suffix
       state.joinNext = true;
       return;
     }
+
     if (end[-1] == '^') {
       // Infix.
       AppendText(p, end - 1 - p, state.caseMode);
