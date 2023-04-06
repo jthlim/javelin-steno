@@ -102,6 +102,8 @@ enum class StenoExtendedScriptFunction : uint8_t {
   DRAW_RECT,
   SET_HSV,
   RAND,
+  IS_USB_MOUNTED,
+  IS_USB_SUSPENDED,
 };
 
 enum class StenoScriptOperator : uint8_t {

@@ -9,6 +9,7 @@
 #include "random.h"
 #include "rgb.h"
 #include "script_byte_code.h"
+#include "usb_status.h"
 #include <assert.h>
 
 //---------------------------------------------------------------------------
@@ -411,6 +412,12 @@ void Script::ExecutionContext::Run(Script &script, size_t offset) {
       }
       case StenoExtendedScriptFunction::RAND:
         script.Push(Random::GenerateUint32());
+        break;
+      case StenoExtendedScriptFunction::IS_USB_MOUNTED:
+        script.Push(UsbStatus::IsMounted());
+        break;
+      case StenoExtendedScriptFunction::IS_USB_SUSPENDED:
+        script.Push(UsbStatus::IsSuspended());
         break;
       }
       break;
