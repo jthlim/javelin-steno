@@ -66,6 +66,7 @@ public:
   void RetroactiveQuotes(int count, const char *startQuote,
                          const char *endQuote);
   void RetroactiveDeleteSpace();
+  void RetroactiveFormatCurrency(const char *pStart, const char *pEnd);
 
   bool ProcessFunction(const List<char *> &parameters);
 

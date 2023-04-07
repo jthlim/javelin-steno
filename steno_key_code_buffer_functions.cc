@@ -116,7 +116,6 @@ void StenoKeyCodeBuffer::RetroactiveCapitalize(int wordCount) {
       if (p->IsLetter()) {
         lastCharacterPointer = p;
       }
-      p->SetCase(StenoCaseMode::LOWER);
       --p;
     }
 
@@ -183,7 +182,6 @@ void StenoKeyCodeBuffer::RetroactiveTitleCase(int wordCount) {
       if (p->IsLetter()) {
         lastCharacterPointer = p;
       }
-      p->SetCase(StenoCaseMode::LOWER);
       --p;
     }
     lastCharacterPointer->SetCase(StenoCaseMode::TITLE);
@@ -309,6 +307,79 @@ void StenoKeyCodeBuffer::RetroactiveDeleteSpace() {
     }
     --p;
   }
+}
+
+// Currency takes the previous number and a template, and replaces a 'c'
+// with a number formatted with a comma every 3 digits, and at least two digits
+// after the decimal point.
+void StenoKeyCodeBuffer::RetroactiveFormatCurrency(const char *pStart,
+                                                   const char *pEnd) {
+  char numberBuffer[32];
+  size_t numberBufferLength = 0;
+  bool hasDecimal = false;
+  int integralDigits = 0;
+  int decimalDigits = 0;
+
+  StenoKeyCode *end = buffer + count;
+  StenoKeyCode *p = end - 1;
+  while (p >= buffer) {
+    if (p->IsAsciiDigit()) {
+      numberBuffer[numberBufferLength++] = p->GetUnicode();
+      ++integralDigits;
+    } else if (p->IsUnicode('.')) {
+      if (hasDecimal) {
+        break;
+      }
+      hasDecimal = true;
+      decimalDigits = integralDigits;
+      integralDigits = 0;
+    } else if (!p->IsUnicode(',')) {
+      break;
+    }
+    --p;
+    if (numberBufferLength >= 31) {
+      break;
+    }
+  }
+  ++p;
+
+  if (integralDigits == 0) {
+    numberBuffer[numberBufferLength++] = '0';
+    integralDigits = 1;
+  }
+
+  // Replace the buffer with the template.
+  for (const char *t = pStart; t < pEnd; ++t) {
+    if (*t != 'c') {
+      *p++ = StenoKeyCode(*t, StenoCaseMode::NORMAL);
+      continue;
+    }
+
+    size_t i = numberBufferLength;
+    int remainingIntegralDigits = integralDigits;
+    while (i != 0) {
+      char c = numberBuffer[--i];
+      *p++ = StenoKeyCode(c, StenoCaseMode::NORMAL);
+      --remainingIntegralDigits;
+      if (remainingIntegralDigits == 0) {
+        // Do decimal part.
+        if (hasDecimal) {
+          *p++ = StenoKeyCode('.', StenoCaseMode::NORMAL);
+          while (i != 0) {
+            *p++ = StenoKeyCode(numberBuffer[--i], StenoCaseMode::NORMAL);
+          }
+          for (size_t d = decimalDigits; d < 2; ++d) {
+            *p++ = StenoKeyCode('0', StenoCaseMode::NORMAL);
+          }
+          break;
+        }
+      } else if (remainingIntegralDigits % 3 == 0) {
+        *p++ = StenoKeyCode(',', StenoCaseMode::NORMAL);
+      }
+    }
+  }
+  state.isGlue = false;
+  count = p - buffer;
 }
 
 //---------------------------------------------------------------------------

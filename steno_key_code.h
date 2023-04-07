@@ -36,6 +36,12 @@ public:
 
   bool IsLetter() const { return !isRawKeyCode && Unicode::IsLetter(unicode); }
 
+  bool IsAsciiDigit() const {
+    return !isRawKeyCode && '0' <= unicode && unicode <= '9';
+  }
+
+  bool IsUnicode(uint32_t value) { return !isRawKeyCode && unicode == value; }
+
   bool IsPress() const { return isPress; }
   KeyCode::Value GetRawKeyCode() const { return rawKeyCode; }
 

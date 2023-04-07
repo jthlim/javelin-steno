@@ -223,6 +223,11 @@ void StenoKeyCodeBuffer::ProcessCommand(const char *p) {
       RetroactiveDeleteSpace();
       return;
     }
+
+    if (p[2] == '(' && end[-1] == ')') {
+      RetroactiveFormatCurrency(p + 3, end - 1);
+      return;
+    }
   }
 
   if (p + 2 == end) {
