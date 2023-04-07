@@ -6,7 +6,7 @@
 
 //---------------------------------------------------------------------------
 
-const size_t SCRIPT_BYTE_CODE_REVISION = 1;
+const size_t SCRIPT_BYTE_CODE_REVISION = 2;
 
 class StenoScriptByteCode {
 public:
@@ -104,6 +104,7 @@ enum class StenoExtendedScriptFunction : uint8_t {
   RAND,
   IS_USB_MOUNTED,
   IS_USB_SUSPENDED,
+  GET_PARAMETER,
 };
 
 enum class StenoScriptOperator : uint8_t {
@@ -136,7 +137,10 @@ enum class StenoScriptOperator : uint8_t {
 
 struct StenoScriptByteCodeData {
   uint8_t magic[4]; // JSS0
+  uint16_t stringHashTableOffset;
   uint16_t offsets[0];
+
+  const uint8_t *FindStringOrReturnOriginal(const uint8_t *string) const;
 };
 
 //---------------------------------------------------------------------------

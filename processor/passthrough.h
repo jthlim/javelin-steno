@@ -19,6 +19,7 @@ public:
     return next->ProcessScanCode(scanCodeAndModifiers, action);
   }
 
+  StenoProcessorElement *GetNext() const { return next; }
   void SetNext(StenoProcessorElement *value) { next = value; }
 
 protected:

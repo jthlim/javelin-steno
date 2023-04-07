@@ -1,6 +1,7 @@
 //---------------------------------------------------------------------------
 
 #pragma once
+#include <stdint.h>
 #include <string.h>
 
 //---------------------------------------------------------------------------
@@ -42,6 +43,9 @@ public:
   // Returns the end of the write area. buffer must have enough space to store
   // the result;
   static char *WriteJson(char *buffer, const char *text);
+
+  static size_t Length(const uint8_t *p) { return strlen((const char *)p); }
+  static size_t Length(const char *p) { return strlen(p); }
 };
 
 //---------------------------------------------------------------------------

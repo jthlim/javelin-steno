@@ -210,6 +210,9 @@ void StenoCompiledOrthography::PrintInfo() const {
   Console::Printf("    Orthography\n");
   Console::Printf("      Rules: %zu\n", data.ruleCount);
   Console::Printf("      Aliases: %zu\n", data.aliasCount);
+  Console::Printf("      Auto-suffixes: %zu\n", data.autoSuffixCount);
+  Console::Printf("      Reverse auto-suffixes: %zu\n",
+                  data.reverseAutoSuffixCount);
 }
 
 //---------------------------------------------------------------------------

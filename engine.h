@@ -56,6 +56,7 @@ public:
   void EnableTextLog() { textLogEnabled = true; }
   void DisableTextLog() { textLogEnabled = false; }
 
+  bool IsSpaceAfter() const { return placeSpaceAfter; }
   void SetSpaceAfter(bool spaceAfter) { placeSpaceAfter = spaceAfter; }
 
   static void SetSpacePosition_Binding(void *context, const char *commandLine);

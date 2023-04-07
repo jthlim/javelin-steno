@@ -9,6 +9,7 @@
 #include "random.h"
 #include "rgb.h"
 #include "script_byte_code.h"
+#include "str.h"
 #include "usb_status.h"
 #include <assert.h>
 
@@ -419,6 +420,12 @@ void Script::ExecutionContext::Run(Script &script, size_t offset) {
       case StenoExtendedScriptFunction::IS_USB_SUSPENDED:
         script.Push(UsbStatus::IsSuspended());
         break;
+      case StenoExtendedScriptFunction::GET_PARAMETER: {
+        intptr_t offset = script.Pop();
+        const char *parameter = (const char *)script.byteCode + offset;
+        script.RunGetParameterCommand(parameter);
+        break;
+      }
       }
       break;
     }
@@ -583,18 +590,8 @@ void Script::ExecutionContext::Run(Script &script, size_t offset) {
       }
       case SF::CONSOLE: {
         intptr_t offset = script.Pop();
-        const char *text = (const char *)script.byteCode + offset;
-        script.consoleWriter.Reset();
-
-        const uint8_t *result;
-        if (Console::RunCommand(text, script.consoleWriter)) {
-          script.consoleWriter.AddTrailingNull();
-          result = script.consoleWriter.buffer;
-        } else {
-          result = (const uint8_t *)"Invalid console command";
-        }
-
-        script.Push(int(result - script.byteCode));
+        const char *command = (const char *)script.byteCode + offset;
+        script.RunConsoleCommand(command);
         break;
       }
       case SF::CHECK_BUTTON_STATE: {
@@ -622,6 +619,28 @@ void Script::ExecutionContext::Run(Script &script, size_t offset) {
     }
     }
   }
+}
+
+void Script::RunConsoleCommand(const char *command) {
+  consoleWriter.Reset();
+
+  const uint8_t *result;
+  if (Console::RunCommand(command, consoleWriter)) {
+    consoleWriter.AddTrailingNull();
+    const StenoScriptByteCodeData *bc =
+        (const StenoScriptByteCodeData *)byteCode;
+    result = bc->FindStringOrReturnOriginal(consoleWriter.buffer);
+  } else {
+    result = (const uint8_t *)"Invalid console command";
+  }
+
+  Push(intptr_t(result - byteCode));
+}
+
+void Script::RunGetParameterCommand(const char *parameter) {
+  char *command = Str::Join("get_parameter ", parameter, nullptr);
+  RunConsoleCommand(command);
+  free(command);
 }
 
 //---------------------------------------------------------------------------

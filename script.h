@@ -66,6 +66,9 @@ private:
 
   void SendText(const uint8_t *text) const;
   bool CheckButtonState(const uint8_t *text) const;
+
+  void RunConsoleCommand(const char *command);
+  void RunGetParameterCommand(const char *parameter);
 };
 
 //---------------------------------------------------------------------------
