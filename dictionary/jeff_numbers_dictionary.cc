@@ -16,7 +16,7 @@ const StenoJeffNumbersDictionary StenoJeffNumbersDictionary::instance;
 
 // Buffer must have at least 16 bytes
 // Value is max 3999.
-static void ToRoman(char *outBuffer, int value);
+static void ToRoman(char *outBuffer, int value, bool useLower);
 char *ToWords(char *p);
 
 const StenoStroke ACTIVATION_MASK(StrokeMask::NUM | StrokeMask::UNICODE);
@@ -109,52 +109,44 @@ StenoJeffNumbersDictionary::LookupInternal(
     const StenoStroke BG = StrokeMask::BR | StrokeMask::GR;
     if ((control & RB) == RB) {
       // Dollars
-      if (i + 1 != length) {
-        free(result);
-        return StenoDictionaryLookupResult::CreateInvalid();
-      }
       control &= ~RB;
-      char *updated = Str::Join("$", result, nullptr);
-      free(result);
-      result = updated;
+
+      goto formatDollars;
     } else if ((control & WR) == WR) {
       // Dollars
+      control &= ~WR;
+
+    formatDollars:
       if (i + 1 != length) {
         free(result);
         return StenoDictionaryLookupResult::CreateInvalid();
       }
-      control &= ~WR;
-      char *updated = Str::Join("$", result, nullptr);
+      char *updated = Str::Join(result, " {*($c)}", nullptr);
       free(result);
       result = updated;
     } else if ((control & KR) == KR) {
       // Percent
-      if (i + 1 != length) {
-        free(result);
-        return StenoDictionaryLookupResult::CreateInvalid();
-      }
       control &= ~KR;
-      char *updated = Str::Join(result, "%", nullptr);
-      free(result);
-      result = updated;
+      goto formatPercent;
     } else if ((control & RG) == RG) {
       // Percent
+      control &= ~RG;
+    formatPercent:
       if (i + 1 != length) {
         free(result);
         return StenoDictionaryLookupResult::CreateInvalid();
       }
-      control &= ~RG;
       char *updated = Str::Join(result, "%", nullptr);
       free(result);
       result = updated;
     } else if ((control & DZ) == DZ) {
       // Hundreds of dollars.
+      control &= ~DZ;
       if (i + 1 != length) {
         free(result);
         return StenoDictionaryLookupResult::CreateInvalid();
       }
-      control &= ~DZ;
-      char *updated = Str::Join("$", result, "00", nullptr);
+      char *updated = Str::Join(result, "00 {*($c)}", nullptr);
       free(result);
       result = updated;
     } else if ((control & StrokeMask::KL).IsNotEmpty() ||
@@ -232,6 +224,9 @@ StenoJeffNumbersDictionary::LookupInternal(
         if ('0' <= *p && *p <= '9') {
           secondLastDigit = lastDigit;
           lastDigit = *p;
+        } else {
+          free(result);
+          return StenoDictionaryLookupResult::CreateInvalid();
         }
         ++p;
       }
@@ -267,6 +262,9 @@ StenoJeffNumbersDictionary::LookupInternal(
       while (*p) {
         if ('0' <= *p && *p <= '9') {
           value = value * 10 + *p - '0';
+        } else {
+          free(result);
+          return StenoDictionaryLookupResult::CreateInvalid();
         }
         ++p;
         if (value > 3999) {
@@ -277,7 +275,7 @@ StenoJeffNumbersDictionary::LookupInternal(
       if (value <= 0 || value >= 3999) {
         return StenoDictionaryLookupResult::CreateInvalid();
       }
-      ToRoman(scratch, value);
+      ToRoman(scratch, value, (control & StrokeMask::STAR) != 0);
       result = Str::Dup(scratch);
       control &= ~(StrokeMask::RL | StrokeMask::RR);
     }
@@ -343,8 +341,12 @@ StenoStroke StenoJeffNumbersDictionary::GetDigits(char *p,
     *p++ = ',';
     control &= ~(StrokeMask::STAR | StrokeMask::SR);
   } else if ((control & StrokeMask::STAR).IsNotEmpty() &&
-             (control & (StrokeMask::RR | StrokeMask::SR | StrokeMask::ZR))
-                 .IsEmpty()) {
+             ((control & (StrokeMask::RL | StrokeMask::RR | StrokeMask::SR |
+                          StrokeMask::ZR))
+                  .IsEmpty() ||
+              control == (StrokeMask::STAR | StrokeMask::RR | StrokeMask::BR) ||
+              control ==
+                  (StrokeMask::WL | StrokeMask::RL | StrokeMask::STAR))) {
     *p++ = '.';
     control &= ~StrokeMask::STAR;
   }
@@ -354,24 +356,26 @@ StenoStroke StenoJeffNumbersDictionary::GetDigits(char *p,
 
 struct RomanNumeralData {
   int value;
-  const char *symbol;
+  const char *symbol[2];
 };
 
 constexpr RomanNumeralData ROMAN_NUMERAL_DATA[] = {
-    {1000, "M"}, {900, "CM"}, {500, "D"}, {400, "CD"}, {100, "C"},
-    {90, "XC"},  {50, "L"},   {40, "XL"}, {10, "X"},   {9, "IX"},
-    {5, "V"},    {4, "IV"},   {1, "I"},
+    {1000, {"M", "m"}},  {900, {"CM", "cm"}}, {500, {"D", "d"}},
+    {400, {"CD", "cd"}}, {100, {"C", "c"}},   {90, {"XC", "xc"}},
+    {50, {"L", "l"}},    {40, {"XL", "xl"}},  {10, {"X", "x"}},
+    {9, {"IX", "ix"}},   {5, {"V", "v"}},     {4, {"IV", "iv"}},
+    {1, {"I", "i"}},
 };
 
 // Not the most efficient, but it's simple.
 // outBuffer must have at least 16 bytes capacity.
-static void ToRoman(char *outBuffer, int value) {
+static void ToRoman(char *outBuffer, int value, bool useLower) {
   assert(1 <= value && value <= 3999);
   char *d = outBuffer;
   for (const RomanNumeralData &data : ROMAN_NUMERAL_DATA) {
     while (value >= data.value) {
       value -= data.value;
-      const char *s = data.symbol;
+      const char *s = data.symbol[useLower];
       while (*s) {
         *d++ = *s++;
       }
@@ -625,15 +629,15 @@ TEST_END
 
 TEST_BEGIN("JeffNumbers: Test money") {
   // spellchecker: disable
-  TestLookup("#ST-RB", "$12");
-  TestLookup("#STWR", "$12");
+  TestLookup("#ST-RB", "12 {*($c)}");
+  TestLookup("#STWR", "12 {*($c)}");
 
   const StenoStroke strokes[] = {
       StenoStroke("#ST*"),
       StenoStroke("#PWHR"),
   };
   // spellchecker: enable
-  TestLookup(strokes, 2, "$12.34");
+  TestLookup(strokes, 2, "12.34 {*($c)}");
 }
 TEST_END
 
@@ -693,22 +697,22 @@ TEST_END
 TEST_BEGIN("JeffNumbers: Test roman numerals") {
   // spellchecker: disable
   char buffer[16];
-  ToRoman(buffer, 1);
+  ToRoman(buffer, 1, false);
   assert(Str::Eq(buffer, "I"));
 
-  ToRoman(buffer, 3);
+  ToRoman(buffer, 3, false);
   assert(Str::Eq(buffer, "III"));
 
-  ToRoman(buffer, 4);
+  ToRoman(buffer, 4, false);
   assert(Str::Eq(buffer, "IV"));
 
-  ToRoman(buffer, 47);
+  ToRoman(buffer, 47, false);
   assert(Str::Eq(buffer, "XLVII"));
 
-  ToRoman(buffer, 1977);
+  ToRoman(buffer, 1977, false);
   assert(Str::Eq(buffer, "MCMLXXVII"));
 
-  ToRoman(buffer, 3888);
+  ToRoman(buffer, 3888, false);
   assert(Str::Eq(buffer, "MMMDCCCLXXXVIII"));
 
   TestLookup("#STR", "XII");
