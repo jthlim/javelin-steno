@@ -1266,6 +1266,15 @@ TEST_BEGIN("JeffPhrasing: Enders tests") {
   VerifyStroke("SWR-FPBLTD", "I had meant to");
   VerifyStroke("KWHR-PBLTD", "he meant to");
 
+  VerifyStroke("SWR-PBLS", "I mind");
+  VerifyStroke("SWREPBLS", "I am minding");
+  VerifyStroke("SWR-FPBLS", "I have minded");
+  VerifyStroke("KWHR-PBLS", "he minds");
+  VerifyStroke("SWR-PBLSZ", "I minded");
+  VerifyStroke("SWREPBLSZ", "I was minding");
+  VerifyStroke("SWR-FPBLSZ", "I had minded");
+  VerifyStroke("KWHR-PBLSZ", "he minded");
+
   VerifyStroke("SWR-PLZ", "I move");
   VerifyStroke("SWR-EPLZ", "I am moving");
   VerifyStroke("SWR-FPLZ", "I have moved");
