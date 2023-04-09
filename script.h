@@ -41,7 +41,7 @@ private:
   const uint8_t *byteCode;
   intptr_t *stackTop = stack;
   StenoKeyState stenoState;
-  intptr_t globals[64];
+  intptr_t globals[256];
   BitField<256> buttonState;
   BitField<256> keyState;
   intptr_t stack[MAX_STACK_SIZE];
