@@ -403,18 +403,6 @@ constexpr JeffPhrasingStructureException UNIQUE_STARTERS[] = {
     {StenoStroke(0x14a6 /*STWR*U*/), {"not to\\2\\3", false, VerbForm::ROOT}},
     {StenoStroke(0x10fe /*STKPWHRU*/), {"to\\2\\3", false, VerbForm::ROOT}},
     {StenoStroke(0x14fe /*STKPWHR*U*/), {"not to\\2\\3", false, VerbForm::ROOT}},
-    {StenoStroke(0x30a6 /*STWRUF*/), {"just\\2\\3", false, VerbForm::UNSPECIFIED}},
-    {StenoStroke(0x34a6 /*STWR*UF*/), {"just\\1\\2\\3", true, VerbForm::UNSPECIFIED}},
-    {StenoStroke(0x30fe /*STKPWHRUF*/), {"just\\2\\3", false, VerbForm::UNSPECIFIED}},
-    {StenoStroke(0x34fe /*STKPWHR*UF*/), {"just\\1\\2\\3", true, VerbForm::UNSPECIFIED}},
-    {StenoStroke(0x18a6 /*STWREU*/), {"still\\2\\3", false, VerbForm::UNSPECIFIED}},
-    {StenoStroke(0x1ca6 /*STWR*EU*/), {"still\\1\\2\\3", true, VerbForm::UNSPECIFIED}},
-    {StenoStroke(0x18fe /*STKPWHREU*/), {"still\\2\\3", false, VerbForm::UNSPECIFIED}},
-    {StenoStroke(0x1cfe /*STKPWHR*EU*/), {"still\\1\\2\\3", true, VerbForm::UNSPECIFIED}},
-    {StenoStroke(0x38a6 /*STWREUF*/), {"never\\2\\3", false, VerbForm::UNSPECIFIED}},
-    {StenoStroke(0x3ca6 /*STWR*EUF*/), {"even\\2\\3", false, VerbForm::UNSPECIFIED}},
-    {StenoStroke(0x38fe /*STKPWHREUF*/), {"never\\2\\3", false, VerbForm::UNSPECIFIED}},
-    {StenoStroke(0x3cfe /*STKPWHR*EUF*/), {"even\\2\\3", false, VerbForm::UNSPECIFIED}},
 };
 
 // clang-format on
