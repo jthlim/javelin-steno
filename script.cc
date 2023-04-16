@@ -6,6 +6,7 @@
 #include "display.h"
 #include "gpio.h"
 #include "key.h"
+#include "keyboard_led_status.h"
 #include "random.h"
 #include "rgb.h"
 #include "script_byte_code.h"
@@ -318,7 +319,7 @@ void Script::ExecutionContext::Run(Script &script, size_t offset) {
       switch (function) {
       case StenoExtendedScriptFunction::GET_LED_STATUS: {
         int index = (int)script.Pop();
-        script.Push(Key::GetLedStatus(index));
+        script.Push(KeyboardLedStatus::GetLedStatus(index));
         break;
       }
       case StenoExtendedScriptFunction::SET_GPIO_PIN: {

@@ -47,7 +47,7 @@ void StenoReverseMapDictionary::AddMapDictionaryResults(
       }
       ++p;
       while (*p != 0xff) {
-        uint32_t offset = p[0] | (p[1] << 7) | (p[2] << 14) + (p[3] << 21);
+        uint32_t offset = p[0] + (p[1] << 7) + (p[2] << 14) + (p[3] << 21);
         StenoReverseMapDictionaryLookup lookup(baseAddress + offset);
         if (ReverseMapDictionaryLookup(lookup)) {
           result.AddResult(lookup.strokes, lookup.length, lookup.provider);

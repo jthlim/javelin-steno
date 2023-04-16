@@ -5,10 +5,6 @@
 
 //---------------------------------------------------------------------------
 
-KeyboardLedStatus Key::ledStatus;
-
-//---------------------------------------------------------------------------
-
 #if RUN_TESTS
 
 bool Key::historyEnabled = true;
@@ -38,7 +34,7 @@ void Key::Release(KeyCode key) { ReleaseRaw(TranslateKey(key)); }
 
 __attribute__((weak)) void Key::Flush() {}
 
-__attribute__((weak)) bool Key::IsNumLockOn() { return ledStatus.numLock; }
+//---------------------------------------------------------------------------
 
 KeyCode Key::TranslateKey(KeyCode key) {
   if (key.value >= 64) {

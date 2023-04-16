@@ -40,7 +40,11 @@ public:
   static void WriteAsJson(const char *data, char *buffer);
   static void WriteAsJson(const char *data);
 
+#if JAVELIN_PLATFORM_ZEPHYR_SDK
+  static void Printf(const char *format, ...);
+#else
   static void Printf(const char *format, ...) __printflike(1, 2);
+#endif
 
   static void Flush();
 

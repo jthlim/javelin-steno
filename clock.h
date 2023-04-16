@@ -21,6 +21,8 @@ private:
 
 class Clock {
 public:
+  static void Initialize(); // Only implemented on platforms that need it.
+
   static uint32_t GetCurrentTime();
   static void AdvanceTime(uint32_t amount) {}
 };

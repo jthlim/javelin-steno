@@ -6,7 +6,8 @@
 
 //---------------------------------------------------------------------------
 
-class Str {
+class Str
+{
 public:
   static bool IsFingerSpellingCommand(const char *p);
   static bool IsJoinPrevious(const char *p);
@@ -15,7 +16,11 @@ public:
   static char *Join(const char *p, ...);
 
   // Returns an allocated string.
+#if JAVELIN_PLATFORM_ZEPHYR_SDK
+  static char *Asprintf(const char *p, ...);
+#else
   static char *Asprintf(const char *p, ...) __printflike(1, 2);
+#endif
 
   // Threadsafe version of strndup.
   static char *DupN(const char *p, size_t length);
@@ -23,13 +28,17 @@ public:
   // Threadsafe version of strdup.
   static char *Dup(const char *p);
 
-  static inline bool Eq(const char *a, const char *b) {
+  static inline bool Eq(const char *a, const char *b)
+  {
     return strcmp(a, b) == 0;
   }
 
-  static inline bool ShortEq(const char *a, const char *b) {
-    while (*a == *b) {
-      if (!*a) {
+  static inline bool ShortEq(const char *a, const char *b)
+  {
+    while (*a == *b)
+    {
+      if (!*a)
+      {
         return true;
       }
       ++a;

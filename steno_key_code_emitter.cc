@@ -2,6 +2,7 @@
 
 #include "steno_key_code_emitter.h"
 #include "key.h"
+#include "keyboard_led_status.h"
 #include "macos_us_unicode_data.h"
 #include "steno_key_code.h"
 #include "str.h"
@@ -30,7 +31,7 @@ struct StenoKeyCodeEmitter::EmitterContext {
   bool GetIsNumLockOn() {
     if (!hasDeterminedNumLockState) {
       hasDeterminedNumLockState = true;
-      isNumLockOn = Key::IsNumLockOn();
+      isNumLockOn = KeyboardLedStatus::IsNumLockOn();
     }
     return isNumLockOn;
   }
