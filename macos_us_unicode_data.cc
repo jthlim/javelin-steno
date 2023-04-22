@@ -3,7 +3,7 @@
 #include "macos_us_unicode_data.h"
 #include "key_code.h"
 #include "steno_key_code.h"
-#include <stdlib.h>
+#include <stddef.h>
 
 //---------------------------------------------------------------------------
 

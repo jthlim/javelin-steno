@@ -19,7 +19,7 @@ void ButtonManager::Update(const ButtonState &newButtonState) {
     return;
   }
 
-  ButtonState changedButtons = buttonState ^ newButtonState;
+  const ButtonState changedButtons = buttonState ^ newButtonState;
   buttonState = newButtonState;
   for (size_t buttonIndex : changedButtons) {
     if (buttonState.IsSet(buttonIndex)) {

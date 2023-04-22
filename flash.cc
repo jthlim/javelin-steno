@@ -13,17 +13,19 @@ Flash Flash::instance;
 //---------------------------------------------------------------------------
 
 __attribute((weak)) void Flash::Erase(const void *target, size_t size) {
-  instance.erasedBytes += size;
   assert((size & (BLOCK_SIZE - 1)) == 0);
+
+  instance.erasedBytes += size;
   memset((void *)target, 0xff, size);
 }
 
 __attribute((weak)) void Flash::Write(const void *target, const void *data,
                                       size_t size) {
-  instance.erasedBytes += size;
-  instance.programmedBytes += size;
   assert(target != data);
   assert((size & (BLOCK_SIZE - 1)) == 0);
+
+  instance.erasedBytes += size;
+  instance.programmedBytes += size;
   memcpy((void *)target, data, size);
 }
 

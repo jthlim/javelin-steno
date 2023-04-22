@@ -4,7 +4,7 @@
 #include "list.h"
 #include "pattern.h"
 #include "stroke.h"
-#include <stdlib.h>
+#include <stddef.h>
 
 //---------------------------------------------------------------------------
 

@@ -2,7 +2,7 @@
 
 #pragma once
 #include "../stroke.h"
-#include <stdlib.h>
+#include <stddef.h>
 
 //---------------------------------------------------------------------------
 //

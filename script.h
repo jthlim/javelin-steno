@@ -5,8 +5,8 @@
 #include "scan_code_action.h"
 #include "steno_key_state.h"
 #include "writer.h"
+#include <stddef.h>
 #include <stdint.h>
-#include <stdlib.h>
 
 //---------------------------------------------------------------------------
 //

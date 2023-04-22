@@ -6,7 +6,7 @@
 #include "../str.h"
 #include "../stroke.h"
 #include <assert.h>
-#include <stdlib.h>
+#include <stddef.h>
 
 //---------------------------------------------------------------------------
 

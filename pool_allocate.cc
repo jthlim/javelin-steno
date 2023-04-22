@@ -2,6 +2,7 @@
 
 #include "pool_allocate.h"
 #include "assert.h"
+#include <stdlib.h>
 
 //---------------------------------------------------------------------------
 

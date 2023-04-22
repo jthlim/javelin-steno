@@ -3,7 +3,7 @@
 #include "dictionary.h"
 
 #include "../console.h"
-#include <stdlib.h>
+#include <stddef.h>
 #include <string.h>
 
 //---------------------------------------------------------------------------

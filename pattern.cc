@@ -1,11 +1,10 @@
 //---------------------------------------------------------------------------
 
 #include "pattern.h"
-
-#include <assert.h>
-
 #include "pattern_component.h"
 #include "str.h"
+#include <assert.h>
+#include <stdlib.h>
 
 //---------------------------------------------------------------------------
 

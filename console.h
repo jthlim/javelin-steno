@@ -2,7 +2,7 @@
 
 #pragma once
 #include "writer.h"
-#include <stdlib.h>
+#include <stddef.h>
 #if RUN_TESTS
 #include <vector>
 #endif

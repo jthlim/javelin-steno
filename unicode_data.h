@@ -1,5 +1,5 @@
 #pragma once
-#include <stdlib.h>
+#include <stddef.h>
 
 struct UnicodePair {
   uint32_t key;

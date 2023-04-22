@@ -2,8 +2,8 @@
 
 #pragma once
 #include JAVELIN_BOARD_CONFIG
+#include <stddef.h>
 #include <stdint.h>
-#include <stdlib.h>
 
 //---------------------------------------------------------------------------
 
@@ -71,7 +71,12 @@ class Split {
 public:
 #if JAVELIN_SPLIT
   static bool IsMaster() { return JAVELIN_SPLIT_IS_MASTER; }
+
+#if defined(JAVELIN_SPLIT_IS_LEFT)
+  static bool IsLeft() { return JAVELIN_SPLIT_IS_LEFT; }
+#else
   static bool IsLeft();
+#endif
 
   static void RegisterTxHandler(SplitTxHandler *handler);
   static void RegisterRxHandler(SplitHandlerId id, SplitRxHandler *handler);

@@ -2,7 +2,7 @@
 
 #pragma once
 #include "pattern_quick_reject.h"
-#include <stdlib.h>
+#include <stddef.h>
 
 //---------------------------------------------------------------------------
 
