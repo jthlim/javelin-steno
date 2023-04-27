@@ -136,7 +136,7 @@ StenoTokenizer *StenoSegmentList::CreateTokenizer() {
 #include "stroke_history.h"
 #include "unit_test.h"
 
-constexpr StenoMapDictionary dictionary(MainDictionary::definition);
+static StenoMapDictionary dictionary(MainDictionary::definition);
 
 TEST_BEGIN("Segment tests") {
   StenoStrokeHistory history;

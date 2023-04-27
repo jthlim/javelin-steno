@@ -13,7 +13,7 @@ bool StenoDictionaryList::isSendDictionaryStatusEnabled = false;
 StenoDictionaryList::StenoDictionaryList(
     List<StenoDictionaryListEntry> &dictionaries)
     : dictionaries(dictionaries) {
-  UpdateMaximumOutlineLength();
+  CacheMaximumOutlineLength();
 }
 
 List<StenoDictionaryListEntry> &
@@ -37,7 +37,7 @@ StenoDictionaryList::Lookup(const StenoDictionaryLookup &lookup) const {
       continue;
     }
     const StenoDictionary *dictionary = entry.dictionary;
-    if (dictionary->GetMaximumOutlineLength() < lookup.length) {
+    if (dictionary->GetCachedMaximumOutlineLength() < lookup.length) {
       continue;
     }
 
@@ -56,7 +56,7 @@ const StenoDictionary *StenoDictionaryList::GetLookupProvider(
       continue;
     }
     const StenoDictionary *dictionary = entry.dictionary;
-    if (dictionary->GetMaximumOutlineLength() < lookup.length) {
+    if (dictionary->GetCachedMaximumOutlineLength() < lookup.length) {
       continue;
     }
 
@@ -96,7 +96,24 @@ bool StenoDictionaryList::ReverseMapDictionaryLookup(
   return false;
 }
 
-void StenoDictionaryList::UpdateMaximumOutlineLength() {
+void StenoDictionaryList::UpdateMaximumOutlineLength() {}
+
+void StenoDictionaryList::CacheMaximumOutlineLength() {
+  size_t max = 0;
+  for (const StenoDictionaryListEntry &entry : dictionaries) {
+    if (!entry.enabled) {
+      continue;
+    }
+    ((StenoDictionary *)entry.dictionary)->CacheMaximumOutlineLength();
+    size_t m = entry.dictionary->GetCachedMaximumOutlineLength();
+    if (m > max) {
+      max = m;
+    }
+  }
+  cachedMaximumOutlineLength = max;
+}
+
+size_t StenoDictionaryList::GetMaximumOutlineLength() const {
   size_t max = 0;
   for (const StenoDictionaryListEntry &entry : dictionaries) {
     if (!entry.enabled) {
@@ -107,11 +124,7 @@ void StenoDictionaryList::UpdateMaximumOutlineLength() {
       max = m;
     }
   }
-  maximumOutlineLength = max;
-}
-
-size_t StenoDictionaryList::GetMaximumOutlineLength() const {
-  return maximumOutlineLength;
+  return max;
 }
 
 const char *StenoDictionaryList::GetName() const { return "list"; }

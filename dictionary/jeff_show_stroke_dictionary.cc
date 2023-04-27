@@ -41,7 +41,7 @@ StenoJeffShowStrokeDictionary::LookupInternal(
 
   const size_t maximumStrokeText = StrokeBitIndex::COUNT;
   size_t maximumStringLength =
-      (maximumStrokeText + 1) * (GetMaximumOutlineLength() - 1) + 2;
+      (maximumStrokeText + 1) * (MAXIMUM_OUTLINE_LENGTH - 1) + 2;
 
   bool closed = (strokes[length - 1] == trigger);
 

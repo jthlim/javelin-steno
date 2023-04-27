@@ -24,6 +24,11 @@ bool StenoWrappedDictionary::ReverseMapDictionaryLookup(
   return dictionary->ReverseMapDictionaryLookup(lookup);
 }
 
+void StenoWrappedDictionary::CacheMaximumOutlineLength() {
+  dictionary->CacheMaximumOutlineLength();
+  cachedMaximumOutlineLength = dictionary->GetCachedMaximumOutlineLength();
+}
+
 size_t StenoWrappedDictionary::GetMaximumOutlineLength() const {
   return dictionary->GetMaximumOutlineLength();
 }

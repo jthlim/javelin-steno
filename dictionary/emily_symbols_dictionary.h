@@ -7,7 +7,7 @@
 
 class StenoEmilySymbolsDictionary final : public StenoDictionary {
 public:
-  constexpr StenoEmilySymbolsDictionary() {}
+  constexpr StenoEmilySymbolsDictionary() : StenoDictionary(1) {}
 
   virtual StenoDictionaryLookupResult
   Lookup(const StenoDictionaryLookup &lookup) const;
@@ -16,6 +16,7 @@ public:
   virtual const StenoDictionary *
   GetLookupProvider(const StenoDictionaryLookup &lookup) const;
 
+  virtual void CacheMaximumOutlineLength() {}
   virtual size_t GetMaximumOutlineLength() const { return 1; }
   virtual const char *GetName() const;
   virtual bool PrintDictionary(bool hasData) const;

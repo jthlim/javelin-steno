@@ -19,6 +19,10 @@ class StenoUserDictionary;
 
 enum StenoEngineMode { NORMAL, ADD_TRANSLATION };
 
+#if !defined(JAVELIN_STENO_SEGMENT_LIMIT)
+#define JAVELIN_STENO_SEGMENT_LIMIT 32
+#endif
+
 //---------------------------------------------------------------------------
 
 class StenoEngine final : public StenoProcessorElement {
@@ -77,7 +81,7 @@ public:
 
 private:
   static const StenoStroke UNDO_STROKE;
-  static const size_t SEGMENT_CONVERSION_LIMIT = 32;
+  static const size_t SEGMENT_CONVERSION_LIMIT = JAVELIN_STENO_SEGMENT_LIMIT;
   static const size_t PAPER_TAPE_SUGGESTION_SEGMENT_LIMIT = 8;
 
   bool paperTapeEnabled = false;

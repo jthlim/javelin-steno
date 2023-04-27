@@ -35,9 +35,9 @@ private:
 
   static const size_t WRITE_DATA_BUFFER_SIZE = 4096;
 
-  uint32_t erasedBytes;
-  uint32_t programmedBytes;
-  uint32_t reprogrammedBytes;
+  size_t erasedBytes;
+  size_t programmedBytes;
+  size_t reprogrammedBytes;
 
   const uint8_t *target;
   uint8_t buffer[WRITE_DATA_BUFFER_SIZE];

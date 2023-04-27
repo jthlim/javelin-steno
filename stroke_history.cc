@@ -12,7 +12,7 @@ BuildSegmentContext::BuildSegmentContext(
     StenoSegmentList &segmentList, const StenoDictionary &dictionary,
     const StenoCompiledOrthography &orthography)
     : segmentList(segmentList), dictionary(dictionary),
-      maximumOutlineLength(dictionary.GetMaximumOutlineLength()),
+      maximumOutlineLength(dictionary.GetCachedMaximumOutlineLength()),
       orthography(orthography) {}
 
 //---------------------------------------------------------------------------
@@ -302,7 +302,7 @@ void StenoStrokeHistory::HandleRepeatLastStroke(BuildSegmentContext &context,
 #include "str.h"
 #include "unit_test.h"
 
-constexpr StenoMapDictionary mainDictionary(MainDictionary::definition);
+static StenoMapDictionary mainDictionary(MainDictionary::definition);
 
 const StenoDictionary *const DICTIONARIES[] = {
     &StenoEmilySymbolsDictionary::instance,

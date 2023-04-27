@@ -53,17 +53,11 @@ void Console::RegisterCommand(const char *command, const char *description,
 //---------------------------------------------------------------------------
 
 void Console::Printf(const char *format, ...) {
-  va_list v;
-  va_start(v, format);
+  va_list args;
+  va_start(args, format);
 
-  size_t length = vsnprintf(nullptr, 0, format, v) + 1;
-  char *buffer = (char *)malloc(length);
-  vsnprintf(buffer, length, format, v);
-  va_end(v);
-
-  Write(buffer, length - 1);
-
-  free(buffer);
+  IWriter::VprintfToStackTop(format, args);
+  va_end(args);
 }
 
 void Console::WriteAsJson(const char *data, char *buffer) {

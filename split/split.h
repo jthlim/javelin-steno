@@ -7,7 +7,7 @@
 
 //---------------------------------------------------------------------------
 
-enum SplitHandlerId {
+enum class SplitHandlerId {
   KEY_STATE,
   RGB,
   HID_REPORT,
@@ -46,7 +46,7 @@ public:
   TxRxHeader header;
   uint32_t buffer[JAVELIN_SPLIT_TX_RX_BUFFER_SIZE];
 
-  static size_t txPacketTypeCounts[SplitHandlerId::COUNT];
+  static size_t txPacketTypeCounts[(size_t)SplitHandlerId::COUNT];
 };
 
 struct RxBuffer {

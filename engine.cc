@@ -191,7 +191,7 @@ extern StenoOrthography testOrthography;
 extern StenoMapDictionaryDefinition testDictionaryDefinition;
 // constexpr StenoMapDictionary testDictionary(testDictionaryDefinition);
 
-constexpr StenoMapDictionary mainDictionary(MainDictionary::definition);
+static StenoMapDictionary mainDictionary(MainDictionary::definition);
 
 const StenoDictionary *const DICTIONARIES[] = {
     &StenoEmilySymbolsDictionary::instance,

@@ -1,11 +1,37 @@
 //---------------------------------------------------------------------------
 
 #include "str.h"
+#include "writer.h"
 #include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
 
 //---------------------------------------------------------------------------
+
+char *Str::Asprintf(const char *p, ...) {
+  va_list args;
+  va_start(args, p);
+
+  BufferWriter bufferWriter;
+  bufferWriter.Vprintf(p, args);
+  va_end(args);
+
+  bufferWriter.WriteByte('\0');
+  return bufferWriter.AdoptBuffer();
+}
+
+size_t Str::Sprintf(char *target, const char *p, ...) {
+  va_list args;
+  va_start(args, p);
+
+  MemoryWriter memoryWriter(target);
+  memoryWriter.Vprintf(p, args);
+  size_t result = (char *)memoryWriter.GetTarget() - target;
+  memoryWriter.WriteByte('\0');
+
+  va_end(args);
+  return result;
+}
 
 bool Str::IsFingerSpellingCommand(const char *p) {
   bool result = false;
@@ -81,18 +107,6 @@ char *Str::Join(const char *p, ...) {
   va_end(v);
 
   return result;
-}
-
-char *Str::Asprintf(const char *p, ...) {
-  va_list v;
-  va_start(v, p);
-
-  size_t length = vsnprintf(nullptr, 0, p, v) + 1;
-  char *buffer = (char *)malloc(length);
-  vsnprintf(buffer, length, p, v);
-  va_end(v);
-
-  return buffer;
 }
 
 char *Str::DupN(const char *p, size_t length) {

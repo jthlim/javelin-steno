@@ -131,6 +131,9 @@ StenoDictionaryLookupResult
 StenoMapDictionary::Lookup(const StenoDictionaryLookup &lookup) const {
   const StenoMapDictionaryStrokesDefinition &strokesDefinition =
       definition.strokes[lookup.length - 1];
+#if JAVELIN_NRF_XIP_WORKAROUND
+  asm volatile("nop");
+#endif
   if (strokesDefinition.hashMapSize == 0) {
     return StenoDictionaryLookupResult::CreateInvalid();
   }
@@ -170,6 +173,9 @@ const StenoDictionary *StenoMapDictionary::GetLookupProvider(
     const StenoDictionaryLookup &lookup) const {
   const StenoMapDictionaryStrokesDefinition &strokesDefinition =
       definition.strokes[lookup.length - 1];
+#if JAVELIN_NRF_XIP_WORKAROUND
+  asm volatile("nop");
+#endif
   if (strokesDefinition.hashMapSize == 0) {
     return nullptr;
   }
@@ -208,10 +214,14 @@ bool StenoMapDictionary::ReverseMapDictionaryLookup(
   const void *data = lookup.data;
 
   // Quick reject
-  if (data < definition.strokes[0].data) {
+  const StenoMapDictionaryStrokesDefinition *strokes = definition.strokes;
+#if JAVELIN_NRF_XIP_WORKAROUND
+  asm volatile("nop");
+#endif
+  if (data < strokes[0].data) {
     return false;
   }
-  if (data >= definition.strokes[definition.maximumOutlineLength - 1].offsets) {
+  if (data >= strokes[definition.maximumOutlineLength - 1].offsets) {
     return false;
   }
 
@@ -235,13 +245,23 @@ bool StenoMapDictionary::ReverseMapDictionaryLookup(
   return false;
 }
 
-const char *StenoMapDictionary::GetName() const { return definition.name; }
+const char *StenoMapDictionary::GetName() const {
+  const StenoMapDictionaryDefinition &localDefinition = definition;
+#if JAVELIN_NRF_XIP_WORKAROUND
+  asm volatile("nop");
+#endif
+  return localDefinition.name;
+}
 
 void StenoMapDictionary::PrintInfo(int depth) const {
   const uint8_t *start = (const uint8_t *)&definition;
 
   const StenoMapDictionaryStrokesDefinition &lastStrokeDefinition =
       definition.strokes[definition.maximumOutlineLength - 1];
+
+#if JAVELIN_NRF_XIP_WORKAROUND
+  asm volatile("nop");
+#endif
 
   const uint8_t *end =
       (const uint8_t *)(lastStrokeDefinition.offsets +
@@ -265,7 +285,11 @@ bool StenoMapDictionary::PrintDictionary(bool hasData) const {
 //---------------------------------------------------------------------------
 
 size_t StenoMapDictionary::GetMaximumOutlineLength() const {
-  return definition.maximumOutlineLength;
+  const StenoMapDictionaryDefinition &localDefinition = definition;
+#if JAVELIN_NRF_XIP_WORKAROUND
+  asm volatile("nop");
+#endif
+  return localDefinition.maximumOutlineLength;
 }
 
 //---------------------------------------------------------------------------
@@ -275,7 +299,7 @@ size_t StenoMapDictionary::GetMaximumOutlineLength() const {
 #include "main_dictionary.h"
 #include <assert.h>
 
-constexpr StenoMapDictionary mainDictionary(MainDictionary::definition);
+static StenoMapDictionary mainDictionary(MainDictionary::definition);
 
 TEST_BEGIN("MapDictionary: Single stroke lookup test") {
   // spellchecker: disable

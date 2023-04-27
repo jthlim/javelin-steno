@@ -1,7 +1,7 @@
 //---------------------------------------------------------------------------
 
 #pragma once
-#include "split.h"
+#include "../split/split.h"
 
 //---------------------------------------------------------------------------
 
@@ -12,9 +12,13 @@ class Bootrom {
 #endif
 public:
   static void Launch();
+  static void LaunchBootrom(void *const, const char *commandLine) { Launch(); }
 
 #if JAVELIN_SPLIT
   static void LaunchSlave() { instance.launchSlave = true; }
+  static void LaunchSlaveBootrom(void *const, const char *commandLine) {
+    LaunchSlave();
+  }
 
   static void RegisterTxHandler() { Split::RegisterTxHandler(&instance); }
 
@@ -31,8 +35,6 @@ private:
   static Bootrom instance;
 
 #else
-  static void LaunchSlave() {}
-
   static void RegisterTxHandler() {}
   static void RegisterRxHandler() {}
 #endif

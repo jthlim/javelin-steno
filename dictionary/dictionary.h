@@ -181,6 +181,13 @@ public:
   virtual bool
   ReverseMapDictionaryLookup(StenoReverseMapDictionaryLookup &lookup) const;
 
+  size_t GetCachedMaximumOutlineLength() const {
+    return cachedMaximumOutlineLength;
+  }
+  virtual void CacheMaximumOutlineLength() {
+    cachedMaximumOutlineLength = GetMaximumOutlineLength();
+  }
+
   virtual size_t GetMaximumOutlineLength() const = 0;
   virtual const char *GetName() const = 0;
 
@@ -193,6 +200,12 @@ public:
   virtual bool ToggleDictionary(const char *name) { return false; }
 
 protected:
+  StenoDictionary() = default;
+
+  constexpr StenoDictionary(size_t cachedMaximumOutlineLength)
+      : cachedMaximumOutlineLength(cachedMaximumOutlineLength) {}
+
+  size_t cachedMaximumOutlineLength;
   static const char *Spaces(int count) { return SPACES + SPACES_COUNT - count; }
 
 private:

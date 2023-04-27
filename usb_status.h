@@ -1,7 +1,7 @@
 //---------------------------------------------------------------------------
 
 #pragma once
-#include <stddef.h>
+#include <stdint.h>
 
 //---------------------------------------------------------------------------
 
@@ -9,8 +9,8 @@ class UsbStatus {
 public:
   static bool IsMounted() { return instance.isMounted; }
   static bool IsSuspended() { return instance.isSuspended; }
-  static size_t GetMountCount() { return instance.mountCount; }
-  static size_t GetSuspendCount() { return instance.suspendCount; }
+  static uint32_t GetMountCount() { return instance.mountCount; }
+  static uint32_t GetSuspendCount() { return instance.suspendCount; }
 
   void OnMount() {
     isMounted = true;
@@ -30,8 +30,8 @@ public:
 private:
   bool isMounted;
   bool isSuspended;
-  size_t mountCount;
-  size_t suspendCount;
+  uint32_t mountCount;
+  uint32_t suspendCount;
 };
 
 //---------------------------------------------------------------------------

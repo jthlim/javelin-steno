@@ -8,7 +8,7 @@
 // Only used for debug test code.
 class StenoDebugDictionary final : public StenoDictionary {
 public:
-  constexpr StenoDebugDictionary() {}
+  constexpr StenoDebugDictionary() : StenoDictionary(1) {}
 
   virtual StenoDictionaryLookupResult
   Lookup(const StenoDictionaryLookup &lookup) const;

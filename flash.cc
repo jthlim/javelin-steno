@@ -177,9 +177,9 @@ void Flash::EndWriteBinding(void *context, const char *commandLine) {
 
 void Flash::PrintInfo() {
   Console::Printf("Flash session statistics\n");
-  Console::Printf("  Erased bytes: %u\n", instance.erasedBytes);
-  Console::Printf("  Programmed bytes: %u\n", instance.programmedBytes);
-  Console::Printf("  Reprogrammed bytes: %u\n", instance.reprogrammedBytes);
+  Console::Printf("  Erased bytes: %zu\n", instance.erasedBytes);
+  Console::Printf("  Programmed bytes: %zu\n", instance.programmedBytes);
+  Console::Printf("  Reprogrammed bytes: %zu\n", instance.reprogrammedBytes);
 }
 
 //---------------------------------------------------------------------------

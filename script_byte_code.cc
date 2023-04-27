@@ -35,7 +35,6 @@ const uint8_t *StenoScriptByteCodeData::FindStringOrReturnOriginal(
     ++index;
   }
 
-  // TODO
   return nullptr;
 }
 

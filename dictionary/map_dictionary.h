@@ -11,7 +11,7 @@ struct StenoMapDictionaryDefinition;
 
 class StenoMapDictionary final : public StenoDictionary {
 public:
-  constexpr StenoMapDictionary(const StenoMapDictionaryDefinition &definition)
+  StenoMapDictionary(const StenoMapDictionaryDefinition &definition)
       : definition(definition) {}
 
   virtual StenoDictionaryLookupResult

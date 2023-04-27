@@ -1,6 +1,7 @@
 //---------------------------------------------------------------------------
 
 #pragma once
+#include <stdarg.h>
 #include <stdint.h>
 #include <stdlib.h>
 #if RUN_TESTS
@@ -11,14 +12,21 @@
 
 class IWriter {
 public:
+  virtual void WriteByte(char c) { Write(&c, 1); }
   virtual void Write(const char *data, size_t length) = 0;
 
   static void WriteToStackTop(const char *data, size_t length) {
     classData.active->Write(data, length);
   }
 
+  static void VprintfToStackTop(const char *p, va_list args) {
+    classData.active->Vprintf(p, args);
+  }
+
   static void Push(IWriter *writer);
   static void Pop();
+
+  void Vprintf(const char *p, va_list args);
 
 private:
   struct ClassData {
@@ -27,6 +35,8 @@ private:
     IWriter *active;
   };
   static ClassData classData;
+
+  void WriteSegment(int flags, char *start, char *end, int width);
 };
 
 class ConsoleWriter final : public IWriter {
@@ -51,11 +61,36 @@ private:
   static ClassData classData;
 };
 
-class EmptyWriter final : public IWriter {
+class NullWriter final : public IWriter {
 public:
+  void WriteByte(char c);
   void Write(const char *data, size_t length);
 
-  static EmptyWriter instance;
+  static NullWriter instance;
+};
+
+class CountWriter final : public IWriter {
+public:
+  void WriteByte(char c);
+  void Write(const char *data, size_t length);
+
+  size_t GetCount() const { return count; }
+
+private:
+  size_t count = 0;
+};
+
+class MemoryWriter final : public IWriter {
+public:
+  MemoryWriter(void *target) : target((uint8_t *)target) {}
+
+  void WriteByte(char c);
+  void Write(const char *data, size_t length);
+
+  const void *GetTarget() const { return target; }
+
+private:
+  uint8_t *target;
 };
 
 class BufferWriter final : public IWriter {
@@ -68,6 +103,17 @@ public:
   void WriteBufferToStackTop() const {
     WriteToStackTop(buffer, bufferUsedCount);
   }
+
+  char *AdoptBuffer() {
+    char *returnValue = buffer;
+    buffer = nullptr;
+    bufferSize = 0;
+    bufferUsedCount = 0;
+    return returnValue;
+  }
+
+  const char *GetBuffer() const { return buffer; }
+  size_t GetCount() const { return bufferUsedCount; }
 
 private:
   size_t bufferUsedCount;

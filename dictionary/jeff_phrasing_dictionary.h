@@ -10,7 +10,7 @@ struct JeffPhrasingReverseHashMapEntry;
 
 class StenoJeffPhrasingDictionary final : public StenoDictionary {
 public:
-  constexpr StenoJeffPhrasingDictionary() {}
+  constexpr StenoJeffPhrasingDictionary() : StenoDictionary(1) {}
 
   virtual StenoDictionaryLookupResult
   Lookup(const StenoDictionaryLookup &lookup) const;
@@ -19,6 +19,7 @@ public:
   virtual const StenoDictionary *
   GetLookupProvider(const StenoDictionaryLookup &lookup) const;
 
+  virtual void CacheMaximumOutlineLength() {}
   virtual size_t GetMaximumOutlineLength() const { return 1; }
   virtual const char *GetName() const;
   virtual void ReverseLookup(StenoReverseDictionaryLookup &result) const;
