@@ -3,7 +3,7 @@
 // This is build using the following dictionaries
 // * test.json
 
-#include "main_dictionary.h"
+#include "test_dictionary.h"
 #include "map_dictionary_definition.h"
 
 const uint8_t textBlock[47] = {
@@ -34,7 +34,7 @@ const StenoMapDictionaryStrokesDefinition strokes[] = {
   {.hashMapSize = hashMapSize2, .data = data2, .offsets = offsets2},
 };
 
-constexpr StenoMapDictionaryDefinition MainDictionary::definition = {
+constexpr StenoMapDictionaryDefinition TestDictionary::definition = {
   true,
   2,
   0,

@@ -296,10 +296,10 @@ size_t StenoMapDictionary::GetMaximumOutlineLength() const {
 //---------------------------------------------------------------------------
 
 #include "../unit_test.h"
-#include "main_dictionary.h"
+#include "test_dictionary.h"
 #include <assert.h>
 
-static StenoMapDictionary mainDictionary(MainDictionary::definition);
+static StenoMapDictionary mainDictionary(TestDictionary::definition);
 
 TEST_BEGIN("MapDictionary: Single stroke lookup test") {
   // spellchecker: disable

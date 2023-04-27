@@ -9,6 +9,41 @@
 
 //---------------------------------------------------------------------------
 
+ConsoleWriter::ClassData ConsoleWriter::classData = {
+    {nullptr, nullptr, nullptr, nullptr},
+    0,
+    &ConsoleWriter::instance,
+};
+
+//---------------------------------------------------------------------------
+
+ConsoleWriter ConsoleWriter::instance;
+
+#ifdef RUN_TESTS
+
+std::vector<char> Console::history;
+
+__attribute__((weak)) void ConsoleWriter::Write(const char *data,
+                                                size_t length) {
+  std::copy(data, data + length, std::back_inserter(Console::history));
+}
+
+#endif
+
+void ConsoleWriter::Push(IWriter *writer) {
+  classData.data[classData.count++] = classData.active;
+  classData.active = writer;
+}
+
+void ConsoleWriter::Pop() {
+  if (classData.count == 0) {
+    return;
+  }
+  classData.active = classData.data[--classData.count];
+}
+
+//---------------------------------------------------------------------------
+
 Console Console::instance;
 
 static const ConsoleCommand HELP_COMMAND = {
@@ -56,7 +91,7 @@ void Console::Printf(const char *format, ...) {
   va_list args;
   va_start(args, format);
 
-  IWriter::VprintfToStackTop(format, args);
+  ConsoleWriter::VprintfToActive(format, args);
   va_end(args);
 }
 
@@ -136,9 +171,9 @@ bool Console::RunCommand(const char *command, IWriter &writer) {
     return false;
   }
 
-  IWriter::Push(&writer);
+  ConsoleWriter::Push(&writer);
   (*consoleCommand->handler)(consoleCommand->context, command);
-  IWriter::Pop();
+  ConsoleWriter::Pop();
 
   return true;
 }

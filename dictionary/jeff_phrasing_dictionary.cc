@@ -612,18 +612,18 @@ TEST_BEGIN("JeffPhrasing: Unique starters tests") {
   VerifyStroke("STWR*U", "not to");
   VerifyStroke("STKPWHRU", "to");
   VerifyStroke("STKPWHR*U", "not to");
-  VerifyStroke("STWRUF", "just");
-  VerifyStroke("STWR*UF", "just don't");
-  VerifyStroke("STKPWHRUF", "just");
-  VerifyStroke("STKPWHR*UF", "just doesn't");
-  VerifyStroke("STWREU", "still");
-  VerifyStroke("STWR*EU", "still don't");
-  VerifyStroke("STKPWHREU", "still");
-  VerifyStroke("STKPWHR*EU", "still doesn't");
-  VerifyStroke("STWREUF", "never");
-  VerifyStroke("STWR*EUF", "even");
-  VerifyStroke("STKPWHREUF", "never");
-  VerifyStroke("STKPWHR*EUF", "even");
+  VerifyStroke("STWRUF", " just");
+  VerifyStroke("STWR*UF", " just don't");
+  VerifyStroke("STKPWHRUF", " just");
+  VerifyStroke("STKPWHR*UF", " just doesn't");
+  VerifyStroke("STWREU", " still");
+  VerifyStroke("STWR*EU", " still don't");
+  VerifyStroke("STKPWHREU", " still");
+  VerifyStroke("STKPWHR*EU", " still doesn't");
+  VerifyStroke("STWREUF", " never");
+  VerifyStroke("STWR*EUF", " don't even");
+  VerifyStroke("STKPWHREUF", " never");
+  VerifyStroke("STKPWHR*EUF", " doesn't even");
   // spellchecker: enable
 }
 TEST_END

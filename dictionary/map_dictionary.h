@@ -2,17 +2,14 @@
 
 #pragma once
 #include "dictionary.h"
-
-//---------------------------------------------------------------------------
-
-struct StenoMapDictionaryDefinition;
+#include "map_dictionary_definition.h"
 
 //---------------------------------------------------------------------------
 
 class StenoMapDictionary final : public StenoDictionary {
 public:
   StenoMapDictionary(const StenoMapDictionaryDefinition &definition)
-      : definition(definition) {}
+      : StenoDictionary(definition.maximumOutlineLength), definition(definition) {}
 
   virtual StenoDictionaryLookupResult
   Lookup(const StenoDictionaryLookup &lookup) const;

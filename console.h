@@ -18,6 +18,36 @@ struct ConsoleCommand {
 
 //---------------------------------------------------------------------------
 
+class ConsoleWriter final : public IWriter {
+public:
+  virtual void Write(const char *data, size_t length);
+
+  static void WriteToActive(const char *data, size_t length) {
+    classData.active->Write(data, length);
+  }
+
+  static void VprintfToActive(const char *p, va_list args) {
+    classData.active->Vprintf(p, args);
+  }
+
+  static IWriter *GetActiveWriter() { return classData.active; }
+
+  static void Push(IWriter *writer);
+  static void Pop();
+
+  static ConsoleWriter instance;
+
+private:
+  struct ClassData {
+    IWriter *data[4];
+    size_t count;
+    IWriter *active;
+  };
+  static ClassData classData;
+};
+
+//---------------------------------------------------------------------------
+
 class Console {
 public:
   void HandleInput(const char *data, size_t length);
@@ -35,7 +65,7 @@ public:
   static void HelpCommand(void *context, const char *line);
 
   static void Write(const char *data, size_t length) {
-    IWriter::WriteToStackTop(data, length);
+    ConsoleWriter::WriteToActive(data, length);
   }
   static void WriteAsJson(const char *data, char *buffer);
   static void WriteAsJson(const char *data);

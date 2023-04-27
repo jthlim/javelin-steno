@@ -3,6 +3,7 @@
 #include "writer.h"
 #include "console.h"
 #include "str.h"
+#include <cstdarg>
 #include <string.h>
 
 //---------------------------------------------------------------------------
@@ -11,24 +12,6 @@ const int FLAG_FILL_ZERO = 1;
 const int FLAG_LENGTH_64_BIT = 2;
 
 //---------------------------------------------------------------------------
-
-IWriter::ClassData IWriter::classData = {
-    {nullptr, nullptr, nullptr, nullptr},
-    0,
-    &ConsoleWriter::instance,
-};
-
-void IWriter::Push(IWriter *writer) {
-  classData.data[classData.count++] = classData.active;
-  classData.active = writer;
-}
-
-void IWriter::Pop() {
-  if (classData.count == 0) {
-    return;
-  }
-  classData.active = classData.data[--classData.count];
-}
 
 static void Reverse(char *start, char *end) {
   for (--end; start < end; ++start, --end) {
@@ -70,6 +53,13 @@ static char *WriteReversedHex64(char *p, uint64_t v, const char *alphabet) {
   return p;
 }
 
+void IWriter::Printf(const char *p, ...) {
+  va_list args;
+  va_start(args, p);
+  Vprintf(p, args);
+  va_end(args);
+}
+
 void IWriter::Vprintf(const char *p, va_list args) {
   const char *spanStart = p;
   char scratch[32];
@@ -94,7 +84,6 @@ void IWriter::Vprintf(const char *p, va_list args) {
 
     int flags = 0;
     int width = 0;
-    int fill = ' ';
     ++p;
     if (*p == '0') {
       flags |= FLAG_FILL_ZERO;
@@ -217,21 +206,6 @@ void IWriter::WriteSegment(int flags, char *start, char *end, int width) {
   }
   Write(start, length);
 }
-
-//---------------------------------------------------------------------------
-
-ConsoleWriter ConsoleWriter::instance;
-
-#ifdef RUN_TESTS
-
-std::vector<char> Console::history;
-
-__attribute__((weak)) void ConsoleWriter::Write(const char *data,
-                                                size_t length) {
-  std::copy(data, data + length, std::back_inserter(Console::history));
-}
-
-#endif
 
 //---------------------------------------------------------------------------
 

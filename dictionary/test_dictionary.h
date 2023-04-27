@@ -4,7 +4,7 @@ struct StenoMapDictionaryDefinition;
 
 //---------------------------------------------------------------------------
 
-class MainDictionary {
+class TestDictionary {
 public:
   static const StenoMapDictionaryDefinition definition;
 };

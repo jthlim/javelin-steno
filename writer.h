@@ -15,50 +15,11 @@ public:
   virtual void WriteByte(char c) { Write(&c, 1); }
   virtual void Write(const char *data, size_t length) = 0;
 
-  static void WriteToStackTop(const char *data, size_t length) {
-    classData.active->Write(data, length);
-  }
-
-  static void VprintfToStackTop(const char *p, va_list args) {
-    classData.active->Vprintf(p, args);
-  }
-
-  static void Push(IWriter *writer);
-  static void Pop();
-
+  void Printf(const char *p, ...) __attribute__((format(printf, 2, 3)));
   void Vprintf(const char *p, va_list args);
 
 private:
-  struct ClassData {
-    IWriter *data[4];
-    size_t count;
-    IWriter *active;
-  };
-  static ClassData classData;
-
   void WriteSegment(int flags, char *start, char *end, int width);
-};
-
-class ConsoleWriter final : public IWriter {
-public:
-  virtual void Write(const char *data, size_t length);
-
-  static void WriteToStackTop(const char *data, size_t length) {
-    classData.active->Write(data, length);
-  }
-
-  static void Push(ConsoleWriter *writer);
-  static void Pop();
-
-  static ConsoleWriter instance;
-
-private:
-  struct ClassData {
-    ConsoleWriter *data[4];
-    size_t count;
-    ConsoleWriter *active;
-  };
-  static ClassData classData;
 };
 
 class NullWriter final : public IWriter {
@@ -100,8 +61,8 @@ public:
 
   void Write(const char *data, size_t length) final;
 
-  void WriteBufferToStackTop() const {
-    WriteToStackTop(buffer, bufferUsedCount);
+  void WriteBufferTo(IWriter *writer) const {
+    writer->Write(buffer, bufferUsedCount);
   }
 
   char *AdoptBuffer() {
