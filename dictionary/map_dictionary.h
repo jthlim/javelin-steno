@@ -9,7 +9,8 @@
 class StenoMapDictionary final : public StenoDictionary {
 public:
   StenoMapDictionary(const StenoMapDictionaryDefinition &definition)
-      : StenoDictionary(definition.maximumOutlineLength), definition(definition) {}
+      : StenoDictionary(definition.maximumOutlineLength),
+        definition(definition), strokes(CreateStrokeCache(definition)) {}
 
   virtual StenoDictionaryLookupResult
   Lookup(const StenoDictionaryLookup &lookup) const;
@@ -28,6 +29,12 @@ public:
 
 private:
   const StenoMapDictionaryDefinition &definition;
+
+  // This is offset by 1 to simplify lookup code marginally.
+  const StenoMapDictionaryStrokesDefinition *strokes;
+
+  static const StenoMapDictionaryStrokesDefinition *
+  CreateStrokeCache(const StenoMapDictionaryDefinition &definition);
 };
 
 //---------------------------------------------------------------------------

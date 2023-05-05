@@ -3,6 +3,7 @@
 #include "flash.h"
 #include "base64.h"
 #include "console.h"
+#include "hal/external_flash.h"
 #include <assert.h>
 #include <string.h>
 
@@ -81,9 +82,11 @@ void Flash::AddData(const uint8_t *data, size_t length) {
     size_t remainingBufferLength = WRITE_DATA_BUFFER_SIZE - offset;
     memcpy(buffer + offset, data, remainingBufferLength);
 
+    ExternalFlash::Begin();
     const void *writeAddress =
         (const void *)(size_t(target) & -WRITE_DATA_BUFFER_SIZE);
     Flash::Write(writeAddress, buffer, WRITE_DATA_BUFFER_SIZE);
+    ExternalFlash::End();
 
     target += remainingBufferLength;
     length -= remainingBufferLength;
@@ -134,6 +137,7 @@ void Flash::BeginWriteBinding(void *context, const char *commandLine) {
     Console::Printf("ERR Write in progress\n\n");
   }
 
+  ExternalFlash::Begin();
   size_t addressValue = 0;
   while (*p) {
     int hexValue = HexValue(*p++);
@@ -144,6 +148,7 @@ void Flash::BeginWriteBinding(void *context, const char *commandLine) {
   }
 
   instance.BeginWrite((const uint8_t *)addressValue);
+  ExternalFlash::End();
 
   Console::SendOk();
 }
@@ -169,7 +174,9 @@ void Flash::WriteBinding(void *context, const char *commandLine) {
 }
 
 void Flash::EndWriteBinding(void *context, const char *commandLine) {
+  ExternalFlash::Begin();
   instance.WriteRemaining();
+  ExternalFlash::End();
   Console::SendOk();
 }
 

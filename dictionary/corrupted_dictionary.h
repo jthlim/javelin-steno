@@ -6,15 +6,21 @@
 //---------------------------------------------------------------------------
 
 class StenoCorruptedDictionary final : public StenoDictionary {
+private:
+  static const size_t MAXIMUM_OUTLINE_LENGTH = 1;
+
 public:
-  constexpr StenoCorruptedDictionary() : StenoDictionary(1) {}
+  constexpr StenoCorruptedDictionary()
+      : StenoDictionary(MAXIMUM_OUTLINE_LENGTH) {}
 
   virtual StenoDictionaryLookupResult
   Lookup(const StenoDictionaryLookup &lookup) const;
   using StenoDictionary::Lookup;
 
   virtual void CacheMaximumOutlineLength() {}
-  virtual size_t GetMaximumOutlineLength() const { return 1; }
+  virtual size_t GetMaximumOutlineLength() const {
+    return MAXIMUM_OUTLINE_LENGTH;
+  }
   virtual const char *GetName() const { return "#bad"; }
 
   static const StenoCorruptedDictionary instance;

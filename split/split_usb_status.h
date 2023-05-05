@@ -1,8 +1,8 @@
 //---------------------------------------------------------------------------
 
 #pragma once
+#include "../hal/usb_status.h"
 #include "../split/split.h"
-#include "../usb_status.h"
 
 //---------------------------------------------------------------------------
 
@@ -10,6 +10,9 @@
 
 class SplitUsbStatus final : public SplitTxHandler, public SplitRxHandler {
 public:
+  bool IsConnected() const { return status.IsConnected(); }
+  bool IsSleeping() const { return status.IsSleeping(); }
+
   void OnMount();
   void OnUnmount();
   void OnSuspend();
@@ -30,8 +33,6 @@ private:
   virtual void UpdateBuffer(TxBuffer &buffer);
   virtual void OnTransmitConnectionReset() { dirty = true; }
   virtual void OnDataReceived(const void *data, size_t length);
-
-  void UpdateUsbStatusInstance();
 };
 
 #else

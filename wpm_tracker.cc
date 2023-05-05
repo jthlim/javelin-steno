@@ -11,14 +11,14 @@ WpmTracker WpmTracker::instance;
 //---------------------------------------------------------------------------
 
 void WpmTracker::Tally(int count) {
-  uint32_t now = Clock::GetCurrentTime() / 1000;
+  uint32_t now = Clock::GetMilliseconds() / 1000;
   UpdateToNow(now);
 
   charactersTyped[now % NUMBER_OF_SECONDS] += count;
 }
 
 int WpmTracker::GetWpm(int seconds) {
-  uint32_t now = Clock::GetCurrentTime() / 1000;
+  uint32_t now = Clock::GetMilliseconds() / 1000;
   UpdateToNow(now);
 
   int tally = 0;

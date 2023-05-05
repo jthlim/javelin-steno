@@ -1,13 +1,11 @@
 //---------------------------------------------------------------------------
 
-#pragma once
-#include <stddef.h>
-#include <stdint.h>
+#include "power.h"
 
 //---------------------------------------------------------------------------
 
-uint8_t Crc8(const void *p, size_t count);
-uint32_t Crc16Ccitt(const void *p, size_t count);
-uint32_t Crc32(const void *p, size_t count);
+__attribute__((weak)) bool Power::IsPowered() { return true; }
+__attribute__((weak)) bool Power::IsCharging() { return false; }
+__attribute__((weak)) int Power::GetBatteryPercentage() { return 0; }
 
 //---------------------------------------------------------------------------

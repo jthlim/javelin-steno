@@ -4,7 +4,7 @@
 
 #if RUN_TESTS
 
-uint32_t Clock::currentTime = 0;
+uint64_t Clock::currentMicroseconds = 0;
 
 #endif
 

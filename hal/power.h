@@ -1,13 +1,14 @@
 //---------------------------------------------------------------------------
 
 #pragma once
-#include <stddef.h>
-#include <stdint.h>
 
 //---------------------------------------------------------------------------
 
-uint8_t Crc8(const void *p, size_t count);
-uint32_t Crc16Ccitt(const void *p, size_t count);
-uint32_t Crc32(const void *p, size_t count);
+class Power {
+public:
+  static bool IsPowered();
+  static bool IsCharging();
+  static int GetBatteryPercentage();
+};
 
 //---------------------------------------------------------------------------

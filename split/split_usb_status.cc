@@ -11,20 +11,36 @@
 SplitUsbStatus SplitUsbStatus::instance;
 
 void SplitUsbStatus::OnMount() {
-  status.OnMount();
-  UpdateUsbStatusInstance();
+  if (Split::IsMaster()) {
+    UsbStatus::instance.OnMount();
+  } else {
+    dirty = true;
+    status.OnMount();
+  }
 }
 void SplitUsbStatus::OnUnmount() {
-  status.OnUnmount();
-  UpdateUsbStatusInstance();
+  if (Split::IsMaster()) {
+    UsbStatus::instance.OnUnmount();
+  } else {
+    dirty = true;
+    status.OnUnmount();
+  }
 }
 void SplitUsbStatus::OnSuspend() {
-  status.OnSuspend();
-  UpdateUsbStatusInstance();
+  if (Split::IsMaster()) {
+    UsbStatus::instance.OnSuspend();
+  } else {
+    dirty = true;
+    status.OnSuspend();
+  }
 }
 void SplitUsbStatus::OnResume() {
-  status.OnResume();
-  UpdateUsbStatusInstance();
+  if (Split::IsMaster()) {
+    UsbStatus::instance.OnResume();
+  } else {
+    dirty = true;
+    status.OnResume();
+  }
 }
 
 void SplitUsbStatus::UpdateBuffer(TxBuffer &buffer) {
@@ -37,14 +53,6 @@ void SplitUsbStatus::UpdateBuffer(TxBuffer &buffer) {
 void SplitUsbStatus::OnDataReceived(const void *data, size_t length) {
   assert(length == sizeof(status));
   memcpy(&status, data, sizeof(status));
-  UsbStatus::instance = status;
-}
-
-void SplitUsbStatus::UpdateUsbStatusInstance() {
-  dirty = true;
-  if (Split::IsMaster()) {
-    UsbStatus::instance = status;
-  }
 }
 
 #endif // JAVELIN_SPLIT

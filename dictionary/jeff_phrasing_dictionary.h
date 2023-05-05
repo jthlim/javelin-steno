@@ -9,8 +9,12 @@
 struct JeffPhrasingReverseHashMapEntry;
 
 class StenoJeffPhrasingDictionary final : public StenoDictionary {
+private:
+  static const size_t MAXIMUM_OUTLINE_LENGTH = 1;
+
 public:
-  constexpr StenoJeffPhrasingDictionary() : StenoDictionary(1) {}
+  constexpr StenoJeffPhrasingDictionary()
+      : StenoDictionary(MAXIMUM_OUTLINE_LENGTH) {}
 
   virtual StenoDictionaryLookupResult
   Lookup(const StenoDictionaryLookup &lookup) const;
@@ -20,7 +24,9 @@ public:
   GetLookupProvider(const StenoDictionaryLookup &lookup) const;
 
   virtual void CacheMaximumOutlineLength() {}
-  virtual size_t GetMaximumOutlineLength() const { return 1; }
+  virtual size_t GetMaximumOutlineLength() const {
+    return MAXIMUM_OUTLINE_LENGTH;
+  }
   virtual const char *GetName() const;
   virtual void ReverseLookup(StenoReverseDictionaryLookup &result) const;
 

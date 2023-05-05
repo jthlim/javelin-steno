@@ -25,13 +25,13 @@ void ButtonManager::Update(const ButtonState &newButtonState) {
     if (buttonState.IsSet(buttonIndex)) {
 #if CONSOLE_LOG_BUTTON_PRESSES
       Console::Printf("Press %zu at %u ms\n\n", buttonIndex,
-                      Clock::GetCurrentTime());
+                      Clock::GetMilliseconds());
 #endif
       script.HandlePress(buttonIndex);
     } else {
 #if CONSOLE_LOG_BUTTON_PRESSES
       Console::Printf("Release %zu at %u ms\n\n", buttonIndex,
-                      Clock::GetCurrentTime());
+                      Clock::GetMilliseconds());
 #endif
       script.HandleRelease(buttonIndex);
     }

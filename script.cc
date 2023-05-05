@@ -3,15 +3,19 @@
 #include "script.h"
 #include "clock.h"
 #include "console.h"
-#include "display.h"
-#include "gpio.h"
+#include "hal/ble.h"
+#include "hal/connection.h"
+#include "hal/display.h"
+#include "hal/gpio.h"
+#include "hal/power.h"
+#include "hal/rgb.h"
+#include "hal/usb_status.h"
 #include "key.h"
 #include "keyboard_led_status.h"
 #include "random.h"
-#include "rgb.h"
 #include "script_byte_code.h"
+#include "split/split_usb_status.h"
 #include "str.h"
-#include "usb_status.h"
 #include <assert.h>
 
 //---------------------------------------------------------------------------
@@ -416,10 +420,12 @@ void Script::ExecutionContext::Run(Script &script, size_t offset) {
         script.Push(Random::GenerateUint32());
         break;
       case StenoExtendedScriptFunction::IS_USB_MOUNTED:
-        script.Push(UsbStatus::IsMounted());
+        script.Push(UsbStatus::instance.IsConnected() ||
+                    SplitUsbStatus::instance.IsConnected());
         break;
       case StenoExtendedScriptFunction::IS_USB_SUSPENDED:
-        script.Push(UsbStatus::IsSuspended());
+        script.Push(UsbStatus::instance.IsSleeping() ||
+                    SplitUsbStatus::instance.IsSleeping());
         break;
       case StenoExtendedScriptFunction::GET_PARAMETER: {
         intptr_t offset = script.Pop();
@@ -427,6 +433,47 @@ void Script::ExecutionContext::Run(Script &script, size_t offset) {
         script.RunGetParameterCommand(parameter);
         break;
       }
+      case StenoExtendedScriptFunction::IS_CONNECTED: {
+        ConnectionId connectionId = (ConnectionId)script.Pop();
+        script.Push(Connection::IsConnected(connectionId));
+        break;
+      }
+      case StenoExtendedScriptFunction::GET_ACTIVE_CONNECTION:
+        script.Push((int)Connection::GetActiveConnection());
+        break;
+      case StenoExtendedScriptFunction::SET_PREFERRED_CONNECTION: {
+        ConnectionId third = (ConnectionId)script.Pop();
+        ConnectionId second = (ConnectionId)script.Pop();
+        ConnectionId first = (ConnectionId)script.Pop();
+        Connection::SetPreferredConnection(first, second, third);
+        break;
+      }
+      case StenoExtendedScriptFunction::IS_PAIR_CONNECTED: {
+        PairConnectionId pairConnectionId = (PairConnectionId)script.Pop();
+        script.Push(Connection::IsPairConnected(pairConnectionId));
+        break;
+      }
+      case StenoExtendedScriptFunction::START_BLE_PAIRING:
+        Ble::StartPairing();
+        break;
+      case StenoExtendedScriptFunction::GET_BLE_PROFILE:
+        script.Push(Ble::GetProfile());
+        break;
+      case StenoExtendedScriptFunction::SET_BLE_PROFILE:
+        Ble::SetProfile(script.Pop());
+        break;
+      case StenoExtendedScriptFunction::IS_HOST_SLEEPING:
+        script.Push(Connection::IsHostSleeping());
+        break;
+      case StenoExtendedScriptFunction::IS_POWERED:
+        script.Push(Power::IsPowered());
+        break;
+      case StenoExtendedScriptFunction::IS_CHARGING:
+        script.Push(Power::IsCharging());
+        break;
+      case StenoExtendedScriptFunction::GET_BATTERY_PERCENTAGE:
+        script.Push(Power::GetBatteryPercentage());
+        break;
       }
       break;
     }
@@ -613,7 +660,7 @@ void Script::ExecutionContext::Run(Script &script, size_t offset) {
         break;
       }
       case SF::GET_TIME:
-        script.Push(Clock::GetCurrentTime());
+        script.Push(Clock::GetMilliseconds());
         break;
       }
       continue;

@@ -1,13 +1,16 @@
 //---------------------------------------------------------------------------
 
 #pragma once
-#include <stddef.h>
-#include <stdint.h>
 
 //---------------------------------------------------------------------------
 
-uint8_t Crc8(const void *p, size_t count);
-uint32_t Crc16Ccitt(const void *p, size_t count);
-uint32_t Crc32(const void *p, size_t count);
+class Ble {
+public:
+  static bool IsConnected();
+  static void StartPairing();
+  static int GetProfile();
+  static void SetProfile(int setId);
+  static bool IsSleeping();
+};
 
 //---------------------------------------------------------------------------

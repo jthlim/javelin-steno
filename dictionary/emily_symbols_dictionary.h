@@ -6,8 +6,12 @@
 //---------------------------------------------------------------------------
 
 class StenoEmilySymbolsDictionary final : public StenoDictionary {
+private:
+  static const size_t MAXIMUM_OUTLINE_LENGTH = 1;
+
 public:
-  constexpr StenoEmilySymbolsDictionary() : StenoDictionary(1) {}
+  constexpr StenoEmilySymbolsDictionary()
+      : StenoDictionary(MAXIMUM_OUTLINE_LENGTH) {}
 
   virtual StenoDictionaryLookupResult
   Lookup(const StenoDictionaryLookup &lookup) const;
@@ -17,7 +21,9 @@ public:
   GetLookupProvider(const StenoDictionaryLookup &lookup) const;
 
   virtual void CacheMaximumOutlineLength() {}
-  virtual size_t GetMaximumOutlineLength() const { return 1; }
+  virtual size_t GetMaximumOutlineLength() const {
+    return MAXIMUM_OUTLINE_LENGTH;
+  }
   virtual const char *GetName() const;
   virtual bool PrintDictionary(bool hasData) const;
 

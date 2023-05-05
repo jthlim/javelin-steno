@@ -15,7 +15,7 @@ void StenoRepeat::Process(const StenoKeyState &value, StenoAction action) {
     wasLastEventAPress = true;
     pressedKeyState = value;
 
-    pressTime = Clock::GetCurrentTime();
+    pressTime = Clock::GetMilliseconds();
 
     if (pressTime - releaseTime > FORGET_TIME_SPAN) {
       releasedKeyState.Reset();
@@ -31,7 +31,7 @@ void StenoRepeat::Process(const StenoKeyState &value, StenoAction action) {
       wasLastEventAPress = false;
       // Capture the stroke before the release.
       releasedKeyState = pressedKeyState;
-      releaseTime = Clock::GetCurrentTime();
+      releaseTime = Clock::GetMilliseconds();
     }
     break;
 
@@ -53,14 +53,14 @@ void StenoRepeat::Tick() {
     return;
   }
 
-  uint32_t now = Clock::GetCurrentTime();
+  uint32_t now = Clock::GetMilliseconds();
   if (now - nextTriggerTime >= (uint32_t)-INITIAL_REPEAT_DELAY) {
     return;
   }
 
   nextTriggerTime = now + REPEAT_DELAY;
   next->Process(pressedKeyState, StenoAction::TRIGGER);
-  now = Clock::GetCurrentTime();
+  now = Clock::GetMilliseconds();
   if (nextTriggerTime < now + REPEAT_DELAY_MINIMUM) {
     nextTriggerTime = now + REPEAT_DELAY_MINIMUM;
   }
@@ -98,20 +98,20 @@ TEST_BEGIN("Repeat tests") {
   repeat.Tick();
   assert(fakeProcessor.triggers.size() == 0);
 
-  Clock::AdvanceTime(100);
+  Clock::AdvanceMilliseconds(100);
   repeat.Tick();
   assert(fakeProcessor.triggers.size() == 0);
 
-  Clock::AdvanceTime(100);
+  Clock::AdvanceMilliseconds(100);
   repeat.Tick();
   assert(fakeProcessor.triggers.size() == 1);
   assert(fakeProcessor.triggers[0] == katKeyState);
 
-  Clock::AdvanceTime(20);
+  Clock::AdvanceMilliseconds(20);
   repeat.Tick();
   assert(fakeProcessor.triggers.size() == 1);
 
-  Clock::AdvanceTime(20);
+  Clock::AdvanceMilliseconds(20);
   repeat.Tick();
   assert(fakeProcessor.triggers.size() == 2);
   assert(fakeProcessor.triggers[0] == katKeyState);

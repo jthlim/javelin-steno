@@ -13,6 +13,7 @@ template <typename T> struct QueueEntry {
   static void *operator new(size_t n, size_t extra) {
     return ::operator new(n + extra);
   }
+  static void operator delete(void *p) { ::operator delete(p); }
   static void operator delete(void *p, size_t extra) { ::operator delete(p); }
 };
 

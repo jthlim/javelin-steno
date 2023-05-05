@@ -7,10 +7,11 @@
 
 class UsbStatus {
 public:
-  static bool IsMounted() { return instance.isMounted; }
-  static bool IsSuspended() { return instance.isSuspended; }
-  static uint32_t GetMountCount() { return instance.mountCount; }
-  static uint32_t GetSuspendCount() { return instance.suspendCount; }
+  bool IsConnected() const { return isMounted; }
+  bool IsSleeping() const { return IsConnected() && isSuspended; }
+
+  uint32_t GetMountCount() const { return mountCount; }
+  uint32_t GetSuspendCount() const { return suspendCount; }
 
   void OnMount() {
     isMounted = true;

@@ -2,6 +2,7 @@
 
 #include "console.h"
 #include "engine.h"
+#include "hal/external_flash.h"
 #include "stroke_list_parser.h"
 
 //---------------------------------------------------------------------------
@@ -185,6 +186,7 @@ void StenoEngine::LookupStroke_Binding(void *context, const char *commandLine) {
     return;
   }
 
+  ExternalFlashSentry externalFlashSentry;
   StenoEngine *engine = (StenoEngine *)context;
   StenoDictionaryLookupResult result =
       engine->dictionary.Lookup(parser.strokes, parser.length);

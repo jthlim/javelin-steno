@@ -717,6 +717,13 @@ TEST_BEGIN("JeffNumbers: Test roman numerals") {
 
   TestLookup("#STR", "XII");
   TestLookup("#ST-R", "XII");
+
+  const StenoStroke strokes[] = {
+      StenoStroke("#S-T"),
+      StenoStroke("#AEURT"),
+  };
+  TestLookup(strokes, 2, "MCMXCV");
+
   // spellchecker: enable
 }
 TEST_END

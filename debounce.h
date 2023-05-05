@@ -38,7 +38,7 @@ private:
 //---------------------------------------------------------------------------
 
 template <typename T> Debounced<T> GlobalDeferredDebounce<T>::Update(T input) {
-  uint32_t currentTime = Clock::GetCurrentTime();
+  uint32_t currentTime = Clock::GetMilliseconds();
 
   if (input != lastState) {
     lastState = input;

@@ -130,10 +130,8 @@ bool StenoMapDictionaryStrokesDefinition::PrintDictionary(
 StenoDictionaryLookupResult
 StenoMapDictionary::Lookup(const StenoDictionaryLookup &lookup) const {
   const StenoMapDictionaryStrokesDefinition &strokesDefinition =
-      definition.strokes[lookup.length - 1];
-#if JAVELIN_NRF_XIP_WORKAROUND
-  asm volatile("nop");
-#endif
+      strokes[lookup.length];
+
   if (strokesDefinition.hashMapSize == 0) {
     return StenoDictionaryLookupResult::CreateInvalid();
   }
@@ -171,11 +169,10 @@ StenoMapDictionary::Lookup(const StenoDictionaryLookup &lookup) const {
 
 const StenoDictionary *StenoMapDictionary::GetLookupProvider(
     const StenoDictionaryLookup &lookup) const {
+
   const StenoMapDictionaryStrokesDefinition &strokesDefinition =
-      definition.strokes[lookup.length - 1];
-#if JAVELIN_NRF_XIP_WORKAROUND
-  asm volatile("nop");
-#endif
+      strokes[lookup.length];
+
   if (strokesDefinition.hashMapSize == 0) {
     return nullptr;
   }
@@ -214,20 +211,15 @@ bool StenoMapDictionary::ReverseMapDictionaryLookup(
   const void *data = lookup.data;
 
   // Quick reject
-  const StenoMapDictionaryStrokesDefinition *strokes = definition.strokes;
-#if JAVELIN_NRF_XIP_WORKAROUND
-  asm volatile("nop");
-#endif
-  if (data < strokes[0].data) {
+  if (data < strokes[1].data) {
     return false;
   }
-  if (data >= strokes[definition.maximumOutlineLength - 1].offsets) {
+  if (data >= strokes[definition.maximumOutlineLength].offsets) {
     return false;
   }
 
-  for (size_t i = 0; i < definition.maximumOutlineLength; ++i) {
-    const StenoMapDictionaryStrokesDefinition &strokeDefinition =
-        definition.strokes[i];
+  for (size_t i = 1; i <= definition.maximumOutlineLength; ++i) {
+    const StenoMapDictionaryStrokesDefinition &strokeDefinition = strokes[i];
 
     if (!strokeDefinition.ContainsData(data)) {
       continue;
@@ -236,7 +228,7 @@ bool StenoMapDictionary::ReverseMapDictionaryLookup(
     // There is a match! Convert it to StenoStrokes.
     const StenoMapDictionaryDataEntry *entry =
         (const StenoMapDictionaryDataEntry *)data;
-    size_t strokeLength = i + 1;
+    size_t strokeLength = i;
     entry->ExpandTo(lookup.strokes, strokeLength);
     lookup.length = strokeLength;
     lookup.provider = this;
@@ -245,24 +237,13 @@ bool StenoMapDictionary::ReverseMapDictionaryLookup(
   return false;
 }
 
-const char *StenoMapDictionary::GetName() const {
-  const StenoMapDictionaryDefinition &localDefinition = definition;
-#if JAVELIN_NRF_XIP_WORKAROUND
-  asm volatile("nop");
-#endif
-  return localDefinition.name;
-}
+const char *StenoMapDictionary::GetName() const { return definition.name; }
 
 void StenoMapDictionary::PrintInfo(int depth) const {
-  const uint8_t *start = (const uint8_t *)&definition;
-
   const StenoMapDictionaryStrokesDefinition &lastStrokeDefinition =
-      definition.strokes[definition.maximumOutlineLength - 1];
+      strokes[definition.maximumOutlineLength];
 
-#if JAVELIN_NRF_XIP_WORKAROUND
-  asm volatile("nop");
-#endif
-
+  const uint8_t *start = (const uint8_t *)&definition;
   const uint8_t *end =
       (const uint8_t *)(lastStrokeDefinition.offsets +
                         lastStrokeDefinition.hashMapSize / 128);
@@ -272,9 +253,8 @@ void StenoMapDictionary::PrintInfo(int depth) const {
 
 bool StenoMapDictionary::PrintDictionary(bool hasData) const {
   char *buffer = (char *)malloc(2048);
-  for (size_t i = 0; i < definition.maximumOutlineLength; ++i) {
-    if (definition.strokes[i].PrintDictionary(hasData, i + 1, buffer,
-                                              definition.textBlock)) {
+  for (size_t i = 1; i <= definition.maximumOutlineLength; ++i) {
+    if (strokes[i].PrintDictionary(hasData, i, buffer, definition.textBlock)) {
       hasData = true;
     }
   }
@@ -282,17 +262,21 @@ bool StenoMapDictionary::PrintDictionary(bool hasData) const {
   return hasData;
 }
 
-//---------------------------------------------------------------------------
-
 size_t StenoMapDictionary::GetMaximumOutlineLength() const {
-  const StenoMapDictionaryDefinition &localDefinition = definition;
-#if JAVELIN_NRF_XIP_WORKAROUND
-  asm volatile("nop");
-#endif
-  return localDefinition.maximumOutlineLength;
+  return definition.maximumOutlineLength;
 }
 
-//---------------------------------------------------------------------------
+const StenoMapDictionaryStrokesDefinition *
+StenoMapDictionary::CreateStrokeCache(
+    const StenoMapDictionaryDefinition &definition) {
+  size_t byteSize = sizeof(StenoMapDictionaryStrokesDefinition) *
+                    definition.maximumOutlineLength;
+  StenoMapDictionaryStrokesDefinition *strokes =
+      (StenoMapDictionaryStrokesDefinition *)malloc(byteSize);
+  memcpy(strokes, definition.strokes, byteSize);
+  return strokes - 1;
+}
+
 //---------------------------------------------------------------------------
 
 #include "../unit_test.h"

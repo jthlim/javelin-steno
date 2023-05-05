@@ -6,6 +6,7 @@
 #include "console.h"
 #include "dictionary/user_dictionary.h"
 #include "flash.h"
+#include "hal/external_flash.h"
 #include "key.h"
 #include "list.h"
 #include "orthography.h"
@@ -41,6 +42,8 @@ void StenoEngine::Process(const StenoKeyState &value, StenoAction action) {
   if (action != StenoAction::TRIGGER) {
     return;
   }
+
+  ExternalFlashSentry externalFlashSentry;
 
   ++strokeCount;
   StenoStroke stroke = value.ToStroke();
@@ -109,31 +112,43 @@ void StenoEngine::PrintInfo() const {
 
   orthography.PrintInfo();
 
+  ExternalFlashSentry externalFlashSentry;
+
   Console::Printf("    Dictionaries\n");
   dictionary.PrintInfo(4);
 }
 
 void StenoEngine::PrintDictionary() const {
+  ExternalFlashSentry externalFlashSentry;
+
   Console::Write("{", 1);
   dictionary.PrintDictionary(false);
   Console::Write("\n}\n\n", 4);
 }
 
-void StenoEngine::ListDictionaries() const { dictionary.ListDictionaries(); }
+void StenoEngine::ListDictionaries() const {
+  ExternalFlashSentry externalFlashSentry;
+  dictionary.ListDictionaries();
+}
 
 bool StenoEngine::EnableDictionary(const char *name) {
+  ExternalFlashSentry externalFlashSentry;
   return dictionary.EnableDictionary(name);
 }
 
 bool StenoEngine::DisableDictionary(const char *name) {
+  ExternalFlashSentry externalFlashSentry;
   return dictionary.DisableDictionary(name);
 }
 
 bool StenoEngine::ToggleDictionary(const char *name) {
+  ExternalFlashSentry externalFlashSentry;
   return dictionary.ToggleDictionary(name);
 }
 
 void StenoEngine::ReverseLookup(StenoReverseDictionaryLookup &result) const {
+  ExternalFlashSentry externalFlashSentry;
+
   dictionary.ReverseLookup(result);
   if (result.resultCount == 0) {
     return;

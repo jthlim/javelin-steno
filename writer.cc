@@ -156,6 +156,17 @@ void IWriter::Vprintf(const char *p, va_list args) {
       Reverse(start, end);
       break;
 
+    case 'X':
+      if (flags & FLAG_LENGTH_64_BIT) {
+        uint64_t v = va_arg(args, uint64_t);
+        end = WriteReversedHex64(start, v, "0123456789ABCDEF");
+      } else {
+        uint32_t v = va_arg(args, uint32_t);
+        end = WriteReversedHex32(start, v, "0123456789ABCDEF");
+      }
+      Reverse(start, end);
+      break;
+
     case 'p':
       if (sizeof(void *) == sizeof(uint64_t)) {
         uint64_t v = va_arg(args, uint64_t);
