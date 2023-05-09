@@ -175,7 +175,7 @@ char *Str::WriteJson(char *p, const char *text) {
   return p;
 }
 
-#if JAVELIN_ASSEMBLER_THUMB2
+#if JAVELIN_CPU_CORTEX_M0
 extern "C" __attribute((naked)) size_t strlen(const char *p) {
   // spell-checker: disable
   asm volatile(R"(

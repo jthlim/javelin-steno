@@ -20,7 +20,7 @@ void StenoReverseMapDictionary::AddMapDictionaryResults(
   const uint8_t *right = textBlock + textBlockLength;
 
   while (left < right) {
-#if JAVELIN_PLATFORM_PICO_SDK
+#if JAVELIN_PLATFORM_PICO_SDK || JAVELIN_PLATFORM_NRF5_SDK
     // Optimization when top bit of pointer cannot be set.
     const uint8_t *mid = (const uint8_t *)((size_t(left) + size_t(right)) / 2);
 #else

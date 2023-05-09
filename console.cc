@@ -42,6 +42,9 @@ void ConsoleWriter::Pop() {
   classData.active = classData.data[--classData.count];
 }
 
+__attribute__((weak)) void
+ConsoleWriter::SetConnection(ConnectionId connectionId) {}
+
 //---------------------------------------------------------------------------
 
 Console Console::instance;
@@ -105,6 +108,12 @@ void Console::WriteAsJson(const char *data) {
   char *buffer = (char *)malloc(2 * length);
   WriteAsJson(data, buffer);
   free(buffer);
+}
+
+void Console::WriteButtonScriptEvent(const char *text) {
+  Console::Printf("EV {\"event\":\"button_script_event\",\"text\":\"");
+  Console::WriteAsJson(text);
+  Console::Printf("\"}\n\n");
 }
 
 __attribute__((weak)) void Console::Flush() {}

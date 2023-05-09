@@ -70,7 +70,7 @@ bool Unicode::IsLetter(uint32_t c) {
   return Lookup(c, LETTER_DATA, sizeof(LETTER_DATA) / sizeof(*LETTER_DATA));
 }
 
-#if JAVELIN_ASSEMBLER_THUMB2
+#if JAVELIN_CPU_CORTEX_M0 || JAVELIN_CPU_CORTEX_M4
 #else
 bool Unicode::IsWhitespace(uint32_t c) {
   switch (c) {

@@ -12,9 +12,9 @@ const char StenoDictionary::SPACES[SPACES_COUNT + 1] = "                ";
 
 //---------------------------------------------------------------------------
 
-#if JAVELIN_PLATFORM_PICO_SDK
+#if JAVELIN_PLATFORM_PICO_SDK || JAVELIN_PLATFORM_NRF5_SDK
 
-#if JAVELIN_ASSEMBLER_THUMB2
+#if JAVELIN_CPU_CORTEX_M0
 
 __attribute__((naked)) void StenoDictionaryLookupResult::Destroy() {
   asm volatile(R"(
@@ -25,6 +25,19 @@ __attribute__((naked)) void StenoDictionaryLookupResult::Destroy() {
   1:
     ldr r1, =free
     bx r1
+  )");
+}
+
+#elif JAVELIN_CPU_CORTEX_M4
+
+__attribute__((naked)) void StenoDictionaryLookupResult::Destroy() {
+  asm volatile(R"(
+    ldr r0, [r0]
+    lsrs r0, #1
+    bcs 1f
+    bx  lr
+  1:
+    b.w free
   )");
 }
 

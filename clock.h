@@ -9,10 +9,10 @@
 
 class Clock {
 public:
-  static void Initialize() {}
-
-  static uint32_t GetMilliseconds() { return (uint32_t) (currentMicroseconds / 1000); }
-  static uint32_t GetMicroseconds() { return (uint32_t) currentMicroseconds; }
+  static uint32_t GetMilliseconds() {
+    return (uint32_t)(currentMicroseconds / 1000);
+  }
+  static uint32_t GetMicroseconds() { return (uint32_t)currentMicroseconds; }
 
   static void AdvanceMilliseconds(uint32_t amount) {
     currentMicroseconds += 1000LL * amount;
@@ -29,8 +29,6 @@ private:
 
 class Clock {
 public:
-  static void Initialize(); // Only implemented on platforms that need it.
-
   static uint32_t GetMilliseconds();
   static uint32_t GetMicroseconds();
 

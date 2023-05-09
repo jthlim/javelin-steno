@@ -2,6 +2,8 @@
 
 #include "clock.h"
 
+//---------------------------------------------------------------------------
+
 #if RUN_TESTS
 
 uint64_t Clock::currentMicroseconds = 0;

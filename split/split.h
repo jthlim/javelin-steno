@@ -24,6 +24,19 @@ enum class SplitHandlerId {
   COUNT,
 };
 
+enum SplitMetricId {
+  RESET_COUNT,
+  TIMEOUT_COUNT,
+  MAGIC_MISMATCH_COUNT,
+  CRC_FAILURE_COUNT,
+  WAITING_FOR_HEADER_COUNT,
+  WAITING_FOR_DATA_COUNT,
+  EXCESS_DATA_COUNT,
+  REPEAT_DATA_COUNT,
+
+  COUNT,
+};
+
 #if !defined(JAVELIN_SPLIT_TX_RX_BUFFER_SIZE)
 #define JAVELIN_SPLIT_TX_RX_BUFFER_SIZE 2048
 #endif
@@ -31,10 +44,14 @@ enum class SplitHandlerId {
 struct TxRxHeader {
   uint16_t magic;
   uint16_t wordCount;
-  uint32_t crc;
+  uint16_t transferId;
+  uint16_t crc16;
 
   static const uint16_t MAGIC = 0x534a; // 'JS';
 };
+
+class SplitTxHandler;
+class SplitRxHandler;
 
 class TxBuffer {
 public:
@@ -42,16 +59,58 @@ public:
 
   void Reset() { header.wordCount = 0; }
   bool Add(SplitHandlerId id, const void *data, size_t length);
+  void Build();
+  void BuildEmpty();
+  void UpdateCrc();
+  size_t GetByteCount() const {
+    return sizeof(header) + header.wordCount * sizeof(uint32_t);
+  }
+  size_t GetWordCount() const {
+    return sizeof(header) / sizeof(uint32_t) + header.wordCount;
+  }
 
   TxRxHeader header;
   uint32_t buffer[JAVELIN_SPLIT_TX_RX_BUFFER_SIZE];
 
+  static void OnConnectionReset() { handlers.OnConnectionReset(); }
+  static void OnTransmitSucceeded() { handlers.OnTransmitSuceeded(); }
+
+  struct Handlers {
+    size_t handlerCount;
+    SplitTxHandler *handlers[(size_t)SplitHandlerId::COUNT];
+
+    void Add(SplitTxHandler *handler) { handlers[handlerCount++] = handler; }
+
+    void OnConnectionReset() const;
+    void OnTransmitSuceeded() const;
+  };
+
+  static Handlers handlers;
   static size_t txPacketTypeCounts[(size_t)SplitHandlerId::COUNT];
+};
+
+enum class RxBufferValidateResult {
+  OK,
+  CONTINUE,
+  ERROR,
 };
 
 struct RxBuffer {
   TxRxHeader header;
   uint32_t buffer[JAVELIN_SPLIT_TX_RX_BUFFER_SIZE];
+
+  size_t GetWordCount() const {
+    return sizeof(header) / sizeof(uint32_t) + header.wordCount;
+  }
+
+  RxBufferValidateResult Validate(size_t totalWordsReceived,
+                                  size_t *metrics) const;
+
+  void Process() const;
+
+  static void OnConnectionReset();
+
+  static SplitRxHandler *handlers[];
 };
 
 class SplitTxHandler {
@@ -71,6 +130,7 @@ class Split {
 public:
 #if JAVELIN_SPLIT
   static bool IsMaster() { return JAVELIN_SPLIT_IS_MASTER; }
+  static bool IsPairConnected();
 
 #if defined(JAVELIN_SPLIT_IS_LEFT)
   static bool IsLeft() { return JAVELIN_SPLIT_IS_LEFT; }
@@ -78,13 +138,18 @@ public:
   static bool IsLeft();
 #endif
 
-  static void RegisterTxHandler(SplitTxHandler *handler);
-  static void RegisterRxHandler(SplitHandlerId id, SplitRxHandler *handler);
+  static void RegisterTxHandler(SplitTxHandler *handler) {
+    TxBuffer::handlers.Add(handler);
+  }
+  static void RegisterRxHandler(SplitHandlerId id, SplitRxHandler *handler) {
+    RxBuffer::handlers[(size_t)id] = handler;
+  }
 #else
   static bool IsMaster() { return true; }
+  static bool IsPairConnected() { return false; }
 
-  static void RegisterTxHandler(void *handler);
-  static void RegisterRxHandler(SplitHandlerId id, void *handler);
+  static void RegisterTxHandler(void *handler) {}
+  static void RegisterRxHandler(SplitHandlerId id, void *handler) {}
 #endif
 
   static bool IsSlave() { return !IsMaster(); }

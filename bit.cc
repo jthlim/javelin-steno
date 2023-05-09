@@ -6,7 +6,7 @@
 
 #if JAVELIN_USE_CUSTOM_POP_COUNT
 
-#if JAVELIN_ASSEMBLER_THUMB2
+#if JAVELIN_CPU_CORTEX_M0
 __attribute__((naked)) uint32_t Bit<4>::PopCount(uint32_t v) {
   asm volatile(R"(
     ldr  r1, =#0x49249249

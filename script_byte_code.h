@@ -116,6 +116,9 @@ enum class StenoExtendedScriptFunction : uint8_t {
   IS_POWERED,
   IS_CHARGING,
   GET_BATTERY_PERCENTAGE,
+  GET_ACTIVE_PAIR_CONNECTION,
+  SET_BOARD_POWER,
+  SEND_EVENT,
 };
 
 enum class StenoScriptOperator : uint8_t {

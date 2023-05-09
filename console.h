@@ -1,6 +1,7 @@
 //---------------------------------------------------------------------------
 
 #pragma once
+#include "hal/connection.h"
 #include "writer.h"
 #include <stddef.h>
 #if RUN_TESTS
@@ -34,6 +35,8 @@ public:
 
   static void Push(IWriter *writer);
   static void Pop();
+
+  static void SetConnection(ConnectionId connectionId);
 
   static ConsoleWriter instance;
 
@@ -69,6 +72,8 @@ public:
   }
   static void WriteAsJson(const char *data, char *buffer);
   static void WriteAsJson(const char *data);
+
+  static void WriteButtonScriptEvent(const char *text);
 
   static void Printf(const char *format, ...)
       __attribute__((format(printf, 1, 2)));

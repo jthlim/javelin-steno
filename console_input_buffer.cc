@@ -12,9 +12,10 @@ ConsoleInputBuffer::ConsoleInputBufferData ConsoleInputBuffer::instance;
 //---------------------------------------------------------------------------
 
 QueueEntry<ConsoleInputBuffer::EntryData> *
-ConsoleInputBuffer::ConsoleInputBufferData::CreateEntry(const void *data,
-                                                        size_t length) {
+ConsoleInputBuffer::ConsoleInputBufferData::CreateEntry(
+    const void *data, size_t length, ConnectionId connectionId) {
   QueueEntry<EntryData> *entry = new (length) QueueEntry<EntryData>;
+  entry->data.connectionId = connectionId;
   entry->data.length = length;
   entry->next = nullptr;
   memcpy(entry->data.data, data, length);
@@ -23,9 +24,9 @@ ConsoleInputBuffer::ConsoleInputBufferData::CreateEntry(const void *data,
 
 //---------------------------------------------------------------------------
 
-void ConsoleInputBuffer::ConsoleInputBufferData::Add(const uint8_t *data,
-                                                     size_t length) {
-  QueueEntry<EntryData> *entry = CreateEntry(data, length);
+void ConsoleInputBuffer::ConsoleInputBufferData::Add(
+    const uint8_t *data, size_t length, ConnectionId connectionId) {
+  QueueEntry<EntryData> *entry = CreateEntry(data, length, connectionId);
   AddEntry(entry);
 }
 
@@ -38,10 +39,12 @@ void ConsoleInputBuffer::ConsoleInputBufferData::Process() {
 #endif
 
   while (head) {
+    ConsoleWriter::SetConnection(head->data.connectionId);
     Console::instance.HandleInput(head->data.data, head->data.length);
     RemoveHead();
+    Console::Flush();
+    ConsoleWriter::SetConnection(ConnectionId::ACTIVE);
   }
-  Console::Flush();
 }
 
 #if JAVELIN_SPLIT
@@ -59,7 +62,7 @@ void ConsoleInputBuffer::ConsoleInputBufferData::UpdateBuffer(
 
 void ConsoleInputBuffer::ConsoleInputBufferData::OnDataReceived(
     const void *data, size_t length) {
-  Add((const uint8_t *)data, length);
+  Add((const uint8_t *)data, length, ConnectionId::USB_PAIR);
 }
 #endif
 

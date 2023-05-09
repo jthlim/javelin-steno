@@ -352,8 +352,8 @@ char *PatternMatch::Replace(const char *s) const {
       const char *end = captures[index * 2 + 1];
       memcpy(d, start, end - start);
       d += end - start;
-      break;
-    }
+    } break;
+
     default:
       *d++ = *s++;
       break;

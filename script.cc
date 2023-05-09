@@ -211,15 +211,15 @@ void Script::ExecutionContext::Run(Script &script, size_t offset) {
         intptr_t offset = script.Pop();
         const uint8_t *data = script.byteCode + offset;
         script.Push(data[index]);
-        break;
-      }
+      } break;
+
       case OP::WORD_LOOKUP: {
         intptr_t index = script.Pop();
         intptr_t offset = script.Pop();
         const int32_t *data = (const int32_t *)(script.byteCode + offset);
         script.Push(data[index]);
-        break;
-      }
+      } break;
+
       case OP::INCREMENT:
         script.UnaryOp([](intptr_t a) -> intptr_t { return a + 1; });
         break;
@@ -315,8 +315,8 @@ void Script::ExecutionContext::Run(Script &script, size_t offset) {
     case BC::GLOBAL_STORE: {
       int globalIndex = *p++;
       script.globals[globalIndex] = script.Pop();
-      break;
-    }
+    } break;
+
     case BC::EXTENDED_CALL_FUNCTION: {
       StenoExtendedScriptFunction function = StenoExtendedScriptFunction(*p++);
 
@@ -324,44 +324,38 @@ void Script::ExecutionContext::Run(Script &script, size_t offset) {
       case StenoExtendedScriptFunction::GET_LED_STATUS: {
         int index = (int)script.Pop();
         script.Push(KeyboardLedStatus::GetLedStatus(index));
-        break;
-      }
+      } break;
+
       case StenoExtendedScriptFunction::SET_GPIO_PIN: {
         int enable = script.Pop() != 0;
         int pin = (int)script.Pop();
         Gpio::SetPin(pin, enable);
-        break;
-      }
+      } break;
       case StenoExtendedScriptFunction::CLEAR_DISPLAY: {
         int displayId = (int)script.Pop();
         Display::Clear(displayId);
-        break;
-      }
+      } break;
       case StenoExtendedScriptFunction::SET_AUTO_DRAW: {
         int autoDrawId = (int)script.Pop();
         int displayId = (int)script.Pop();
         Display::SetAutoDraw(displayId, autoDrawId);
-        break;
-      }
+      } break;
       case StenoExtendedScriptFunction::SET_SCREEN_ON: {
         bool on = script.Pop() != 0;
         int displayId = (int)script.Pop();
         Display::SetScreenOn(displayId, on);
-        break;
-      }
+      } break;
       case StenoExtendedScriptFunction::SET_SCREEN_CONTRAST: {
         int contrast = (int)script.Pop();
         int displayId = (int)script.Pop();
         Display::SetContrast(displayId, contrast);
-        break;
-      }
+      } break;
       case StenoExtendedScriptFunction::DRAW_PIXEL: {
         int y = (int)script.Pop();
         int x = (int)script.Pop();
         int displayId = (int)script.Pop();
         Display::DrawPixel(displayId, x, y);
-        break;
-      }
+      } break;
       case StenoExtendedScriptFunction::DRAW_LINE: {
         int y2 = (int)script.Pop();
         int x2 = (int)script.Pop();
@@ -369,8 +363,7 @@ void Script::ExecutionContext::Run(Script &script, size_t offset) {
         int x1 = (int)script.Pop();
         int displayId = (int)script.Pop();
         Display::DrawLine(displayId, x1, y1, x2, y2);
-        break;
-      }
+      } break;
       case StenoExtendedScriptFunction::DRAW_IMAGE: {
         intptr_t offset = script.Pop();
         const uint8_t *data = (const uint8_t *)script.byteCode + offset;
@@ -380,8 +373,7 @@ void Script::ExecutionContext::Run(Script &script, size_t offset) {
         int width = *data++;
         int height = *data++;
         Display::DrawImage(displayId, x, y, width, height, data);
-        break;
-      }
+      } break;
       case StenoExtendedScriptFunction::DRAW_TEXT: {
         intptr_t offset = script.Pop();
         const char *text = (const char *)script.byteCode + offset;
@@ -391,14 +383,12 @@ void Script::ExecutionContext::Run(Script &script, size_t offset) {
         int x = (int)script.Pop();
         int displayId = (int)script.Pop();
         Display::DrawText(displayId, x, y, fontId, alignment, text);
-        break;
-      }
+      } break;
       case StenoExtendedScriptFunction::SET_DRAW_COLOR: {
         int color = (int)script.Pop();
         int displayId = (int)script.Pop();
         Display::SetDrawColor(displayId, color);
-        break;
-      }
+      } break;
       case StenoExtendedScriptFunction::DRAW_RECT: {
         int bottom = (int)script.Pop();
         int right = (int)script.Pop();
@@ -406,16 +396,14 @@ void Script::ExecutionContext::Run(Script &script, size_t offset) {
         int left = (int)script.Pop();
         int displayId = (int)script.Pop();
         Display::DrawRect(displayId, left, top, right, bottom);
-        break;
-      }
+      } break;
       case StenoExtendedScriptFunction::SET_HSV: {
         int v = (int)script.Pop();
         int s = (int)script.Pop();
         int h = (int)script.Pop();
         int id = (int)script.Pop();
         Rgb::SetHsv(id, h, s, v);
-        break;
-      }
+      } break;
       case StenoExtendedScriptFunction::RAND:
         script.Push(Random::GenerateUint32());
         break;
@@ -431,13 +419,11 @@ void Script::ExecutionContext::Run(Script &script, size_t offset) {
         intptr_t offset = script.Pop();
         const char *parameter = (const char *)script.byteCode + offset;
         script.RunGetParameterCommand(parameter);
-        break;
-      }
+      } break;
       case StenoExtendedScriptFunction::IS_CONNECTED: {
         ConnectionId connectionId = (ConnectionId)script.Pop();
         script.Push(Connection::IsConnected(connectionId));
-        break;
-      }
+      } break;
       case StenoExtendedScriptFunction::GET_ACTIVE_CONNECTION:
         script.Push((int)Connection::GetActiveConnection());
         break;
@@ -446,13 +432,11 @@ void Script::ExecutionContext::Run(Script &script, size_t offset) {
         ConnectionId second = (ConnectionId)script.Pop();
         ConnectionId first = (ConnectionId)script.Pop();
         Connection::SetPreferredConnection(first, second, third);
-        break;
-      }
+      } break;
       case StenoExtendedScriptFunction::IS_PAIR_CONNECTED: {
         PairConnectionId pairConnectionId = (PairConnectionId)script.Pop();
         script.Push(Connection::IsPairConnected(pairConnectionId));
-        break;
-      }
+      } break;
       case StenoExtendedScriptFunction::START_BLE_PAIRING:
         Ble::StartPairing();
         break;
@@ -474,6 +458,17 @@ void Script::ExecutionContext::Run(Script &script, size_t offset) {
       case StenoExtendedScriptFunction::GET_BATTERY_PERCENTAGE:
         script.Push(Power::GetBatteryPercentage());
         break;
+      case StenoExtendedScriptFunction::GET_ACTIVE_PAIR_CONNECTION:
+        script.Push((int)Connection::GetActivePairConnection());
+        break;
+      case StenoExtendedScriptFunction::SET_BOARD_POWER:
+        Power::SetBoardPower(script.Pop() != 0);
+        break;
+      case StenoExtendedScriptFunction::SEND_EVENT: {
+        intptr_t offset = script.Pop();
+        const char *text = (const char *)script.byteCode + offset;
+        Console::WriteButtonScriptEvent(text);
+      } break;
       }
       break;
     }
@@ -481,20 +476,17 @@ void Script::ExecutionContext::Run(Script &script, size_t offset) {
       intptr_t globalBaseIndex = *p++;
       intptr_t index = script.Pop();
       script.Push(script.globals[globalBaseIndex + index]);
-      break;
-    }
+    } break;
     case BC::GLOBAL_STORE_INDEX: {
       int globalBaseIndex = *p++;
       intptr_t value = script.Pop();
       intptr_t index = script.Pop();
       script.globals[globalBaseIndex + index] = value;
-      break;
-    }
+    } break;
     case BC::PARAM_STORE: {
       int paramIndex = *p++;
       params[paramIndex] = script.Pop();
-      break;
-    }
+    } break;
     case BC::PARAM_LOAD_START... BC::PARAM_LOAD_END:
       script.Push(params[c - BC::PARAM_LOAD_START]);
       continue;
@@ -547,8 +539,7 @@ void Script::ExecutionContext::Run(Script &script, size_t offset) {
             Key::Press(key);
           }
         }
-        break;
-      }
+      } break;
       case SF::RELEASE_SCAN_CODE: {
         uint32_t key = (uint32_t)script.Pop();
         if (key < 256 && script.keyState.IsSet(key)) {
@@ -557,8 +548,7 @@ void Script::ExecutionContext::Run(Script &script, size_t offset) {
             Key::Release(key);
           }
         }
-        break;
-      }
+      } break;
       case SF::TAP_SCAN_CODE: {
         uint32_t key = (uint32_t)script.Pop();
         if (key < 256) {
@@ -570,8 +560,7 @@ void Script::ExecutionContext::Run(Script &script, size_t offset) {
             Key::Release(key);
           }
         }
-        break;
-      }
+      } break;
       case SF::IS_SCAN_CODE_PRESSED: {
         uint32_t key = (uint32_t)script.Pop();
         int isPressed = 0;
@@ -579,24 +568,21 @@ void Script::ExecutionContext::Run(Script &script, size_t offset) {
           isPressed = script.keyState.IsSet(key);
         }
         script.Push(isPressed);
-        break;
-      }
+      } break;
       case SF::PRESS_STENO_KEY: {
         uint32_t stenoKey = (uint32_t)script.Pop();
         if (stenoKey < (uint32_t)StenoKey::COUNT) {
           script.stenoState |= (1ULL << stenoKey);
           script.OnStenoKeyPressed();
         }
-        break;
-      }
+      } break;
       case SF::RELEASE_STENO_KEY: {
         uint32_t stenoKey = (uint32_t)script.Pop();
         if (stenoKey < (uint32_t)StenoKey::COUNT) {
           script.stenoState &= ~StenoKeyState(1ULL << stenoKey);
           script.OnStenoKeyReleased();
         }
-        break;
-      }
+      } break;
       case SF::IS_STENO_KEY_PRESSED: {
         uint32_t stenoKey = (uint32_t)script.Pop();
         int isPressed = 0;
@@ -604,8 +590,7 @@ void Script::ExecutionContext::Run(Script &script, size_t offset) {
           isPressed = (script.stenoState & (1ULL << stenoKey)).IsNotEmpty();
         }
         script.Push(isPressed);
-        break;
-      }
+      } break;
       case SF::RELEASE_ALL:
         for (size_t keyIndex : script.keyState) {
           Key::Release(uint32_t(keyIndex));
@@ -621,8 +606,7 @@ void Script::ExecutionContext::Run(Script &script, size_t offset) {
           isPressed = script.buttonState.IsSet(buttonIndex);
         }
         script.Push(isPressed);
-        break;
-      }
+      } break;
       case SF::PRESS_ALL:
         script.inPressAllCount++;
         for (size_t buttonIndex : script.buttonState) {
@@ -634,20 +618,17 @@ void Script::ExecutionContext::Run(Script &script, size_t offset) {
         intptr_t offset = script.Pop();
         const uint8_t *text = script.byteCode + offset;
         script.SendText(text);
-        break;
-      }
+      } break;
       case SF::CONSOLE: {
         intptr_t offset = script.Pop();
         const char *command = (const char *)script.byteCode + offset;
         script.RunConsoleCommand(command);
-        break;
-      }
+      } break;
       case SF::CHECK_BUTTON_STATE: {
         intptr_t offset = script.Pop();
         const uint8_t *text = script.byteCode + offset;
         script.Push(script.CheckButtonState(text));
-        break;
-      }
+      } break;
       case SF::IS_IN_PRESS_ALL:
         script.Push(script.inPressAllCount);
         break;
@@ -657,8 +638,7 @@ void Script::ExecutionContext::Run(Script &script, size_t offset) {
         int r = script.Pop() & 0xff;
         int id = (int)script.Pop();
         Rgb::SetRgb(id, r, g, b);
-        break;
-      }
+      } break;
       case SF::GET_TIME:
         script.Push(Clock::GetMilliseconds());
         break;

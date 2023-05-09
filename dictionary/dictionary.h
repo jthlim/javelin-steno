@@ -15,7 +15,7 @@ class StenoDictionary;
 // A class to wrap dictionary lookups, avoiding memory allocations in most
 // situations.
 
-#if JAVELIN_PLATFORM_PICO_SDK
+#if JAVELIN_PLATFORM_PICO_SDK || JAVELIN_PLATFORM_NRF5_SDK
 
 // An implementation that requires that the top bit of the address is never
 // used, and packs the entire result into a register.

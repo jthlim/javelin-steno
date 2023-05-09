@@ -1,15 +1,20 @@
 //---------------------------------------------------------------------------
 
 #pragma once
+#include "hal/connection.h"
 #include "queue.h"
 #include "split/split.h"
 
 //---------------------------------------------------------------------------
 
+// This should be rewritten to handle multiple active clients on multiple hosts
+// having their data properly separated.
+
 class ConsoleInputBuffer {
 public:
-  static void Add(const uint8_t *data, size_t length) {
-    instance.Add(data, length);
+  static void Add(const uint8_t *data, size_t length,
+                  ConnectionId connectionId) {
+    instance.Add(data, length, connectionId);
   };
 
   static void Process() { instance.Process(); }
@@ -28,6 +33,7 @@ public:
 
 private:
   struct EntryData {
+    ConnectionId connectionId;
     size_t length;
     char data[0];
   };
@@ -39,10 +45,11 @@ private:
 #else
   struct ConsoleInputBufferData : public Queue<EntryData> {
 #endif
-    void Add(const uint8_t *data, size_t length);
+    void Add(const uint8_t *data, size_t length, ConnectionId connectionId);
     void Process();
 
-    static QueueEntry<EntryData> *CreateEntry(const void *data, size_t length);
+    static QueueEntry<EntryData> *CreateEntry(const void *data, size_t length,
+                                              ConnectionId connectionId);
 
 #if JAVELIN_SPLIT
     // Start off connected so that any messages coming in immediately after

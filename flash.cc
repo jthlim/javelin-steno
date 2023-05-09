@@ -137,7 +137,6 @@ void Flash::BeginWriteBinding(void *context, const char *commandLine) {
     Console::Printf("ERR Write in progress\n\n");
   }
 
-  ExternalFlash::Begin();
   size_t addressValue = 0;
   while (*p) {
     int hexValue = HexValue(*p++);
@@ -147,6 +146,7 @@ void Flash::BeginWriteBinding(void *context, const char *commandLine) {
     addressValue = 16 * addressValue + hexValue;
   }
 
+  ExternalFlash::Begin();
   instance.BeginWrite((const uint8_t *)addressValue);
   ExternalFlash::End();
 
