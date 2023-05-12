@@ -449,8 +449,8 @@ void Script::ExecutionContext::Run(Script &script, size_t offset) {
       case StenoExtendedScriptFunction::IS_HOST_SLEEPING:
         script.Push(Connection::IsHostSleeping());
         break;
-      case StenoExtendedScriptFunction::IS_POWERED:
-        script.Push(Power::IsPowered());
+      case StenoExtendedScriptFunction::IS_MAIN_POWERED:
+        script.Push(UsbStatus::instance.IsPowered());
         break;
       case StenoExtendedScriptFunction::IS_CHARGING:
         script.Push(Power::IsCharging());
@@ -469,6 +469,9 @@ void Script::ExecutionContext::Run(Script &script, size_t offset) {
         const char *text = (const char *)script.byteCode + offset;
         Console::WriteButtonScriptEvent(text);
       } break;
+      case StenoExtendedScriptFunction::IS_PAIR_POWERED:
+        script.Push(SplitUsbStatus::instance.IsPowered());
+        break;
       }
       break;
     }

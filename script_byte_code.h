@@ -113,12 +113,13 @@ enum class StenoExtendedScriptFunction : uint8_t {
   GET_BLE_PROFILE,
   SET_BLE_PROFILE,
   IS_HOST_SLEEPING,
-  IS_POWERED,
+  IS_MAIN_POWERED,
   IS_CHARGING,
   GET_BATTERY_PERCENTAGE,
   GET_ACTIVE_PAIR_CONNECTION,
   SET_BOARD_POWER,
   SEND_EVENT,
+  IS_PAIR_POWERED,
 };
 
 enum class StenoScriptOperator : uint8_t {

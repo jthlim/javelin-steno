@@ -59,7 +59,7 @@ private:
     virtual void UpdateBuffer(TxBuffer &buffer);
     virtual void OnDataReceived(const void *data, size_t length);
     virtual void OnTransmitConnectionReset() { isConnected = false; }
-    virtual void OnTransmitSucceeded() { isConnected = true; }
+    virtual void OnTransmitConnected() { isConnected = true; }
 #endif
   };
 

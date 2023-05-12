@@ -48,6 +48,13 @@ struct TxRxHeader {
   uint16_t crc16;
 
   static const uint16_t MAGIC = 0x534a; // 'JS';
+
+  size_t GetByteCount() const {
+    return sizeof(*this) + wordCount * sizeof(uint32_t);
+  }
+  size_t GetWordCount() const {
+    return sizeof(*this) / sizeof(uint32_t) + wordCount;
+  }
 };
 
 class SplitTxHandler;
@@ -62,18 +69,14 @@ public:
   void Build();
   void BuildEmpty();
   void UpdateCrc();
-  size_t GetByteCount() const {
-    return sizeof(header) + header.wordCount * sizeof(uint32_t);
-  }
-  size_t GetWordCount() const {
-    return sizeof(header) / sizeof(uint32_t) + header.wordCount;
-  }
+  size_t GetByteCount() const { return header.GetByteCount(); }
+  size_t GetWordCount() const { return header.GetWordCount(); }
 
   TxRxHeader header;
   uint32_t buffer[JAVELIN_SPLIT_TX_RX_BUFFER_SIZE];
 
   static void OnConnectionReset() { handlers.OnConnectionReset(); }
-  static void OnTransmitSucceeded() { handlers.OnTransmitSuceeded(); }
+  static void OnTransmitConnected() { handlers.OnTransmitSuceeded(); }
 
   struct Handlers {
     size_t handlerCount;
@@ -99,9 +102,8 @@ struct RxBuffer {
   TxRxHeader header;
   uint32_t buffer[JAVELIN_SPLIT_TX_RX_BUFFER_SIZE];
 
-  size_t GetWordCount() const {
-    return sizeof(header) / sizeof(uint32_t) + header.wordCount;
-  }
+  size_t GetByteCount() const { return header.GetByteCount(); }
+  size_t GetWordCount() const { return header.GetWordCount(); }
 
   RxBufferValidateResult Validate(size_t totalWordsReceived,
                                   size_t *metrics) const;
@@ -116,7 +118,7 @@ struct RxBuffer {
 class SplitTxHandler {
 public:
   virtual void OnTransmitConnectionReset() {}
-  virtual void OnTransmitSucceeded() {}
+  virtual void OnTransmitConnected() {}
   virtual void UpdateBuffer(TxBuffer &buffer) = 0;
 };
 

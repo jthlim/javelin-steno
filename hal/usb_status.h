@@ -9,9 +9,12 @@ class UsbStatus {
 public:
   bool IsConnected() const { return isMounted; }
   bool IsSleeping() const { return IsConnected() && isSuspended; }
+  bool IsPowered() const { return isPowered; }
 
   uint32_t GetMountCount() const { return mountCount; }
   uint32_t GetSuspendCount() const { return suspendCount; }
+
+  void SetPowered(bool value) { isPowered = value; }
 
   void OnMount() {
     isMounted = true;
@@ -31,6 +34,7 @@ public:
 private:
   bool isMounted;
   bool isSuspended;
+  bool isPowered;
   uint32_t mountCount;
   uint32_t suspendCount;
 };

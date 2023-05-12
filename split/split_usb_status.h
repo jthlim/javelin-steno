@@ -12,15 +12,17 @@ class SplitUsbStatus final : public SplitTxHandler, public SplitRxHandler {
 public:
   bool IsConnected() const { return status.IsConnected(); }
   bool IsSleeping() const { return status.IsSleeping(); }
+  bool IsPowered() const { return status.IsPowered(); }
 
   void OnMount();
   void OnUnmount();
   void OnSuspend();
   void OnResume();
 
-  static void RegisterTxHandler() { Split::RegisterTxHandler(&instance); }
+  void SetPowered(bool value);
 
-  static void RegisterRxHandler() {
+  static void RegisterHandlers() {
+    Split::RegisterTxHandler(&instance);
     Split::RegisterRxHandler(SplitHandlerId::USB_STATUS, &instance);
   }
 
@@ -39,8 +41,7 @@ private:
 
 class SplitUsbStatus : public UsbStatus {
 public:
-  static void RegisterTxHandler() {}
-  static void RegisterRxHandler() {}
+  static void RegisterHandlers() {}
 };
 
 #endif // JAVELIN_SPLIT

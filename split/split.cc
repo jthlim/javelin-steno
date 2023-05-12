@@ -58,7 +58,7 @@ void TxBuffer::Handlers::OnConnectionReset() const {
 
 void TxBuffer::Handlers::OnTransmitSuceeded() const {
   for (size_t i = 0; i < handlerCount; ++i) {
-    handlers[i]->OnTransmitSucceeded();
+    handlers[i]->OnTransmitConnected();
   }
 }
 
