@@ -121,9 +121,9 @@ void StenoEngine::PrintInfo() const {
 void StenoEngine::PrintDictionary() const {
   ExternalFlashSentry externalFlashSentry;
 
-  Console::Write("{", 1);
+  Console::Printf("{");
   dictionary.PrintDictionary(false);
-  Console::Write("\n}\n\n", 4);
+  Console::Printf("\n}\n\n");
 }
 
 void StenoEngine::ListDictionaries() const {

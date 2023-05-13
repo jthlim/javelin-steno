@@ -38,4 +38,24 @@ void ButtonManager::Update(const ButtonState &newButtonState) {
   }
 }
 
+void ButtonManager::PressButton(size_t index) {
+  if (buttonState.IsSet(index)) {
+    return;
+  }
+  buttonState.Set(index);
+  script.HandlePress(index);
+}
+
+void ButtonManager::ReleaseButton(size_t index) {
+  if (!buttonState.IsSet(index)) {
+    return;
+  }
+  buttonState.Clear(index);
+  script.HandleRelease(index);
+}
+
+//---------------------------------------------------------------------------
+
+void ButtonManager::Tick() { script.ExecuteTickScript(); }
+
 //---------------------------------------------------------------------------

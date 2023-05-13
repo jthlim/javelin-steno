@@ -96,9 +96,9 @@ bool StenoMapDictionaryStrokesDefinition::PrintDictionary(
   for (size_t i = 0; i < entryCount; ++i) {
     if (!hasData) {
       hasData = true;
-      Console::Write("\n\t", 2);
+      Console::Printf("\n\t");
     } else {
-      Console::Write(",\n\t", 3);
+      Console::Printf(",\n\t");
     }
 
     size_t dataIndex = 3 * i * (1 + strokeLength);

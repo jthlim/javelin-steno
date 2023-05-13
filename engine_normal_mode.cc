@@ -224,14 +224,14 @@ void StenoEngine::PrintPaperTape(
     if (isFirstToken) {
       isFirstToken = false;
     } else {
-      Console::Write(" ", 1);
+      Console::Printf(" ");
     }
     Console::WriteAsJson(tokenizer->GetNext().text, buffer);
   }
   delete tokenizer;
 
   newSegments.Reset();
-  Console::Write("\"}\n\n", 4);
+  Console::Printf("\"}\n\n");
 }
 
 void StenoEngine::PrintSuggestions(const StenoSegmentList &previousSegmentList,
@@ -438,7 +438,7 @@ void StenoEngine::PrintTextLog(
     Console::WriteAsJson(text);
     free(text);
   }
-  Console::Write("\"}\n\n", 4);
+  Console::Printf("\"}\n\n");
 }
 
 //---------------------------------------------------------------------------

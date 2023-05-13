@@ -13,7 +13,10 @@ public:
   ButtonManager(const uint8_t *scriptByteCode);
 
   void Update(const ButtonState &newButtonState);
-  void Tick() { script.ExecuteTickScript(); }
+  void Tick();
+
+  void PressButton(size_t index);
+  void ReleaseButton(size_t index);
 
 private:
   ButtonState buttonState;

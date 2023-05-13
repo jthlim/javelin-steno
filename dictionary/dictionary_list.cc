@@ -158,16 +158,16 @@ void StenoDictionaryList::ListDictionaries() const {
       continue;
     }
     if (first) {
-      Console::Write("[\n", 2);
+      Console::Printf("[\n");
       first = false;
     } else {
-      Console::Write(",\n", 2);
+      Console::Printf(",\n");
     }
     Console::Printf(" {\"dictionary\":\"");
     Console::WriteAsJson(entry.dictionary->GetName());
     Console::Printf("\",\"enabled\":%s}", entry.enabled ? "true" : "false");
   }
-  Console::Write("\n]\n\n", 4);
+  Console::Printf("\n]\n\n");
 }
 
 bool StenoDictionaryList::EnableDictionary(const char *name) {

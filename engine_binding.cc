@@ -170,7 +170,7 @@ void StenoEngine::Lookup_Binding(void *context, const char *commandLine) {
     Console::Printf(i == 0 ? "\n  \"%s\"" : ",\n  \"%s\"", buffer);
   }
 
-  Console::Write("\n]\n\n", 4);
+  Console::Printf("\n]\n\n");
 }
 
 void StenoEngine::LookupStroke_Binding(void *context, const char *commandLine) {
@@ -192,9 +192,9 @@ void StenoEngine::LookupStroke_Binding(void *context, const char *commandLine) {
       engine->dictionary.Lookup(parser.strokes, parser.length);
 
   if (result.IsValid()) {
-    Console::Write("\"", 1);
+    Console::Printf("\"");
     Console::WriteAsJson(result.GetText());
-    Console::Write("\"\n\n", 3);
+    Console::Printf("\"\n\n");
   } else {
     Console::Printf("null\n\n");
   }

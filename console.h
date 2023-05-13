@@ -75,8 +75,19 @@ public:
 
   static void WriteButtonScriptEvent(const char *text);
 
+#ifdef NDEBUG
+  template <typename T, typename... T2>
+  static void Printf(const char *format, T arg, T2... args) {
+    PrintfInternal(format, arg, args...);
+  }
+
+  template <size_t N> static void Printf(const char (&text)[N]) {
+    Write(text, N - 1);
+  }
+#else
   static void Printf(const char *format, ...)
       __attribute__((format(printf, 1, 2)));
+#endif
 
   static void Flush();
 
@@ -91,6 +102,8 @@ private:
   char lineBuffer[256];
 
   void ProcessLineBuffer();
+
+  static void PrintfInternal(const char *format, ...);
 
   static const ConsoleCommand *GetCommand(const char *command);
 };

@@ -90,7 +90,11 @@ void Console::RegisterCommand(const char *command, const char *description,
 
 //---------------------------------------------------------------------------
 
+#ifdef NDEBUG
+void Console::PrintfInternal(const char *format, ...) {
+#else
 void Console::Printf(const char *format, ...) {
+#endif
   va_list args;
   va_start(args, format);
 

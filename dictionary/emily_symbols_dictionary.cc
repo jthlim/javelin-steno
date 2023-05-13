@@ -287,9 +287,9 @@ bool StenoEmilySymbolsDictionary::PrintDictionary(bool hasData) const {
 
       if (!hasData) {
         hasData = true;
-        Console::Write("\n\t", 2);
+        Console::Printf("\n\t");
       } else {
-        Console::Write(",\n\t", 3);
+        Console::Printf(",\n\t");
       }
 
       Console::Printf("\"%s\": \"%s\"", strokeBuffer, translationBuffer);

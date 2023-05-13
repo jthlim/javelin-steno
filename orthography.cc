@@ -37,7 +37,7 @@ void StenoOrthography::Print() const {
   Console::Printf("\t\"rules\": [");
   for (size_t i = 0; i < ruleCount; ++i) {
     if (i != 0) {
-      Console::Write(",", 1);
+      Console::Printf(",");
     }
     Console::Printf("\n\t\t{\n\t\t\t\"pattern\": \"");
     Console::WriteAsJson(rules[i].testPattern, buffer);
@@ -49,7 +49,7 @@ void StenoOrthography::Print() const {
   Console::Printf("\n\t\"aliases\": [");
   for (size_t i = 0; i < aliasCount; ++i) {
     if (i != 0) {
-      Console::Write(",", 1);
+      Console::Printf(",");
     }
     Console::Printf("\n\t\t{\n\t\t\t\"suffix\": \"");
     Console::WriteAsJson(aliases[i].text, buffer);
@@ -61,7 +61,7 @@ void StenoOrthography::Print() const {
   Console::Printf("\n\t\"auto-suffix\": [");
   for (size_t i = 0; i < autoSuffixCount; ++i) {
     if (i != 0) {
-      Console::Write(",", 1);
+      Console::Printf(",");
     }
     Console::Printf("\n\t\t{\n\t\t\t\"key\": \"");
     char *p = autoSuffixes[i].stroke.ToString(buffer);
@@ -75,7 +75,7 @@ void StenoOrthography::Print() const {
   Console::Printf("\n\t\"reverse-auto-suffix\": [");
   for (size_t i = 0; i < reverseAutoSuffixCount; ++i) {
     if (i != 0) {
-      Console::Write(",", 1);
+      Console::Printf(",");
     }
     Console::Printf("\n\t\t{\n\t\t\t\"key\": \"");
     char *p = reverseAutoSuffixes[i].autoSuffix->stroke.ToString(buffer);

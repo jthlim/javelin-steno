@@ -593,9 +593,9 @@ bool StenoUserDictionary::PrintDictionary(bool hasData) const {
     default:
       if (!hasData) {
         hasData = true;
-        Console::Write("\n\t", 2);
+        Console::Printf("\n\t");
       } else {
-        Console::Write(",\n\t", 3);
+        Console::Printf(",\n\t");
       }
       const StenoUserDictionaryEntry *entry =
           (const StenoUserDictionaryEntry *)(activeDescriptor->data.dataBlock +
@@ -610,9 +610,9 @@ bool StenoUserDictionary::PrintDictionary(bool hasData) const {
 }
 
 void StenoUserDictionary::PrintJsonDictionary() const {
-  Console::Write("{", 1);
+  Console::Printf("{");
   PrintDictionary(false);
-  Console::Write("\n}\n\n", 4);
+  Console::Printf("\n}\n\n");
 }
 
 void StenoUserDictionaryEntry::Print(char *buffer) const {
