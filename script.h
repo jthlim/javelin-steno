@@ -69,6 +69,8 @@ private:
 
   void RunConsoleCommand(const char *command);
   void RunGetParameterCommand(const char *parameter);
+
+  void SetInputHint(int hint);
 };
 
 //---------------------------------------------------------------------------

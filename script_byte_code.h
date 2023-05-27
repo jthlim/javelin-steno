@@ -120,6 +120,7 @@ enum class StenoExtendedScriptFunction : uint8_t {
   SET_BOARD_POWER,
   SEND_EVENT,
   IS_PAIR_POWERED,
+  SET_INPUT_HINT,
 };
 
 enum class StenoScriptOperator : uint8_t {

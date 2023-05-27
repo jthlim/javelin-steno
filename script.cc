@@ -472,6 +472,9 @@ void Script::ExecutionContext::Run(Script &script, size_t offset) {
       case StenoExtendedScriptFunction::IS_PAIR_POWERED:
         script.Push(SplitUsbStatus::instance.IsPowered());
         break;
+      case StenoExtendedScriptFunction::SET_INPUT_HINT:
+        script.SetInputHint(script.Pop());
+        break;
       }
       break;
     }
@@ -673,6 +676,10 @@ void Script::RunGetParameterCommand(const char *parameter) {
   RunConsoleCommand(command);
   free(command);
 }
+
+//---------------------------------------------------------------------------
+
+__attribute__((weak)) void Script::SetInputHint(int hint) {}
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

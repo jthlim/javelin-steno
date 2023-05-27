@@ -24,10 +24,17 @@ public:
   static void EndWriteBinding(void *context, const char *commandLine);
 
 private:
+  static bool IsErased(const void *target, size_t size) {
+    return !RequiresErase(target, size);
+  }
+
   static bool RequiresErase(const void *target, size_t size);
   static bool RequiresErase(const void *target, const void *data, size_t size);
   static bool RequiresProgram(const void *target, const void *data,
                               size_t size);
+
+  static void EraseInternal(const void *target, size_t size);
+  static void WriteInternal(const void *target, const void *data, size_t size);
 
   void BeginWrite(const uint8_t *address);
   void AddData(const uint8_t *data, size_t length);

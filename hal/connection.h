@@ -6,14 +6,18 @@
 //---------------------------------------------------------------------------
 
 enum class ConnectionId : uint8_t {
-  ACTIVE,
+  NONE,
+  ACTIVE = NONE,
+
   BLE,
   USB,
   USB_PAIR,
 };
 
 enum class PairConnectionId : uint8_t {
-  ACTIVE,
+  NONE,
+  ACTIVE = NONE,
+
   BLE,
   CABLE,
 };

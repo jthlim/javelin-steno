@@ -8,6 +8,8 @@
 
 #define CONSOLE_LOG_BUTTON_PRESSES 0
 
+//---------------------------------------------------------------------------
+
 ButtonManager::ButtonManager(const uint8_t *scriptByteCode)
     : script(scriptByteCode) {
   buttonState.ClearAll();
@@ -20,21 +22,25 @@ void ButtonManager::Update(const ButtonState &newButtonState) {
   }
 
   const ButtonState changedButtons = buttonState ^ newButtonState;
+  const ButtonState pressedButtons = changedButtons & newButtonState;
+  const ButtonState releasedButtons = changedButtons ^ pressedButtons;
+
   buttonState = newButtonState;
-  for (size_t buttonIndex : changedButtons) {
-    if (buttonState.IsSet(buttonIndex)) {
+
+  for (size_t buttonIndex : pressedButtons) {
 #if CONSOLE_LOG_BUTTON_PRESSES
-      Console::Printf("Press %zu at %u ms\n\n", buttonIndex,
-                      Clock::GetMilliseconds());
+    Console::Printf("Press %zu at %u ms\n\n", buttonIndex,
+                    Clock::GetMilliseconds());
 #endif
-      script.HandlePress(buttonIndex);
-    } else {
+    script.HandlePress(buttonIndex);
+  }
+
+  for (size_t buttonIndex : releasedButtons) {
 #if CONSOLE_LOG_BUTTON_PRESSES
-      Console::Printf("Release %zu at %u ms\n\n", buttonIndex,
-                      Clock::GetMilliseconds());
+    Console::Printf("Release %zu at %u ms\n\n", buttonIndex,
+                    Clock::GetMilliseconds());
 #endif
-      script.HandleRelease(buttonIndex);
-    }
+    script.HandleRelease(buttonIndex);
   }
 }
 

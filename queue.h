@@ -2,6 +2,7 @@
 
 #pragma once
 #include <stddef.h>
+#include <stdlib.h>
 
 //---------------------------------------------------------------------------
 
@@ -10,11 +11,12 @@ template <typename T> struct QueueEntry {
 
   T data;
 
+  static void *operator new(size_t n) { return malloc(n); }
   static void *operator new(size_t n, size_t extra) {
-    return ::operator new(n + extra);
+    return malloc(n + extra);
   }
-  static void operator delete(void *p) { ::operator delete(p); }
-  static void operator delete(void *p, size_t extra) { ::operator delete(p); }
+  static void operator delete(void *p) { free(p); }
+  static void operator delete(void *p, size_t extra) { free(p); }
 };
 
 template <typename T> class Queue {

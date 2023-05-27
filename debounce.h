@@ -6,6 +6,10 @@
 
 //---------------------------------------------------------------------------
 
+#if !defined(JAVELIN_DEBOUNCE_MS)
+#define JAVELIN_DEBOUNCE_MS 5
+#endif
+
 template <typename T> struct Debounced {
 public:
   Debounced(bool isUpdated, T value) : isUpdated(isUpdated), value(value) {}
@@ -25,13 +29,21 @@ public:
       : lastDebouncedState(initialState), lastState(initialState) {}
 
   Debounced<T> Update(T input);
+  void Set(T input) {
+    lastState = input;
+    lastDebouncedState = input;
+    lastStateTime = Clock::GetMilliseconds();
+  }
+
+  const T &GetCurrentState() const { return lastState; }
+  const T &GetDebouncedState() const { return lastDebouncedState; }
 
 private:
   T lastDebouncedState;
   T lastState;
   uint32_t lastStateTime = 0;
 
-  static const uint32_t DEBOUNCE_DELAY_MS = 5;
+  static const uint32_t DEBOUNCE_DELAY_MS = JAVELIN_DEBOUNCE_MS;
 };
 
 //---------------------------------------------------------------------------

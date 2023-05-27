@@ -74,6 +74,14 @@ public:
     }
   }
 
+  BitField operator~() const {
+    BitField result;
+    for (size_t i = 0; i < NUMBER_OF_WORDS; ++i) {
+      result.data[i] = ~data[i];
+    }
+    return result;
+  }
+
   BitField operator&(const BitField &other) const {
     BitField result;
     for (size_t i = 0; i < NUMBER_OF_WORDS; ++i) {
@@ -96,6 +104,24 @@ public:
       result.data[i] = data[i] ^ other.data[i];
     }
     return result;
+  }
+
+  void operator&=(const BitField &other) {
+    for (size_t i = 0; i < NUMBER_OF_WORDS; ++i) {
+      data[i] &= other.data[i];
+    }
+  }
+
+  void operator|=(const BitField &other) {
+    for (size_t i = 0; i < NUMBER_OF_WORDS; ++i) {
+      data[i] |= other.data[i];
+    }
+  }
+
+  void operator^=(const BitField &other) {
+    for (size_t i = 0; i < NUMBER_OF_WORDS; ++i) {
+      data[i] ^= other.data[i];
+    }
   }
 
   bool operator==(const BitField &other) const {

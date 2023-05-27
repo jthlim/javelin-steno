@@ -100,6 +100,7 @@ void Flash::AddData(const uint8_t *data, size_t length) {
 void Flash::WriteRemaining() {
   size_t bytesToWrite = size_t(target) & (WRITE_DATA_BUFFER_SIZE - 1);
   if (bytesToWrite != 0) {
+    ExternalFlash::Begin();
     // Copy the remainder
     size_t bytesToCopy = WRITE_DATA_BUFFER_SIZE - bytesToWrite;
     memcpy(buffer + bytesToWrite, target, bytesToCopy);
@@ -108,6 +109,7 @@ void Flash::WriteRemaining() {
         (const void *)(size_t(target) & -WRITE_DATA_BUFFER_SIZE);
 
     Flash::Write(writeAddress, buffer, WRITE_DATA_BUFFER_SIZE);
+    ExternalFlash::End();
   }
   target = nullptr;
 }
@@ -174,9 +176,7 @@ void Flash::WriteBinding(void *context, const char *commandLine) {
 }
 
 void Flash::EndWriteBinding(void *context, const char *commandLine) {
-  ExternalFlash::Begin();
   instance.WriteRemaining();
-  ExternalFlash::End();
   Console::SendOk();
 }
 
