@@ -1151,21 +1151,21 @@ TEST_BEGIN("JeffPhrasing: Enders tests") {
 
   VerifyStroke("SWR-RPBS", "I learn");
   VerifyStroke("SWR-ERPBS", "I am learning");
-  VerifyStroke("SWR-FRPBS", "I have learnt");
+  VerifyStroke("SWR-FRPBS", "I have learned");
   VerifyStroke("KWHR-RPBS", "he learns");
-  VerifyStroke("SWR-RPBSZ", "I learnt");
+  VerifyStroke("SWR-RPBSZ", "I learned");
   VerifyStroke("SWR-ERPBSZ", "I was learning");
-  VerifyStroke("SWR-FRPBSZ", "I had learnt");
-  VerifyStroke("KWHR-RPBSZ", "he learnt");
+  VerifyStroke("SWR-FRPBSZ", "I had learned");
+  VerifyStroke("KWHR-RPBSZ", "he learned");
 
   VerifyStroke("SWR-RPBTS", "I learn to");
   VerifyStroke("SWR-ERPBTS", "I am learning to");
-  VerifyStroke("SWR-FRPBTS", "I have learnt to");
+  VerifyStroke("SWR-FRPBTS", "I have learned to");
   VerifyStroke("KWHR-RPBTS", "he learns to");
-  VerifyStroke("SWR-RPBTSDZ", "I learnt to");
+  VerifyStroke("SWR-RPBTSDZ", "I learned to");
   VerifyStroke("SWR-ERPBTSDZ", "I was learning to");
-  VerifyStroke("SWR-FRPBTSDZ", "I had learnt to");
-  VerifyStroke("KWHR-RPBTSDZ", "he learnt to");
+  VerifyStroke("SWR-FRPBTSDZ", "I had learned to");
+  VerifyStroke("KWHR-RPBTSDZ", "he learned to");
 
   VerifyStroke("SWR-LGZ", "I leave");
   VerifyStroke("SWR-ELGZ", "I am leaving");
