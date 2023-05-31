@@ -10,6 +10,10 @@
 
 //---------------------------------------------------------------------------
 
+JavelinStaticAllocate<ButtonManager> ButtonManager::container;
+
+//---------------------------------------------------------------------------
+
 ButtonManager::ButtonManager(const uint8_t *scriptByteCode)
     : script(scriptByteCode) {
   buttonState.ClearAll();

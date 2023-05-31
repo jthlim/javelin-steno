@@ -20,6 +20,8 @@ public:
   void OnResume();
 
   void SetPowered(bool value);
+  void SetBatteryPercentage(int percentage);
+  int GetBatteryPercentage() const { return status.GetBatteryPercentage(); }
 
   static void RegisterHandlers() {
     Split::RegisterTxHandler(&instance);
@@ -34,6 +36,7 @@ private:
 
   virtual void UpdateBuffer(TxBuffer &buffer);
   virtual void OnTransmitConnectionReset() { dirty = true; }
+  virtual void OnReceiveConnectionReset() { dirty = true; }
   virtual void OnDataReceived(const void *data, size_t length);
 };
 

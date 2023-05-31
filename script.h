@@ -12,8 +12,6 @@
 //
 // Script provides a configurable way for keys to be set up.
 //
-// Up to 4x 32-bit int global variables 4x local variables can be used.
-//
 //---------------------------------------------------------------------------
 
 class Script {
