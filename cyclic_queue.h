@@ -15,8 +15,8 @@ public:
     end = 0;
   }
 
-  bool HasData() const { return start != end; }
   bool IsEmpty() const { return start == end; }
+  bool IsNotEmpty() const { return start != end; }
   bool IsFull() const { return end - start == N; }
   size_t GetCount() const { return end - start; }
   size_t GetAvailable() const { return N - GetCount(); }

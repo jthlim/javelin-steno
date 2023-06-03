@@ -77,7 +77,7 @@ public:
   uint32_t buffer[JAVELIN_SPLIT_TX_RX_BUFFER_SIZE];
 
   static void OnConnectionReset() { handlers.OnConnectionReset(); }
-  static void OnTransmitConnected() { handlers.OnTransmitSuceeded(); }
+  static void OnTransmitConnected() { handlers.OnTransmitConnected(); }
 
   struct Handlers {
     size_t handlerCount;
@@ -86,7 +86,7 @@ public:
     void Add(SplitTxHandler *handler) { handlers[handlerCount++] = handler; }
 
     void OnConnectionReset() const;
-    void OnTransmitSuceeded() const;
+    void OnTransmitConnected() const;
   };
 
   static Handlers handlers;
