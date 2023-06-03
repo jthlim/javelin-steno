@@ -23,6 +23,7 @@ struct StenoSegment {
   };
 
   bool IsValid() const { return strokeLength != 0; }
+  bool IsControl() const;
 
   static StenoSegment CreateInvalid() { return StenoSegment(); }
 

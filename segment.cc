@@ -9,6 +9,14 @@ bool StenoSegment::ContainsKeyCode() const {
   return Str::ContainsKeyCode(lookup.GetText());
 }
 
+bool StenoSegment::IsControl() const {
+  const char *text = lookup.GetText();
+  while (*text == ' ') {
+    ++text;
+  }
+  return *text == '{';
+}
+
 //---------------------------------------------------------------------------
 
 StenoSegmentList::~StenoSegmentList() {
@@ -20,15 +28,32 @@ StenoSegmentList::~StenoSegmentList() {
 void StenoSegmentList::RemoveCommonStartingSegments(StenoSegmentList &a,
                                                     StenoSegmentList &b) {
   size_t limit = a.GetCount() < b.GetCount() ? a.GetCount() : b.GetCount();
+
   size_t commonPrefixCount = 0;
   for (; commonPrefixCount < limit; ++commonPrefixCount) {
     if (!Str::Eq(a[commonPrefixCount].lookup.GetText(),
                  b[commonPrefixCount].lookup.GetText())) {
       break;
     }
-    a[commonPrefixCount].lookup.Destroy();
-    b[commonPrefixCount].lookup.Destroy();
   }
+
+  // For suffixes to work, check if the next segment is a control
+  if (commonPrefixCount < a.GetCount()) {
+    if (a[commonPrefixCount].IsControl()) {
+      return;
+    }
+  }
+  if (commonPrefixCount < b.GetCount()) {
+    if (b[commonPrefixCount].IsControl()) {
+      return;
+    }
+  }
+
+  for (size_t i = 0; i < commonPrefixCount; ++i) {
+    a[i].lookup.Destroy();
+    b[i].lookup.Destroy();
+  }
+
   a.RemoveFront(commonPrefixCount);
   b.RemoveFront(commonPrefixCount);
 }
