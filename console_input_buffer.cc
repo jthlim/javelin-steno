@@ -31,6 +31,10 @@ void ConsoleInputBuffer::ConsoleInputBufferData::Add(
 }
 
 void ConsoleInputBuffer::ConsoleInputBufferData::Process() {
+  if (!head) {
+    return;
+  }
+
 #if JAVELIN_SPLIT
   if (Split::IsSlave() && isConnected) {
     // This will be dealt with using UpdateBuffer() instead.
@@ -43,8 +47,8 @@ void ConsoleInputBuffer::ConsoleInputBufferData::Process() {
     Console::instance.HandleInput(head->data.data, head->data.length);
     RemoveHead();
     Console::Flush();
-    ConsoleWriter::SetConnection(ConnectionId::ACTIVE);
   }
+  ConsoleWriter::SetConnection(ConnectionId::ACTIVE);
 }
 
 #if JAVELIN_SPLIT

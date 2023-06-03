@@ -19,12 +19,17 @@ struct StenoEngine::UpdateNormalModeTextBufferThreadData {
   StenoSegmentList segmentList;
   size_t conversionLimit;
 
-  void Run() {
-    engine->UpdateNormalModeTextBuffer(sourceStrokeCount, *conversionBuffer,
-                                       conversionLimit, segmentList);
+  void CreateSegments() {
+    engine->CreateSegments(sourceStrokeCount, *conversionBuffer,
+                           conversionLimit, segmentList);
   }
-  static void EntryPoint(void *data) {
-    ((UpdateNormalModeTextBufferThreadData *)data)->Run();
+  void ConvertText() { engine->ConvertText(*conversionBuffer, segmentList); }
+
+  static void CreateSegmentsEntryPoint(void *data) {
+    ((UpdateNormalModeTextBufferThreadData *)data)->CreateSegments();
+  }
+  static void ConvertTextEntryPoint(void *data) {
+    ((UpdateNormalModeTextBufferThreadData *)data)->ConvertText();
   }
 };
 
@@ -47,22 +52,37 @@ void StenoEngine::ProcessNormalModeStroke(StenoStroke stroke) {
   threadData[1].conversionBuffer = &nextConversionBuffer;
   threadData[1].conversionLimit = SEGMENT_CONVERSION_LIMIT;
 
-  RunParallel(&UpdateNormalModeTextBufferThreadData::EntryPoint, &threadData[0],
-              &UpdateNormalModeTextBufferThreadData::EntryPoint,
+  RunParallel(&UpdateNormalModeTextBufferThreadData::CreateSegmentsEntryPoint,
+              &threadData[0],
+              &UpdateNormalModeTextBufferThreadData::CreateSegmentsEntryPoint,
               &threadData[1]);
 
   StenoSegmentList &previousSegmentList = threadData[0].segmentList;
   StenoSegmentList &nextSegmentList = threadData[1].segmentList;
 #else
   StenoSegmentList previousSegmentList;
-  UpdateNormalModeTextBuffer(history.GetCount(), previousConversionBuffer,
-                             SEGMENT_CONVERSION_LIMIT - 1, previousSegmentList);
+  CreateSegments(history.GetCount(), previousConversionBuffer,
+                 SEGMENT_CONVERSION_LIMIT - 1, previousSegmentList);
 
   history.Add(stroke, state);
 
   StenoSegmentList nextSegmentList;
-  UpdateNormalModeTextBuffer(history.GetCount(), nextConversionBuffer,
-                             SEGMENT_CONVERSION_LIMIT, nextSegmentList);
+  CreateSegments(history.GetCount(), nextConversionBuffer,
+                 SEGMENT_CONVERSION_LIMIT, nextSegmentList);
+
+#endif
+
+  StenoSegmentList::RemoveCommonStartingSegments(previousSegmentList,
+                                                 nextSegmentList);
+
+#if JAVELIN_THREADS
+  RunParallel(&UpdateNormalModeTextBufferThreadData::ConvertTextEntryPoint,
+              &threadData[0],
+              &UpdateNormalModeTextBufferThreadData::ConvertTextEntryPoint,
+              &threadData[1]);
+#else
+  ConvertText(previousConversionBuffer, previousSegmentList);
+  ConvertText(nextConversionBuffer, nextSegmentList);
 #endif
 
   state = nextConversionBuffer.keyCodeBuffer.state;
@@ -125,26 +145,43 @@ void StenoEngine::ProcessNormalModeUndo() {
   threadData[1].conversionBuffer = &nextConversionBuffer;
   threadData[1].conversionLimit = SEGMENT_CONVERSION_LIMIT - undoCount;
 
-  RunParallel(&UpdateNormalModeTextBufferThreadData::EntryPoint, &threadData[0],
-              &UpdateNormalModeTextBufferThreadData::EntryPoint,
+  RunParallel(&UpdateNormalModeTextBufferThreadData::CreateSegmentsEntryPoint,
+              &threadData[0],
+              &UpdateNormalModeTextBufferThreadData::CreateSegmentsEntryPoint,
               &threadData[1]);
 
   state = history.BackState(undoCount);
   state.shouldCombineUndo = false;
   history.PopCount(undoCount);
+
+  StenoSegmentList &previousSegmentList = threadData[0].segmentList;
+  StenoSegmentList &nextSegmentList = threadData[1].segmentList;
 #else
   StenoSegmentList previousSegmentList;
-  UpdateNormalModeTextBuffer(history.GetCount(), previousConversionBuffer,
-                             SEGMENT_CONVERSION_LIMIT, previousSegmentList);
+  CreateSegments(history.GetCount(), previousConversionBuffer,
+                 SEGMENT_CONVERSION_LIMIT, previousSegmentList);
 
   state = history.BackState(undoCount);
   state.shouldCombineUndo = false;
   history.PopCount(undoCount);
 
   StenoSegmentList nextSegmentList;
-  UpdateNormalModeTextBuffer(history.GetCount(), nextConversionBuffer,
-                             SEGMENT_CONVERSION_LIMIT - undoCount,
-                             nextSegmentList);
+  CreateSegments(history.GetCount(), nextConversionBuffer,
+                 SEGMENT_CONVERSION_LIMIT - undoCount, nextSegmentList);
+
+#endif
+
+  StenoSegmentList::RemoveCommonStartingSegments(previousSegmentList,
+                                                 nextSegmentList);
+
+#if JAVELIN_THREADS
+  RunParallel(&UpdateNormalModeTextBufferThreadData::ConvertTextEntryPoint,
+              &threadData[0],
+              &UpdateNormalModeTextBufferThreadData::ConvertTextEntryPoint,
+              &threadData[1]);
+#else
+  ConvertText(previousConversionBuffer, previousSegmentList);
+  ConvertText(nextConversionBuffer, nextSegmentList);
 #endif
 
   emitter.Process(previousConversionBuffer.keyCodeBuffer,
@@ -155,16 +192,18 @@ void StenoEngine::ProcessNormalModeUndo() {
   PrintPaperTapeUndo(undoCount);
 }
 
-void StenoEngine::UpdateNormalModeTextBuffer(size_t sourceStrokeCount,
-                                             ConversionBuffer &buffer,
-                                             size_t conversionLimit,
-                                             StenoSegmentList &segmentList) {
+void StenoEngine::CreateSegments(size_t sourceStrokeCount,
+                                 ConversionBuffer &buffer,
+                                 size_t conversionLimit,
+                                 StenoSegmentList &segmentList) {
   buffer.strokeHistory.TransferFrom(history, sourceStrokeCount,
                                     conversionLimit);
   BuildSegmentContext context(segmentList, dictionary, orthography);
-
   buffer.strokeHistory.CreateSegments(context);
+}
 
+void StenoEngine::ConvertText(ConversionBuffer &buffer,
+                              StenoSegmentList &segmentList) {
   StenoTokenizer *tokenizer = segmentList.CreateTokenizer();
   buffer.keyCodeBuffer.Populate(tokenizer);
   if (placeSpaceAfter && !buffer.keyCodeBuffer.state.joinNext &&

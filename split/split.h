@@ -66,6 +66,7 @@ public:
 
   void Reset() { header.wordCount = 0; }
   bool Add(SplitHandlerId id, const void *data, size_t length);
+  uint8_t *Add(SplitHandlerId id, size_t length);
   void Build();
   void BuildEmpty();
   void UpdateCrc();

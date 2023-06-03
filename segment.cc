@@ -17,6 +17,22 @@ StenoSegmentList::~StenoSegmentList() {
   }
 }
 
+void StenoSegmentList::RemoveCommonStartingSegments(StenoSegmentList &a,
+                                                    StenoSegmentList &b) {
+  size_t limit = a.GetCount() < b.GetCount() ? a.GetCount() : b.GetCount();
+  size_t commonPrefixCount = 0;
+  for (; commonPrefixCount < limit; ++commonPrefixCount) {
+    if (!Str::Eq(a[commonPrefixCount].lookup.GetText(),
+                 b[commonPrefixCount].lookup.GetText())) {
+      break;
+    }
+    a[commonPrefixCount].lookup.Destroy();
+    b[commonPrefixCount].lookup.Destroy();
+  }
+  a.RemoveFront(commonPrefixCount);
+  b.RemoveFront(commonPrefixCount);
+}
+
 //---------------------------------------------------------------------------
 
 class StenoSegmentListTokenizer final : public StenoTokenizer {

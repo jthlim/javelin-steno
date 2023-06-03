@@ -29,10 +29,8 @@ StenoEngine::StenoEngine(StenoDictionary &dictionary,
     : dictionary(dictionary), orthography(orthography),
       userDictionary(userDictionary) {
 
-  previousConversionBuffer.keyCodeBuffer.orthography = &this->orthography;
-  previousConversionBuffer.keyCodeBuffer.rootDictionary = &this->dictionary;
-  nextConversionBuffer.keyCodeBuffer.orthography = &this->orthography;
-  nextConversionBuffer.keyCodeBuffer.rootDictionary = &this->dictionary;
+  previousConversionBuffer.Prepare(&this->orthography, &this->dictionary);
+  nextConversionBuffer.Prepare(&this->orthography, &this->dictionary);
   ResetState();
 }
 

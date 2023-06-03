@@ -60,6 +60,9 @@ public:
   ~StenoSegmentList();
 
   StenoTokenizer *CreateTokenizer();
+
+  static void RemoveCommonStartingSegments(StenoSegmentList &a,
+                                           StenoSegmentList &b);
 };
 
 //---------------------------------------------------------------------------

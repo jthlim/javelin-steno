@@ -23,6 +23,12 @@ class StenoCompiledOrthography;
 // applied directly on them.
 class StenoKeyCodeBuffer {
 public:
+  void Prepare(const StenoCompiledOrthography *newOrthography,
+               StenoDictionary *newRootDictionary) {
+    orthography = newOrthography;
+    rootDictionary = newRootDictionary;
+  }
+
   void Populate(StenoTokenizer *tokenizer);
   void Append(StenoTokenizer *tokenizer);
 

@@ -4,6 +4,7 @@
 #include <assert.h>
 #include <stdint.h>
 #include <stdlib.h>
+#include <string.h>
 
 //---------------------------------------------------------------------------
 
@@ -64,6 +65,14 @@ public:
 
   void Pop() { --count; }
 
+  void RemoveFront() {
+    memmove(buffer, buffer + sizeof(T), --count * sizeof(T));
+  }
+  void RemoveFront(size_t n) {
+    count -= n;
+    memmove(buffer, buffer + n * sizeof(T), count * sizeof(T));
+  }
+
   bool Contains(const T &v) const {
     for (size_t i = 0; i < count; ++i) {
       if ((*this)[i] == v) {
@@ -81,6 +90,8 @@ public:
     assert(i < count);
     return ((const T *)buffer)[i];
   }
+  T &Front() { return (*this)[0]; }
+  const T &Front() const { return (*this)[0]; }
   T &Back() { return (*this)[count - 1]; }
   const T &Back() const { return (*this)[count - 1]; }
 

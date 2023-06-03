@@ -34,9 +34,20 @@ void TxBuffer::UpdateCrc() {
 }
 
 bool TxBuffer::Add(SplitHandlerId id, const void *data, size_t length) {
+  void *target = Add(id, length);
+  if (!target) {
+    return false;
+  }
+
+  memcpy(target, data, length);
+
+  return true;
+}
+
+uint8_t *TxBuffer::Add(SplitHandlerId id, size_t length) {
   uint32_t wordLength = (length + 3) >> 2;
   if (header.wordCount + 1 + wordLength > JAVELIN_SPLIT_TX_RX_BUFFER_SIZE) {
-    return false;
+    return nullptr;
   }
 
   txPacketTypeCounts[(size_t)id]++;
@@ -44,10 +55,10 @@ bool TxBuffer::Add(SplitHandlerId id, const void *data, size_t length) {
   uint32_t blockHeader = ((size_t)id << 16) | length;
   buffer[header.wordCount++] = blockHeader;
 
-  memcpy(&buffer[header.wordCount], data, length);
+  uint8_t *result = (uint8_t *)&buffer[header.wordCount];
   header.wordCount += wordLength;
 
-  return true;
+  return result;
 }
 
 void TxBuffer::Handlers::OnConnectionReset() const {

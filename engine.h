@@ -106,6 +106,11 @@ private:
   struct ConversionBuffer {
     StenoStrokeHistory strokeHistory;
     StenoKeyCodeBuffer keyCodeBuffer;
+
+    void Prepare(const StenoCompiledOrthography *orthography,
+                 StenoDictionary *dictionary) {
+      keyCodeBuffer.Prepare(orthography, dictionary);
+    }
   };
 
   ConversionBuffer previousConversionBuffer;
@@ -126,11 +131,9 @@ private:
   void DeleteTranslation(size_t newlineIndex);
   void ResetState();
 
-  // Returns the number of segments
-  void UpdateNormalModeTextBuffer(size_t sourceStrokeCount,
-                                  ConversionBuffer &buffer,
-                                  size_t conversionLimit,
-                                  StenoSegmentList &segmentList);
+  void CreateSegments(size_t sourceStrokeCount, ConversionBuffer &buffer,
+                      size_t conversionLimit, StenoSegmentList &segmentList);
+  void ConvertText(ConversionBuffer &buffer, StenoSegmentList &segmentList);
 
   void PrintPaperTape(StenoStroke stroke,
                       const StenoSegmentList &previousSegmentList,
