@@ -1,16 +1,11 @@
 //---------------------------------------------------------------------------
 
 #pragma once
+#include "button_state.h"
 #include "script.h"
 #include "static_allocate.h"
 
 //---------------------------------------------------------------------------
-
-#if defined(JAVELIN_BUTTON_STATE_BIT_SIZE)
-using ButtonState = BitField<JAVELIN_BUTTON_STATE_BIT_SIZE>;
-#else
-using ButtonState = BitField<128>;
-#endif
 
 // Handles logical buttons -> key / steno presses.
 class ButtonManager {
@@ -30,6 +25,7 @@ public:
 private:
   ButtonManager(const uint8_t *scriptByteCode);
 
+  bool isScriptValid;
   ButtonState buttonState;
   Script script;
 

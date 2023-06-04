@@ -32,18 +32,18 @@ public:
   }
 
 private:
-  static const size_t MAX_STACK_SIZE = 32;
+  static const size_t MAX_STACK_SIZE = 256;
 
   bool cancelStenoState = false;
   int inPressAllCount = 0;
   const uint8_t *byteCode;
   intptr_t *stackTop = stack;
   StenoKeyState stenoState;
-  intptr_t globals[256];
+  LimitedBufferWriter consoleWriter;
   BitField<256> buttonState;
   BitField<256> keyState;
+  intptr_t globals[256];
   intptr_t stack[MAX_STACK_SIZE];
-  LimitedBufferWriter consoleWriter;
 
   void Push(intptr_t value);
   intptr_t Pop();

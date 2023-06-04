@@ -58,8 +58,8 @@ private:
 
     virtual void UpdateBuffer(TxBuffer &buffer);
     virtual void OnDataReceived(const void *data, size_t length);
-    virtual void OnTransmitConnectionReset() { isConnected = false; }
-    virtual void OnTransmitConnected() { isConnected = true; }
+    virtual void OnTransmitConnectionReset() override { isConnected = false; }
+    virtual void OnTransmitConnected() override { isConnected = true; }
 #endif
   };
 

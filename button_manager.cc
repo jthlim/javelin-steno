@@ -3,6 +3,7 @@
 #include "button_manager.h"
 #include "clock.h"
 #include "console.h"
+#include "script_byte_code.h"
 
 //---------------------------------------------------------------------------
 
@@ -16,11 +17,17 @@ JavelinStaticAllocate<ButtonManager> ButtonManager::container;
 
 ButtonManager::ButtonManager(const uint8_t *scriptByteCode)
     : script(scriptByteCode) {
-  buttonState.ClearAll();
-  script.ExecuteInitScript();
+  isScriptValid = *(uint32_t *)scriptByteCode == SCRIPT_MAGIC;
+  if (isScriptValid) {
+    script.ExecuteInitScript();
+  }
 }
 
 void ButtonManager::Update(const ButtonState &newButtonState) {
+  if (!isScriptValid) {
+    return;
+  }
+
   if (newButtonState == buttonState) {
     return;
   }
@@ -66,6 +73,10 @@ void ButtonManager::ReleaseButton(size_t index) {
 
 //---------------------------------------------------------------------------
 
-void ButtonManager::Tick() { script.ExecuteTickScript(); }
+void ButtonManager::Tick() {
+  if (isScriptValid) {
+    script.ExecuteTickScript();
+  }
+}
 
 //---------------------------------------------------------------------------

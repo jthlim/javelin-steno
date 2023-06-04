@@ -139,6 +139,8 @@ public:
     return b.data + NUMBER_OF_WORDS;
   }
 
+  static const size_t NUMBER_OF_BITS = N;
+
 private:
   size_t data[NUMBER_OF_WORDS];
 };

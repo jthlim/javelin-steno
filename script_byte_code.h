@@ -6,65 +6,62 @@
 
 //---------------------------------------------------------------------------
 
-const size_t SCRIPT_BYTE_CODE_REVISION = 2;
+const size_t SCRIPT_BYTE_CODE_REVISION = 3;
+const uint32_t SCRIPT_MAGIC = 0x3053534a + (SCRIPT_BYTE_CODE_REVISION << 24);
+
+//---------------------------------------------------------------------------
 
 class StenoScriptByteCode {
 public:
   enum Value {
     PUSH_CONSTANT_START = 0, // 0x00-0x3f
-    PUSH_CONSTANT_END = 0x3f,
+    PUSH_CONSTANT_END = 0x3b,
 
-    OPERATOR_START = 0x40, // 0x40-0x5f
-    OPERATOR_END = 0x5f,
+    PUSH_BYTES_1U = 0x3c,
+    PUSH_BYTES_2S = 0x3d,
+    PUSH_BYTES_3S = 0x3e,
+    PUSH_BYTES_4 = 0x3f,
 
-    JUMP_SHORT_START = 0x60, // 0x60-0x7f - 1-32 relative offset
-    JUMP_SHORT_END = 0x7f,
+    LOAD_GLOBAL_BEGIN = 0x40,
+    LOAD_GLOBAL_END = 0x45,
+    LOAD_GLOBAL_VALUE = 0x46,
+    LOAD_GLOBAL_INDEX = 0x47,
 
-    JUMP_IF_ZERO_SHORT_START = 0x80, // 0x80-0x9f - 1-32 relative offset
-    JUMP_IF_ZERO_SHORT_END = 0x9f,
+    STORE_GLOBAL_BEGIN = 0x48,
+    STORE_GLOBAL_END = 0x4d,
+    STORE_GLOBAL_VALUE = 0x4e,
+    STORE_GLOBAL_INDEX = 0x4f,
 
-    JUMP_IF_NOT_ZERO_SHORT_START = 0xa0, // 0xa0-0xbf - 1-32 relative offset
-    JUMP_IF_NOT_ZERO_SHORT_END = 0xbf,
+    LOAD_LOCAL_BEGIN = 0x50,
+    LOAD_LOCAL_END = 0x5d,
+    LOAD_LOCAL_VALUE = 0x5e,
+    LOAD_LOCAL_INDEX = 0x5f,
 
-    PUSH_BYTES_1U = 0xc0,
-    PUSH_BYTES_2S = 0xc1,
-    PUSH_BYTES_3S = 0xc2,
-    PUSH_BYTES_4 = 0xc3,
+    STORE_LOCAL_BEGIN = 0x60,
+    STORE_LOCAL_END = 0x6d,
+    STORE_LOCAL_VALUE = 0x6e,
+    STORE_LOCAL_INDEX = 0x6f,
 
-    RETURN = 0xc4,                // 0xc4
-    CALL = 0xc5,                  // 0xc5
-    JUMP_LONG = 0xc6,             // 0xc6 - 2 byte absolute offset
-    JUMP_IF_ZERO_LONG = 0xc7,     // 0xc7 - 2 byte absolute offset
-    JUMP_IF_NOT_ZERO_LONG = 0xc8, // 0xc8 - 2 byte absolute offset
-    POP = 0xc9,
+    OPERATOR_START = 0x70,
+    OPERATOR_END = 0x8f,
 
-    GLOBAL_LOAD = 0xca,
-    GLOBAL_STORE = 0xcb,
+    CALL_INTERNAL = 0x90,
+    CALL = 0x91,
+    RETURN = 0x92,
+    POP = 0x93,
+    ENTER_FUNCTION = 0x94,
 
-    EXTENDED_CALL_FUNCTION = 0xcc,
+    JUMP_SHORT_BEGIN = 0xa0,
+    JUMP_SHORT_END = 0xbe,
+    JUMP_LONG = 0xbf,
 
-    GLOBAL_LOAD_INDEX = 0xcd,
-    GLOBAL_STORE_INDEX = 0xce,
+    JUMP_IF_ZERO_SHORT_BEGIN = 0xc0,
+    JUMP_IF_ZERO_SHORT_END = 0xde,
+    JUMP_IF_ZERO_LONG = 0xdf,
 
-    PARAM_STORE = 0xcf,
-
-    PARAM_LOAD_START = 0xd0, // 0xd0-0xd7
-    PARAM_LOAD_END = 0xd7,
-    PARAM_STORE_COUNT_START = 0xd8,
-    PARAM_STORE_COUNT_END = 0xdf,
-
-    LOCAL_LOAD_START = 0xe0, // 0xe0-0xe3
-    LOCAL_LOAD_END = 0xe3,
-    LOCAL_STORE_START = 0xe4, // 0xe4-0xe7
-    LOCAL_STORE_END = 0xe7,
-
-    GLOBAL_LOAD_START = 0xe8, // 0xe8-0xeb
-    GLOBAL_LOAD_END = 0xeb,
-    GLOBAL_STORE_START = 0xec, // 0xec-0xef
-    GLOBAL_STORE_END = 0xef,
-
-    CALL_FUNCTION_START = 0xf0, // 0xf0-0xff
-    CALL_FUNCTION_END = 0xff,
+    JUMP_IF_NOT_ZERO_SHORT_BEGIN = 0xe0,
+    JUMP_IF_NOT_ZERO_SHORT_END = 0xfe,
+    JUMP_IF_NOT_ZERO_LONG = 0xff,
   };
 };
 
@@ -85,9 +82,6 @@ enum class StenoScriptFunction : uint8_t {
   IS_IN_PRESS_ALL,
   SET_RGB,
   GET_TIME,
-};
-
-enum class StenoExtendedScriptFunction : uint8_t {
   GET_LED_STATUS,
   SET_GPIO_PIN,
   CLEAR_DISPLAY,
@@ -152,7 +146,7 @@ enum class StenoScriptOperator : uint8_t {
 };
 
 struct StenoScriptByteCodeData {
-  uint8_t magic[4]; // JSS0
+  uint8_t magic[4]; // JSS3
   uint16_t stringHashTableOffset;
   uint16_t offsets[0];
 
