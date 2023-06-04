@@ -72,8 +72,10 @@ void StenoEngine::ProcessNormalModeStroke(StenoStroke stroke) {
 
 #endif
 
-  StenoSegmentList::RemoveCommonStartingSegments(previousSegmentList,
-                                                 nextSegmentList);
+  if (!suggestionsEnabled) {
+    StenoSegmentList::RemoveCommonStartingSegments(previousSegmentList,
+                                                   nextSegmentList);
+  }
 
 #if JAVELIN_THREADS
   RunParallel(&UpdateNormalModeTextBufferThreadData::ConvertTextEntryPoint,
