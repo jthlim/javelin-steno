@@ -6,6 +6,13 @@
 
 //---------------------------------------------------------------------------
 
+enum FontId : int {
+  DEFAULT,
+  SMALL_DIGITS,
+  MEDIUM_DIGITS,
+  LARGE_DIGITS,
+};
+
 struct Font {
   uint16_t startUnicode; // Inclusive
   uint16_t endUnicode;   // Exclusive

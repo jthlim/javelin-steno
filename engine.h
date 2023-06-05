@@ -133,7 +133,8 @@ private:
 
   void CreateSegments(size_t sourceStrokeCount, ConversionBuffer &buffer,
                       size_t conversionLimit, StenoSegmentList &segmentList);
-  void ConvertText(ConversionBuffer &buffer, StenoSegmentList &segmentList);
+  void ConvertText(ConversionBuffer &buffer, StenoSegmentList &segmentList,
+                   size_t startingOffset);
 
   void PrintPaperTape(StenoStroke stroke,
                       const StenoSegmentList &previousSegmentList,

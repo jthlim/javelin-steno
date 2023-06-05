@@ -9,13 +9,7 @@ bool StenoSegment::ContainsKeyCode() const {
   return Str::ContainsKeyCode(lookup.GetText());
 }
 
-bool StenoSegment::IsControl() const {
-  const char *text = lookup.GetText();
-  while (*text == ' ') {
-    ++text;
-  }
-  return *text == '{';
-}
+bool StenoSegment::HasCommand() const { return strchr(lookup.GetText(), '{'); }
 
 //---------------------------------------------------------------------------
 
@@ -25,8 +19,8 @@ StenoSegmentList::~StenoSegmentList() {
   }
 }
 
-void StenoSegmentList::RemoveCommonStartingSegments(StenoSegmentList &a,
-                                                    StenoSegmentList &b) {
+size_t StenoSegmentList::GetCommonStartingSegmentsCount(StenoSegmentList &a,
+                                                        StenoSegmentList &b) {
   size_t limit = a.GetCount() < b.GetCount() ? a.GetCount() : b.GetCount();
 
   size_t commonPrefixCount = 0;
@@ -37,32 +31,27 @@ void StenoSegmentList::RemoveCommonStartingSegments(StenoSegmentList &a,
     }
   }
 
-  // For suffixes to work, check if the next segment is a control
+  // For suffixes to work, check if the next segment has a command in it.
   if (commonPrefixCount < a.GetCount()) {
-    if (a[commonPrefixCount].IsControl()) {
-      return;
+    if (a[commonPrefixCount].HasCommand()) {
+      return 0;
     }
   }
   if (commonPrefixCount < b.GetCount()) {
-    if (b[commonPrefixCount].IsControl()) {
-      return;
+    if (b[commonPrefixCount].HasCommand()) {
+      return 0;
     }
   }
 
-  for (size_t i = 0; i < commonPrefixCount; ++i) {
-    a[i].lookup.Destroy();
-    b[i].lookup.Destroy();
-  }
-
-  a.RemoveFront(commonPrefixCount);
-  b.RemoveFront(commonPrefixCount);
+  return commonPrefixCount;
 }
 
 //---------------------------------------------------------------------------
 
 class StenoSegmentListTokenizer final : public StenoTokenizer {
 public:
-  StenoSegmentListTokenizer(const StenoSegmentList &list) : list(list) {
+  StenoSegmentListTokenizer(const StenoSegmentList &list, size_t startingOffset)
+      : list(list), elementIndex(startingOffset) {
     if (list.IsEmpty()) {
       p = elementText = nullptr;
     } else {
@@ -82,7 +71,7 @@ public:
 
 private:
   const StenoSegmentList &list;
-  size_t elementIndex = 0;
+  size_t elementIndex;
   const char *elementText;
   const char *p;
   const StenoState *nextState = nullptr;
@@ -163,8 +152,8 @@ void StenoSegmentListTokenizer::PrepareNextP() {
   }
 }
 
-StenoTokenizer *StenoSegmentList::CreateTokenizer() {
-  return new StenoSegmentListTokenizer(*this);
+StenoTokenizer *StenoSegmentList::CreateTokenizer(size_t startingOffset) {
+  return new StenoSegmentListTokenizer(*this, startingOffset);
 }
 
 //---------------------------------------------------------------------------

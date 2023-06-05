@@ -23,7 +23,7 @@ struct StenoSegment {
   };
 
   bool IsValid() const { return strokeLength != 0; }
-  bool IsControl() const;
+  bool HasCommand() const;
 
   static StenoSegment CreateInvalid() { return StenoSegment(); }
 
@@ -60,10 +60,10 @@ public:
       : List((List<StenoSegment> &&) other) {}
   ~StenoSegmentList();
 
-  StenoTokenizer *CreateTokenizer();
+  StenoTokenizer *CreateTokenizer(size_t startingOffset = 0);
 
-  static void RemoveCommonStartingSegments(StenoSegmentList &a,
-                                           StenoSegmentList &b);
+  static size_t GetCommonStartingSegmentsCount(StenoSegmentList &a,
+                                               StenoSegmentList &b);
 };
 
 //---------------------------------------------------------------------------

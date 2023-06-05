@@ -18,12 +18,15 @@ struct StenoEngine::UpdateNormalModeTextBufferThreadData {
   ConversionBuffer *conversionBuffer;
   StenoSegmentList segmentList;
   size_t conversionLimit;
+  size_t startingOffset;
 
   void CreateSegments() {
     engine->CreateSegments(sourceStrokeCount, *conversionBuffer,
                            conversionLimit, segmentList);
   }
-  void ConvertText() { engine->ConvertText(*conversionBuffer, segmentList); }
+  void ConvertText() {
+    engine->ConvertText(*conversionBuffer, segmentList, startingOffset);
+  }
 
   static void CreateSegmentsEntryPoint(void *data) {
     ((UpdateNormalModeTextBufferThreadData *)data)->CreateSegments();
@@ -72,19 +75,19 @@ void StenoEngine::ProcessNormalModeStroke(StenoStroke stroke) {
 
 #endif
 
-  if (!suggestionsEnabled) {
-    StenoSegmentList::RemoveCommonStartingSegments(previousSegmentList,
-                                                   nextSegmentList);
-  }
+  size_t startingOffset = StenoSegmentList::GetCommonStartingSegmentsCount(
+      previousSegmentList, nextSegmentList);
 
 #if JAVELIN_THREADS
+  threadData[0].startingOffset = startingOffset;
+  threadData[1].startingOffset = startingOffset;
   RunParallel(&UpdateNormalModeTextBufferThreadData::ConvertTextEntryPoint,
               &threadData[0],
               &UpdateNormalModeTextBufferThreadData::ConvertTextEntryPoint,
               &threadData[1]);
 #else
-  ConvertText(previousConversionBuffer, previousSegmentList);
-  ConvertText(nextConversionBuffer, nextSegmentList);
+  ConvertText(previousConversionBuffer, previousSegmentList, startingOffset);
+  ConvertText(nextConversionBuffer, nextSegmentList, startingOffset);
 #endif
 
   state = nextConversionBuffer.keyCodeBuffer.state;
@@ -173,17 +176,19 @@ void StenoEngine::ProcessNormalModeUndo() {
 
 #endif
 
-  StenoSegmentList::RemoveCommonStartingSegments(previousSegmentList,
-                                                 nextSegmentList);
+  size_t startingOffset = StenoSegmentList::GetCommonStartingSegmentsCount(
+      previousSegmentList, nextSegmentList);
 
 #if JAVELIN_THREADS
+  threadData[0].startingOffset = startingOffset;
+  threadData[1].startingOffset = startingOffset;
   RunParallel(&UpdateNormalModeTextBufferThreadData::ConvertTextEntryPoint,
               &threadData[0],
               &UpdateNormalModeTextBufferThreadData::ConvertTextEntryPoint,
               &threadData[1]);
 #else
-  ConvertText(previousConversionBuffer, previousSegmentList);
-  ConvertText(nextConversionBuffer, nextSegmentList);
+  ConvertText(previousConversionBuffer, previousSegmentList, startingOffset);
+  ConvertText(nextConversionBuffer, nextSegmentList, startingOffset);
 #endif
 
   emitter.Process(previousConversionBuffer.keyCodeBuffer,
@@ -205,8 +210,9 @@ void StenoEngine::CreateSegments(size_t sourceStrokeCount,
 }
 
 void StenoEngine::ConvertText(ConversionBuffer &buffer,
-                              StenoSegmentList &segmentList) {
-  StenoTokenizer *tokenizer = segmentList.CreateTokenizer();
+                              StenoSegmentList &segmentList,
+                              size_t startingOffset) {
+  StenoTokenizer *tokenizer = segmentList.CreateTokenizer(startingOffset);
   buffer.keyCodeBuffer.Populate(tokenizer);
   if (placeSpaceAfter && !buffer.keyCodeBuffer.state.joinNext &&
       buffer.strokeHistory.IsNotEmpty()) {
