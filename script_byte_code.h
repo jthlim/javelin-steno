@@ -146,10 +146,14 @@ enum class StenoScriptOperator : uint8_t {
 };
 
 struct StenoScriptByteCodeData {
-  uint8_t magic[4]; // JSS3
+  union {
+    uint8_t magic[4]; // JSS3
+    uint32_t magic4;
+  };
   uint16_t stringHashTableOffset;
   uint16_t offsets[0];
 
+  bool IsValid() const { return magic4 == SCRIPT_MAGIC; }
   const uint8_t *FindStringOrReturnOriginal(const uint8_t *string) const;
 };
 

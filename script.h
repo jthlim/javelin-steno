@@ -18,15 +18,23 @@ class Script {
 public:
   Script(const uint8_t *byteCode);
 
-  void ExecuteInitScript() { ExecuteScriptIndex(0); }
-  void ExecuteTickScript() { ExecuteScriptIndex(1); }
+  void ExecuteInitScript(uint32_t scriptTime) {
+    this->scriptTime = scriptTime;
+    ExecuteScriptIndex(0);
+  }
+  void ExecuteTickScript(uint32_t scriptTime) {
+    this->scriptTime = scriptTime;
+    ExecuteScriptIndex(1);
+  }
 
-  void HandlePress(size_t keyIndex) {
+  void HandlePress(size_t keyIndex, uint32_t scriptTime) {
+    this->scriptTime = scriptTime;
     buttonState.Set(keyIndex);
     ExecuteScriptIndex(keyIndex * 2 + 2);
   }
 
-  void HandleRelease(size_t keyIndex) {
+  void HandleRelease(size_t keyIndex, uint32_t scriptTime) {
+    this->scriptTime = scriptTime;
     buttonState.Clear(keyIndex);
     ExecuteScriptIndex(keyIndex * 2 + 3);
   }
@@ -36,6 +44,7 @@ private:
 
   bool cancelStenoState = false;
   int inPressAllCount = 0;
+  uint32_t scriptTime;
   const uint8_t *byteCode;
   intptr_t *stackTop = stack;
   StenoKeyState stenoState;

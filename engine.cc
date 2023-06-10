@@ -41,8 +41,6 @@ void StenoEngine::Process(const StenoKeyState &value, StenoAction action) {
     return;
   }
 
-  ExternalFlashSentry externalFlashSentry;
-
   ++strokeCount;
   StenoStroke stroke = value.ToStroke();
   if (stroke == UNDO_STROKE) {
@@ -53,6 +51,8 @@ void StenoEngine::Process(const StenoKeyState &value, StenoAction action) {
 }
 
 void StenoEngine::ProcessStroke(StenoStroke stroke) {
+  ExternalFlashSentry externalFlashSentry;
+
   switch (mode) {
   case StenoEngineMode::NORMAL:
     ProcessNormalModeStroke(stroke);
@@ -65,6 +65,8 @@ void StenoEngine::ProcessStroke(StenoStroke stroke) {
 }
 
 void StenoEngine::ProcessUndo() {
+  ExternalFlashSentry externalFlashSentry;
+
   switch (mode) {
   case StenoEngineMode::NORMAL:
     ProcessNormalModeUndo();
@@ -78,6 +80,8 @@ void StenoEngine::ProcessUndo() {
 
 bool StenoEngine::ProcessScanCode(uint32_t scanCodeAndModifiers,
                                   ScanCodeAction action) {
+  ExternalFlashSentry externalFlashSentry;
+
   switch (mode) {
   case StenoEngineMode::NORMAL:
     return false;
@@ -199,6 +203,7 @@ void StenoEngine::SendText(const uint8_t *p) {
 #include "dictionary/jeff_show_stroke_dictionary.h"
 #include "dictionary/map_dictionary.h"
 #include "dictionary/test_dictionary.h"
+#include "dictionary/unicode_dictionary.h"
 
 extern StenoOrthography testOrthography;
 extern StenoMapDictionaryDefinition testDictionaryDefinition;
@@ -216,6 +221,7 @@ public:
   static void TestSymbols(StenoEngine &engine);
   static void TestEngine(StenoEngine &engine);
   static void TestAddTranslation(StenoEngine &engine);
+  static void TestScancodeAddTranslation(StenoEngine &engine);
   static void VerifyTextBuffer(StenoEngine &engine, const char *expected);
 };
 
@@ -284,6 +290,37 @@ void StenoEngineTester::TestAddTranslation(StenoEngine &engine) {
   // spellchecker: enable
 }
 
+void StenoEngineTester::TestScancodeAddTranslation(StenoEngine &engine) {
+  // spellchecker: disable
+  engine.ProcessStroke(StenoStroke("KAT"));
+  VerifyTextBuffer(engine, "KAT");
+  engine.ProcessUndo();
+
+  engine.ProcessStroke(StenoStroke("TKUPT"));
+  VerifyTextBuffer(engine, " >>> Add/Delete Translation - Strokes: ");
+
+  engine.ProcessStroke(StenoStroke("R-R"));
+  engine.ProcessStroke(StenoStroke("KAT"));
+  VerifyTextBuffer(engine, " >>> Add/Delete Translation - Strokes: KAT");
+
+  engine.ProcessStroke(StenoStroke("R-R"));
+  VerifyTextBuffer(engine, " >>> Add/Delete Translation - Strokes: KAT; "
+                           "Translation: ");
+
+  engine.ProcessScanCode(KeyCode::D, ScanCodeAction::TAP);
+  engine.ProcessScanCode(KeyCode::O, ScanCodeAction::TAP);
+  engine.ProcessScanCode(KeyCode::G, ScanCodeAction::TAP);
+  VerifyTextBuffer(engine, " >>> Add/Delete Translation - Strokes: KAT; "
+                           "Translation: dog");
+
+  engine.ProcessScanCode(KeyCode::ENTER, ScanCodeAction::TAP);
+  VerifyTextBuffer(engine, "");
+
+  engine.ProcessStroke(StenoStroke("KAT"));
+  VerifyTextBuffer(engine, "dog");
+  // spellchecker: enable
+}
+
 TEST_BEGIN("Engine: Random spam") {
   static const StenoDictionary *DICTIONARIES[] = {
       &StenoJeffShowStrokeDictionary::instance,
@@ -329,6 +366,29 @@ TEST_BEGIN("Engine: Add Translation Test") {
   StenoCompiledOrthography orthography(StenoOrthography::emptyOrthography);
   StenoEngine engine(dictionaryList, orthography, userDictionary);
   tester.TestAddTranslation(engine);
+
+  delete userDictionary;
+  delete[] buffer;
+}
+TEST_END
+
+TEST_BEGIN("Engine: Scancode Add Translation Test") {
+  StenoEngineTester tester;
+  uint8_t *buffer = new uint8_t[512 * 1024];
+  StenoUserDictionaryData layout(buffer, 512 * 1024);
+  StenoUserDictionary *userDictionary = new StenoUserDictionary(layout);
+
+  static const StenoDictionary *dictionaries[] = {
+      userDictionary,
+      &mainDictionary,
+      &StenoUnicodeDictionary::instance,
+  };
+
+  StenoDictionaryList dictionaryList(
+      dictionaries, sizeof(dictionaries) / sizeof(*dictionaries)); // NOLINT
+  StenoCompiledOrthography orthography(StenoOrthography::emptyOrthography);
+  StenoEngine engine(dictionaryList, orthography, userDictionary);
+  tester.TestScancodeAddTranslation(engine);
 
   delete userDictionary;
   delete[] buffer;

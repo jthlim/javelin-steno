@@ -1,7 +1,6 @@
 //---------------------------------------------------------------------------
 
 #include "button_manager.h"
-#include "clock.h"
 #include "console.h"
 #include "script_byte_code.h"
 
@@ -17,13 +16,14 @@ JavelinStaticAllocate<ButtonManager> ButtonManager::container;
 
 ButtonManager::ButtonManager(const uint8_t *scriptByteCode)
     : script(scriptByteCode) {
-  isScriptValid = *(uint32_t *)scriptByteCode == SCRIPT_MAGIC;
+  isScriptValid = ((StenoScriptByteCodeData *)scriptByteCode)->IsValid();
   if (isScriptValid) {
-    script.ExecuteInitScript();
+    script.ExecuteInitScript(0);
   }
 }
 
-void ButtonManager::Update(const ButtonState &newButtonState) {
+void ButtonManager::Update(const ButtonState &newButtonState,
+                           uint32_t scriptTime) {
   if (!isScriptValid) {
     return;
   }
@@ -40,42 +40,40 @@ void ButtonManager::Update(const ButtonState &newButtonState) {
 
   for (size_t buttonIndex : releasedButtons) {
 #if CONSOLE_LOG_BUTTON_PRESSES
-    Console::Printf("Release %zu at %u ms\n\n", buttonIndex,
-                    Clock::GetMilliseconds());
+    Console::Printf("Release %zu at %u ms\n\n", buttonIndex, scriptTime);
 #endif
-    script.HandleRelease(buttonIndex);
+    script.HandleRelease(buttonIndex, scriptTime);
   }
 
   for (size_t buttonIndex : pressedButtons) {
 #if CONSOLE_LOG_BUTTON_PRESSES
-    Console::Printf("Press %zu at %u ms\n\n", buttonIndex,
-                    Clock::GetMilliseconds());
+    Console::Printf("Press %zu at %u ms\n\n", buttonIndex, scriptTime);
 #endif
-    script.HandlePress(buttonIndex);
+    script.HandlePress(buttonIndex, scriptTime);
   }
 }
 
-void ButtonManager::PressButton(size_t index) {
+void ButtonManager::PressButton(size_t index, uint32_t scriptTime) {
   if (buttonState.IsSet(index)) {
     return;
   }
   buttonState.Set(index);
-  script.HandlePress(index);
+  script.HandlePress(index, scriptTime);
 }
 
-void ButtonManager::ReleaseButton(size_t index) {
+void ButtonManager::ReleaseButton(size_t index, uint32_t scriptTime) {
   if (!buttonState.IsSet(index)) {
     return;
   }
   buttonState.Clear(index);
-  script.HandleRelease(index);
+  script.HandleRelease(index, scriptTime);
 }
 
 //---------------------------------------------------------------------------
 
-void ButtonManager::Tick() {
+void ButtonManager::Tick(uint32_t scriptTime) {
   if (isScriptValid) {
-    script.ExecuteTickScript();
+    script.ExecuteTickScript(scriptTime);
   }
 }
 

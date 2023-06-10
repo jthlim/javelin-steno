@@ -62,7 +62,7 @@ struct StenoMapDictionaryStrokesDefinition {
 struct StenoMapDictionaryDefinition {
   bool defaultEnabled;
   uint8_t maximumOutlineLength;
-  uint16_t _padding2;
+  uint16_t formatId;
   const char *name;
   const uint8_t *textBlock;
   const StenoMapDictionaryStrokesDefinition *strokes;

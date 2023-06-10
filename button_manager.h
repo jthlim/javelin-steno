@@ -14,11 +14,11 @@ public:
     new (container) ButtonManager(scriptByteCode);
   }
 
-  void Update(const ButtonState &newButtonState);
-  void Tick();
+  void Update(const ButtonState &newButtonState, uint32_t scriptTime);
+  void Tick(uint32_t scriptTime);
 
-  void PressButton(size_t index);
-  void ReleaseButton(size_t index);
+  void PressButton(size_t index, uint32_t scriptTime);
+  void ReleaseButton(size_t index, uint32_t scriptTime);
 
   static ButtonManager &GetInstance() { return container.value; }
 

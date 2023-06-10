@@ -47,7 +47,7 @@ void StenoEngine::ProcessAddTranslationModeStroke(StenoStroke stroke) {
       return;
     }
     if (newlineIndex != 0) {
-      // Already one enter.
+      // Already one enter -- this is the second
       if (newlineIndex + 1 == addTranslationHistory.GetCount()) {
         DeleteTranslation(newlineIndex);
       } else {
@@ -57,6 +57,7 @@ void StenoEngine::ProcessAddTranslationModeStroke(StenoStroke stroke) {
       return;
     }
   } else if (newlineIndex == 0) {
+    // No newline yet -- record stroke input.
     if (addTranslationHistory.GetCount() >
         StenoUserDictionary::MAX_STROKE_COUNT) {
       return;
@@ -226,12 +227,17 @@ bool StenoEngine::IsNewline(StenoStroke stroke) const {
   if (stroke == StenoStroke(StrokeMask::LR | StrokeMask::RR)) {
     return true;
   }
+  if (stroke == StenoStroke(StrokeMask::UNICODE | '\n')) {
+    return true;
+  }
 
   StenoDictionaryLookupResult lookup = dictionary.Lookup(&stroke, 1);
+  if (!lookup.IsValid()) {
+    return false;
+  }
 
-  bool result =
-      lookup.IsValid() && (strchr(lookup.GetText(), '\n') != nullptr ||
-                           Str::Eq(lookup.GetText(), "{#Return}"));
+  bool result = (strchr(lookup.GetText(), '\n') != nullptr ||
+                 Str::Eq(lookup.GetText(), "{#Return}"));
   lookup.Destroy();
   return result;
 }

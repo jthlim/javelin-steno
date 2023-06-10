@@ -65,6 +65,12 @@ void SplitUsbStatus::OnDataReceived(const void *data, size_t length) {
   memcpy(&instance, data, sizeof(status));
 }
 
+void SplitUsbStatus::OnConnectionReset() {
+  dirty = true;
+  UsbStatus &instance = Split::IsMaster() ? status : UsbStatus::instance;
+  memset(&instance, 0, sizeof(instance));
+}
+
 //---------------------------------------------------------------------------
 
 #endif // JAVELIN_SPLIT
