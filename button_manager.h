@@ -15,7 +15,16 @@ public:
   }
 
   void Update(const ButtonState &newButtonState, uint32_t scriptTime);
-  void Tick(uint32_t scriptTime);
+  void Tick(uint32_t scriptTime) {
+    if (isScriptValid) {
+      script.ExecuteTickScript(scriptTime);
+    }
+  }
+  void ExecuteScript(ScriptId scriptId, uint32_t scriptTime) {
+    if (isScriptValid) {
+      script.ExecuteScriptId(scriptId, scriptTime);
+    }
+  }
 
   void PressButton(size_t index, uint32_t scriptTime);
   void ReleaseButton(size_t index, uint32_t scriptTime);

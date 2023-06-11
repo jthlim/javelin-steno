@@ -63,16 +63,32 @@ void Script::BinaryOp(intptr_t (*op)(intptr_t, intptr_t)) {
   stackTop[-1] = op(stackTop[-1], stackTop[0]);
 }
 
-void Script::ExecuteScriptIndex(size_t index) {
-  const StenoScriptByteCodeData *data =
-      (const StenoScriptByteCodeData *)byteCode;
+void Script::ExecuteScript(size_t offset, uint32_t scriptTime) {
+  this->scriptTime = scriptTime;
 
+#if DEBUG
   intptr_t *start = stackTop;
+#endif
 
   ExecutionContext context;
-  context.Run(*this, data->offsets[index]);
+  context.Run(*this, offset);
 
+#if DEBUG
   assert(stackTop == start);
+#endif
+}
+
+void Script::ExecuteScriptId(ScriptId scriptId, uint32_t scriptTime) {
+  size_t offset = scriptOffsets[(size_t)scriptId];
+  if (offset != 0) {
+    ExecuteScript(offset, scriptTime);
+  }
+}
+
+void Script::ExecuteScriptIndex(size_t index, uint32_t scriptTime) {
+  const StenoScriptByteCodeData *data =
+      (const StenoScriptByteCodeData *)byteCode;
+  ExecuteScript(data->offsets[index], scriptTime);
 }
 
 bool Script::CheckButtonState(const uint8_t *text) const {
@@ -609,6 +625,12 @@ void Script::ExecutionContext::Run(Script &script, size_t offset) {
       case SF::SET_INPUT_HINT:
         script.SetInputHint((int)script.Pop());
         continue;
+      case SF::SET_SCRIPT: {
+        intptr_t scriptOffset = script.Pop();
+        ScriptId scriptId = (ScriptId)script.Pop();
+        script.SetScript(scriptId, scriptOffset);
+        continue;
+      }
       }
       continue;
     }

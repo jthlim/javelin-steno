@@ -70,11 +70,3 @@ void ButtonManager::ReleaseButton(size_t index, uint32_t scriptTime) {
 }
 
 //---------------------------------------------------------------------------
-
-void ButtonManager::Tick(uint32_t scriptTime) {
-  if (isScriptValid) {
-    script.ExecuteTickScript(scriptTime);
-  }
-}
-
-//---------------------------------------------------------------------------

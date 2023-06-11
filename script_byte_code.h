@@ -115,6 +115,7 @@ enum class StenoScriptFunction : uint8_t {
   SEND_EVENT,
   IS_PAIR_POWERED,
   SET_INPUT_HINT,
+  SET_SCRIPT,
 };
 
 enum class StenoScriptOperator : uint8_t {

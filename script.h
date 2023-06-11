@@ -14,29 +14,36 @@
 //
 //---------------------------------------------------------------------------
 
+enum class ScriptId {
+  DISPLAY_OVERLAY,
+  BATTERY_UPDATE,
+  CONNECTION_UPDATE,
+  PAIR_CONNECTION_UPDATE,
+
+  COUNT,
+};
+
 class Script {
 public:
   Script(const uint8_t *byteCode);
 
   void ExecuteInitScript(uint32_t scriptTime) {
-    this->scriptTime = scriptTime;
-    ExecuteScriptIndex(0);
+    ExecuteScriptIndex(0, scriptTime);
   }
   void ExecuteTickScript(uint32_t scriptTime) {
-    this->scriptTime = scriptTime;
-    ExecuteScriptIndex(1);
+    ExecuteScriptIndex(1, scriptTime);
   }
 
+  void ExecuteScriptId(ScriptId scriptId, uint32_t scriptTime);
+
   void HandlePress(size_t keyIndex, uint32_t scriptTime) {
-    this->scriptTime = scriptTime;
     buttonState.Set(keyIndex);
-    ExecuteScriptIndex(keyIndex * 2 + 2);
+    ExecuteScriptIndex(keyIndex * 2 + 2, scriptTime);
   }
 
   void HandleRelease(size_t keyIndex, uint32_t scriptTime) {
-    this->scriptTime = scriptTime;
     buttonState.Clear(keyIndex);
-    ExecuteScriptIndex(keyIndex * 2 + 3);
+    ExecuteScriptIndex(keyIndex * 2 + 3, scriptTime);
   }
 
 private:
@@ -49,6 +56,7 @@ private:
   intptr_t *stackTop = stack;
   StenoKeyState stenoState;
   LimitedBufferWriter consoleWriter;
+  size_t scriptOffsets[(int)ScriptId::COUNT];
   BitField<256> buttonState;
   BitField<256> keyState;
   intptr_t globals[256];
@@ -60,7 +68,8 @@ private:
   void UnaryOp(intptr_t (*op)(intptr_t));
   void BinaryOp(intptr_t (*op)(intptr_t, intptr_t));
 
-  void ExecuteScriptIndex(size_t index);
+  void ExecuteScriptIndex(size_t index, uint32_t scriptTime);
+  void ExecuteScript(size_t offset, uint32_t scriptTime);
 
   class ExecutionContext;
 
@@ -78,6 +87,11 @@ private:
   void RunGetParameterCommand(const char *parameter);
 
   void SetInputHint(int hint);
+  void SetScript(ScriptId scriptId, size_t scriptOffset) {
+    if (scriptId < ScriptId::COUNT) {
+      scriptOffsets[(size_t)scriptId] = scriptOffset;
+    }
+  }
 };
 
 //---------------------------------------------------------------------------
