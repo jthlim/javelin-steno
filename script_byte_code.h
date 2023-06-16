@@ -116,6 +116,10 @@ enum class StenoScriptFunction : uint8_t {
   IS_PAIR_POWERED,
   SET_INPUT_HINT,
   SET_SCRIPT,
+  IS_BOARD_POWERED,
+  START_TIMER,
+  STOP_TIMER,
+  IS_TIMER_ACTIVE,
 };
 
 enum class StenoScriptOperator : uint8_t {

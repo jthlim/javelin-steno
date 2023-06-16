@@ -19,8 +19,21 @@ enum class ScriptId {
   BATTERY_UPDATE,
   CONNECTION_UPDATE,
   PAIR_CONNECTION_UPDATE,
+  KEYBOARD_LED_STATUS_UPDATE,
 
   COUNT,
+};
+
+struct ScriptTimer {
+  bool isRepeating;
+  intptr_t id;
+  uint32_t lastUpdateTime;
+  uint32_t interval;
+  size_t scriptOffset;
+
+  bool shouldTrigger(uint32_t currentTime) const {
+    return currentTime - lastUpdateTime >= interval;
+  }
 };
 
 class Script {
@@ -46,10 +59,16 @@ public:
     ExecuteScriptIndex(keyIndex * 2 + 3, scriptTime);
   }
 
+  void ProcessTimers(uint32_t scriptTime);
+
+  void PrintInfo() const;
+
 private:
   static const size_t MAX_STACK_SIZE = 256;
+  static const size_t MAXIMUM_TIMER_COUNT = 16;
 
   bool cancelStenoState = false;
+  uint8_t timerCount;
   int inPressAllCount = 0;
   uint32_t scriptTime;
   const uint8_t *byteCode;
@@ -61,6 +80,7 @@ private:
   BitField<256> keyState;
   intptr_t globals[256];
   intptr_t stack[MAX_STACK_SIZE];
+  ScriptTimer timers[MAXIMUM_TIMER_COUNT];
 
   void Push(intptr_t value);
   intptr_t Pop();
@@ -70,6 +90,13 @@ private:
 
   void ExecuteScriptIndex(size_t index, uint32_t scriptTime);
   void ExecuteScript(size_t offset, uint32_t scriptTime);
+
+  size_t GetTimerIndex(intptr_t timerId) const;
+  void StartTimer(intptr_t timerId, uint32_t interval, bool isRepeating,
+                  size_t offset);
+  void StopTimer(intptr_t timerId);
+
+  void RemoveTimerIndex(size_t index);
 
   class ExecutionContext;
 

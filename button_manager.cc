@@ -1,6 +1,7 @@
 //---------------------------------------------------------------------------
 
 #include "button_manager.h"
+#include "clock.h"
 #include "console.h"
 #include "script_byte_code.h"
 
@@ -53,6 +54,12 @@ void ButtonManager::Update(const ButtonState &newButtonState,
   }
 }
 
+void ButtonManager::ExecuteScript(ScriptId scriptId) {
+  if (isScriptValid) {
+    script.ExecuteScriptId(scriptId, Clock::GetMilliseconds());
+  }
+}
+
 void ButtonManager::PressButton(size_t index, uint32_t scriptTime) {
   if (buttonState.IsSet(index)) {
     return;
@@ -70,3 +77,11 @@ void ButtonManager::ReleaseButton(size_t index, uint32_t scriptTime) {
 }
 
 //---------------------------------------------------------------------------
+
+void ButtonManager::Tick(uint32_t scriptTime) {
+  if (!isScriptValid) {
+    return;
+  }
+  script.ExecuteTickScript(scriptTime);
+  script.ProcessTimers(scriptTime);
+}

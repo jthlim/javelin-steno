@@ -37,6 +37,7 @@ const StenoMapDictionaryStrokesDefinition strokes[] = {
 constexpr StenoMapDictionaryDefinition TestDictionary::definition = {
   true,
   2,
+  StenoMapDictionaryFormat::COMPACT,
   0,
   "main.json",
   textBlock,

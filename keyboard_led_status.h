@@ -25,7 +25,7 @@ static_assert(sizeof(KeyboardLedStatusValue) == 1,
 
 class KeyboardLedStatus {
 public:
-  static void Set(KeyboardLedStatusValue value) { instance.Set(value); }
+  static void Set(KeyboardLedStatusValue value);
 
   static void RegisterTxHandler() { Split::RegisterTxHandler(&instance); }
 
@@ -65,7 +65,7 @@ private:
 
 class KeyboardLedStatus {
 public:
-  static void Set(KeyboardLedStatusValue value) { instance = value; }
+  static void Set(KeyboardLedStatusValue value);
 
   static bool IsNumLockOn() { return instance.numLock; }
   static bool IsCapsLockOn() { return instance.capsLock; }

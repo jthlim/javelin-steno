@@ -1,6 +1,19 @@
 //---------------------------------------------------------------------------
 
 #include "keyboard_led_status.h"
+#include "button_manager.h"
+
+//---------------------------------------------------------------------------
+
+void KeyboardLedStatus::Set(KeyboardLedStatusValue value) {
+#if JAVELIN_SPLIT
+  instance.Set(value);
+#else
+  instance = value;
+#endif
+  ButtonManager::GetInstance().ExecuteScript(
+      ScriptId::KEYBOARD_LED_STATUS_UPDATE);
+}
 
 //---------------------------------------------------------------------------
 

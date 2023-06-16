@@ -119,6 +119,103 @@ bool Script::CheckButtonState(const uint8_t *text) const {
   return true;
 }
 
+//---------------------------------------------------------------------------
+
+void Script::PrintInfo() const {
+  Console::Printf("Script\n");
+
+  Console::Printf("  Callbacks: [");
+  bool firstTime = true;
+  for (size_t i = 0; i < (size_t)ScriptId::COUNT; ++i) {
+    if (scriptOffsets[i] != 0) {
+      if (firstTime) {
+        firstTime = false;
+        Console::Printf("%zu", i);
+      } else {
+        Console::Printf(", %zu", i);
+      }
+    }
+  }
+  Console::Printf("]\n");
+
+  Console::Printf("  Timers: %u\n", timerCount);
+  for (size_t i = 0; i < timerCount; ++i) {
+    const ScriptTimer &timer = timers[i];
+    Console::Printf("    0x%zx: %ums%s\n", timer.id, timer.interval,
+                    timer.isRepeating ? " (repeating)" : "");
+  }
+}
+
+//---------------------------------------------------------------------------
+
+static const size_t INVALID_TIMER_INDEX = (size_t)-1;
+
+size_t Script::GetTimerIndex(intptr_t timerId) const {
+  for (size_t i = 0; i < timerCount; ++i) {
+    if (timers[i].id == timerId) {
+      return i;
+    }
+  }
+  return INVALID_TIMER_INDEX;
+}
+
+void Script::StopTimer(intptr_t timerId) {
+  size_t index = GetTimerIndex(timerId);
+  if (index != INVALID_TIMER_INDEX) {
+    RemoveTimerIndex(index);
+  }
+}
+
+void Script::StartTimer(intptr_t timerId, uint32_t interval, bool isRepeating,
+                        size_t offset) {
+  size_t index = GetTimerIndex(timerId);
+  if (index == INVALID_TIMER_INDEX) {
+    if (timerCount >= MAXIMUM_TIMER_COUNT) {
+      return;
+    }
+    index = timerCount++;
+    timers[index].id = timerId;
+  }
+
+  timers[index].isRepeating = isRepeating;
+  timers[index].lastUpdateTime = scriptTime;
+  timers[index].interval = interval;
+  timers[index].scriptOffset = offset;
+}
+
+void Script::ProcessTimers(uint32_t scriptTime) {
+  for (size_t i = 0; i < timerCount; ++i) {
+    ScriptTimer &timer = timers[i];
+    if (timer.shouldTrigger(scriptTime)) {
+      stack[0] = timer.id;
+      stackTop = &stack[1];
+      timer.lastUpdateTime = scriptTime;
+
+      // For non-repeating timers, need to remove it immediately so that
+      // if the timer script adds it back, it triggers again.
+      size_t scriptOffset = timer.scriptOffset;
+      if (!timer.isRepeating) {
+        RemoveTimerIndex(i);
+        --i;
+      }
+
+      ExecutionContext context;
+      context.Run(*this, scriptOffset);
+
+      stackTop = stack;
+    }
+  }
+}
+
+void Script::RemoveTimerIndex(size_t index) {
+  --timerCount;
+  if (index != timerCount) {
+    timers[index] = timers[timerCount - 1];
+  }
+}
+
+//---------------------------------------------------------------------------
+
 __attribute__((weak)) void Script::OnStenoKeyPressed() {}
 __attribute__((weak)) void Script::OnStenoKeyReleased() {}
 __attribute__((weak)) void Script::OnStenoStateCancelled() {}
@@ -626,9 +723,30 @@ void Script::ExecutionContext::Run(Script &script, size_t offset) {
         script.SetInputHint((int)script.Pop());
         continue;
       case SF::SET_SCRIPT: {
-        intptr_t scriptOffset = script.Pop();
+        size_t scriptOffset = script.Pop();
         ScriptId scriptId = (ScriptId)script.Pop();
         script.SetScript(scriptId, scriptOffset);
+        continue;
+      }
+      case SF::IS_BOARD_POWERED:
+        script.Push(Power::IsBoardPowered());
+        continue;
+      case SF::START_TIMER: {
+        size_t scriptOffset = script.Pop();
+        bool repeating = script.Pop() != 0;
+        uint32_t interval = script.Pop();
+        intptr_t id = script.Pop();
+        script.StartTimer(id, interval, repeating, scriptOffset);
+        continue;
+      }
+      case SF::STOP_TIMER: {
+        intptr_t id = script.Pop();
+        script.StopTimer(id);
+        continue;
+      }
+      case SF::IS_TIMER_ACTIVE: {
+        intptr_t id = script.Pop();
+        script.Push(script.GetTimerIndex(id) != INVALID_TIMER_INDEX);
         continue;
       }
       }
