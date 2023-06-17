@@ -3,7 +3,6 @@
 #include "writer.h"
 #include "console.h"
 #include "str.h"
-#include <cstdarg>
 #include <string.h>
 
 //---------------------------------------------------------------------------

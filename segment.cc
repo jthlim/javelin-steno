@@ -159,14 +159,14 @@ StenoTokenizer *StenoSegmentList::CreateTokenizer(size_t startingOffset) {
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-#include "dictionary/map_dictionary.h"
+#include "dictionary/compact_map_dictionary.h"
 #include "dictionary/test_dictionary.h"
 #include "orthography.h"
 #include "str.h"
 #include "stroke_history.h"
 #include "unit_test.h"
 
-static StenoMapDictionary dictionary(TestDictionary::definition);
+static StenoCompactMapDictionary dictionary(TestDictionary::definition);
 
 TEST_BEGIN("Segment tests") {
   StenoStrokeHistory history;

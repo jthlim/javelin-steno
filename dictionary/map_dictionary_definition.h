@@ -32,8 +32,16 @@
 //
 //---------------------------------------------------------------------------
 
-struct StenoHashMapEntryBlock {
+struct StenoCompactHashMapEntryBlock {
   uint32_t masks[4];
+  uint32_t baseOffset;
+
+  bool IsBitSet(size_t bitIndex) const;
+  size_t PopCount() const;
+};
+
+struct StenoFullHashMapEntryBlock {
+  uint32_t mask;
   uint32_t baseOffset;
 
   bool IsBitSet(size_t bitIndex) const;
@@ -46,21 +54,36 @@ struct StenoMapDictionaryStrokesDefinition {
   // Stroke -> text information.
   const uint8_t *data;
 
-  // Hash table information.
-  const StenoHashMapEntryBlock *offsets;
+  // Hash table information -- either CompactStenoHashMapEntryBlock*
+  // or FullStenoHashMapEntryBlock*
+  union {
+    const void *offsets;
+    const StenoCompactHashMapEntryBlock *compactOffsets;
+    const StenoFullHashMapEntryBlock *fullOffsets;
+  };
 
   bool ContainsData(const void *p) const { return data <= p && p < offsets; }
-  size_t GetOffset(size_t index) const;
-  bool HasEntry(size_t index) const;
-  size_t GetEntryCount() const;
-  bool PrintDictionary(bool hasData, size_t strokeLength, char *buffer,
-                       const uint8_t *textBlock) const;
+
+  size_t GetCompactOffset(size_t index) const;
+  bool HasCompactEntry(size_t index) const;
+  size_t GetCompactEntryCount() const;
+  bool PrintCompactDictionary(bool hasData, size_t strokeLength, char *buffer,
+                              const uint8_t *textBlock) const;
+
+  size_t GetFullOffset(size_t index) const;
+  bool HasFullEntry(size_t index) const;
+  size_t GetFullEntryCount() const;
+  bool PrintFullDictionary(bool hasData, size_t strokeLength, char *buffer,
+                           const uint8_t *textBlock) const;
 };
 
 //---------------------------------------------------------------------------
 
 enum class StenoMapDictionaryFormat : uint8_t {
+  // COMPACT uses fewer offsets and 24-bit values for strokes and text offsets.
   COMPACT,
+
+  // FULL uses an offset for every 32-bit values for strokes and text offsets.
   FULL,
 };
 

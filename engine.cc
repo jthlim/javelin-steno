@@ -196,12 +196,12 @@ void StenoEngine::SendText(const uint8_t *p) {
 #include "unit_test.h"
 #include <stdio.h>
 
+#include "dictionary/compact_map_dictionary.h"
 #include "dictionary/dictionary_list.h"
 #include "dictionary/emily_symbols_dictionary.h"
 #include "dictionary/jeff_numbers_dictionary.h"
 #include "dictionary/jeff_phrasing_dictionary.h"
 #include "dictionary/jeff_show_stroke_dictionary.h"
-#include "dictionary/map_dictionary.h"
 #include "dictionary/test_dictionary.h"
 #include "dictionary/unicode_dictionary.h"
 
@@ -209,7 +209,7 @@ extern StenoOrthography testOrthography;
 extern StenoMapDictionaryDefinition testDictionaryDefinition;
 // constexpr StenoMapDictionary testDictionary(testDictionaryDefinition);
 
-static StenoMapDictionary mainDictionary(TestDictionary::definition);
+static StenoCompactMapDictionary mainDictionary(TestDictionary::definition);
 
 const StenoDictionary *const DICTIONARIES[] = {
     &StenoEmilySymbolsDictionary::instance,

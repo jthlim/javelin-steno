@@ -148,7 +148,7 @@ void Script::PrintInfo() const {
 
 //---------------------------------------------------------------------------
 
-static const size_t INVALID_TIMER_INDEX = (size_t)-1;
+__attribute__((weak)) void Script::OnTimersUpdated() {}
 
 size_t Script::GetTimerIndex(intptr_t timerId) const {
   for (size_t i = 0; i < timerCount; ++i) {
@@ -163,6 +163,7 @@ void Script::StopTimer(intptr_t timerId) {
   size_t index = GetTimerIndex(timerId);
   if (index != INVALID_TIMER_INDEX) {
     RemoveTimerIndex(index);
+    OnTimersUpdated();
   }
 }
 
@@ -181,12 +182,14 @@ void Script::StartTimer(intptr_t timerId, uint32_t interval, bool isRepeating,
   timers[index].lastUpdateTime = scriptTime;
   timers[index].interval = interval;
   timers[index].scriptOffset = offset;
+
+  OnTimersUpdated();
 }
 
 void Script::ProcessTimers(uint32_t scriptTime) {
   for (size_t i = 0; i < timerCount; ++i) {
     ScriptTimer &timer = timers[i];
-    if (timer.shouldTrigger(scriptTime)) {
+    if (timer.ShouldTrigger(scriptTime)) {
       stack[0] = timer.id;
       stackTop = &stack[1];
       timer.lastUpdateTime = scriptTime;
@@ -212,6 +215,50 @@ void Script::RemoveTimerIndex(size_t index) {
   if (index != timerCount) {
     timers[index] = timers[timerCount - 1];
   }
+  OnTimersUpdated();
+}
+
+int Script::GetNextTimerTriggerDelay(uint32_t currentTime) const {
+  int result = INT32_MAX;
+  for (size_t i = 0; i < timerCount; ++i) {
+    int delay = timers[i].GetTriggerDelay(currentTime);
+    if (delay < result) {
+      result = delay;
+    }
+  }
+  return result;
+}
+
+bool Script::HasOnlyRepeatingTimers() const {
+  for (size_t i = 0; i < timerCount; ++i) {
+    if (!timers[i].isRepeating) {
+      return false;
+    }
+  }
+  return true;
+}
+
+static int GCD(int a, int b) {
+  while (a != b) {
+    if (a > b) {
+      a -= b;
+    } else {
+      b -= a;
+    }
+  }
+  return a;
+}
+
+int Script::GetTimersGCD() const {
+  if (timerCount == 0) {
+    return -1;
+  }
+
+  int result = timers[0].interval;
+  for (size_t i = 1; i < timerCount; ++i) {
+    result = GCD(result, timers[i].interval);
+  }
+  return result;
 }
 
 //---------------------------------------------------------------------------
@@ -734,7 +781,7 @@ void Script::ExecutionContext::Run(Script &script, size_t offset) {
       case SF::START_TIMER: {
         size_t scriptOffset = script.Pop();
         bool repeating = script.Pop() != 0;
-        uint32_t interval = script.Pop();
+        uint32_t interval = (uint32_t) script.Pop();
         intptr_t id = script.Pop();
         script.StartTimer(id, interval, repeating, scriptOffset);
         continue;

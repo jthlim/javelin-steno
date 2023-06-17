@@ -31,8 +31,13 @@ struct ScriptTimer {
   uint32_t interval;
   size_t scriptOffset;
 
-  bool shouldTrigger(uint32_t currentTime) const {
-    return currentTime - lastUpdateTime >= interval;
+  int GetTriggerDelay(uint32_t currentTime) const {
+    // Since time steps can be backwards in case of receiving delayed input
+    // from a split pair, it's important that this returns a signed value.
+    return currentTime - (lastUpdateTime + interval);
+  }
+  bool ShouldTrigger(uint32_t currentTime) const {
+    return GetTriggerDelay(currentTime) <= 0;
   }
 };
 
@@ -63,9 +68,16 @@ public:
 
   void PrintInfo() const;
 
+  bool HasTimers() const { return timerCount != 0; }
+  size_t GetTimerCount() const { return timerCount; }
+  int GetNextTimerTriggerDelay(uint32_t currentTime) const;
+  bool HasOnlyRepeatingTimers() const;
+  int GetTimersGCD() const;
+
 private:
   static const size_t MAX_STACK_SIZE = 256;
   static const size_t MAXIMUM_TIMER_COUNT = 16;
+  static const size_t INVALID_TIMER_INDEX = (size_t)-1;
 
   bool cancelStenoState = false;
   uint8_t timerCount;
@@ -95,8 +107,10 @@ private:
   void StartTimer(intptr_t timerId, uint32_t interval, bool isRepeating,
                   size_t offset);
   void StopTimer(intptr_t timerId);
-
   void RemoveTimerIndex(size_t index);
+
+  // Interception point for controlling update frequency.
+  void OnTimersUpdated();
 
   class ExecutionContext;
 

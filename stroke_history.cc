@@ -293,16 +293,16 @@ void StenoStrokeHistory::HandleRepeatLastStroke(BuildSegmentContext &context,
 
 //---------------------------------------------------------------------------
 
+#include "dictionary/compact_map_dictionary.h"
 #include "dictionary/debug_dictionary.h"
 #include "dictionary/dictionary_list.h"
 #include "dictionary/emily_symbols_dictionary.h"
-#include "dictionary/map_dictionary.h"
 #include "dictionary/test_dictionary.h"
 #include "orthography.h"
 #include "str.h"
 #include "unit_test.h"
 
-static StenoMapDictionary mainDictionary(TestDictionary::definition);
+static StenoCompactMapDictionary mainDictionary(TestDictionary::definition);
 
 const StenoDictionary *const DICTIONARIES[] = {
     &StenoEmilySymbolsDictionary::instance,

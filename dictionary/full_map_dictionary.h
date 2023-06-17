@@ -6,11 +6,12 @@
 
 //---------------------------------------------------------------------------
 
-class StenoMapDictionary final : public StenoDictionary {
+class StenoFullMapDictionary final : public StenoDictionary {
 public:
-  StenoMapDictionary(const StenoMapDictionaryDefinition &definition)
+  StenoFullMapDictionary(const StenoMapDictionaryDefinition &definition)
       : StenoDictionary(definition.maximumOutlineLength),
-        definition(definition), strokes(CreateStrokeCache(definition)) {}
+        textBlock(definition.textBlock), definition(definition),
+        strokes(CreateStrokeCache(definition)) {}
 
   virtual StenoDictionaryLookupResult
   Lookup(const StenoDictionaryLookup &lookup) const;
@@ -28,6 +29,7 @@ public:
   virtual bool PrintDictionary(bool hasData) const;
 
 private:
+  const uint8_t *textBlock;
   const StenoMapDictionaryDefinition &definition;
 
   // This is offset by 1 to simplify lookup code marginally.
