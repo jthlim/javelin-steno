@@ -16,6 +16,7 @@
 #include "script_byte_code.h"
 #include "split/split_usb_status.h"
 #include "str.h"
+#include "timer_manager.h"
 #include <assert.h>
 
 //---------------------------------------------------------------------------
@@ -64,6 +65,10 @@ void Script::BinaryOp(intptr_t (*op)(intptr_t, intptr_t)) {
 }
 
 void Script::ExecuteScript(size_t offset, uint32_t scriptTime) {
+  if (offset == 0) {
+    return;
+  }
+
   this->scriptTime = scriptTime;
 
 #if DEBUG
@@ -83,6 +88,16 @@ void Script::ExecuteScriptId(ScriptId scriptId, uint32_t scriptTime) {
   if (offset != 0) {
     ExecuteScript(offset, scriptTime);
   }
+}
+
+inline bool Script::IsScriptEmpty(size_t offset) const {
+  return offset == 0 || byteCode[offset] == StenoScriptByteCode::RETURN;
+}
+
+bool Script::IsScriptIndexEmpty(size_t index) const {
+  const StenoScriptByteCodeData *data =
+      (const StenoScriptByteCodeData *)byteCode;
+  return IsScriptEmpty(data->offsets[index]);
 }
 
 void Script::ExecuteScriptIndex(size_t index, uint32_t scriptTime) {
@@ -137,128 +152,47 @@ void Script::PrintInfo() const {
     }
   }
   Console::Printf("]\n");
-
-  Console::Printf("  Timers: %u\n", timerCount);
-  for (size_t i = 0; i < timerCount; ++i) {
-    const ScriptTimer &timer = timers[i];
-    Console::Printf("    0x%zx: %ums%s\n", timer.id, timer.interval,
-                    timer.isRepeating ? " (repeating)" : "");
-  }
 }
 
 //---------------------------------------------------------------------------
 
-__attribute__((weak)) void Script::OnTimersUpdated() {}
+struct Script::ScriptTimerContext {
+  Script *script;
+  size_t offset;
 
-size_t Script::GetTimerIndex(intptr_t timerId) const {
-  for (size_t i = 0; i < timerCount; ++i) {
-    if (timers[i].id == timerId) {
-      return i;
-    }
+  void Run(intptr_t id) const {
+    script->stack[0] = id;
+    script->stackTop = &script->stack[1];
+
+    ExecutionContext executionContext;
+    executionContext.Run(*script, offset);
+
+    script->stackTop = script->stack;
   }
-  return INVALID_TIMER_INDEX;
+};
+
+void Script::TimerHandler(intptr_t id, void *context) {
+  ScriptTimerContext *scriptContext = (ScriptTimerContext *)context;
+  scriptContext->Run(id);
 }
 
 void Script::StopTimer(intptr_t timerId) {
-  size_t index = GetTimerIndex(timerId);
-  if (index != INVALID_TIMER_INDEX) {
-    RemoveTimerIndex(index);
-    OnTimersUpdated();
-  }
+  ScriptTimerContext *oldContext =
+      (ScriptTimerContext *)TimerManager::instance.StopTimer(timerId,
+                                                             scriptTime);
+  delete oldContext;
 }
-
 void Script::StartTimer(intptr_t timerId, uint32_t interval, bool isRepeating,
                         size_t offset) {
-  size_t index = GetTimerIndex(timerId);
-  if (index == INVALID_TIMER_INDEX) {
-    if (timerCount >= MAXIMUM_TIMER_COUNT) {
-      return;
-    }
-    index = timerCount++;
-    timers[index].id = timerId;
-  }
+  ScriptTimerContext *context = new ScriptTimerContext;
+  context->script = this;
+  context->offset = offset;
 
-  timers[index].isRepeating = isRepeating;
-  timers[index].lastUpdateTime = scriptTime;
-  timers[index].interval = interval;
-  timers[index].scriptOffset = offset;
+  ScriptTimerContext *oldContext =
+      (ScriptTimerContext *)TimerManager::instance.StartTimer(
+          timerId, interval, isRepeating, TimerHandler, context, scriptTime);
 
-  OnTimersUpdated();
-}
-
-void Script::ProcessTimers(uint32_t scriptTime) {
-  for (size_t i = 0; i < timerCount; ++i) {
-    ScriptTimer &timer = timers[i];
-    if (timer.ShouldTrigger(scriptTime)) {
-      stack[0] = timer.id;
-      stackTop = &stack[1];
-      timer.lastUpdateTime = scriptTime;
-
-      // For non-repeating timers, need to remove it immediately so that
-      // if the timer script adds it back, it triggers again.
-      size_t scriptOffset = timer.scriptOffset;
-      if (!timer.isRepeating) {
-        RemoveTimerIndex(i);
-        --i;
-      }
-
-      ExecutionContext context;
-      context.Run(*this, scriptOffset);
-
-      stackTop = stack;
-    }
-  }
-}
-
-void Script::RemoveTimerIndex(size_t index) {
-  --timerCount;
-  if (index != timerCount) {
-    timers[index] = timers[timerCount - 1];
-  }
-  OnTimersUpdated();
-}
-
-int Script::GetNextTimerTriggerDelay(uint32_t currentTime) const {
-  int result = INT32_MAX;
-  for (size_t i = 0; i < timerCount; ++i) {
-    int delay = timers[i].GetTriggerDelay(currentTime);
-    if (delay < result) {
-      result = delay;
-    }
-  }
-  return result;
-}
-
-bool Script::HasOnlyRepeatingTimers() const {
-  for (size_t i = 0; i < timerCount; ++i) {
-    if (!timers[i].isRepeating) {
-      return false;
-    }
-  }
-  return true;
-}
-
-static int GCD(int a, int b) {
-  while (a != b) {
-    if (a > b) {
-      a -= b;
-    } else {
-      b -= a;
-    }
-  }
-  return a;
-}
-
-int Script::GetTimersGCD() const {
-  if (timerCount == 0) {
-    return -1;
-  }
-
-  int result = timers[0].interval;
-  for (size_t i = 1; i < timerCount; ++i) {
-    result = GCD(result, timers[i].interval);
-  }
-  return result;
+  delete oldContext;
 }
 
 //---------------------------------------------------------------------------
@@ -781,7 +715,7 @@ void Script::ExecutionContext::Run(Script &script, size_t offset) {
       case SF::START_TIMER: {
         size_t scriptOffset = script.Pop();
         bool repeating = script.Pop() != 0;
-        uint32_t interval = (uint32_t) script.Pop();
+        uint32_t interval = (uint32_t)script.Pop();
         intptr_t id = script.Pop();
         script.StartTimer(id, interval, repeating, scriptOffset);
         continue;
@@ -793,7 +727,7 @@ void Script::ExecutionContext::Run(Script &script, size_t offset) {
       }
       case SF::IS_TIMER_ACTIVE: {
         intptr_t id = script.Pop();
-        script.Push(script.GetTimerIndex(id) != INVALID_TIMER_INDEX);
+        script.Push(TimerManager::instance.HasTimer(id));
         continue;
       }
       }

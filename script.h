@@ -24,23 +24,6 @@ enum class ScriptId {
   COUNT,
 };
 
-struct ScriptTimer {
-  bool isRepeating;
-  intptr_t id;
-  uint32_t lastUpdateTime;
-  uint32_t interval;
-  size_t scriptOffset;
-
-  int GetTriggerDelay(uint32_t currentTime) const {
-    // Since time steps can be backwards in case of receiving delayed input
-    // from a split pair, it's important that this returns a signed value.
-    return currentTime - (lastUpdateTime + interval);
-  }
-  bool ShouldTrigger(uint32_t currentTime) const {
-    return GetTriggerDelay(currentTime) <= 0;
-  }
-};
-
 class Script {
 public:
   Script(const uint8_t *byteCode);
@@ -64,23 +47,17 @@ public:
     ExecuteScriptIndex(keyIndex * 2 + 3, scriptTime);
   }
 
-  void ProcessTimers(uint32_t scriptTime);
-
   void PrintInfo() const;
 
-  bool HasTimers() const { return timerCount != 0; }
-  size_t GetTimerCount() const { return timerCount; }
-  int GetNextTimerTriggerDelay(uint32_t currentTime) const;
-  bool HasOnlyRepeatingTimers() const;
-  int GetTimersGCD() const;
+  bool IsTickScriptEmpty() const { return IsScriptIndexEmpty(1); }
+  bool IsScriptIndexEmpty(size_t index) const;
 
 private:
+  struct ScriptTimerContext;
+
   static const size_t MAX_STACK_SIZE = 256;
-  static const size_t MAXIMUM_TIMER_COUNT = 16;
-  static const size_t INVALID_TIMER_INDEX = (size_t)-1;
 
   bool cancelStenoState = false;
-  uint8_t timerCount;
   int inPressAllCount = 0;
   uint32_t scriptTime;
   const uint8_t *byteCode;
@@ -92,7 +69,6 @@ private:
   BitField<256> keyState;
   intptr_t globals[256];
   intptr_t stack[MAX_STACK_SIZE];
-  ScriptTimer timers[MAXIMUM_TIMER_COUNT];
 
   void Push(intptr_t value);
   intptr_t Pop();
@@ -103,14 +79,11 @@ private:
   void ExecuteScriptIndex(size_t index, uint32_t scriptTime);
   void ExecuteScript(size_t offset, uint32_t scriptTime);
 
-  size_t GetTimerIndex(intptr_t timerId) const;
+  bool IsScriptEmpty(size_t offset) const;
+
   void StartTimer(intptr_t timerId, uint32_t interval, bool isRepeating,
                   size_t offset);
   void StopTimer(intptr_t timerId);
-  void RemoveTimerIndex(size_t index);
-
-  // Interception point for controlling update frequency.
-  void OnTimersUpdated();
 
   class ExecutionContext;
 
@@ -133,6 +106,8 @@ private:
       scriptOffsets[(size_t)scriptId] = scriptOffset;
     }
   }
+
+  static void TimerHandler(intptr_t id, void *context);
 };
 
 //---------------------------------------------------------------------------

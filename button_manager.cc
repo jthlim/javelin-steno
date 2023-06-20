@@ -4,6 +4,7 @@
 #include "clock.h"
 #include "console.h"
 #include "script_byte_code.h"
+#include "timer_manager.h"
 
 //---------------------------------------------------------------------------
 
@@ -83,5 +84,6 @@ void ButtonManager::Tick(uint32_t scriptTime) {
     return;
   }
   script.ExecuteTickScript(scriptTime);
-  script.ProcessTimers(scriptTime);
 }
+
+//---------------------------------------------------------------------------

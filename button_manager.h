@@ -14,6 +14,7 @@ public:
     new (container) ButtonManager(scriptByteCode);
   }
 
+  bool HasTickScript() const { return !script.IsTickScriptEmpty(); }
   void Update(const ButtonState &newButtonState, uint32_t scriptTime);
   void Tick(uint32_t scriptTime);
   void ExecuteScript(ScriptId scriptId);

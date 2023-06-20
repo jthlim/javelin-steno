@@ -110,6 +110,7 @@ struct RxBuffer {
                                   size_t *metrics) const;
 
   void Process() const;
+  static void OnDataReceived();
 
   static void OnConnectionReset();
 

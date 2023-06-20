@@ -65,16 +65,20 @@ void SplitUsbStatus::OnDataReceived(const void *data, size_t length) {
   assert(length == sizeof(UsbStatus));
   UsbStatus &instance = Split::IsMaster() ? status : UsbStatus::instance;
   bool wasConnected = instance.IsConnected();
-  memcpy(&instance, data, sizeof(status));
+  bool wasPowered = instance.IsPowered();
+  memcpy(&instance, data, sizeof(UsbStatus));
   if (instance.IsConnected() != wasConnected) {
     ButtonManager::GetInstance().ExecuteScript(ScriptId::CONNECTION_UPDATE);
+  }
+  if (instance.IsPowered() != wasPowered) {
+    ButtonManager::GetInstance().ExecuteScript(ScriptId::BATTERY_UPDATE);
   }
 }
 
 void SplitUsbStatus::OnConnectionReset() {
   dirty = true;
   UsbStatus &instance = Split::IsMaster() ? status : UsbStatus::instance;
-  memset(&instance, 0, sizeof(instance));
+  memset(&instance, 0, sizeof(UsbStatus));
 
   ButtonManager::GetInstance().ExecuteScript(ScriptId::CONNECTION_UPDATE);
 }

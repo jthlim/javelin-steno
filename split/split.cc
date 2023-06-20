@@ -117,7 +117,15 @@ RxBufferValidateResult RxBuffer::Validate(size_t totalWordsReceived,
   return RxBufferValidateResult::OK;
 }
 
+__attribute__((weak)) void RxBuffer::OnDataReceived() {}
+
 void RxBuffer::Process() const {
+  if (header.wordCount == 0) {
+    return;
+  }
+
+  OnDataReceived();
+
   size_t offset = 0;
   while (offset < header.wordCount) {
     uint32_t blockHeader = buffer[offset++];
