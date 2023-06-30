@@ -8,6 +8,10 @@
 
 //---------------------------------------------------------------------------
 
+#define USE_ORTHOGRAPHY_CACHE 1
+
+//---------------------------------------------------------------------------
+
 struct StenoOrthographyRule {
   const char *testPattern;
   const char *replacement;
@@ -67,6 +71,39 @@ private:
   struct SuffixEntry;
 
   const Pattern *patterns;
+
+#if USE_ORTHOGRAPHY_CACHE
+  struct CacheEntry {
+    CacheEntry(const char *word, const char *suffix, const char *result);
+    ~CacheEntry();
+
+    const char *word;
+    const char *suffix;
+    const char *result;
+
+    bool IsEqual(const char *word, const char *suffix) const;
+  };
+
+  static void LockCache();
+  static void UnlockCache();
+
+  static const size_t CACHE_SIZE = 256;
+  static const size_t CACHE_ASSOCIATIVITY = 4;
+  static const size_t CACHE_BLOCK_COUNT = CACHE_SIZE / CACHE_ASSOCIATIVITY;
+
+  struct CacheBlock {
+    uint32_t index;
+    const CacheEntry *entries[CACHE_ASSOCIATIVITY];
+
+    char *Lookup(const char *word, const char *suffix) const;
+    void AddEntry(const CacheEntry *entry);
+  };
+
+  mutable CacheBlock cache[CACHE_BLOCK_COUNT];
+
+#endif
+
+  char *AddSuffixInternal(const char *word, const char *suffix) const;
 
   void AddCandidates(List<SuffixEntry> &candidates, const char *word,
                      const char *suffix) const;

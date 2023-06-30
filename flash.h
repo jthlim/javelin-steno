@@ -13,6 +13,10 @@ public:
   // Sets all bits in the region to 1.
   static void Erase(const void *target, size_t size);
 
+  static bool IsErased(const void *target, size_t size) {
+    return !RequiresErase(target, size);
+  }
+
   static void Write(const void *target, const void *data, size_t size);
 
   static const size_t BLOCK_SIZE = 4096;
@@ -24,10 +28,6 @@ public:
   static void EndWriteBinding(void *context, const char *commandLine);
 
 private:
-  static bool IsErased(const void *target, size_t size) {
-    return !RequiresErase(target, size);
-  }
-
   static bool RequiresErase(const void *target, size_t size);
   static bool RequiresErase(const void *target, const void *data, size_t size);
   static bool RequiresProgram(const void *target, const void *data,

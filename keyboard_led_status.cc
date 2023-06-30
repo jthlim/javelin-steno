@@ -11,8 +11,7 @@ void KeyboardLedStatus::Set(KeyboardLedStatusValue value) {
 #else
   instance = value;
 #endif
-  ButtonManager::GetInstance().ExecuteScript(
-      ScriptId::KEYBOARD_LED_STATUS_UPDATE);
+  ButtonManager::ExecuteScript(ScriptId::KEYBOARD_LED_STATUS_UPDATE);
 }
 
 //---------------------------------------------------------------------------

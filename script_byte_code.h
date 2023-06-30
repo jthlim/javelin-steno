@@ -120,6 +120,13 @@ enum class StenoScriptFunction : uint8_t {
   START_TIMER,
   STOP_TIMER,
   IS_TIMER_ACTIVE,
+  IS_BLE_PROFILE_CONNECTED,
+  DISCONNECT_BLE,
+  UNPAIR_BLE,
+  IS_BLE_PROFILE_PAIRED,
+  IS_BLE_PROFILE_SLEEPING,
+  IS_BLE_ADVERTISING,
+  IS_BLE_SCANNING,
 };
 
 enum class StenoScriptOperator : uint8_t {

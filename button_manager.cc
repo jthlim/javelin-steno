@@ -56,8 +56,9 @@ void ButtonManager::Update(const ButtonState &newButtonState,
 }
 
 void ButtonManager::ExecuteScript(ScriptId scriptId) {
-  if (isScriptValid) {
-    script.ExecuteScriptId(scriptId, Clock::GetMilliseconds());
+  ButtonManager &instance = GetInstance();
+  if (instance.isScriptValid) {
+    instance.script.ExecuteScriptId(scriptId, Clock::GetMilliseconds());
   }
 }
 

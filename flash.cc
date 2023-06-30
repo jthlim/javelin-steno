@@ -33,27 +33,28 @@ __attribute((weak)) void Flash::Write(const void *target, const void *data,
 //---------------------------------------------------------------------------
 
 bool Flash::RequiresErase(const void *target, size_t size) {
-  size_t count = size / sizeof(size_t);
-  const size_t *t = (const size_t *)target;
+  assert((size & (sizeof(size_t) - 1)) == 0);
 
-  for (size_t i = 0; i < count; ++i) {
-    if (t[i] != (size_t)-1) {
+  const size_t *p = (const size_t *)target;
+  const size_t *end = (const size_t *)(intptr_t(target) + size);
+
+  while (p < end) {
+    if (*p++ != (size_t)-1) {
       return true;
     }
   }
-
   return false;
 }
 
 bool Flash::RequiresErase(const void *target, const void *data, size_t size) {
-  size_t count = size / sizeof(size_t);
   const size_t *t = (const size_t *)target;
   const size_t *d = (const size_t *)data;
+  const size_t *dEnd = (const size_t *)(intptr_t(data) + size);
 
-  for (size_t i = 0; i < count; ++i) {
+  while (d < dEnd) {
     // Programming lowers a bit from 1 to 0, erasing raises it to 1.
     // Erasing is required if the data needs a 1, but the current state is a 0.
-    if (d[i] & ~t[i]) {
+    if (*d++ & ~*t++) {
       return true;
     }
   }

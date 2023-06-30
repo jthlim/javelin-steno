@@ -730,6 +730,33 @@ void Script::ExecutionContext::Run(Script &script, size_t offset) {
         script.Push(TimerManager::instance.HasTimer(id));
         continue;
       }
+      case SF::IS_BLE_PROFILE_CONNECTED: {
+        uint32_t profileId = script.Pop();
+        script.Push(Ble::IsProfileConnected(profileId));
+        continue;
+      }
+      case SF::DISCONNECT_BLE:
+        Ble::Disconnect();
+        continue;
+      case SF::IS_BLE_PROFILE_PAIRED: {
+        uint32_t profileId = script.Pop();
+        script.Push(Ble::IsProfilePaired(profileId));
+        continue;
+      }
+      case SF::UNPAIR_BLE:
+        Ble::Unpair();
+        continue;
+      case SF::IS_BLE_PROFILE_SLEEPING: {
+        uint32_t profileId = script.Pop();
+        script.Push(Ble::IsProfileSleeping(profileId));
+        continue;
+      }
+      case SF::IS_BLE_ADVERTISING:
+        script.Push(Ble::IsAdvertising());
+        continue;
+      case SF::IS_BLE_SCANNING:
+        script.Push(Ble::IsScanning());
+        continue;
       }
       continue;
     }

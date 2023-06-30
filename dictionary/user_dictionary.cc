@@ -725,14 +725,6 @@ void StenoUserDictionary::RemoveEntry_Binding(void *context,
 
 static uint8_t userDictionaryBuffer[512 * 1024];
 
-static bool IsEmpty(const uint8_t *p, size_t length) {
-  for (size_t i = 0; i < length; ++i) {
-    if (p[i] != 0xff)
-      return false;
-  }
-  return true;
-}
-
 TEST_BEGIN("StenoUserDictionary will reset if descriptor is invalid") {
   const StenoUserDictionaryDescriptor *descriptor =
       (const StenoUserDictionaryDescriptor *)(userDictionaryBuffer +
@@ -747,9 +739,10 @@ TEST_BEGIN("StenoUserDictionary will reset if descriptor is invalid") {
   }
 
   StenoUserDictionary userDictionary(layout);
-  assert(IsEmpty(userDictionaryBuffer, 64 * 1024));
-  assert(IsEmpty(userDictionaryBuffer + 64 * 1024, 64 * 1024));
-  assert(!IsEmpty(userDictionaryBuffer + 128 * 1024, 384 * 1024 - 4096));
+  assert(Flash::IsErased(userDictionaryBuffer, 64 * 1024));
+  assert(Flash::IsErased(userDictionaryBuffer + 64 * 1024, 64 * 1024));
+  assert(
+      !Flash::IsErased(userDictionaryBuffer + 128 * 1024, 384 * 1024 - 4096));
   assert(descriptor->data.hashTable == (void *)userDictionaryBuffer);
   assert(descriptor->data.reverseHashTable ==
          (void *)&userDictionaryBuffer[64 * 1024]);

@@ -2,8 +2,66 @@
 
 #include "orthography.h"
 #include "console.h"
+#include "crc.h"
 #include "str.h"
 #include "word_list.h"
+
+//---------------------------------------------------------------------------
+
+#if USE_ORTHOGRAPHY_CACHE
+
+#if RUN_TESTS
+
+void StenoCompiledOrthography::LockCache() {}
+void StenoCompiledOrthography::UnlockCache() {}
+
+#endif
+
+StenoCompiledOrthography::CacheEntry::CacheEntry(const char *word,
+                                                 const char *suffix,
+                                                 const char *result)
+    : word(Str::Dup(word)), suffix(Str::Dup(suffix)), result(Str::Dup(result)) {
+}
+
+StenoCompiledOrthography::CacheEntry::~CacheEntry() {
+  free((void *)word);
+  free((void *)suffix);
+  free((void *)result);
+}
+
+bool StenoCompiledOrthography::CacheEntry::IsEqual(const char *word,
+                                                   const char *suffix) const {
+  return Str::Eq(word, this->word) && Str::Eq(suffix, this->suffix);
+}
+
+char *StenoCompiledOrthography::CacheBlock::Lookup(const char *word,
+                                                   const char *suffix) const {
+  LockCache();
+  for (size_t i = 0; i < CACHE_ASSOCIATIVITY; ++i) {
+    const CacheEntry *entry = entries[i];
+    if (entry && entry->IsEqual(word, suffix)) {
+      char *result = Str::Dup(entry->result);
+      UnlockCache();
+      return result;
+    }
+  }
+
+  UnlockCache();
+  return nullptr;
+}
+
+void StenoCompiledOrthography::CacheBlock::AddEntry(const CacheEntry *entry) {
+  size_t entryIndex = index++ & (CACHE_ASSOCIATIVITY - 1);
+
+  LockCache();
+  CacheEntry *oldEntry = (CacheEntry *)entries[entryIndex];
+  entries[entryIndex] = entry;
+  UnlockCache();
+
+  delete oldEntry;
+}
+
+#endif
 
 //---------------------------------------------------------------------------
 
@@ -96,7 +154,11 @@ void StenoOrthography::Print() const {
 
 StenoCompiledOrthography::StenoCompiledOrthography(
     const StenoOrthography &orthography)
-    : data(orthography), patterns(CreatePatterns(orthography)) {}
+    : data(orthography), patterns(CreatePatterns(orthography)) {
+#if USE_ORTHOGRAPHY_CACHE
+  memset(&cache, 0, sizeof(cache));
+#endif
+}
 
 const Pattern *
 StenoCompiledOrthography::CreatePatterns(const StenoOrthography &orthography) {
@@ -108,8 +170,27 @@ StenoCompiledOrthography::CreatePatterns(const StenoOrthography &orthography) {
   return patterns;
 }
 
+#if USE_ORTHOGRAPHY_CACHE
 char *StenoCompiledOrthography::AddSuffix(const char *word,
                                           const char *suffix) const {
+  size_t blockIndex = Crc32(word, Str::Length(word)) & (CACHE_BLOCK_COUNT - 1);
+  char *cachedResult = cache[blockIndex].Lookup(word, suffix);
+  if (cachedResult) {
+    return cachedResult;
+  }
+
+  char *result = AddSuffixInternal(word, suffix);
+  CacheEntry *entry = new CacheEntry(word, suffix, result);
+  cache[blockIndex].AddEntry(entry);
+  return result;
+}
+
+char *StenoCompiledOrthography::AddSuffixInternal(const char *word,
+                                                  const char *suffix) const {
+#else
+char *StenoCompiledOrthography::AddSuffix(const char *word,
+                                          const char *suffix) const {
+#endif
   List<SuffixEntry> candidates;
 
   for (size_t i = 0; i < data.aliasCount; ++i) {

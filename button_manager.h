@@ -17,12 +17,12 @@ public:
   bool HasTickScript() const { return !script.IsTickScriptEmpty(); }
   void Update(const ButtonState &newButtonState, uint32_t scriptTime);
   void Tick(uint32_t scriptTime);
-  void ExecuteScript(ScriptId scriptId);
   void PrintInfo() const { script.PrintInfo(); }
 
   void PressButton(size_t index, uint32_t scriptTime);
   void ReleaseButton(size_t index, uint32_t scriptTime);
 
+  static void ExecuteScript(ScriptId scriptId);
   static ButtonManager &GetInstance() { return container.value; }
 
 private:
