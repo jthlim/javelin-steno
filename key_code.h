@@ -179,26 +179,6 @@ struct KeyCode {
 
     CLEAR = 0x9c,
 
-    CURRENCY_UNIT = 0xb4,
-    CURRENCY_SUB_UNIT = 0xb5,
-
-    KP_LEFT_PAREN = 0xb6,
-    KP_RIGHT_PAREN = 0xb7,
-    KP_LEFT_BRACE = 0xb8,
-    KP_RIGHT_BRACE = 0xb9,
-    KP_TAB = 0xba,
-    KP_BACKSPACE = 0xbb,
-    KP_A = 0xbc,
-    KP_B = 0xbd,
-    KP_C = 0xbe,
-    KP_D = 0xbf,
-    KP_E = 0xc0,
-    KP_F = 0xc1,
-
-    KP_PLUS_MINUS = 0xd7,
-    KP_CLEAR = 0xd8,
-    KP_CLEAR_ENTRY = 0xd9,
-
     L_CTRL = 0xe0,
     L_SHIFT = 0xe1,
     L_ALT = 0xe2,
@@ -208,26 +188,22 @@ struct KeyCode {
     R_ALT = 0xe6,
     R_META = 0xe7,
 
-    MEDIA_PLAY_PAUSE = 0xe8,
-    MEDIA_STOP_CD = 0xe9,
-    MEDIA_PREVIOUS_SONG = 0xea,
-    MEDIA_NEXT_SONG = 0xeb,
-    MEDIA_EJECT_CD = 0xec,
-    MEDIA_VOLUME_UP = 0xed,
-    MEDIA_VOLUME_DOWN = 0xee,
-    MEDIA_MUTE = 0xef,
-    MEDIA_WWW = 0xf0,
-    MEDIA_BACK = 0xf1,
-    MEDIA_FORWARD = 0xf2,
-    MEDIA_STOP = 0xf3,
-    MEDIA_FIND = 0xf4,
-    MEDIA_SCROLL_UP = 0xf5,
-    MEDIA_SCROLL_DOWN = 0xf6,
-    MEDIA_EDIT = 0xf7,
-    MEDIA_SLEEP = 0xf8,
-    MEDIA_COFFEE = 0xf9,
-    MEDIA_REFRESH = 0xfa,
-    MEDIA_CALCULATOR = 0xfb,
+    // From Consumer Page (0x0c)
+    CONSUMER_PAGE_PLAY = 0xa0,                // UsageId 0xb0
+    CONSUMER_PAGE_PAUSE = 0xa1,               // UsageId 0xb1
+    CONSUMER_PAGE_RECORD = 0xa2,              // UsageId 0xb2
+    CONSUMER_PAGE_FAST_FORWARD = 0xa3,        // UsageId 0xb3
+    CONSUMER_PAGE_REWIND = 0xa4,              // UsageId 0xb4
+    CONSUMER_PAGE_SCAN_NEXT_TRACK = 0xa5,     // UsageId 0xb5
+    CONSUMER_PAGE_SCAN_PREVIOUS_TRACK = 0xa6, // UsageId 0xb6
+    CONSUMER_PAGE_STOP = 0xa7,                // UsageId 0xb7
+    CONSUMER_PAGE_EJECT = 0xa8,               // UsageId 0xb8
+    CONSUMER_PAGE_STOP_EJECT = 0xbc,          // UsageId 0xcc
+    CONSUMER_PAGE_PLAY_PAUSE = 0xbd,          // UsageId 0xcd
+    CONSUMER_PAGE_PLAY_SKIP = 0xbe,           // UsageId 0xce
+    CONSUMER_PAGE_MUTE = 0xd2,                // UsageId 0xe2
+    CONSUMER_PAGE_VOLUME_UP = 0xd9,           // UsageId 0xe9
+    CONSUMER_PAGE_VOLUME_DOWN = 0xda,         // UsageId 0xea
   };
 
   KeyCode() = default;
