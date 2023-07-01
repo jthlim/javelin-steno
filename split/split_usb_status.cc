@@ -18,33 +18,28 @@ SplitUsbStatus SplitUsbStatus::instance;
 
 void SplitUsbStatus::OnMount() {
   dirty = true;
-  UsbStatus &instance = Split::IsMaster() ? UsbStatus::instance : status;
-  instance.OnMount();
+  GetLocalUsbStatus().OnMount();
 }
 void SplitUsbStatus::OnUnmount() {
   dirty = true;
-  UsbStatus &instance = Split::IsMaster() ? UsbStatus::instance : status;
-  instance.OnUnmount();
+  GetLocalUsbStatus().OnUnmount();
 }
 void SplitUsbStatus::OnSuspend() {
   dirty = true;
-  UsbStatus &instance = Split::IsMaster() ? UsbStatus::instance : status;
-  instance.OnSuspend();
+  GetLocalUsbStatus().OnSuspend();
 }
 void SplitUsbStatus::OnResume() {
   dirty = true;
-  UsbStatus &instance = Split::IsMaster() ? UsbStatus::instance : status;
-  instance.OnResume();
+  GetLocalUsbStatus().OnResume();
 }
 
 void SplitUsbStatus::SetPowered(bool value) {
   dirty = true;
-  UsbStatus &instance = Split::IsMaster() ? UsbStatus::instance : status;
-  instance.SetPowered(value);
+  GetLocalUsbStatus().SetPowered(value);
 }
 
 void SplitUsbStatus::SetBatteryPercentage(int percentage) {
-  UsbStatus &instance = Split::IsMaster() ? UsbStatus::instance : status;
+  UsbStatus &instance = GetLocalUsbStatus();
   if (percentage != instance.GetBatteryPercentage()) {
     dirty = true;
     instance.SetBatteryPercentage(percentage);
@@ -57,13 +52,13 @@ void SplitUsbStatus::UpdateBuffer(TxBuffer &buffer) {
   }
   dirty = false;
 
-  UsbStatus &instance = Split::IsMaster() ? UsbStatus::instance : status;
-  buffer.Add(SplitHandlerId::USB_STATUS, &instance, sizeof(UsbStatus));
+  buffer.Add(SplitHandlerId::USB_STATUS, &GetLocalUsbStatus(),
+             sizeof(UsbStatus));
 }
 
 void SplitUsbStatus::OnDataReceived(const void *data, size_t length) {
   assert(length == sizeof(UsbStatus));
-  UsbStatus &instance = Split::IsMaster() ? status : UsbStatus::instance;
+  UsbStatus &instance = GetRemoteUsbStatus();
   bool wasConnected = instance.IsConnected();
   bool wasPowered = instance.IsPowered();
   memcpy(&instance, data, sizeof(UsbStatus));
@@ -77,8 +72,7 @@ void SplitUsbStatus::OnDataReceived(const void *data, size_t length) {
 
 void SplitUsbStatus::OnConnectionReset() {
   dirty = true;
-  UsbStatus &instance = Split::IsMaster() ? status : UsbStatus::instance;
-  memset(&instance, 0, sizeof(UsbStatus));
+  memset(&GetRemoteUsbStatus(), 0, sizeof(UsbStatus));
 
   ButtonManager::ExecuteScript(ScriptId::CONNECTION_UPDATE);
 }

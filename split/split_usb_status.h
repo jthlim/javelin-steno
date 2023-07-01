@@ -28,6 +28,14 @@ public:
     Split::RegisterRxHandler(SplitHandlerId::USB_STATUS, &instance);
   }
 
+  static UsbStatus &GetLocalUsbStatus() {
+    return Split::IsMaster() ? UsbStatus::instance : instance.status;
+  }
+
+  static UsbStatus &GetRemoteUsbStatus() {
+    return Split::IsMaster() ? instance.status : UsbStatus::instance;
+  }
+
   static SplitUsbStatus instance;
 
 private:
