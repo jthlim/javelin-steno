@@ -51,12 +51,29 @@ void StenoDictionaryLookupResult::Destroy() {
 
 #endif
 
+StenoDictionaryLookupResult StenoDictionaryLookupResult::Clone() const {
+  if (text & 1) {
+    return CreateDynamicString(Str::Dup(GetText()));
+  } else {
+    return *this;
+  }
+}
+
 #else
 void StenoDictionaryLookupResult::Nop(StenoDictionaryLookupResult *) {}
 
 void StenoDictionaryLookupResult::FreeText(StenoDictionaryLookupResult *p) {
   free((char *)p->text);
 }
+
+StenoDictionaryLookupResult StenoDictionaryLookupResult::Clone() const {
+  if (text == nullptr || destroyMethod == &Nop) {
+    return *this;
+  }
+
+  return CreateDynamicString(Str::Dup(GetText()));
+}
+
 #endif
 
 void StenoReverseDictionaryLookup::AddResult(

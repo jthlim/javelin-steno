@@ -133,6 +133,11 @@ private:
 
   void CreateSegments(size_t sourceStrokeCount, ConversionBuffer &buffer,
                       size_t conversionLimit, StenoSegmentList &segmentList);
+  void CreateSegmentsUsingLongerResult(
+      size_t sourceStrokeCount, ConversionBuffer &buffer,
+      size_t conversionLimit, StenoSegmentList &segmentList,
+      const ConversionBuffer &longerBuffer,
+      const StenoSegmentList &longerSegmentList);
   void ConvertText(ConversionBuffer &buffer, StenoSegmentList &segmentList,
                    size_t startingOffset);
 

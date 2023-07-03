@@ -62,6 +62,7 @@ public:
 
   void PopCount(size_t popCount) { count -= popCount; }
 
+  void TransferStartFrom(const StenoStrokeHistory &source, size_t count);
   void TransferFrom(const StenoStrokeHistory &source, size_t sourceStrokeCount,
                     size_t maxCount);
 
@@ -78,6 +79,11 @@ public:
                       size_t minimumStartOffset = 0);
 
   const StenoStroke &GetStroke(size_t i) const { return strokes[i]; }
+
+  size_t GetStateIndex(const StenoState *v) const { return v - states; }
+  const StenoState *GetStatePointer(size_t index) const {
+    return &states[index];
+  }
 
   static const size_t BUFFER_SIZE = 256;
 

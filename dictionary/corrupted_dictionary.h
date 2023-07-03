@@ -7,7 +7,7 @@
 
 class StenoCorruptedDictionary final : public StenoDictionary {
 private:
-  static const size_t MAXIMUM_OUTLINE_LENGTH = 1;
+  static const size_t MAXIMUM_OUTLINE_LENGTH = 8;
 
 public:
   constexpr StenoCorruptedDictionary()

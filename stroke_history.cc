@@ -39,6 +39,12 @@ size_t StenoStrokeHistory::GetUndoCount(size_t maxCount) const {
   return result;
 }
 
+void StenoStrokeHistory::TransferStartFrom(const StenoStrokeHistory &source,
+                                           size_t count) {
+  memcpy(strokes, source.strokes, count * sizeof(StenoStroke));
+  memcpy(states, source.states, count * sizeof(StenoState));
+}
+
 void StenoStrokeHistory::TransferFrom(const StenoStrokeHistory &source,
                                       size_t sourceStrokeCount,
                                       size_t maxCount) {

@@ -19,6 +19,10 @@ class StenoDictionary;
 
 // An implementation that requires that the top bit of the address is never
 // used, and packs the entire result into a register.
+//
+// Invalid results are represented with 0
+// Static strings are represented by (p << 1) -- lowest bit is zero
+// Dynamic strings are represented by (p << 1) +1 -- lowest bit is one.
 class StenoDictionaryLookupResult {
 private:
   StenoDictionaryLookupResult(size_t text) : text(text) {}
@@ -30,6 +34,8 @@ public:
 
   const char *GetText() const { return (char *)(text >> 1); }
   void Destroy();
+
+  StenoDictionaryLookupResult Clone() const;
 
   static StenoDictionaryLookupResult CreateInvalid() {
     return StenoDictionaryLookupResult(0);
@@ -69,6 +75,8 @@ public:
       (*destroyMethod)(this);
     }
   }
+
+  StenoDictionaryLookupResult Clone() const;
 
   static StenoDictionaryLookupResult CreateInvalid() {
     StenoDictionaryLookupResult result;
