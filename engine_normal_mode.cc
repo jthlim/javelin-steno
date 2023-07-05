@@ -1,5 +1,6 @@
 //---------------------------------------------------------------------------
 
+#include "clock.h"
 #include "console.h"
 #include "engine.h"
 #include "key.h"
@@ -7,6 +8,10 @@
 #include "str.h"
 #include "thread.h"
 #include "utf8_pointer.h"
+
+//---------------------------------------------------------------------------
+
+#define ENABLE_PROFILE 0
 
 //---------------------------------------------------------------------------
 
@@ -42,9 +47,17 @@ void StenoEngine::ProcessNormalModeStroke(StenoStroke stroke) {
   size_t previousSourceStrokeCount = history.GetCount();
   history.Add(stroke, state);
 
+#if ENABLE_PROFILE
+  uint32_t t0 = Clock::GetMicroseconds();
+#endif
+
   StenoSegmentList nextSegmentList;
   CreateSegments(history.GetCount(), nextConversionBuffer,
                  SEGMENT_CONVERSION_LIMIT, nextSegmentList);
+
+#if ENABLE_PROFILE
+  uint32_t t1 = Clock::GetMicroseconds();
+#endif
 
   StenoSegmentList previousSegmentList;
   CreateSegmentsUsingLongerResult(
@@ -52,8 +65,16 @@ void StenoEngine::ProcessNormalModeStroke(StenoStroke stroke) {
       SEGMENT_CONVERSION_LIMIT - 1, previousSegmentList, nextConversionBuffer,
       nextSegmentList);
 
+#if ENABLE_PROFILE
+  uint32_t t2 = Clock::GetMicroseconds();
+#endif
+
   size_t startingOffset = StenoSegmentList::GetCommonStartingSegmentsCount(
       previousSegmentList, nextSegmentList);
+
+#if ENABLE_PROFILE
+  uint32_t t3 = Clock::GetMicroseconds();
+#endif
 
 #if JAVELIN_THREADS
   UpdateNormalModeTextBufferThreadData previousThreadData(
@@ -70,6 +91,10 @@ void StenoEngine::ProcessNormalModeStroke(StenoStroke stroke) {
   ConvertText(nextConversionBuffer, nextSegmentList, startingOffset);
 #endif
 
+#if ENABLE_PROFILE
+  uint32_t t4 = Clock::GetMicroseconds();
+#endif
+
   state = nextConversionBuffer.keyCodeBuffer.state;
   state.shouldCombineUndo = false;
   state.isManualStateChange = false;
@@ -83,6 +108,10 @@ void StenoEngine::ProcessNormalModeStroke(StenoStroke stroke) {
     return;
   }
 
+#if ENABLE_PROFILE
+  uint32_t t5 = Clock::GetMicroseconds();
+#endif
+
   bool printSuggestions = true;
   if (emitter.Process(previousConversionBuffer.keyCodeBuffer,
                       nextConversionBuffer.keyCodeBuffer)) {
@@ -94,6 +123,10 @@ void StenoEngine::ProcessNormalModeStroke(StenoStroke stroke) {
       printSuggestions = false;
     }
   }
+
+#if ENABLE_PROFILE
+  uint32_t t6 = Clock::GetMicroseconds();
+#endif
 
   PrintTextLog(previousConversionBuffer.keyCodeBuffer,
                nextConversionBuffer.keyCodeBuffer);
@@ -107,6 +140,13 @@ void StenoEngine::ProcessNormalModeStroke(StenoStroke stroke) {
     ResetState();
     return;
   }
+
+#if ENABLE_PROFILE
+  uint32_t t7 = Clock::GetMicroseconds();
+
+  Console::Printf("Timings: %u %u %u %u %u %u %u\n\n", t1 - t0, t2 - t1,
+                  t3 - t2, t4 - t3, t5 - t5, t6 - t5, t7 - t6);
+#endif
 }
 
 void StenoEngine::ProcessNormalModeUndo() {

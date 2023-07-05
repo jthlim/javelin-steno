@@ -13,6 +13,7 @@
 //---------------------------------------------------------------------------
 
 TxBuffer::Handlers TxBuffer::handlers;
+size_t RxBuffer::rxPacketTypeCounts[(size_t)SplitHandlerId::COUNT];
 size_t TxBuffer::txPacketTypeCounts[(size_t)SplitHandlerId::COUNT];
 SplitRxHandler *RxBuffer::handlers[(size_t)SplitHandlerId::COUNT];
 
@@ -129,7 +130,8 @@ void RxBuffer::Process() const {
   size_t offset = 0;
   while (offset < header.wordCount) {
     uint32_t blockHeader = buffer[offset++];
-    int type = blockHeader >> 16;
+    uint32_t type = blockHeader >> 16;
+    rxPacketTypeCounts[type]++;
     size_t length = blockHeader & 0xffff;
 
     if (type < (size_t)SplitHandlerId::COUNT) {

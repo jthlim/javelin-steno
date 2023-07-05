@@ -731,7 +731,7 @@ void Script::ExecutionContext::Run(Script &script, size_t offset) {
         continue;
       }
       case SF::IS_BLE_PROFILE_CONNECTED: {
-        uint32_t profileId = (uint32_t) script.Pop();
+        uint32_t profileId = (uint32_t)script.Pop();
         script.Push(Ble::IsProfileConnected(profileId));
         continue;
       }
@@ -739,7 +739,7 @@ void Script::ExecutionContext::Run(Script &script, size_t offset) {
         Ble::Disconnect();
         continue;
       case SF::IS_BLE_PROFILE_PAIRED: {
-        uint32_t profileId = (uint32_t) script.Pop();
+        uint32_t profileId = (uint32_t)script.Pop();
         script.Push(Ble::IsProfilePaired(profileId));
         continue;
       }
@@ -747,7 +747,7 @@ void Script::ExecutionContext::Run(Script &script, size_t offset) {
         Ble::Unpair();
         continue;
       case SF::IS_BLE_PROFILE_SLEEPING: {
-        uint32_t profileId = (uint32_t) script.Pop();
+        uint32_t profileId = (uint32_t)script.Pop();
         script.Push(Ble::IsProfileSleeping(profileId));
         continue;
       }

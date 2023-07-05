@@ -115,6 +115,7 @@ struct RxBuffer {
   static void OnConnectionReset();
 
   static SplitRxHandler *handlers[];
+  static size_t rxPacketTypeCounts[(size_t)SplitHandlerId::COUNT];
 };
 
 class SplitTxHandler {

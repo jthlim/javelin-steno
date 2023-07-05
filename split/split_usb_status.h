@@ -42,10 +42,10 @@ private:
   bool dirty;
   UsbStatus status;
 
-  virtual void UpdateBuffer(TxBuffer &buffer);
-  virtual void OnTransmitConnectionReset() { OnConnectionReset(); }
-  virtual void OnReceiveConnectionReset() { OnConnectionReset(); }
-  virtual void OnDataReceived(const void *data, size_t length);
+  virtual void UpdateBuffer(TxBuffer &buffer) override;
+  virtual void OnTransmitConnectionReset() override { OnConnectionReset(); }
+  virtual void OnReceiveConnectionReset() override { OnConnectionReset(); }
+  virtual void OnDataReceived(const void *data, size_t length) override;
 
   void OnConnectionReset();
 };

@@ -56,8 +56,8 @@ private:
     // boot up are queued to send to the master.
     bool isConnected = true;
 
-    virtual void UpdateBuffer(TxBuffer &buffer);
-    virtual void OnDataReceived(const void *data, size_t length);
+    virtual void UpdateBuffer(TxBuffer &buffer) override;
+    virtual void OnDataReceived(const void *data, size_t length) override;
     virtual void OnTransmitConnectionReset() override { isConnected = false; }
     virtual void OnTransmitConnected() override { isConnected = true; }
 #endif

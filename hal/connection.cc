@@ -53,7 +53,7 @@ __attribute__((weak)) ConnectionId Connection::GetActiveConnection() {
       continue;
     }
   }
-  return ConnectionId::ACTIVE;
+  return ConnectionId::NONE;
 }
 
 __attribute__((weak)) void
@@ -84,7 +84,7 @@ __attribute__((weak)) PairConnectionId Connection::GetActivePairConnection() {
   if (Ble::IsPairConnected()) {
     return PairConnectionId::BLE;
   }
-  return PairConnectionId::ACTIVE;
+  return PairConnectionId::NONE;
 }
 
 __attribute__((weak)) bool Connection::IsHostSleeping() {

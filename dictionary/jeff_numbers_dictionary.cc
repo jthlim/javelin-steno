@@ -146,7 +146,11 @@ StenoJeffNumbersDictionary::LookupInternal(
         free(result);
         return StenoDictionaryLookupResult::CreateInvalid();
       }
-      char *updated = Str::Join(result, "00 {*($c)}", nullptr);
+      char *updated =
+          Str::Join(result,
+                    (control & StrokeMask::STAR).IsNotEmpty() ? "000 {*($c)}"
+                                                              : "00 {*($c)}",
+                    nullptr);
       free(result);
       result = updated;
     } else if ((control & StrokeMask::KL).IsNotEmpty() ||
