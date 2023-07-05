@@ -6,24 +6,26 @@
 //---------------------------------------------------------------------------
 
 #if JAVELIN_SPLIT
-class Bootrom final : public SplitTxHandler, SplitRxHandler {
+class Bootloader final : public SplitTxHandler, SplitRxHandler {
 #else
-class Bootrom {
+class Bootloader {
 #endif
 public:
   static void Launch();
-  static void LaunchBootrom(void *const, const char *commandLine) { Launch(); }
+  static void LaunchBootloader(void *const, const char *commandLine) {
+    Launch();
+  }
 
 #if JAVELIN_SPLIT
   static void LaunchSlave() { instance.launchSlave = true; }
-  static void LaunchSlaveBootrom(void *const, const char *commandLine) {
+  static void LaunchSlaveBootloader(void *const, const char *commandLine) {
     LaunchSlave();
   }
 
   static void RegisterTxHandler() { Split::RegisterTxHandler(&instance); }
 
   static void RegisterRxHandler() {
-    Split::RegisterRxHandler(SplitHandlerId::BOOTROM, &instance);
+    Split::RegisterRxHandler(SplitHandlerId::BOOTLOADER, &instance);
   }
 
   virtual void UpdateBuffer(TxBuffer &buffer);
@@ -32,7 +34,7 @@ public:
 private:
   bool launchSlave;
 
-  static Bootrom instance;
+  static Bootloader instance;
 
 #else
   static void RegisterTxHandler() {}

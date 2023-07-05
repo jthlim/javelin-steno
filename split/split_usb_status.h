@@ -45,6 +45,7 @@ private:
   virtual void UpdateBuffer(TxBuffer &buffer) override;
   virtual void OnTransmitConnectionReset() override { OnConnectionReset(); }
   virtual void OnReceiveConnectionReset() override { OnConnectionReset(); }
+  virtual void OnTransmitConnected() override { dirty = true; }
   virtual void OnDataReceived(const void *data, size_t length) override;
 
   void OnConnectionReset();

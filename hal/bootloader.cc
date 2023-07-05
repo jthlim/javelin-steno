@@ -1,26 +1,26 @@
 //---------------------------------------------------------------------------
 
-#include "bootrom.h"
+#include "bootloader.h"
 
 //---------------------------------------------------------------------------
 
-__attribute__((weak)) void Bootrom::Launch() {}
+__attribute__((weak)) void Bootloader::Launch() {}
 
 //---------------------------------------------------------------------------
 
 #if JAVELIN_SPLIT
 
-Bootrom Bootrom::instance;
+Bootloader Bootloader::instance;
 
-void Bootrom::UpdateBuffer(TxBuffer &buffer) {
+void Bootloader::UpdateBuffer(TxBuffer &buffer) {
   if (!launchSlave) {
     return;
   }
   launchSlave = false;
-  buffer.Add(SplitHandlerId::BOOTROM, nullptr, 0);
+  buffer.Add(SplitHandlerId::BOOTLOADER, nullptr, 0);
 }
 
-void Bootrom::OnDataReceived(const void *data, size_t length) { Launch(); }
+void Bootloader::OnDataReceived(const void *data, size_t length) { Launch(); }
 
 #endif
 

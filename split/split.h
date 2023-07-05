@@ -12,7 +12,7 @@ enum class SplitHandlerId {
   RGB,
   HID_REPORT,
   CONSOLE,
-  BOOTROM,
+  BOOTLOADER,
   KEYBOARD_LED_STATUS,
   SERIAL,
   HID_BUFFER_SIZE,
