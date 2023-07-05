@@ -888,6 +888,15 @@ TEST_BEGIN("JeffPhrasing: Enders tests") {
   VerifyStroke("SWR-FRZD", "I had cared");
   VerifyStroke("KWHR-RZD", "he cared");
 
+  VerifyStroke("SWR-PBGZ", "I change");
+  VerifyStroke("SWR-EPBGZ", "I am changing");
+  VerifyStroke("SWR-FPBGZ", "I have changed");
+  VerifyStroke("KWHR-PBGZ", "he changes");
+  VerifyStroke("SWR-PBGDZ", "I changed");
+  VerifyStroke("SWR-EPBGDZ", "I was changing");
+  VerifyStroke("SWR-FPBGDZ", "I had changed");
+  VerifyStroke("KWHR-PBGDZ", "he changed");
+
   VerifyStroke("SWR-BG", "I come");
   VerifyStroke("SWR-EBG", "I am coming");
   VerifyStroke("SWR-FBG", "I have come");
@@ -905,6 +914,15 @@ TEST_BEGIN("JeffPhrasing: Enders tests") {
   VerifyStroke("SWR-EBGTD", "I was coming to");
   VerifyStroke("SWR-FBGTD", "I had come to");
   VerifyStroke("KWHR-BGTD", "he came to");
+
+  VerifyStroke("SWR-RBGZ", "I consider");
+  VerifyStroke("SWR-ERBGZ", "I am considering");
+  VerifyStroke("SWR-FRBGZ", "I have considered");
+  VerifyStroke("KWHR-RBGZ", "he considers");
+  VerifyStroke("SWR-RBGDZ", "I considered");
+  VerifyStroke("SWR-ERBGDZ", "I was considering");
+  VerifyStroke("SWR-FRBGDZ", "I had considered");
+  VerifyStroke("KWHR-RBGDZ", "he considered");
 
   VerifyStroke("SWR-RP", "I do");
   VerifyStroke("SWR-ERP", "I am doing");
@@ -1645,6 +1663,7 @@ TEST_BEGIN("JeffPhrasing: Reverse lookups") {
   VerifyReverseLookup("I need to", StenoStroke("SWR-RPGT"));
   VerifyReverseLookup("I am going to", StenoStroke("SWREGT"));
   VerifyReverseLookup("if you go", StenoStroke("STPAUG"));
+  VerifyReverseLookup("but I considered", StenoStroke("SPWHEURBGDZ"));
   // spellchecker: enable
 }
 TEST_END
