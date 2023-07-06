@@ -5,6 +5,7 @@
 #include "crc.h"
 #include "str.h"
 #include "word_list.h"
+#include <new>
 
 //---------------------------------------------------------------------------
 
@@ -180,7 +181,7 @@ char *StenoCompiledOrthography::AddSuffix(const char *word,
   }
 
   char *result = AddSuffixInternal(word, suffix);
-  CacheEntry *entry = new CacheEntry(word, suffix, result);
+  CacheEntry *entry = new (std::nothrow) CacheEntry(word, suffix, result);
   cache[blockIndex].AddEntry(entry);
   return result;
 }
