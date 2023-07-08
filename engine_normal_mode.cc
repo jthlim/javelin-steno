@@ -252,7 +252,7 @@ void StenoEngine::ConvertText(ConversionBuffer &buffer,
   StenoTokenizer *tokenizer = segmentList.CreateTokenizer(startingOffset);
   buffer.keyCodeBuffer.Populate(tokenizer);
   if (placeSpaceAfter && !buffer.keyCodeBuffer.state.joinNext &&
-      buffer.strokeHistory.IsNotEmpty()) {
+      segmentList.IsNotEmpty()) {
     buffer.keyCodeBuffer.AppendSpace();
   }
   delete tokenizer;
@@ -395,6 +395,20 @@ void StenoEngine::PrintSuggestion(const char *p, size_t arrowPrefixCount,
   Console::Printf("]}\n\n");
 }
 
+static bool ShouldShowSuggestions(const StenoSegmentList &segmentList) {
+  // Count the number of suffix "{*!}" entries.
+  // There must be more that number of entries before that.
+  size_t joinPreviousCount = 0;
+  for (size_t i = segmentList.GetCount(); i != 0;) {
+    --i;
+    if (!Str::Eq(segmentList[i].lookup.GetText(), "{*!}")) {
+      break;
+    }
+    ++joinPreviousCount;
+  }
+  return segmentList.GetCount() > 2 * joinPreviousCount;
+}
+
 char *StenoEngine::PrintSegmentSuggestion(size_t wordCount,
                                           const StenoSegmentList &segmentList,
                                           char *buffer, char *lastLookup) {
@@ -439,47 +453,44 @@ char *StenoEngine::PrintSegmentSuggestion(size_t wordCount,
   previousConversionBuffer.keyCodeBuffer.Populate(tokenizer);
   delete tokenizer;
 
-  // Special case {*!} to avoid suggestions.
-  if (testSegments.GetCount() == 2 &&
-      (Str::Eq(testSegments[0].lookup.GetText(), "{*!}") ||
-       Str::Eq(testSegments[1].lookup.GetText(), "{*!}"))) {
+  if (!ShouldShowSuggestions(testSegments)) {
     testSegments.Reset();
     return Str::Dup("");
   }
 
-  char *lookup;
+  char *lookup =
+      testSegments[0].state->isManualStateChange ||
+              Str::HasPrefix(testSegments.Back().lookup.GetText(), "{:")
+          ? previousConversionBuffer.keyCodeBuffer.ToString()
+          : previousConversionBuffer.keyCodeBuffer.ToUnresolvedString();
 
-  bool continueLookups = true;
-  if (testSegments[0].state->isManualStateChange) {
-    lookup = previousConversionBuffer.keyCodeBuffer.ToString();
-    continueLookups = false;
-  } else {
-    lookup = previousConversionBuffer.keyCodeBuffer.ToUnresolvedString();
-  }
   char *spaceRemoved = *lookup == ' ' ? lookup + 1 : lookup;
+
+  // Special case {*!} and function calls at the start to avoid suggestions.
+  if (Str::Eq(testSegments[0].lookup.GetText(), "{*!}") ||
+      Str::HasPrefix(testSegments[0].lookup.GetText(), "{:")) {
+    testSegments.Reset();
+    return lookup;
+  }
 
   testSegments.Reset();
 
-  bool printSuggestion = true;
-  if (lastLookup) {
+  bool printSuggestion = *spaceRemoved != '\0' &&
+                         (startSegmentIndex != segmentList.GetCount() - 1 ||
+                          strokeThresholdCount != 1);
+
+  if (!printSuggestion && lastLookup) {
     char *lastLookupSpaceRemoved =
         *lastLookup == ' ' ? lastLookup + 1 : lastLookup;
 
     printSuggestion = !Str::Eq(spaceRemoved, lastLookupSpaceRemoved);
   }
 
-  if (printSuggestion && (startSegmentIndex != segmentList.GetCount() - 1 ||
-                          strokeThresholdCount != 1)) {
-    // No need to check if there's a single stroke producing the output.
-
+  if (printSuggestion) {
     PrintSuggestion(spaceRemoved, strokeThresholdCount, buffer,
                     strokeThresholdCount);
   }
 
-  if (!continueLookups) {
-    free(lookup);
-    return nullptr;
-  }
   return lookup;
 }
 
