@@ -85,9 +85,12 @@ public:
     return &states[index];
   }
 
+  bool HasModifiedStrokeHistory() const { return hasModifierStrokeHistory; }
+
   static const size_t BUFFER_SIZE = 256;
 
 private:
+  bool hasModifierStrokeHistory;
   size_t count = 0;
   StenoStroke strokes[BUFFER_SIZE];
   StenoState states[BUFFER_SIZE];

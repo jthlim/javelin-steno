@@ -60,10 +60,15 @@ void StenoEngine::ProcessNormalModeStroke(StenoStroke stroke) {
 #endif
 
   StenoSegmentList previousSegmentList;
-  CreateSegmentsUsingLongerResult(
-      previousSourceStrokeCount, previousConversionBuffer,
-      SEGMENT_CONVERSION_LIMIT - 1, previousSegmentList, nextConversionBuffer,
-      nextSegmentList);
+  if (nextConversionBuffer.strokeHistory.HasModifiedStrokeHistory()) {
+    CreateSegments(previousSourceStrokeCount, previousConversionBuffer,
+                   SEGMENT_CONVERSION_LIMIT - 1, previousSegmentList);
+  } else {
+    CreateSegmentsUsingLongerResult(
+        previousSourceStrokeCount, previousConversionBuffer,
+        SEGMENT_CONVERSION_LIMIT - 1, previousSegmentList, nextConversionBuffer,
+        nextSegmentList);
+  }
 
 #if ENABLE_PROFILE
   uint32_t t2 = Clock::GetMicroseconds();
@@ -170,11 +175,16 @@ void StenoEngine::ProcessNormalModeUndo() {
   history.PopCount(undoCount);
 
   StenoSegmentList nextSegmentList;
+  if (previousConversionBuffer.strokeHistory.HasModifiedStrokeHistory()) {
+    CreateSegments(history.GetCount(), nextConversionBuffer,
+                   SEGMENT_CONVERSION_LIMIT - undoCount, nextSegmentList);
 
-  CreateSegmentsUsingLongerResult(history.GetCount(), nextConversionBuffer,
-                                  SEGMENT_CONVERSION_LIMIT - undoCount,
-                                  nextSegmentList, previousConversionBuffer,
-                                  previousSegmentList);
+  } else {
+    CreateSegmentsUsingLongerResult(history.GetCount(), nextConversionBuffer,
+                                    SEGMENT_CONVERSION_LIMIT - undoCount,
+                                    nextSegmentList, previousConversionBuffer,
+                                    previousSegmentList);
+  }
 
   size_t startingOffset = StenoSegmentList::GetCommonStartingSegmentsCount(
       previousSegmentList, nextSegmentList);

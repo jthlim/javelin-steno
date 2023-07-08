@@ -43,6 +43,7 @@ void StenoStrokeHistory::TransferStartFrom(const StenoStrokeHistory &source,
                                            size_t count) {
   memcpy(strokes, source.strokes, count * sizeof(StenoStroke));
   memcpy(states, source.states, count * sizeof(StenoState));
+  hasModifierStrokeHistory = false;
 }
 
 void StenoStrokeHistory::TransferFrom(const StenoStrokeHistory &source,
@@ -54,6 +55,7 @@ void StenoStrokeHistory::TransferFrom(const StenoStrokeHistory &source,
 
   memcpy(strokes, source.strokes + offset, count * sizeof(StenoStroke));
   memcpy(states, source.states + offset, count * sizeof(StenoState));
+  hasModifierStrokeHistory = false;
 }
 
 void StenoStrokeHistory::CreateSegments(BuildSegmentContext &context,
@@ -267,6 +269,7 @@ void StenoStrokeHistory::HandleRetroactiveInsertSpace(
   memmove(states + currentOffset, states + currentOffset - 1,
           sizeof(StenoState) * remaining);
 
+  hasModifierStrokeHistory = true;
   strokes[currentOffset - 1] = StenoStroke(0);
 }
 
@@ -276,6 +279,7 @@ void StenoStrokeHistory::HandleRetroactiveToggleAsterisk(
     return;
   }
 
+  hasModifierStrokeHistory = true;
   strokes[currentOffset - 1] ^= StrokeMask::STAR;
 }
 
@@ -292,6 +296,7 @@ void StenoStrokeHistory::HandleRepeatLastStroke(BuildSegmentContext &context,
   memmove(states + currentOffset + 1, states + currentOffset,
           sizeof(StenoState) * remaining);
 
+  hasModifierStrokeHistory = true;
   strokes[currentOffset] = strokes[currentOffset - 1];
   states[currentOffset] = state;
   ++count;
