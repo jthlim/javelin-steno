@@ -71,6 +71,9 @@ void StenoEngine::ProcessNormalModeStroke(StenoStroke stroke) {
 
   size_t startingOffset = StenoSegmentList::GetCommonStartingSegmentsCount(
       previousSegmentList, nextSegmentList);
+  if (startingOffset > 0 && placeSpaceAfter) {
+    --startingOffset;
+  }
 
 #if ENABLE_PROFILE
   uint32_t t3 = Clock::GetMicroseconds();
@@ -175,6 +178,9 @@ void StenoEngine::ProcessNormalModeUndo() {
 
   size_t startingOffset = StenoSegmentList::GetCommonStartingSegmentsCount(
       previousSegmentList, nextSegmentList);
+  if (startingOffset > 0 && placeSpaceAfter) {
+    --startingOffset;
+  }
 
 #if JAVELIN_THREADS
   UpdateNormalModeTextBufferThreadData previousThreadData(
