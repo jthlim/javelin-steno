@@ -1,6 +1,7 @@
 //---------------------------------------------------------------------------
 
 #pragma once
+#include "../list.h"
 #include "../stroke.h"
 #include <stddef.h>
 
@@ -30,6 +31,11 @@
 //  Overall, this reduces the memory requirements from 512 bytes per 128
 //  hashmap entries to just 20 bytes -- a 25x savings.
 //
+//---------------------------------------------------------------------------
+
+class StenoDictionary;
+struct StenoDictionaryListEntry;
+
 //---------------------------------------------------------------------------
 
 struct StenoCompactHashMapEntryBlock {
@@ -79,36 +85,45 @@ struct StenoMapDictionaryStrokesDefinition {
 
 //---------------------------------------------------------------------------
 
-enum class StenoMapDictionaryFormat : uint8_t {
+enum class StenoDictionaryType : uint8_t {
   // COMPACT uses fewer offsets and 24-bit values for strokes and text offsets.
   COMPACT,
 
   // FULL uses an offset for every 32-bit values for strokes and text offsets.
   FULL,
+
+  JEFF_SHOW_STROKE,
+  JEFF_NUMBERS,
+  JEFF_PHRASING,
+  EMILY_SYMBOLS,
 };
 
-struct StenoMapDictionaryDefinition {
+struct StenoDictionaryDefinition {
   bool defaultEnabled;
   uint8_t maximumOutlineLength;
-  StenoMapDictionaryFormat format;
+  StenoDictionaryType format;
   uint8_t _padding3;
   const char *name;
   const uint8_t *textBlock;
   const StenoMapDictionaryStrokesDefinition *strokes;
+
+  const StenoDictionary *Create() const;
 };
 
 //---------------------------------------------------------------------------
 
 constexpr uint32_t STENO_MAP_DICTIONARY_COLLECTION_MAGIC = 0x3243534a; // 'JSC2'
 
-struct StenoMapDictionaryCollection {
+struct StenoDictionaryCollection {
   uint32_t magic;
   uint16_t dictionaryCount;
   bool hasReverseLookup;
   bool _padding7;
   const uint8_t *textBlock;
   size_t textBlockLength;
-  const StenoMapDictionaryDefinition *const dictionaries[];
+  const StenoDictionaryDefinition *const dictionaries[];
+
+  void AddDictionariesToList(List<StenoDictionaryListEntry> &list) const;
 };
 
 //---------------------------------------------------------------------------

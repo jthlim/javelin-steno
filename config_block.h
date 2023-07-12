@@ -11,10 +11,10 @@ struct StenoConfigBlock {
   bool useFirstUp;
   bool useRepeat;
   bool useJeffModifiers;
-  bool useJeffShowStroke;
-  bool useJeffNumbers;
-  bool useEmilySymbols;
-  bool useJeffPhrasing;
+  bool _deprecatedUseJeffShowStroke;
+  bool _deprecatedUseJeffNumbers;
+  bool _deprecatedUseEmilySymbols;
+  bool _deprecatedUseJeffPhrasing;
   UnicodeMode unicodeMode;
   KeyboardLayout keyboardLayout;
   bool hidCompatibilityMode;

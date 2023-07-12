@@ -5,7 +5,6 @@
 #include "../console.h"
 #include "../str.h"
 #include "../uint24.h"
-#include "map_dictionary_definition.h"
 
 //---------------------------------------------------------------------------
 
@@ -274,7 +273,7 @@ size_t StenoCompactMapDictionary::GetMaximumOutlineLength() const {
 
 const StenoMapDictionaryStrokesDefinition *
 StenoCompactMapDictionary::CreateStrokeCache(
-    const StenoMapDictionaryDefinition &definition) {
+    const StenoDictionaryDefinition &definition) {
   size_t byteSize = sizeof(StenoMapDictionaryStrokesDefinition) *
                     definition.maximumOutlineLength;
   StenoMapDictionaryStrokesDefinition *strokes =

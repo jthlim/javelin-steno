@@ -2,13 +2,13 @@
 
 #pragma once
 #include "dictionary.h"
-#include "map_dictionary_definition.h"
+#include "dictionary_definition.h"
 
 //---------------------------------------------------------------------------
 
 class StenoFullMapDictionary final : public StenoDictionary {
 public:
-  StenoFullMapDictionary(const StenoMapDictionaryDefinition &definition)
+  StenoFullMapDictionary(const StenoDictionaryDefinition &definition)
       : StenoDictionary(definition.maximumOutlineLength),
         textBlock(definition.textBlock), definition(definition),
         strokes(CreateStrokeCache(definition)) {}
@@ -30,13 +30,13 @@ public:
 
 private:
   const uint8_t *textBlock;
-  const StenoMapDictionaryDefinition &definition;
+  const StenoDictionaryDefinition &definition;
 
   // This is offset by 1 to simplify lookup code marginally.
   const StenoMapDictionaryStrokesDefinition *strokes;
 
   static const StenoMapDictionaryStrokesDefinition *
-  CreateStrokeCache(const StenoMapDictionaryDefinition &definition);
+  CreateStrokeCache(const StenoDictionaryDefinition &definition);
 };
 
 //---------------------------------------------------------------------------

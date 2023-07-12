@@ -1,13 +1,13 @@
 //---------------------------------------------------------------------------
 
-struct StenoMapDictionaryDefinition;
+struct StenoDictionaryDefinition;
 
 //---------------------------------------------------------------------------
 
 class TestDictionary {
 public:
-  static const StenoMapDictionaryDefinition definition;
-  static const StenoMapDictionaryDefinition fullDefinition;
+  static const StenoDictionaryDefinition definition;
+  static const StenoDictionaryDefinition fullDefinition;
 };
 
 //---------------------------------------------------------------------------

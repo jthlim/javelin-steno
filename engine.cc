@@ -206,7 +206,7 @@ void StenoEngine::SendText(const uint8_t *p) {
 #include "dictionary/unicode_dictionary.h"
 
 extern StenoOrthography testOrthography;
-extern StenoMapDictionaryDefinition testDictionaryDefinition;
+extern StenoDictionaryDefinition testDictionaryDefinition;
 // constexpr StenoMapDictionary testDictionary(testDictionaryDefinition);
 
 static StenoCompactMapDictionary mainDictionary(TestDictionary::definition);

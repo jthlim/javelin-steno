@@ -4,7 +4,7 @@
 // * test.json
 
 #include "test_dictionary.h"
-#include "map_dictionary_definition.h"
+#include "dictionary_definition.h"
 
 const uint8_t textBlock[47] = {
   0x00, 0x7b, 0x3a, 0x61, 0x64, 0x64, 0x5f, 0x74, 0x72, 0x61, 0x6e, 0x73, 0x6c, 0x61, 0x74, 0x69,
@@ -34,10 +34,10 @@ const StenoMapDictionaryStrokesDefinition strokes[] = {
   {.hashMapSize = hashMapSize2, .data = data2, .offsets = offsets2},
 };
 
-constexpr StenoMapDictionaryDefinition TestDictionary::definition = {
+constexpr StenoDictionaryDefinition TestDictionary::definition = {
   true,
   2,
-  StenoMapDictionaryFormat::COMPACT,
+  StenoDictionaryType::COMPACT,
   0,
   "main.json",
   textBlock,
