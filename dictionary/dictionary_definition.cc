@@ -13,13 +13,20 @@
 //---------------------------------------------------------------------------
 
 const StenoDictionary *StenoDictionaryDefinition::Create() const {
-  switch (format) {
-  case StenoDictionaryType::COMPACT:
+#if defined(JAVELIN_PLATFORM_NRF5_SDK)
+  // Avoid XIP anomaly 216.
+  asm volatile("dsb");
+#endif
+
+  switch (type) {
+  case StenoDictionaryType::COMPACT_MAP:
     return new StenoCompactMapDictionary(*this);
 
+  case StenoDictionaryType::FULL_MAP:
 #if defined(JAVELIN_PLATFORM_NRF5_SDK)
-  case StenoDictionaryType::FULL:
     return new StenoFullMapDictionary(*this);
+#else
+    return nullptr;
 #endif
 
   case StenoDictionaryType::JEFF_SHOW_STROKE:
@@ -50,11 +57,6 @@ void StenoDictionaryCollection::AddDictionariesToList(
 
   for (size_t i = 0; i < dictionaryCount; ++i) {
     const StenoDictionaryDefinition *definition = dictionaries[i];
-
-#if defined(JAVELIN_PLATFORM_NRF5_SDK)
-    // Avoid XIP anomaly 216.
-    asm volatile("dsb");
-#endif
 
     const StenoDictionary *dictionary = definition->Create();
     if (dictionary) {

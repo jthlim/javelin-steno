@@ -38,12 +38,12 @@ public:
   const T &GetCurrentState() const { return lastState; }
   const T &GetDebouncedState() const { return lastDebouncedState; }
 
+  static const uint32_t DEBOUNCE_DELAY_MS = JAVELIN_DEBOUNCE_MS;
+
 private:
   T lastDebouncedState;
   T lastState;
   uint32_t lastStateTime = 0;
-
-  static const uint32_t DEBOUNCE_DELAY_MS = JAVELIN_DEBOUNCE_MS;
 };
 
 //---------------------------------------------------------------------------

@@ -43,7 +43,7 @@ const StenoMapDictionaryStrokesDefinition strokes[] = {
 constexpr StenoDictionaryDefinition TestDictionary::fullDefinition = {
   true,
   2,
-  StenoDictionaryType::FULL,
+  StenoDictionaryType::FULL_MAP,
   0,
   "main.json",
   textBlock,

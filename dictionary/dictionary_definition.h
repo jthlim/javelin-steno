@@ -86,11 +86,13 @@ struct StenoMapDictionaryStrokesDefinition {
 //---------------------------------------------------------------------------
 
 enum class StenoDictionaryType : uint8_t {
-  // COMPACT uses fewer offsets and 24-bit values for strokes and text offsets.
-  COMPACT,
+  // COMPACT_MAP uses an offset for every 128 entries and 24-bit values for
+  // strokes and text offsets.
+  COMPACT_MAP,
 
-  // FULL uses an offset for every 32-bit values for strokes and text offsets.
-  FULL,
+  // FULL_MAP uses an offset for every 32 entries and 32-bit value for strokes
+  // and text offsets.
+  FULL_MAP,
 
   JEFF_SHOW_STROKE,
   JEFF_NUMBERS,
@@ -101,8 +103,10 @@ enum class StenoDictionaryType : uint8_t {
 struct StenoDictionaryDefinition {
   bool defaultEnabled;
   uint8_t maximumOutlineLength;
-  StenoDictionaryType format;
+  StenoDictionaryType type;
   uint8_t _padding3;
+
+  // These fields are only valid for type being compact map or full map.
   const char *name;
   const uint8_t *textBlock;
   const StenoMapDictionaryStrokesDefinition *strokes;
