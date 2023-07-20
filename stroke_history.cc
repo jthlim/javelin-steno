@@ -139,6 +139,7 @@ void StenoStrokeHistory::RemoveOffset(BuildSegmentContext &context,
   memmove(states + offset, states + offset + length,
           sizeof(StenoState) * remaining);
   count -= length;
+  hasModifierStrokeHistory = true;
 }
 
 bool StenoStrokeHistory::AutoSuffixLookup(BuildSegmentContext &context,
@@ -269,7 +270,6 @@ void StenoStrokeHistory::HandleRetroactiveInsertSpace(
   memmove(states + currentOffset, states + currentOffset - 1,
           sizeof(StenoState) * remaining);
 
-  hasModifierStrokeHistory = true;
   strokes[currentOffset - 1] = StenoStroke(0);
 }
 
@@ -279,7 +279,6 @@ void StenoStrokeHistory::HandleRetroactiveToggleAsterisk(
     return;
   }
 
-  hasModifierStrokeHistory = true;
   strokes[currentOffset - 1] ^= StrokeMask::STAR;
 }
 
@@ -296,7 +295,6 @@ void StenoStrokeHistory::HandleRepeatLastStroke(BuildSegmentContext &context,
   memmove(states + currentOffset + 1, states + currentOffset,
           sizeof(StenoState) * remaining);
 
-  hasModifierStrokeHistory = true;
   strokes[currentOffset] = strokes[currentOffset - 1];
   states[currentOffset] = state;
   ++count;
