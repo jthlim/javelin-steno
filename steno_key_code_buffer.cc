@@ -358,17 +358,20 @@ void StenoKeyCodeBuffer::ProcessOrthographicSuffix(const char *text,
 
   // Skip the unchanged prefixes -- this preserves camelCasing when suffixes are
   // added.
+  StenoCaseMode caseMode = StenoCaseMode::NORMAL;
   while (*pWord && *pScratchPad && *pWord == *pScratchPad) {
     // Skip utf8 suffix characters.
     if ((*pWord & 0xc0) != 0x80) {
-      state.caseMode = buffer[count++].GetOutputCaseMode();
+      caseMode = buffer[count++].GetOutputCaseMode();
     }
     ++pWord;
     ++pScratchPad;
   }
+  if (state.caseMode == StenoCaseMode::NORMAL) {
+    state.caseMode = GetNextLetterCaseMode(caseMode);
+  }
 
-  AppendTextNoCaseModeOverride(pWord, strlen(pWord),
-                               GetNextLetterCaseMode(state.caseMode));
+  AppendTextNoCaseModeOverride(pWord, strlen(pWord), state.caseMode);
   state.caseMode = state.GetNextWordCaseMode();
 
   free(word);

@@ -8,10 +8,25 @@
 
 struct StenoDictionaryListEntry {
   StenoDictionaryListEntry(const StenoDictionary *dictionary, bool enabled)
-      : enabled(enabled), dictionary(dictionary) {}
+      : maximumOutlineLength(enabled ? dictionary->GetMaximumOutlineLength()
+                                     : 0),
+        dictionary(dictionary) {}
 
-  bool enabled;
+  size_t maximumOutlineLength;
   const StenoDictionary *dictionary;
+
+  void Enable() {
+    maximumOutlineLength = dictionary->GetMaximumOutlineLength();
+  }
+  void Disable() { maximumOutlineLength = 0; }
+  bool IsEnabled() const { return maximumOutlineLength != 0; }
+  void ToggleEnable() {
+    if (IsEnabled()) {
+      Disable();
+    } else {
+      Enable();
+    }
+  }
 };
 
 //---------------------------------------------------------------------------
@@ -59,8 +74,6 @@ private:
   size_t maximumOutlineLength;
 
   static bool isSendDictionaryStatusEnabled;
-
-  void UpdateMaximumOutlineLength();
 
   void SendDictionaryStatus(const char *name, bool enabled) const;
 };

@@ -343,6 +343,9 @@ bool StenoUserDictionary::Add(const StenoStroke *strokes, size_t length,
   }
 
   AddToReverseHashTable(word, data.offset);
+
+  InvalidateMaximumOutlineLengthCache();
+
   return true;
 }
 

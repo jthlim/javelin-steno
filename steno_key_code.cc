@@ -6,11 +6,11 @@
 //---------------------------------------------------------------------------
 
 uint32_t StenoKeyCode::ResolveOutputUnicode() const {
-  return ResolveUnicode(unicode, StenoCaseMode(outputCaseMode));
+  return ResolveUnicode(unicode, outputCaseMode);
 }
 
 uint32_t StenoKeyCode::ResolveSelectedUnicode() const {
-  return ResolveUnicode(unicode, StenoCaseMode(selectedCaseMode));
+  return ResolveUnicode(unicode, selectedCaseMode);
 }
 
 uint32_t StenoKeyCode::ResolveUnicode(uint32_t unicode, StenoCaseMode mode) {

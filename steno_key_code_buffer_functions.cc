@@ -4,6 +4,7 @@
 #include "engine.h"
 #include "key.h"
 #include "str.h"
+#include "utf8_pointer.h"
 
 //---------------------------------------------------------------------------
 
@@ -23,6 +24,7 @@ constexpr KeyCodeFunctionEntry HANDLERS[] = {
     {"retro_double_quotes", &StenoKeyCodeBuffer::RetroDoubleQuotesFunction},
     {"retro_lower", &StenoKeyCodeBuffer::RetroLowerCaseFunction},
     {"retro_single_quotes", &StenoKeyCodeBuffer::RetroSingleQuotesFunction},
+    {"retro_surround", &StenoKeyCodeBuffer::RetroSurroundFunction},
     {"retro_title", &StenoKeyCodeBuffer::RetroTitleCaseFunction},
     {"retro_upper", &StenoKeyCodeBuffer::RetroUpperCaseFunction},
     {"set_case", &StenoKeyCodeBuffer::SetCaseFunction},
@@ -349,9 +351,9 @@ void StenoKeyCodeBuffer::RetroactiveFormatCurrency(const char *pStart,
   }
 
   // Replace the buffer with the template.
-  for (const char *t = pStart; t < pEnd; ++t) {
-    if (*t != 'c') {
-      *p++ = StenoKeyCode(*t, StenoCaseMode::NORMAL);
+  for (Utf8Pointer t = pStart; t < pEnd; ++t) {
+    if (uint32_t unicode = *t; unicode != 'c') {
+      *p++ = StenoKeyCode(unicode, StenoCaseMode::NORMAL);
       continue;
     }
 
@@ -502,6 +504,20 @@ bool StenoKeyCodeBuffer::RetroSingleQuotesFunction(
   }
 
   RetroactiveQuotes(wordCount, "'", "'");
+  return true;
+}
+
+bool StenoKeyCodeBuffer::RetroSurroundFunction(const List<char *> &parameters) {
+  if (parameters.GetCount() != 4) {
+    return false;
+  }
+
+  int wordCount;
+  if (!ReadIntegerParameter(wordCount, parameters[1])) {
+    return false;
+  }
+
+  RetroactiveQuotes(wordCount, parameters[2], parameters[3]);
   return true;
 }
 

@@ -186,9 +186,6 @@ void StenoEngine::AddTranslation(size_t newlineIndex) {
   char *word = nextConversionBuffer.keyCodeBuffer.ToString();
   userDictionary->Add(&addTranslationHistory.GetStroke(0), newlineIndex, word);
   free(word);
-
-  // Update cache
-  dictionary.CacheMaximumOutlineLength();
 }
 
 void StenoEngine::DeleteTranslation(size_t newlineIndex) {

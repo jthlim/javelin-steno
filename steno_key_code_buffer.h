@@ -88,6 +88,7 @@ public:
   bool RetroSingleQuotesFunction(const List<char *> &parameters);
   bool RetroTitleCaseFunction(const List<char *> &parameters);
   bool RetroUpperCaseFunction(const List<char *> &parameters);
+  bool RetroSurroundFunction(const List<char *> &parameters);
   bool SetCaseFunction(const List<char *> &parameters);
   bool SetSpaceFunction(const List<char *> &parameters);
   bool ToggleDictionaryFunction(const List<char *> &parameters);

@@ -148,6 +148,10 @@ bool StenoEngine::ToggleDictionary(const char *name) {
   return dictionary.ToggleDictionary(name);
 }
 
+void StenoEngine::UpdateMaximumStrokeLengthCache() {
+  dictionary.CacheMaximumOutlineLength();
+}
+
 void StenoEngine::ReverseLookup(StenoReverseDictionaryLookup &result) const {
   ExternalFlashSentry externalFlashSentry;
 

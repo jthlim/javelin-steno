@@ -14,8 +14,8 @@ public:
 
   StenoKeyCode(uint32_t unicode, StenoCaseMode outputCaseMode,
                StenoCaseMode selectedCaseMode = StenoCaseMode::NORMAL)
-      : unicode(unicode), outputCaseMode(uint8_t(outputCaseMode)),
-        selectedCaseMode(uint8_t(selectedCaseMode)) {}
+      : unicode(unicode), outputCaseMode(outputCaseMode),
+        selectedCaseMode(selectedCaseMode) {}
 
   static StenoKeyCode CreateRawKeyCodePress(KeyCode keyCode) {
     StenoKeyCode result;
@@ -47,13 +47,13 @@ public:
 
   uint32_t GetUnicode() const { return isRawKeyCode ? 0 : unicode; }
   StenoCaseMode GetOutputCaseMode() const {
-    return isRawKeyCode ? StenoCaseMode::NORMAL : StenoCaseMode(outputCaseMode);
+    return isRawKeyCode ? StenoCaseMode::NORMAL : outputCaseMode;
   }
 
   void SetCase(StenoCaseMode newCaseMode) {
     if (!isRawKeyCode) {
-      outputCaseMode = uint8_t(newCaseMode);
-      selectedCaseMode = uint8_t(newCaseMode);
+      outputCaseMode = newCaseMode;
+      selectedCaseMode = newCaseMode;
     }
   }
 
@@ -100,8 +100,8 @@ private:
       // StenoCaseMode type.
       // outputCaseMode is used to display.
       // selectedCaseMode is used for reverse lookups.
-      uint8_t outputCaseMode : 4;
-      uint8_t selectedCaseMode : 4;
+      StenoCaseMode outputCaseMode : 4;
+      StenoCaseMode selectedCaseMode : 4;
     };
     uint32_t value;
   };

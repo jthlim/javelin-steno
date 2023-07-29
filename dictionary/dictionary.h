@@ -195,6 +195,7 @@ public:
   virtual void CacheMaximumOutlineLength() {
     cachedMaximumOutlineLength = GetMaximumOutlineLength();
   }
+  static void InvalidateMaximumOutlineLengthCache();
 
   virtual size_t GetMaximumOutlineLength() const = 0;
   virtual const char *GetName() const = 0;

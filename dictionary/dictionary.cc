@@ -135,6 +135,9 @@ bool StenoDictionary::ReverseMapDictionaryLookup(
   return false;
 }
 
+__attribute__((weak)) void
+StenoDictionary::InvalidateMaximumOutlineLengthCache() {}
+
 void StenoDictionary::PrintInfo(int depth) const {
   Console::Printf("%s%s\n", Spaces(depth), GetName());
 }
