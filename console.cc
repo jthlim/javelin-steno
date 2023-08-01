@@ -43,7 +43,8 @@ void ConsoleWriter::Pop() {
 }
 
 __attribute__((weak)) void
-ConsoleWriter::SetConnection(ConnectionId connectionId) {}
+ConsoleWriter::SetConnection(ConnectionId connectionId,
+                             uint16_t connectionHandle) {}
 
 //---------------------------------------------------------------------------
 

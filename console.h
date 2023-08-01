@@ -36,7 +36,8 @@ public:
   static void Push(IWriter *writer);
   static void Pop();
 
-  static void SetConnection(ConnectionId connectionId);
+  static void SetConnection(ConnectionId connectionId,
+                            uint16_t connnectionHandle);
 
   static ConsoleWriter instance;
 
