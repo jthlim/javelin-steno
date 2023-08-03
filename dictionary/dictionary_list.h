@@ -33,6 +33,11 @@ struct StenoDictionaryListEntry {
       Enable();
     }
   }
+  void UpdateMaximumOutlineLength(size_t maximumOutlineLength) {
+    if (enabled) {
+      combinedMaximumOutlineLength = maximumOutlineLength;
+    }
+  }
 };
 
 //---------------------------------------------------------------------------

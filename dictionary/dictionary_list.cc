@@ -93,9 +93,7 @@ void StenoDictionaryList::CacheMaximumOutlineLength() {
   for (StenoDictionaryListEntry &entry : dictionaries) {
     ((StenoDictionary *)entry.dictionary)->CacheMaximumOutlineLength();
     size_t m = entry.dictionary->GetCachedMaximumOutlineLength();
-    if (entry.IsEnabled()) {
-      entry.combinedMaximumOutlineLength = m;
-    }
+    entry.UpdateMaximumOutlineLength(m);
     if (m > max) {
       max = m;
     }
