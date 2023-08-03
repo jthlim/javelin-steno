@@ -8,18 +8,24 @@
 
 struct StenoDictionaryListEntry {
   StenoDictionaryListEntry(const StenoDictionary *dictionary, bool enabled)
-      : maximumOutlineLength(enabled ? dictionary->GetMaximumOutlineLength()
-                                     : 0),
+      : enabled(enabled),
+        combinedMaximumOutlineLength(
+            enabled ? dictionary->GetMaximumOutlineLength() : 0),
         dictionary(dictionary) {}
 
-  size_t maximumOutlineLength;
+  bool enabled;
+  size_t combinedMaximumOutlineLength;
   const StenoDictionary *dictionary;
 
   void Enable() {
-    maximumOutlineLength = dictionary->GetMaximumOutlineLength();
+    enabled = true;
+    combinedMaximumOutlineLength = dictionary->GetMaximumOutlineLength();
   }
-  void Disable() { maximumOutlineLength = 0; }
-  bool IsEnabled() const { return maximumOutlineLength != 0; }
+  void Disable() {
+    enabled = false;
+    combinedMaximumOutlineLength = 0;
+  }
+  bool IsEnabled() const { return enabled; }
   void ToggleEnable() {
     if (IsEnabled()) {
       Disable();

@@ -33,7 +33,7 @@ StenoDictionaryList::StenoDictionaryList(
 StenoDictionaryLookupResult
 StenoDictionaryList::Lookup(const StenoDictionaryLookup &lookup) const {
   for (const StenoDictionaryListEntry &entry : dictionaries) {
-    if (entry.maximumOutlineLength < lookup.length) {
+    if (entry.combinedMaximumOutlineLength < lookup.length) {
       continue;
     }
 
@@ -48,7 +48,7 @@ StenoDictionaryList::Lookup(const StenoDictionaryLookup &lookup) const {
 const StenoDictionary *StenoDictionaryList::GetLookupProvider(
     const StenoDictionaryLookup &lookup) const {
   for (const StenoDictionaryListEntry &entry : dictionaries) {
-    if (entry.maximumOutlineLength < lookup.length) {
+    if (entry.combinedMaximumOutlineLength < lookup.length) {
       continue;
     }
 
@@ -94,7 +94,7 @@ void StenoDictionaryList::CacheMaximumOutlineLength() {
     ((StenoDictionary *)entry.dictionary)->CacheMaximumOutlineLength();
     size_t m = entry.dictionary->GetCachedMaximumOutlineLength();
     if (entry.IsEnabled()) {
-      entry.maximumOutlineLength = m;
+      entry.combinedMaximumOutlineLength = m;
     }
     if (m > max) {
       max = m;
