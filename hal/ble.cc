@@ -23,4 +23,8 @@ __attribute__((weak)) bool Ble::IsProfileSleeping(int profileId) {
 __attribute__((weak)) bool Ble::IsAdvertising() { return false; }
 __attribute__((weak)) bool Ble::IsScanning() { return false; }
 
+__attribute__((weak)) KeyboardLedStatus Ble::GetActiveKeyboardLedStatus() {
+  return KeyboardLedStatus(0);
+}
+
 //---------------------------------------------------------------------------

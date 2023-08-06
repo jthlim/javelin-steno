@@ -1,11 +1,35 @@
 //---------------------------------------------------------------------------
 
 #pragma once
-#include "split/split.h"
+#include <stdint.h>
 
 //---------------------------------------------------------------------------
 
-struct KeyboardLedStatusValue {
+class KeyboardLedStatus {
+public:
+  KeyboardLedStatus() = default;
+  KeyboardLedStatus(uint8_t value) : value(value) {}
+
+  void Reset() { value = 0; }
+
+  bool IsNumLockOn() const { return numLock; }
+  bool IsCapsLockOn() const { return capsLock; }
+  bool IsScrollLockOn() const { return scrollLock; }
+  bool IsComposeOn() const { return compose; }
+  bool IsKanaOn() const { return kana; }
+
+  bool GetLedStatus(int index) const { return ((value >> index) & 1) != 0; }
+
+  uint32_t GetValue() const { return value; }
+
+  bool operator==(const KeyboardLedStatus &other) const {
+    return value == other.value;
+  }
+  bool operator!=(const KeyboardLedStatus &other) const {
+    return value != other.value;
+  }
+
+private:
   union {
     struct {
       uint8_t numLock : 1;
@@ -18,72 +42,7 @@ struct KeyboardLedStatusValue {
   };
 };
 
-static_assert(sizeof(KeyboardLedStatusValue) == 1,
-              "Unexpected KeyboardLedStatusValue size");
-
-#if JAVELIN_SPLIT
-
-class KeyboardLedStatus {
-public:
-  static void Set(KeyboardLedStatusValue value);
-
-  static void RegisterTxHandler() { Split::RegisterTxHandler(&instance); }
-
-  static bool IsNumLockOn() { return instance.value.numLock; }
-  static bool IsCapsLockOn() { return instance.value.capsLock; }
-  static bool IsScrollLockOn() { return instance.value.scrollLock; }
-  static bool IsComposeOn() { return instance.value.compose; }
-  static bool IsKanaOn() { return instance.value.kana; }
-
-  static bool GetLedStatus(int index) {
-    return ((instance.value.value >> index) & 1) != 0;
-  }
-
-  static void RegisterRxHandler() {
-    Split::RegisterRxHandler(SplitHandlerId::KEYBOARD_LED_STATUS, &instance);
-  }
-
-private:
-  struct KeyboardLedStatusData : public SplitTxHandler, public SplitRxHandler {
-    bool dirty = false;
-    KeyboardLedStatusValue value;
-
-    void Set(KeyboardLedStatusValue newValue) {
-      dirty = true;
-      value = newValue;
-    }
-
-    virtual void UpdateBuffer(TxBuffer &buffer);
-    virtual void OnTransmitConnectionReset() { dirty = true; }
-    virtual void OnDataReceived(const void *data, size_t length);
-  };
-
-  static KeyboardLedStatusData instance;
-};
-
-#else
-
-class KeyboardLedStatus {
-public:
-  static void Set(KeyboardLedStatusValue value);
-
-  static bool IsNumLockOn() { return instance.numLock; }
-  static bool IsCapsLockOn() { return instance.capsLock; }
-  static bool IsScrollLockOn() { return instance.scrollLock; }
-  static bool IsComposeOn() { return instance.compose; }
-  static bool IsKanaOn() { return instance.kana; }
-
-  static bool GetLedStatus(int index) {
-    return ((instance.value >> index) & 1) != 0;
-  }
-
-  static void RegisterTxHandler() {}
-  static void RegisterRxHandler() {}
-
-private:
-  static KeyboardLedStatusValue instance;
-};
-
-#endif // JAVELIN_SPLIT
+static_assert(sizeof(KeyboardLedStatus) == 1,
+              "Unexpected KeyboardLedStatus size");
 
 //---------------------------------------------------------------------------

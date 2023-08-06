@@ -19,6 +19,11 @@ public:
   void OnSuspend();
   void OnResume();
 
+  KeyboardLedStatus GetKeyboardLedStatus() const {
+    return status.GetKeyboardLedStatus();
+  }
+  void SetKeyboardLedStatus(KeyboardLedStatus status);
+
   void SetPowered(bool value);
   void SetBatteryPercentage(int percentage);
   int GetBatteryPercentage() const { return status.GetBatteryPercentage(); }

@@ -1,6 +1,7 @@
 //---------------------------------------------------------------------------
 
 #pragma once
+#include "../keyboard_led_status.h"
 #include <stdint.h>
 
 //---------------------------------------------------------------------------
@@ -30,6 +31,8 @@ public:
                                      ConnectionId third);
   static bool IsPairConnected(PairConnectionId pairConnectionId);
   static PairConnectionId GetActivePairConnection();
+
+  static KeyboardLedStatus GetActiveKeyboardLedStatus();
 
   // This is based on the currently active connection.
   static bool IsHostSleeping();

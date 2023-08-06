@@ -20,14 +20,17 @@ void SplitUsbStatus::OnMount() {
   dirty = true;
   GetLocalUsbStatus().OnMount();
 }
+
 void SplitUsbStatus::OnUnmount() {
   dirty = true;
   GetLocalUsbStatus().OnUnmount();
 }
+
 void SplitUsbStatus::OnSuspend() {
   dirty = true;
   GetLocalUsbStatus().OnSuspend();
 }
+
 void SplitUsbStatus::OnResume() {
   dirty = true;
   GetLocalUsbStatus().OnResume();
@@ -36,6 +39,11 @@ void SplitUsbStatus::OnResume() {
 void SplitUsbStatus::SetPowered(bool value) {
   dirty = true;
   GetLocalUsbStatus().SetPowered(value);
+}
+
+void SplitUsbStatus::SetKeyboardLedStatus(KeyboardLedStatus status) {
+  dirty = true;
+  GetLocalUsbStatus().SetKeyboardLedStatus(status);
 }
 
 void SplitUsbStatus::SetBatteryPercentage(int percentage) {
@@ -59,14 +67,16 @@ void SplitUsbStatus::UpdateBuffer(TxBuffer &buffer) {
 void SplitUsbStatus::OnDataReceived(const void *data, size_t length) {
   assert(length == sizeof(UsbStatus));
   UsbStatus &instance = GetRemoteUsbStatus();
-  bool wasConnected = instance.IsConnected();
-  bool wasPowered = instance.IsPowered();
+  UsbStatus oldStatus = instance;
   memcpy(&instance, data, sizeof(UsbStatus));
-  if (instance.IsConnected() != wasConnected) {
+  if (instance.IsConnected() != oldStatus.IsConnected()) {
     ButtonManager::ExecuteScript(ScriptId::CONNECTION_UPDATE);
   }
-  if (instance.IsPowered() != wasPowered) {
+  if (instance.IsPowered() != oldStatus.IsPowered()) {
     ButtonManager::ExecuteScript(ScriptId::BATTERY_UPDATE);
+  }
+  if (instance.GetKeyboardLedStatus() != oldStatus.GetKeyboardLedStatus()) {
+    ButtonManager::ExecuteScript(ScriptId::KEYBOARD_LED_STATUS_UPDATE);
   }
 }
 

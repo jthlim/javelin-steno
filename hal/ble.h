@@ -1,6 +1,7 @@
 //---------------------------------------------------------------------------
 
 #pragma once
+#include "../keyboard_led_status.h"
 
 //---------------------------------------------------------------------------
 
@@ -19,6 +20,7 @@ public:
   static bool IsProfileSleeping(int profileId);
   static bool IsAdvertising();
   static bool IsScanning();
+  static KeyboardLedStatus GetActiveKeyboardLedStatus();
 };
 
 //---------------------------------------------------------------------------

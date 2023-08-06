@@ -534,7 +534,8 @@ void Script::ExecutionContext::Run(Script &script, size_t offset) {
         continue;
       case SF::GET_LED_STATUS: {
         int index = (int)script.Pop();
-        script.Push(KeyboardLedStatus::GetLedStatus(index));
+        script.Push(
+            Connection::GetActiveKeyboardLedStatus().GetLedStatus(index));
         continue;
       }
       case SF::SET_GPIO_PIN: {

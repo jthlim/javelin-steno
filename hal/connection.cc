@@ -16,7 +16,7 @@ ConnectionId Connection::preferredConnections[3] = {
 
 //---------------------------------------------------------------------------
 
-__attribute__((weak)) bool Connection::IsConnected(ConnectionId connectionId) {
+bool Connection::IsConnected(ConnectionId connectionId) {
   switch (connectionId) {
   case ConnectionId::ACTIVE:
     return Ble::IsConnected() || UsbStatus::instance.IsConnected() ||
@@ -31,7 +31,7 @@ __attribute__((weak)) bool Connection::IsConnected(ConnectionId connectionId) {
   return false;
 }
 
-__attribute__((weak)) ConnectionId Connection::GetActiveConnection() {
+ConnectionId Connection::GetActiveConnection() {
   for (ConnectionId connectionId : preferredConnections) {
     switch (connectionId) {
     case ConnectionId::ACTIVE:
@@ -56,9 +56,25 @@ __attribute__((weak)) ConnectionId Connection::GetActiveConnection() {
   return ConnectionId::NONE;
 }
 
-__attribute__((weak)) void
-Connection::SetPreferredConnection(ConnectionId first, ConnectionId second,
-                                   ConnectionId third) {
+KeyboardLedStatus Connection::GetActiveKeyboardLedStatus() {
+  switch (GetActiveConnection()) {
+  case ConnectionId::NONE:
+    return KeyboardLedStatus(0);
+
+  case ConnectionId::USB:
+    return UsbStatus::instance.GetKeyboardLedStatus();
+
+  case ConnectionId::USB_PAIR:
+    return SplitUsbStatus::instance.GetKeyboardLedStatus();
+
+  case ConnectionId::BLE:
+    return Ble::GetActiveKeyboardLedStatus();
+  }
+  return KeyboardLedStatus(0);
+}
+
+void Connection::SetPreferredConnection(ConnectionId first, ConnectionId second,
+                                        ConnectionId third) {
   preferredConnections[0] = first;
   preferredConnections[1] = second;
   preferredConnections[2] = third;

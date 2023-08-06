@@ -1,6 +1,7 @@
 //---------------------------------------------------------------------------
 
 #pragma once
+#include "../keyboard_led_status.h"
 #include <stdint.h>
 
 //---------------------------------------------------------------------------
@@ -11,11 +12,10 @@ public:
   bool IsSleeping() const { return IsConnected() && isSuspended; }
   bool IsPowered() const { return isPowered; }
 
-  // Shouldn't really be here, but it packs into the unused byte.
-  int GetBatteryPercentage() const { return batteryPercentage; }
+  KeyboardLedStatus GetKeyboardLedStatus() const { return ledStatus; }
+  void SetKeyboardLedStatus(KeyboardLedStatus status);
 
-  uint32_t GetMountCount() const { return mountCount; }
-  uint32_t GetSuspendCount() const { return suspendCount; }
+  int GetBatteryPercentage() const { return batteryPercentage; }
 
   void SetPowered(bool value) { isPowered = value; }
   void SetBatteryPercentage(int percentage) { batteryPercentage = percentage; }
@@ -23,25 +23,22 @@ public:
   void OnMount() {
     isMounted = true;
     isSuspended = false;
-    mountCount++;
   }
   void OnUnmount() { isMounted = false; }
 
-  void OnSuspend() {
-    isSuspended = true;
-    suspendCount++;
-  }
+  void OnSuspend() { isSuspended = true; }
   void OnResume() { isSuspended = false; }
 
   static UsbStatus instance;
 
 private:
-  bool isMounted;
-  bool isSuspended;
-  bool isPowered;
+  bool isMounted : 1;
+  bool isSuspended : 1;
+  bool isPowered : 1;
+  KeyboardLedStatus ledStatus;
   uint8_t batteryPercentage;
-  uint32_t mountCount;
-  uint32_t suspendCount;
 };
+
+static_assert(sizeof(UsbStatus) <= 4, "Unexpected UsbStatus size");
 
 //---------------------------------------------------------------------------
