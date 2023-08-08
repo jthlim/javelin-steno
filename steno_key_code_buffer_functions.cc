@@ -37,26 +37,8 @@ constexpr KeyCodeFunctionEntry HANDLERS[] = {
 
 static bool ReadIntegerParameter(int &result, const char *p,
                                  bool allowNegative = false) {
-  int multiplier = 1;
-  if (allowNegative) {
-    if (*p == '-') {
-      multiplier = -1;
-      ++p;
-    }
-  }
-
-  int value = 0;
-  while (*p) {
-    if (*p < '0' || *p > '9') {
-      return false;
-    }
-    value = 10 * value + *p - '0';
-    ++p;
-  }
-
-  result = value * multiplier;
-
-  return true;
+  p = Str::ParseInteger(&result, p, allowNegative);
+  return p && *p == '\0';
 }
 
 //---------------------------------------------------------------------------

@@ -2,7 +2,7 @@
 
 #include "rgb.h"
 #include "../console.h"
-#include <string.h>
+#include "../str.h"
 
 //---------------------------------------------------------------------------
 
@@ -15,13 +15,11 @@ void Rgb::SetRgb_Binding(void *context, const char *commandLine) {
   }
 
   for (int i = 0; i < 4; ++i) {
-    ++p;
+    p = Str::ParseInteger(&values[i], p + 1, false);
 
-    int value = 0;
-    while ('0' <= *p && *p <= '9') {
-      value = 10 * value + (*p++ - '0');
+    if (!p) {
+      Console::Printf("ERR Missing parameters\n\n");
     }
-    values[i] = value;
   }
 
   SetRgb(values[0], values[1], values[2], values[3]);

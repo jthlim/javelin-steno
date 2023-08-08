@@ -49,6 +49,11 @@ public:
 
   static size_t Length(const uint8_t *p) { return strlen((const char *)p); }
   static size_t Length(const char *p) { return strlen(p); }
+
+  // p must start with a '-' or digit, and stops parsing at the first non-digit.
+  // Returns the character after the number if successful, null otherwise.
+  static const char *ParseInteger(int *result, const char *p,
+                                  bool allowNegative = true);
 };
 
 //---------------------------------------------------------------------------

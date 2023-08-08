@@ -175,6 +175,26 @@ char *Str::WriteJson(char *p, const char *text) {
   return p;
 }
 
+const char *Str::ParseInteger(int *result, const char *p, bool allowNegative) {
+  int sign = 1;
+  if (allowNegative && *p == '-') {
+    sign = -1;
+    ++p;
+  }
+
+  if (*p < '0' || *p > '9') {
+    return nullptr;
+  }
+
+  int value = 0;
+  do {
+    value = 10 * value + (*p++ - '0');
+  } while ('0' <= *p && *p <= '9');
+  *result = sign * value;
+
+  return p;
+}
+
 #if JAVELIN_CPU_CORTEX_M0
 extern "C" __attribute((naked)) size_t strlen(const char *p) {
   // spell-checker: disable
