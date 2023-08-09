@@ -16,7 +16,7 @@ struct PairConsole : public Queue<PairConsoleEntryData>,
                      public SplitTxHandler,
                      SplitRxHandler {
 #else
-struct PairConsole : public Queue<EntryData> {
+struct PairConsole : public Queue<PairConsoleEntryData> {
 #endif
 public:
   static void Add(const char *data, size_t length) {
