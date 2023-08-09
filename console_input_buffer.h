@@ -7,9 +7,6 @@
 
 //---------------------------------------------------------------------------
 
-// This should be rewritten to handle multiple active clients on multiple hosts
-// having their data properly separated.
-
 class ConsoleInputBuffer {
 public:
   static void Add(const uint8_t *data, size_t length, ConnectionId connectionId,

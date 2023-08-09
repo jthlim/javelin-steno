@@ -1,7 +1,6 @@
 //---------------------------------------------------------------------------
 
 #include "console_input_buffer.h"
-#include "clock.h"
 #include "console.h"
 #include <string.h>
 
