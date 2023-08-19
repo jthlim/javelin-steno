@@ -792,6 +792,15 @@ void Script::ExecutionContext::Run(Script &script, size_t offset) {
       script.stackTop = frame;
       continue;
     }
+    case BC::CALL_VALUE: {
+      size_t offset = script.Pop();
+      ExecutionContext localContext;
+      localContext.Run(script, offset);
+      continue;
+    }
+    case BC::JUMP_VALUE:
+      p = script.byteCode + script.Pop();
+      continue;
     case BC::JUMP_SHORT_BEGIN... BC::JUMP_SHORT_END: {
       int offset = c + 1 - BC::JUMP_SHORT_BEGIN;
       p += offset;

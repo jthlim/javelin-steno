@@ -50,6 +50,8 @@ public:
     RETURN = 0x92,
     POP = 0x93,
     ENTER_FUNCTION = 0x94,
+    CALL_VALUE = 0x95,
+    JUMP_VALUE = 0x96,
 
     JUMP_SHORT_BEGIN = 0xa0,
     JUMP_SHORT_END = 0xbe,
