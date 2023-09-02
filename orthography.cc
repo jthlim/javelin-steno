@@ -3,9 +3,9 @@
 #include "orthography.h"
 #include "console.h"
 #include "crc.h"
+#include "nothrow_allocate.h"
 #include "str.h"
 #include "word_list.h"
-#include <new>
 
 //---------------------------------------------------------------------------
 
@@ -181,7 +181,7 @@ char *StenoCompiledOrthography::AddSuffix(const char *word,
   }
 
   char *result = AddSuffixInternal(word, suffix);
-  CacheEntry *entry = new (std::nothrow) CacheEntry(word, suffix, result);
+  CacheEntry *entry = new (NoThrow{}) CacheEntry(word, suffix, result);
   cache[blockIndex].AddEntry(entry);
   return result;
 }
