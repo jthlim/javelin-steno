@@ -3,6 +3,7 @@
 #pragma once
 #include "dictionary/dictionary.h"
 #include "list.h"
+#include "malloc_allocate.h"
 #include "state.h"
 
 //---------------------------------------------------------------------------
@@ -43,7 +44,7 @@ struct StenoToken {
   const StenoState *state;
 };
 
-class StenoTokenizer {
+class StenoTokenizer : public MallocAllocate {
 public:
   virtual ~StenoTokenizer() {}
 

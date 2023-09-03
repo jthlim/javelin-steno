@@ -12,6 +12,7 @@
 #include "hal/usb_status.h"
 #include "key.h"
 #include "keyboard_led_status.h"
+#include "malloc_allocate.h"
 #include "random.h"
 #include "script_byte_code.h"
 #include "split/split_usb_status.h"
@@ -156,7 +157,7 @@ void Script::PrintInfo() const {
 
 //---------------------------------------------------------------------------
 
-struct Script::ScriptTimerContext {
+struct Script::ScriptTimerContext : public MallocAllocate {
   Script *script;
   size_t offset;
 
@@ -182,6 +183,7 @@ void Script::StopTimer(intptr_t timerId) {
                                                              scriptTime);
   delete oldContext;
 }
+
 void Script::StartTimer(intptr_t timerId, uint32_t interval, bool isRepeating,
                         size_t offset) {
   ScriptTimerContext *context = new ScriptTimerContext;

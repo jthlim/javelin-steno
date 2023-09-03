@@ -2,6 +2,7 @@
 
 #pragma once
 #include "list.h"
+#include "malloc_allocate.h"
 #include "pattern.h"
 #include "stroke.h"
 #include <stddef.h>
@@ -73,7 +74,7 @@ private:
   const Pattern *patterns;
 
 #if USE_ORTHOGRAPHY_CACHE
-  struct CacheEntry {
+  struct CacheEntry : public MallocAllocate {
     CacheEntry(const char *word, const char *suffix, const char *result);
     ~CacheEntry();
 

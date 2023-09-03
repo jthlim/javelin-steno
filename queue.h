@@ -11,12 +11,12 @@ template <typename T> struct QueueEntry {
 
   T data;
 
-  static void *operator new(size_t n) { return malloc(n); }
-  static void *operator new(size_t n, size_t extra) {
+  static void *operator new(size_t n) noexcept { return malloc(n); }
+  static void *operator new(size_t n, size_t extra) noexcept {
     return malloc(n + extra);
   }
-  static void operator delete(void *p) { free(p); }
-  static void operator delete(void *p, size_t extra) { free(p); }
+  static void operator delete(void *p) noexcept { free(p); }
+  static void operator delete(void *p, size_t extra) noexcept { free(p); }
 };
 
 template <typename T> class Queue {
