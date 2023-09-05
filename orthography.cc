@@ -24,9 +24,9 @@ StenoCompiledOrthography::CacheEntry::CacheEntry(const char *word,
 }
 
 StenoCompiledOrthography::CacheEntry::~CacheEntry() {
-  free((void *)word);
-  free((void *)suffix);
-  free((void *)result);
+  free(word);
+  free(suffix);
+  free(result);
 }
 
 bool StenoCompiledOrthography::CacheEntry::IsEqual(const char *word,
@@ -50,12 +50,13 @@ char *StenoCompiledOrthography::CacheBlock::Lookup(const char *word,
   return nullptr;
 }
 
-void StenoCompiledOrthography::CacheBlock::AddEntry(const CacheEntry *entry) {
-  size_t entryIndex = index++ & (CACHE_ASSOCIATIVITY - 1);
-
+void StenoCompiledOrthography::CacheBlock::AddEntry(CacheEntry *entry) {
   LockCache();
-  CacheEntry *oldEntry = (CacheEntry *)entries[entryIndex];
+
+  size_t entryIndex = index++ & (CACHE_ASSOCIATIVITY - 1);
+  CacheEntry *oldEntry = entries[entryIndex];
   entries[entryIndex] = entry;
+
   UnlockCache();
 
   delete oldEntry;

@@ -44,7 +44,7 @@ struct StenoToken {
   const StenoState *state;
 };
 
-class StenoTokenizer : public MallocAllocate {
+class StenoTokenizer : public JavelinMallocAllocate {
 public:
   virtual ~StenoTokenizer() {}
 

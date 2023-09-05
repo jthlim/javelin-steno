@@ -157,7 +157,7 @@ void Script::PrintInfo() const {
 
 //---------------------------------------------------------------------------
 
-struct Script::ScriptTimerContext : public MallocAllocate {
+struct Script::ScriptTimerContext : public JavelinMallocAllocate {
   Script *script;
   size_t offset;
 

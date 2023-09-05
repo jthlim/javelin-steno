@@ -14,7 +14,7 @@ struct PatternMatch {
   bool match;
   const char *captures[8];
 
-  char *Replace(const char *s) const;
+  char *Replace(const char *format) const;
 
   friend class Pattern;
 };
@@ -44,7 +44,7 @@ public:
   PatternMatch Search(const char *text) const;
 
   // Will free text if there's a replacement and return a new string.
-  char *Replace(char *text, const char *templ) const;
+  char *Replace(char *text, const char *format) const;
 
   bool IsPossibleMatch(PatternQuickReject inputQuickReject) const {
     return inputQuickReject.IsPossibleMatch(quickReject);

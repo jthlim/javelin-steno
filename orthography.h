@@ -74,13 +74,13 @@ private:
   const Pattern *patterns;
 
 #if USE_ORTHOGRAPHY_CACHE
-  struct CacheEntry : public MallocAllocate {
+  struct CacheEntry : public JavelinMallocAllocate {
     CacheEntry(const char *word, const char *suffix, const char *result);
     ~CacheEntry();
 
-    const char *word;
-    const char *suffix;
-    const char *result;
+    char *const word;
+    char *const suffix;
+    char *const result;
 
     bool IsEqual(const char *word, const char *suffix) const;
   };
@@ -94,10 +94,10 @@ private:
 
   struct CacheBlock {
     uint32_t index;
-    const CacheEntry *entries[CACHE_ASSOCIATIVITY];
+    CacheEntry *entries[CACHE_ASSOCIATIVITY];
 
     char *Lookup(const char *word, const char *suffix) const;
-    void AddEntry(const CacheEntry *entry);
+    void AddEntry(CacheEntry *entry);
   };
 
   mutable CacheBlock cache[CACHE_BLOCK_COUNT];

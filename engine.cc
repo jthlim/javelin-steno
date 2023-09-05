@@ -289,6 +289,8 @@ void StenoEngineTester::TestAddTranslation(StenoEngine &engine) {
   engine.ProcessStroke(StenoStroke("R-R"));
   VerifyTextBuffer(engine, "");
 
+  engine.UpdateMaximumStrokeLengthCache();
+  
   engine.ProcessStroke(StenoStroke("KAT"));
   VerifyTextBuffer(engine, "test");
   // spellchecker: enable
@@ -319,6 +321,8 @@ void StenoEngineTester::TestScancodeAddTranslation(StenoEngine &engine) {
 
   engine.ProcessScanCode(KeyCode::ENTER, ScanCodeAction::TAP);
   VerifyTextBuffer(engine, "");
+
+  engine.UpdateMaximumStrokeLengthCache();
 
   engine.ProcessStroke(StenoStroke("KAT"));
   VerifyTextBuffer(engine, "dog");
