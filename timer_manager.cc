@@ -146,15 +146,32 @@ bool TimerManager::HasOnlyRepeatingTimers() const {
   return true;
 }
 
+// Stein's algorithm.
 static int GCD(int a, int b) {
-  while (a != b) {
-    if (a > b) {
-      a -= b;
-    } else {
-      b -= a;
-    }
+  if (a == 0) {
+    return b;
   }
-  return a;
+  if (b == 0) {
+    return a;
+  }
+
+  int commonPowerOf2 = __builtin_ctz(a | b);
+
+  a >>= __builtin_ctz(a);
+
+  do {
+    b >>= __builtin_ctz(b);
+
+    if (a > b) {
+      int temp = a;
+      a = b;
+      b = temp;
+    }
+
+    b -= a;
+  } while (b != 0);
+
+  return a << commonPowerOf2;
 }
 
 int TimerManager::GetTimersGCD() const {
