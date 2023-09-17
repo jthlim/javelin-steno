@@ -129,6 +129,8 @@ enum class StenoScriptFunction : uint8_t {
   IS_BLE_PROFILE_SLEEPING,
   IS_BLE_ADVERTISING,
   IS_BLE_SCANNING,
+  IS_WAITING_FOR_USER_PRESENCE,
+  REPLY_USER_PRESENCE,
 };
 
 enum class StenoScriptOperator : uint8_t {

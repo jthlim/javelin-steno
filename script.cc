@@ -760,6 +760,12 @@ void Script::ExecutionContext::Run(Script &script, size_t offset) {
       case SF::IS_BLE_SCANNING:
         script.Push(Ble::IsScanning());
         continue;
+      case SF::IS_WAITING_FOR_USER_PRESENCE:
+        script.Push(IsWaitingForUserPresence());
+        continue;
+      case SF::REPLY_USER_PRESENCE:
+        script.ReplyUserPresence(script.Pop() != 0);
+        continue;
       }
       continue;
     }
@@ -868,6 +874,8 @@ void Script::RunGetParameterCommand(const char *parameter) {
 //---------------------------------------------------------------------------
 
 __attribute__((weak)) void Script::SetInputHint(int hint) {}
+__attribute__((weak)) bool Script::IsWaitingForUserPresence() { return false; }
+__attribute__((weak)) void Script::ReplyUserPresence(bool present) {}
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

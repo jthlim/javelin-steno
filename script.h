@@ -22,6 +22,7 @@ enum class ScriptId {
   KEYBOARD_LED_STATUS_UPDATE,
   BLE_ADVERTISING_UPDATE,
   BLE_SCANNING_UPDATE,
+  U2F_STATUS_UPDATE,
 
   COUNT,
 };
@@ -110,6 +111,9 @@ private:
   }
 
   static void TimerHandler(intptr_t id, void *context);
+
+  static bool IsWaitingForUserPresence();
+  static void ReplyUserPresence(bool present);
 };
 
 //---------------------------------------------------------------------------
