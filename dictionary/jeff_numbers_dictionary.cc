@@ -101,13 +101,35 @@ StenoJeffNumbersDictionary::LookupInternal(
       result = Str::Dup(scratch);
     }
 
-    const StenoStroke RB = StrokeMask::RR | StrokeMask::BR;
     const StenoStroke WR = StrokeMask::WL | StrokeMask::RL;
-    const StenoStroke KR = StrokeMask::KL | StrokeMask::RL;
     const StenoStroke RG = StrokeMask::RR | StrokeMask::GR;
-    const StenoStroke DZ = StrokeMask::DR | StrokeMask::ZR;
-    const StenoStroke BG = StrokeMask::BR | StrokeMask::GR;
-    if ((control & RB) == RB) {
+
+    if (const StenoStroke KWR =
+            StrokeMask::KL | StrokeMask::WL | StrokeMask::RL;
+        (control & KWR) == KWR) {
+      if (i + 1 != length) {
+        free(result);
+        return StenoDictionaryLookupResult::CreateInvalid();
+      }
+      control &= ~KWR;
+      result = ProcessYear(result, 1900);
+      if (!result) {
+        return StenoDictionaryLookupResult::CreateInvalid();
+      }
+    } else if (const StenoStroke RBG =
+                   StrokeMask::RR | StrokeMask::BR | StrokeMask::GR;
+               (control & RBG) == RBG) {
+      if (i + 1 != length) {
+        free(result);
+        return StenoDictionaryLookupResult::CreateInvalid();
+      }
+      control &= ~RBG;
+      result = ProcessYear(result, 2000);
+      if (!result) {
+        return StenoDictionaryLookupResult::CreateInvalid();
+      }
+    } else if (const StenoStroke RB = StrokeMask::RR | StrokeMask::BR;
+               (control & RB) == RB) {
       // Dollars
       control &= ~RB;
 
@@ -124,7 +146,8 @@ StenoJeffNumbersDictionary::LookupInternal(
       char *updated = Str::Join(result, " {*($c)}", nullptr);
       free(result);
       result = updated;
-    } else if ((control & KR) == KR) {
+    } else if (const StenoStroke KR = StrokeMask::KL | StrokeMask::RL;
+               (control & KR) == KR) {
       // Percent
       control &= ~KR;
       goto formatPercent;
@@ -139,7 +162,8 @@ StenoJeffNumbersDictionary::LookupInternal(
       char *updated = Str::Join(result, "%", nullptr);
       free(result);
       result = updated;
-    } else if ((control & DZ) == DZ) {
+    } else if (const StenoStroke DZ = StrokeMask::DR | StrokeMask::ZR;
+               (control & DZ) == DZ) {
       // Hundreds of dollars.
       control &= ~DZ;
       if (i + 1 != length) {
@@ -153,7 +177,8 @@ StenoJeffNumbersDictionary::LookupInternal(
                     nullptr);
       free(result);
       result = updated;
-    } else if ((control & StrokeMask::KL).IsNotEmpty() ||
+    } else if (const StenoStroke BG = StrokeMask::BR | StrokeMask::GR;
+               (control & StrokeMask::KL).IsNotEmpty() ||
                ((control & BG) == BG)) {
       // Time
       if (i + 1 != length) {
@@ -561,6 +586,22 @@ char *ToWords(char *digits) {
 
   free(digits);
   return result;
+}
+
+char *StenoJeffNumbersDictionary::ProcessYear(char *data, int base) {
+  int value = 0;
+  const char *p = data;
+  while (*p) {
+    if ('0' <= *p && *p <= '9') {
+      value = value * 10 + *p - '0';
+    } else {
+      free(data);
+      return nullptr;
+    }
+    ++p;
+  }
+  free(data);
+  return Str::Asprintf("%d{}", value + base);
 }
 
 //---------------------------------------------------------------------------

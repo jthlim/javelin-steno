@@ -31,6 +31,8 @@ private:
 
   StenoDictionaryLookupResult
   LookupInternal(const StenoDictionaryLookup &lookup) const;
+
+  static char *ProcessYear(char *data, int base);
 };
 
 //---------------------------------------------------------------------------
