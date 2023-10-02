@@ -56,6 +56,9 @@ public:
   bool IsTickScriptEmpty() const { return IsScriptIndexEmpty(1); }
   bool IsScriptIndexEmpty(size_t index) const;
 
+  static bool IsWaitingForUserPresence();
+  static void ReplyUserPresence(bool present);
+
 private:
   struct ScriptTimerContext;
 
@@ -112,9 +115,6 @@ private:
   }
 
   static void TimerHandler(intptr_t id, void *context);
-
-  static bool IsWaitingForUserPresence();
-  static void ReplyUserPresence(bool present);
 };
 
 //---------------------------------------------------------------------------
