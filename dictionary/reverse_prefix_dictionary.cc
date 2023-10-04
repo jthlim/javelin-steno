@@ -2,6 +2,7 @@
 
 #include "reverse_prefix_dictionary.h"
 #include "../list.h"
+#include "dictionary.h"
 #include <assert.h>
 
 //---------------------------------------------------------------------------
@@ -32,7 +33,7 @@ public:
 //---------------------------------------------------------------------------
 
 struct StenoReversePrefixDictionary::ReverseLookupContext {
-  size_t characterIndex = 0;
+  size_t characterIndex = 1;
   const uint8_t **left;
   const uint8_t **right;
 
@@ -40,7 +41,9 @@ struct StenoReversePrefixDictionary::ReverseLookupContext {
   void Narrow(uint8_t c);
 
   // Binary search for '^', then confirm suffix of '^}\0'.
-  const uint8_t *FindPrefixStrokeData() const;
+  // This is because ascii wise, ^ lies between upper case and lower case
+  // letters.
+  const uint8_t *FindPrefixLookup() const;
 };
 
 void StenoReversePrefixDictionary::ReverseLookupContext::Narrow(uint8_t c) {
@@ -76,8 +79,7 @@ void StenoReversePrefixDictionary::ReverseLookupContext::Narrow(uint8_t c) {
 }
 
 const uint8_t *
-StenoReversePrefixDictionary::ReverseLookupContext::FindPrefixStrokeData()
-    const {
+StenoReversePrefixDictionary::ReverseLookupContext::FindPrefixLookup() const {
   const uint8_t **l = left;
   const uint8_t **r = right;
 
@@ -92,7 +94,7 @@ StenoReversePrefixDictionary::ReverseLookupContext::FindPrefixStrokeData()
     } else {
       // Equal!
       assert(midString[1] == '}' && midString[2] == '\0');
-      return midString + 3;
+      return *mid;
     }
   }
   return nullptr;
@@ -170,7 +172,7 @@ void StenoReversePrefixDictionary::ProcessTextBlock(const uint8_t *textBlock,
         p[-2] == '}' && p[-3] == '^' && p - wordStart > 4) {
       // Since the textblock is already sorted, entries added here are
       // sorted too.
-      handler.AddPrefix(wordStart + 1);
+      handler.AddPrefix(wordStart);
     }
 
     // Search for end marker
@@ -194,70 +196,93 @@ void StenoReversePrefixDictionary::ReverseLookup(
 
 void StenoReversePrefixDictionary::AddPrefixReverseLookup(
     ReverseLookupContext &context, StenoReverseDictionaryLookup &result) const {
-  struct PrefixTest {
-    const uint8_t *lookup;
-    const uint8_t *prefixStrokeData;
-  };
 
+  // Character by character lookup
   const uint8_t *lookup = (const uint8_t *)result.lookup;
   if (*lookup == '\0') {
     return;
   }
   context.Narrow(*lookup++);
 
-  List<PrefixTest> prefixTests;
-
+  // Build a list of suffixes to prefixes to use and suffixes to test
+  struct Test {
+    const uint8_t *prefix;
+    const uint8_t *suffix;
+  };
+  List<Test> tests;
   while (*lookup) {
     if (!context.IsValid()) {
       break;
     }
-    const uint8_t *prefixStrokeData = context.FindPrefixStrokeData();
-    if (prefixStrokeData) {
-      prefixTests.Add(PrefixTest{
-          .lookup = lookup,
-          .prefixStrokeData = prefixStrokeData,
+    const uint8_t *prefix = context.FindPrefixLookup();
+    if (prefix) {
+      tests.Add(Test{
+          .prefix = prefix,
+          .suffix = lookup,
       });
     }
     context.Narrow(*lookup++);
   }
 
   // Do reverse ordering to find longest matches first.
-  for (size_t i = prefixTests.GetCount(); i > 0; --i) {
-    const PrefixTest &test = prefixTests[i - 1];
+  for (size_t i = tests.GetCount(); i > 0; --i) {
+    const Test &test = tests[i - 1];
     StenoReverseDictionaryLookup *suffixLookup =
         new StenoReverseDictionaryLookup(result.strokeThreshold - 1,
-                                         (const char *)test.lookup);
+                                         (const char *)test.suffix);
 
-    // Try the prefix lookups.
     ReverseLookup(*suffixLookup);
 
     bool hasResult = false;
-    for (size_t i = 0; i < suffixLookup->resultCount; ++i) {
-      const StenoReverseDictionaryResult &suffix = suffixLookup->results[i];
+    if (suffixLookup->HasResults()) {
+      // Suffix lookup succeeded.
+      StenoReverseDictionaryLookup *prefixLookup =
+          new StenoReverseDictionaryLookup(
+              result.strokeThreshold - suffixLookup->GetMinimumStrokeCount(),
+              (const char *)test.prefix);
 
-      const uint8_t *prefixStrokes = test.prefixStrokeData;
+      // Add map lookup hints.
+      size_t prefixLength = test.suffix - (const uint8_t *)result.lookup;
+
+      // Given format '{prefix^}\0', skip 4 extra bytes to get to prefix strokes
+      const uint8_t *prefixStrokes = test.prefix + prefixLength + 4;
       while (*prefixStrokes != 0xff) {
         uint32_t offset = prefixStrokes[0] | (prefixStrokes[1] << 7) |
                           (prefixStrokes[2] << 14) + (prefixStrokes[3] << 21);
         const void *data = baseAddress + offset;
         prefixStrokes += 4;
 
-        StenoReverseMapDictionaryLookup prefixLookup(data);
-        if (dictionary->ReverseMapDictionaryLookup(prefixLookup)) {
-          size_t combinedLength = prefixLookup.length + suffix.length;
-          StenoStroke strokes[combinedLength];
-          memcpy(strokes, prefixLookup.strokes,
-                 prefixLookup.length * sizeof(StenoStroke));
-          memcpy(strokes + prefixLookup.length, suffix.strokes,
-                 suffix.length * sizeof(StenoStroke));
+        prefixLookup->mapDataLookup[prefixLookup->mapDataLookupCount++] = data;
+        if (prefixLookup->mapDataLookupCount >=
+            StenoReverseDictionaryLookup::MAX_MAP_DATA_LOOKUP_COUNT) {
+          break;
+        }
+      }
 
-          if (!IsStrokeDefined(strokes, prefixLookup.length, combinedLength)) {
-            result.AddResult(strokes, combinedLength, this);
-            hasResult = true;
+      dictionary->ReverseLookup(*prefixLookup);
+
+      if (prefixLookup->HasResults()) {
+        for (size_t p = 0; p < prefixLookup->resultCount; p++) {
+          StenoReverseDictionaryResult &prefix = prefixLookup->results[p];
+          for (size_t s = 0; s < suffixLookup->resultCount; ++s) {
+            StenoReverseDictionaryResult &suffix = suffixLookup->results[s];
+            size_t combinedLength = prefix.length + suffix.length;
+            StenoStroke strokes[combinedLength];
+            memcpy(strokes, prefix.strokes,
+                   prefix.length * sizeof(StenoStroke));
+            memcpy(strokes + prefix.length, suffix.strokes,
+                   suffix.length * sizeof(StenoStroke));
+
+            if (!IsStrokeDefined(strokes, prefix.length, combinedLength)) {
+              result.AddResult(strokes, combinedLength, this);
+              hasResult = true;
+            }
           }
         }
       }
+      delete prefixLookup;
     }
+
     delete suffixLookup;
 
     if (hasResult) {

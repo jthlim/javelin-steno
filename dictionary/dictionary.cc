@@ -103,6 +103,19 @@ void StenoReverseDictionaryLookup::AddResult(
   strokesCount += length;
 }
 
+size_t StenoReverseDictionaryLookup::GetMinimumStrokeCount() const {
+  if (resultCount == 0) {
+    return 0;
+  }
+  size_t result = results[0].length;
+  for (size_t i = 0; i < resultCount; i++) {
+    if (results[i].length < result) {
+      result = results[i].length;
+    }
+  }
+  return result;
+}
+
 bool StenoReverseDictionaryLookup::HasResult(const StenoStroke *c,
                                              size_t length) const {
 
@@ -129,11 +142,6 @@ StenoDictionary::GetLookupProvider(const StenoDictionaryLookup &lookup) const {
 
 void StenoDictionary::ReverseLookup(
     StenoReverseDictionaryLookup &result) const {}
-
-bool StenoDictionary::ReverseMapDictionaryLookup(
-    StenoReverseMapDictionaryLookup &lookup) const {
-  return false;
-}
 
 __attribute__((weak)) void
 StenoDictionary::InvalidateMaximumOutlineLengthCache() {}

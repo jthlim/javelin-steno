@@ -20,8 +20,7 @@ public:
   virtual const StenoDictionary *
   GetLookupProvider(const StenoDictionaryLookup &lookup) const;
 
-  virtual bool
-  ReverseMapDictionaryLookup(StenoReverseMapDictionaryLookup &lookup) const;
+  virtual void ReverseLookup(StenoReverseDictionaryLookup &result) const;
 
   virtual size_t GetMaximumOutlineLength() const;
   virtual const char *GetName() const;
@@ -37,6 +36,9 @@ private:
 
   static const StenoMapDictionaryStrokesDefinition *
   CreateStrokeCache(const StenoDictionaryDefinition &definition);
+
+  void ReverseLookup(StenoReverseDictionaryLookup &result,
+                     const void *data) const;
 };
 
 //---------------------------------------------------------------------------

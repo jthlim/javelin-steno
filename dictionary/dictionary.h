@@ -134,9 +134,13 @@ public:
       : strokeThreshold(strokeThreshold), lookup(lookup),
         lookupLength(strlen(lookup)) {}
 
+  bool HasResults() const { return resultCount != 0; }
+
   void AddResult(const StenoStroke *strokes, size_t length,
                  const StenoDictionary *lookupProvider);
   bool HasResult(const StenoStroke *strokes, size_t length) const;
+
+  size_t GetMinimumStrokeCount() const;
 
   // Results equal to, or above this will not be captured.
   size_t strokeThreshold;
@@ -146,23 +150,19 @@ public:
   size_t resultCount = 0;
   size_t strokesCount = 0;
 
+  // These are used as an optimization for map lookup.
+  // Since the first step of all map lookups is the same, do it once and
+  // pass it down
+  static const size_t MAX_MAP_DATA_LOOKUP_COUNT = 24;
+  size_t mapDataLookupCount = 0;
+  const void *mapDataLookup[24];
+
   StenoReverseDictionaryResult results[24];
 
   static const size_t STROKE_COUNT = 64;
   StenoStroke strokes[STROKE_COUNT];
 
   static const size_t MAX_STROKE_THRESHOLD = 31;
-};
-
-//---------------------------------------------------------------------------
-
-struct StenoReverseMapDictionaryLookup {
-  StenoReverseMapDictionaryLookup(const void *data) : data(data) {}
-
-  const void *data;
-  const StenoDictionary *provider;
-  size_t length;
-  StenoStroke strokes[32];
 };
 
 //---------------------------------------------------------------------------
@@ -186,8 +186,6 @@ public:
   }
 
   virtual void ReverseLookup(StenoReverseDictionaryLookup &result) const;
-  virtual bool
-  ReverseMapDictionaryLookup(StenoReverseMapDictionaryLookup &lookup) const;
 
   size_t GetCachedMaximumOutlineLength() const {
     return cachedMaximumOutlineLength;

@@ -71,23 +71,6 @@ void StenoDictionaryList::ReverseLookup(
   }
 }
 
-bool StenoDictionaryList::ReverseMapDictionaryLookup(
-    StenoReverseMapDictionaryLookup &lookup) const {
-  for (const StenoDictionaryListEntry &entry : dictionaries) {
-    if (!entry.IsEnabled()) {
-      continue;
-    }
-    const StenoDictionary *dictionary = entry.dictionary;
-    if (dictionary->ReverseMapDictionaryLookup(lookup)) {
-      StenoDictionaryLookup testLookup(lookup.strokes, lookup.length);
-      if (GetLookupProvider(testLookup) == dictionary) {
-        return true;
-      }
-    }
-  }
-  return false;
-}
-
 void StenoDictionaryList::CacheMaximumOutlineLength() {
   size_t max = 0;
   for (StenoDictionaryListEntry &entry : dictionaries) {

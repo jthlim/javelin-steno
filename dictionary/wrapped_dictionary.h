@@ -28,8 +28,6 @@ public:
   }
 
   virtual void ReverseLookup(StenoReverseDictionaryLookup &result) const;
-  virtual bool
-  ReverseMapDictionaryLookup(StenoReverseMapDictionaryLookup &lookup) const;
 
   virtual void CacheMaximumOutlineLength();
   virtual size_t GetMaximumOutlineLength() const;

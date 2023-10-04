@@ -188,16 +188,21 @@ const StenoDictionary *StenoFullMapDictionary::GetLookupProvider(
   }
 }
 
-bool StenoFullMapDictionary::ReverseMapDictionaryLookup(
-    StenoReverseMapDictionaryLookup &lookup) const {
-  const void *data = lookup.data;
+void StenoFullMapDictionary::ReverseLookup(
+    StenoReverseDictionaryLookup &result) const {
+  for (size_t i = 0; i < result.mapDataLookupCount; ++i) {
+    ReverseLookup(result, result.mapDataLookup[i]);
+  }
+}
 
+void StenoFullMapDictionary::ReverseLookup(StenoReverseDictionaryLookup &result,
+                                           const void *data) const {
   // Quick reject
   if (data < strokes[1].data) {
-    return false;
+    return;
   }
   if (data >= strokes[cachedMaximumOutlineLength].offsets) {
-    return false;
+    return;
   }
 
   for (size_t i = 1; i <= cachedMaximumOutlineLength; ++i) {
@@ -211,12 +216,9 @@ bool StenoFullMapDictionary::ReverseMapDictionaryLookup(
     const FullStenoMapDictionaryDataEntry *entry =
         (const FullStenoMapDictionaryDataEntry *)data;
     size_t strokeLength = i;
-    memcpy(lookup.strokes, entry->strokes, sizeof(StenoStroke) * strokeLength);
-    lookup.length = strokeLength;
-    lookup.provider = this;
-    return true;
+    result.AddResult(entry->strokes, strokeLength, this);
+    return;
   }
-  return false;
 }
 
 const char *StenoFullMapDictionary::GetName() const { return definition.name; }

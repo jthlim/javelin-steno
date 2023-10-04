@@ -22,9 +22,7 @@ private:
   const uint8_t *textBlock;
   const size_t textBlockLength;
 
-  void AddMapDictionaryResults(StenoReverseDictionaryLookup &result) const;
-  void AddValidLookupProviders(StenoReverseDictionaryLookup &result,
-                               StenoReverseDictionaryLookup &value) const;
+  void AddMapDictionaryData(StenoReverseDictionaryLookup &result) const;
 };
 
 //---------------------------------------------------------------------------
