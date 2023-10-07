@@ -54,6 +54,14 @@ public:
     return v != 0;
   }
 
+  size_t PopCount() const {
+    size_t result = 0;
+    for (size_t i = 0; i < NUMBER_OF_WORDS; ++i) {
+      result += Bit<sizeof(size_t)>::PopCount(data[i]);
+    }
+    return result;
+  }
+
   // Returns the bitmask for the specified range [startIndex, endIndex).
   // Undefined results if it crosses a size_t boundary.
   size_t GetRange(size_t startIndex, size_t endIndex) const {

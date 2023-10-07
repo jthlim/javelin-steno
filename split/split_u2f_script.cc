@@ -23,10 +23,19 @@ void SplitU2fScript::UpdateBuffer(TxBuffer &buffer) {
 }
 
 void SplitU2fScript::OnDataReceived(const void *data, size_t length) {
-  memcpy(&this->data, data, sizeof(data));
-  if (this->data.triggerNotifyUserPresenceChange) {
-    ButtonManager::ExecuteScript(ScriptId::U2F_STATUS_UPDATE);
+  const Data &newData = *(const Data *)data;
+  if (this->data == newData) {
+    return;
   }
+
+  this->data = newData;
+  ButtonManager::ExecuteScript(ScriptId::U2F_STATUS_UPDATE);
+}
+
+void SplitU2fScript::OnReceiveConnectionReset() {
+  Data data;
+  data.isWaitingForUserPresence = false;
+  OnDataReceived(&data, sizeof(data));
 }
 
 //---------------------------------------------------------------------------

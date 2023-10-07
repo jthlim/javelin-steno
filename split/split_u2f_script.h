@@ -10,10 +10,6 @@
 
 class SplitU2fScript : public SplitTxHandler, public SplitRxHandler {
 public:
-  static void TriggerNotifyUserPresenceChange() {
-    instance.dirty = true;
-    instance.data.triggerNotifyUserPresenceChange = true;
-  }
   static void SetWaitingForUserPresence(bool value) {
     instance.dirty = true;
     instance.data.isWaitingForUserPresence = value;
@@ -39,10 +35,15 @@ private:
   bool dirty;
   struct Data {
     bool isWaitingForUserPresence;
-    bool triggerNotifyUserPresenceChange;
+
+    bool operator==(const Data &other) {
+      return isWaitingForUserPresence == other.isWaitingForUserPresence;
+    }
   };
   Data data;
 
+  virtual void OnTransmitConnectionReset() override { dirty = true; }
+  virtual void OnReceiveConnectionReset() override;
   virtual void UpdateBuffer(TxBuffer &buffer) override;
   virtual void OnDataReceived(const void *data, size_t length) override;
 
@@ -53,7 +54,6 @@ private:
 
 class SplitU2fScript {
 public:
-  static void TriggerNotifyUserPresenceChange() {}
   static void SetWaitingForUserPresence(bool value) {}
   static void RegisterTxHandler() {}
   static void RegisterRxHandler() {}
