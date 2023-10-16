@@ -121,6 +121,41 @@ void Console::WriteButtonScriptEvent(const char *text) {
   Console::Printf("\"}\n\n");
 }
 
+void Console::Dump(const void *data, size_t length) {
+  const uint8_t *p = (const uint8_t *)data;
+
+  // clang-format off
+  // 0         1         2         3         4         5         6         7        7
+  // 0         0         0         0         0         0         0         0        9
+  // 00000000:  00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00  |................|
+  // clang-format on
+  char line[80];
+  line[78] = '|';
+  line[79] = '\n';
+
+  for (size_t i = 0; i < length; ++i) {
+    size_t pos = i & 15;
+    if (pos == 0) {
+      if (i != 0) {
+        Console::Write(line, 80);
+      }
+      memset(line, ' ', 78);
+      line[61] = '|';
+      Str::Sprintf(line, "%08x: ", p + i);
+      line[10] = ' ';
+    }
+    size_t offset = 11 + 3 * pos + (pos >= 8);
+    uint8_t c = p[i];
+    line[offset] = "0123456789ABCDEF"[c >> 4];
+    line[offset + 1] = "0123456789ABCDEF"[c & 0xf];
+    line[62 + pos] = c < 32 || c >= 128 ? '.' : c;
+  }
+
+  if (length & 15) {
+    Console::Write(line, 80);
+  }
+}
+
 __attribute__((weak)) void Console::Flush() {}
 
 //---------------------------------------------------------------------------

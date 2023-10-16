@@ -90,6 +90,7 @@ public:
       __attribute__((format(printf, 1, 2)));
 #endif
 
+  static void Dump(const void *data, size_t length);
   static void Flush();
 
 #if RUN_TESTS

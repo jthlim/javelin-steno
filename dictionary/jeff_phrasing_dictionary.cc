@@ -1257,14 +1257,14 @@ TEST_BEGIN("JeffPhrasing: Enders tests") {
   VerifyStroke("SWR-FRPBLD", "I had made");
   VerifyStroke("KWHR-RPBLD", "he made");
 
-  VerifyStroke("SWR-RPBLT", "I make the");
-  VerifyStroke("SWR-ERPBLT", "I am making the");
-  VerifyStroke("SWR-FRPBLT", "I have made the");
-  VerifyStroke("KWHR-RPBLT", "he makes the");
-  VerifyStroke("SWR-RPBLTD", "I made the");
-  VerifyStroke("SWR-ERPBLTD", "I was making the");
-  VerifyStroke("SWR-FRPBLTD", "I had made the");
-  VerifyStroke("KWHR-RPBLTD", "he made the");
+  VerifyStroke("SWR-RPBLT", "I make a");
+  VerifyStroke("SWR-ERPBLT", "I am making a");
+  VerifyStroke("SWR-FRPBLT", "I have made a");
+  VerifyStroke("KWHR-RPBLT", "he makes a");
+  VerifyStroke("SWR-RPBLTD", "I made a");
+  VerifyStroke("SWR-ERPBLTD", "I was making a");
+  VerifyStroke("SWR-FRPBLTD", "I had made a");
+  VerifyStroke("KWHR-RPBLTD", "he made a");
 
   VerifyStroke("SWR-PBL", "I mean");
   VerifyStroke("SWR-EPBL", "I am meaning");
