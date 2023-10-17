@@ -361,20 +361,7 @@ void StenoStrokeHistory::WriteRetrospectiveTransform(
       switch (c) {
       case '\0':
         return;
-      case 's': {
-        char buffer[StenoStroke::MAX_STRING_LENGTH];
-        const StenoStroke *strokes =
-            this->strokes + (segments[startingSegmentIndex].state - states);
-
-        for (size_t i = 0; i < strokeCount; ++i) {
-          if (i != 0) {
-            output.WriteByte('/');
-          }
-          char *bufferEnd = strokes[i].ToString(buffer);
-          output.Write(buffer, bufferEnd - buffer);
-        }
-      } break;
-      case 't':
+      case 'l':
         for (size_t i = startingSegmentIndex; i < segments.GetCount(); ++i) {
           if (i != startingSegmentIndex) {
             output.WriteByte(' ');
@@ -392,6 +379,28 @@ void StenoStrokeHistory::WriteRetrospectiveTransform(
             }
           }
         }
+        break;
+      case 's': {
+        char buffer[StenoStroke::MAX_STRING_LENGTH];
+        const StenoStroke *strokes =
+            this->strokes + (segments[startingSegmentIndex].state - states);
+
+        for (size_t i = 0; i < strokeCount; ++i) {
+          if (i != 0) {
+            output.WriteByte('/');
+          }
+          char *bufferEnd = strokes[i].ToString(buffer);
+          output.Write(buffer, bufferEnd - buffer);
+        }
+      } break;
+      case 't':
+        output.Write("{^}", 3);
+        for (size_t i = startingSegmentIndex; i < segments.GetCount(); ++i) {
+          output.WriteByte(' ');
+          const char *text = segments[i].lookup.GetText();
+          output.Write(text, Str::Length(text));
+        }
+        output.Write("{^}", 3);
         break;
       default:
         output.WriteByte('%');
