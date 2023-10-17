@@ -1,6 +1,7 @@
 //---------------------------------------------------------------------------
 
 #pragma once
+#include "list.h"
 #include "pool_allocate.h"
 #include <assert.h>
 #include <string.h>
@@ -11,6 +12,7 @@ constexpr size_t PATTERN_COMPONENT_BLOCK_SIZE = 1024;
 
 //---------------------------------------------------------------------------
 
+class PatternComponent;
 class PatternQuickReject;
 
 //---------------------------------------------------------------------------
@@ -18,6 +20,23 @@ class PatternQuickReject;
 struct PatternContext {
   const char *start;
   const char **captureList;
+};
+
+struct PatternRangeContext {
+  List<PatternComponent *> visited;
+  bool hasAnchor = false;
+  size_t minimumLength = 0;
+  size_t maximumLength = 0;
+
+  bool HasMaximumLength() const { return maximumLength != (size_t)-1; }
+  void SetUnlimitedMaximumLength() { maximumLength = (size_t)-1; }
+
+  void AddLength(size_t i) {
+    minimumLength += i;
+    if (HasMaximumLength()) {
+      maximumLength += i;
+    }
+  }
 };
 
 //---------------------------------------------------------------------------
@@ -30,6 +49,7 @@ public:
 
   virtual void RemoveEpsilon();
   virtual void UpdateQuickReject(PatternQuickReject &quickReject) const;
+  virtual void UpdateRanges(PatternRangeContext &context);
 
   static void *operator new(size_t size);
   static void operator delete(void *p) {}
@@ -37,6 +57,8 @@ public:
 protected:
   bool CallNext(const char *p, PatternContext &context) const;
   const PatternComponent *GetNext() const { return next; }
+
+  void UpdateRangesForSingleByte(PatternRangeContext &context);
 
 private:
   PatternComponent *next = nullptr;
@@ -55,11 +77,19 @@ public:
 class AnyPatternComponent : public PatternComponent {
 public:
   virtual bool Match(const char *p, PatternContext &context) const;
+
+  virtual void UpdateRanges(PatternRangeContext &context);
 };
 
 class AnyStarPatternComponent : public PatternComponent {
 public:
   virtual bool Match(const char *p, PatternContext &context) const;
+
+  virtual void UpdateRanges(PatternRangeContext &context);
+
+private:
+  size_t minimumMatchLength = 0;
+  size_t maximumMatchLength = 0;
 };
 
 class BackReferencePatternComponent : public PatternComponent {
@@ -68,6 +98,8 @@ public:
 
   virtual bool Match(const char *p, PatternContext &context) const;
 
+  virtual void UpdateRanges(PatternRangeContext &context);
+
 private:
   int index;
 };
@@ -75,6 +107,8 @@ private:
 class CharacterSetComponent : public PatternComponent {
 public:
   virtual bool Match(const char *p, PatternContext &context) const;
+
+  virtual void UpdateRanges(PatternRangeContext &context);
 
 private:
   uint8_t mask[16] = {};
@@ -94,6 +128,7 @@ public:
   BranchPatternComponent(PatternComponent *branch) : branch(branch) {}
   virtual bool Match(const char *p, PatternContext &context) const;
   virtual void RemoveEpsilon() final;
+  virtual void UpdateRanges(PatternRangeContext &context);
 
 private:
   PatternComponent *branch;
@@ -108,6 +143,8 @@ public:
 class EndOfLinePatternComponent : public PatternComponent {
 public:
   virtual bool Match(const char *p, PatternContext &context) const;
+
+  virtual void UpdateRanges(PatternRangeContext &context);
 };
 
 class CapturePatternComponent : public PatternComponent {
@@ -124,9 +161,10 @@ class BytePatternComponent : public PatternComponent {
 public:
   BytePatternComponent(uint8_t byte) : byte(byte) {}
 
-  virtual void UpdateQuickReject(PatternQuickReject &quickReject) const;
-
   virtual bool Match(const char *p, PatternContext &context) const final;
+
+  virtual void UpdateQuickReject(PatternQuickReject &quickReject) const;
+  virtual void UpdateRanges(PatternRangeContext &context);
 
 private:
   uint8_t byte;
@@ -140,9 +178,10 @@ public:
     memcpy(mutableText, text, length);
   }
 
-  virtual void UpdateQuickReject(PatternQuickReject &quickReject) const;
-
   virtual bool Match(const char *p, PatternContext &context) const final;
+
+  virtual void UpdateQuickReject(PatternQuickReject &quickReject) const;
+  virtual void UpdateRanges(PatternRangeContext &context);
 
   static void *operator new(size_t size, size_t textLength) {
     return PatternComponent::operator new((size + textLength + sizeof(size_t)) &
@@ -172,6 +211,8 @@ public:
       : ContainerPatternComponent(initialComponent) {}
 
   virtual bool Match(const char *p, PatternContext &context) const final;
+
+  virtual void UpdateRanges(PatternRangeContext &context);
 };
 
 //---------------------------------------------------------------------------

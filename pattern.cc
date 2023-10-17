@@ -40,6 +40,10 @@ Pattern Pattern::Compile(const char *p) {
 
   PatternQuickReject quickReject;
   captureStart->UpdateQuickReject(quickReject);
+
+  PatternRangeContext rangeContext;
+  captureStart->UpdateRanges(rangeContext);
+
   return Pattern(captureStart, quickReject);
 }
 

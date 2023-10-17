@@ -33,6 +33,20 @@ void PatternComponent::UpdateQuickReject(
   next->UpdateQuickReject(quickReject);
 }
 
+void PatternComponent::UpdateRanges(PatternRangeContext &context) {
+  if (!next) {
+    return;
+  }
+  next->UpdateRanges(context);
+}
+
+void PatternComponent::UpdateRangesForSingleByte(PatternRangeContext &context) {
+  PatternComponent::UpdateRanges(context);
+  context.AddLength(1);
+}
+
+//---------------------------------------------------------------------------
+
 bool EpsilonPatternComponent::Match(const char *p,
                                     PatternContext &context) const {
   return CallNext(p, context);
@@ -43,6 +57,10 @@ bool AnyPatternComponent::Match(const char *p, PatternContext &context) const {
     return false;
   }
   return CallNext(p + 1, context);
+}
+
+void AnyPatternComponent::UpdateRanges(PatternRangeContext &context) {
+  UpdateRangesForSingleByte(context);
 }
 
 bool AnyStarPatternComponent::Match(const char *p,
@@ -56,6 +74,13 @@ bool AnyStarPatternComponent::Match(const char *p,
   while (*p) {
     ++p;
   }
+  if (maximumMatchLength) {
+    const char *maximumMatchStart = p - maximumMatchLength;
+    if (maximumMatchStart >= start) {
+      start = maximumMatchStart;
+    }
+  }
+  p -= minimumMatchLength;
 
   while (p >= start) {
     if (localNext->Match(p, context)) {
@@ -64,6 +89,14 @@ bool AnyStarPatternComponent::Match(const char *p,
     --p;
   }
   return false;
+}
+
+void AnyStarPatternComponent::UpdateRanges(PatternRangeContext &context) {
+  PatternComponent::UpdateRanges(context);
+  minimumMatchLength = context.minimumLength;
+  if (context.hasAnchor && context.HasMaximumLength()) {
+    maximumMatchLength = context.maximumLength;
+  }
 }
 
 bool BackReferencePatternComponent::Match(const char *p,
@@ -82,6 +115,11 @@ bool BackReferencePatternComponent::Match(const char *p,
   return CallNext(p, context);
 }
 
+void BackReferencePatternComponent::UpdateRanges(PatternRangeContext &context) {
+  PatternComponent::UpdateRanges(context);
+  context.SetUnlimitedMaximumLength();
+}
+
 bool CharacterSetComponent::Match(const char *p,
                                   PatternContext &context) const {
   uint8_t c = *(uint8_t *)p;
@@ -95,6 +133,10 @@ bool CharacterSetComponent::Match(const char *p,
   }
 
   return CallNext(p + 1, context);
+}
+
+void CharacterSetComponent::UpdateRanges(PatternRangeContext &context) {
+  UpdateRangesForSingleByte(context);
 }
 
 bool CapturePatternComponent::Match(const char *p,
@@ -130,6 +172,15 @@ void BranchPatternComponent::RemoveEpsilon() {
   PatternComponent::RemoveEpsilon();
 }
 
+void BranchPatternComponent::UpdateRanges(PatternRangeContext &context) {
+  if (context.visited.Contains(this)) {
+    context.SetUnlimitedMaximumLength();
+  } else {
+    context.visited.Add(this);
+    PatternComponent::UpdateRanges(context);
+  }
+}
+
 bool StartOfLinePatternComponent::Match(const char *p,
                                         PatternContext &context) const {
   return (p == context.start) && CallNext(p, context);
@@ -138,6 +189,11 @@ bool StartOfLinePatternComponent::Match(const char *p,
 bool EndOfLinePatternComponent::Match(const char *p,
                                       PatternContext &context) const {
   return (*p == '\0') && CallNext(p, context);
+}
+
+void EndOfLinePatternComponent::UpdateRanges(PatternRangeContext &context) {
+  PatternComponent::UpdateRanges(context);
+  context.hasAnchor = true;
 }
 
 //---------------------------------------------------------------------------
@@ -153,6 +209,10 @@ bool BytePatternComponent::Match(const char *p, PatternContext &context) const {
     return false;
   }
   return CallNext(p + 1, context);
+}
+
+void BytePatternComponent::UpdateRanges(PatternRangeContext &context) {
+  UpdateRangesForSingleByte(context);
 }
 
 //---------------------------------------------------------------------------
@@ -177,6 +237,11 @@ bool LiteralPatternComponent::Match(const char *p,
       return CallNext(p, context);
     }
   }
+}
+
+void LiteralPatternComponent::UpdateRanges(PatternRangeContext &context) {
+  PatternComponent::UpdateRanges(context);
+  context.AddLength(strlen(text));
 }
 
 //---------------------------------------------------------------------------
@@ -218,6 +283,31 @@ bool AlternatePatternComponent::Match(const char *p,
     }
   }
   return false;
+}
+
+void AlternatePatternComponent::UpdateRanges(PatternRangeContext &context) {
+  size_t minimumLength = (size_t)-1;
+  size_t maximumLength = 0;
+  bool hasAnchor = true;
+
+  for (size_t i = 0; i < componentCount; ++i) {
+    PatternRangeContext localContext;
+    components[i]->UpdateRanges(localContext);
+
+    if (minimumLength > localContext.minimumLength) {
+      minimumLength = localContext.minimumLength;
+    }
+    if (maximumLength < localContext.maximumLength) {
+      maximumLength = localContext.maximumLength;
+    }
+    if (!localContext.hasAnchor) {
+      hasAnchor = false;
+    }
+  }
+
+  context.hasAnchor = hasAnchor;
+  context.minimumLength = minimumLength;
+  context.maximumLength = maximumLength;
 }
 
 //---------------------------------------------------------------------------
