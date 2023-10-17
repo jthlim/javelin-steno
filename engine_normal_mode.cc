@@ -281,7 +281,7 @@ void StenoEngine::PrintPaperTapeUndo(size_t undoCount) const {
     return;
   }
 
-  char buffer[32];
+  char buffer[StenoStroke::MAX_STRING_LENGTH];
   UNDO_STROKE.ToWideString(buffer);
   Console::Printf(
       "EV {\"event\":\"paper_tape\",\"data\":\"%s\",\"undo\":%zu}\n\n", buffer,

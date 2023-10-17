@@ -232,7 +232,7 @@ StenoPloverHidPacket StenoKeyState::ToPloverHidPacket() const {
 #include <string.h>
 
 TEST_BEGIN("StenoKeyState tests") {
-  char buffer[32];
+  char buffer[StenoStroke::MAX_STRING_LENGTH];
 
   StenoKeyState state;
   state.Process(StenoKey::HL, true);

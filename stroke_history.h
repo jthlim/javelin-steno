@@ -10,6 +10,7 @@
 //---------------------------------------------------------------------------
 
 struct StenoSegment;
+class IWriter;
 class StenoCompiledOrthography;
 
 //---------------------------------------------------------------------------
@@ -85,12 +86,12 @@ public:
     return &states[index];
   }
 
-  bool HasModifiedStrokeHistory() const { return hasModifierStrokeHistory; }
+  bool HasModifiedStrokeHistory() const { return hasModifiedStrokeHistory; }
 
   static const size_t BUFFER_SIZE = 256;
 
 private:
-  bool hasModifierStrokeHistory;
+  bool hasModifiedStrokeHistory;
   size_t count = 0;
   StenoStroke strokes[BUFFER_SIZE];
   StenoState states[BUFFER_SIZE];
@@ -100,18 +101,24 @@ private:
   void RemoveOffset(BuildSegmentContext &context, size_t &offset,
                     size_t length);
   void ReevaluateSegments(BuildSegmentContext &context, size_t &offset);
+
+  void HandleRetrospectiveTransform(BuildSegmentContext &context,
+                                    const char *format, size_t currentOffset);
   void HandleRetroactiveInsertSpace(BuildSegmentContext &context,
                                     size_t currentOffset);
-
   void HandleRetroactiveToggleAsterisk(BuildSegmentContext &context,
                                        size_t currentOffset);
-
   void HandleRepeatLastStroke(BuildSegmentContext &context,
                               size_t currentOffset, const StenoState &state);
+
+  void WriteRetrospectiveTransform(const StenoSegmentList &segments,
+                                   size_t startingSegmentIndex,
+                                   const char *format, IWriter &output) const;
 
   bool DirectLookup(BuildSegmentContext &context, size_t &offset);
 
   bool AutoSuffixLookup(BuildSegmentContext &context, size_t &offset);
+  void AddRawStroke(BuildSegmentContext &context, size_t &offset);
 
   StenoSegment AutoSuffixTest(BuildSegmentContext &context, size_t offset,
                               size_t startLength, size_t minimumLength);

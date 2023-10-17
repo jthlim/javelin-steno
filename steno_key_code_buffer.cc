@@ -85,6 +85,7 @@ void StenoKeyCodeBuffer::AppendTextNoCaseModeOverride(const char *p, size_t n,
       case '\\':
       case '\"':
       case '\'':
+      case ' ':
         break;
       case 'b':
         c = '\b';
@@ -293,16 +294,9 @@ void StenoKeyCodeBuffer::ProcessCommand(const char *p) {
 
   if (p[1] == ':') {
     List<char *> parameters;
-    p += 2;
-    for (;;) {
-      char *tokenEnd = (char *)memchr(p, ':', end - p);
-      if (tokenEnd == nullptr) {
-        parameters.Add(Str::DupN(p, end - p));
-        break;
-      } else {
-        parameters.Add(Str::DupN(p, tokenEnd - p));
-        p = tokenEnd + 1;
-      }
+    const char *token = p + 2;
+    while (token) {
+      token = AddParameter(parameters, token, end);
     }
 
     bool handled = ProcessFunction(parameters);
@@ -322,6 +316,26 @@ void StenoKeyCodeBuffer::ProcessCommand(const char *p) {
 
   /// Just display the unhandled command.
   AppendText(p, end + 1 - p, StenoCaseMode::NORMAL);
+}
+
+const char *StenoKeyCodeBuffer::AddParameter(List<char *> &parameters,
+                                             const char *p, const char *end) {
+  const char *start = p;
+  const char *result = nullptr;
+
+  while (p < end) {
+    char c = *p;
+    if (c == ':') {
+      result = p + 1;
+      break;
+    }
+    ++p;
+    if (c == '\\') {
+      ++p;
+    }
+  }
+  parameters.Add(Str::DupN(start, p - start));
+  return result;
 }
 
 //---------------------------------------------------------------------------

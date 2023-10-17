@@ -89,6 +89,9 @@ StenoToken StenoSegmentListTokenizer::GetNext() {
   const char *start = p;
   if (*p == '{') {
     while (*p != '}' && *p != '\0') {
+      if (p[0] == '\\' && p[1] != '\0') {
+        ++p;
+      }
       ++p;
     }
     if (*p == '\0') {

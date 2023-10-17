@@ -185,7 +185,7 @@ char *StenoStroke::ToString(const StenoStroke *strokes, size_t length,
 #include "unit_test.h"
 
 TEST_BEGIN("Stroke tests") {
-  char buffer[32];
+  char buffer[StenoStroke::MAX_STRING_LENGTH];
 
   const StenoStroke hello(StrokeMask::HL | StrokeMask::LR);
   hello.ToString(buffer);

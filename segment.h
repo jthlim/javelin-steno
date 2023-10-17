@@ -25,6 +25,7 @@ struct StenoSegment {
 
   bool IsValid() const { return strokeLength != 0; }
   bool HasCommand() const;
+  const StenoState *GetEndStenoState() const { return state + strokeLength; }
 
   static StenoSegment CreateInvalid() { return StenoSegment(); }
 

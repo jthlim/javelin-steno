@@ -62,6 +62,8 @@ public:
   static bool IsGlue(const char *p);
 
   bool ProcessKeyPresses(const char *p, const char *end);
+  static const char *AddParameter(List<char *> &parameters, const char *p,
+                                  const char *end);
 
   void Backspace(int count);
   void RetroactiveCapitalize(int count);

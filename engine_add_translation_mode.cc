@@ -127,7 +127,7 @@ StenoEngine::UpdateAddTranslationModeTextBuffer(ConversionBuffer &buffer) {
       buffer.keyCodeBuffer.AppendText("/", 1, StenoCaseMode::NORMAL);
     }
 
-    char strokeBuffer[32];
+    char strokeBuffer[StenoStroke::MAX_STRING_LENGTH];
     char *p = stroke.ToString(strokeBuffer);
     buffer.keyCodeBuffer.AppendText(strokeBuffer, p - strokeBuffer,
                                     StenoCaseMode::NORMAL);

@@ -5,6 +5,8 @@
 #include "orthography.h"
 #include "segment.h"
 #include "str.h"
+#include "unicode.h"
+#include "writer.h"
 
 //---------------------------------------------------------------------------
 
@@ -43,7 +45,7 @@ void StenoStrokeHistory::TransferStartFrom(const StenoStrokeHistory &source,
                                            size_t count) {
   memcpy(strokes, source.strokes, count * sizeof(StenoStroke));
   memcpy(states, source.states, count * sizeof(StenoState));
-  hasModifierStrokeHistory = false;
+  hasModifiedStrokeHistory = false;
 }
 
 void StenoStrokeHistory::TransferFrom(const StenoStrokeHistory &source,
@@ -55,7 +57,7 @@ void StenoStrokeHistory::TransferFrom(const StenoStrokeHistory &source,
 
   memcpy(strokes, source.strokes + offset, count * sizeof(StenoStroke));
   memcpy(states, source.states + offset, count * sizeof(StenoState));
-  hasModifierStrokeHistory = false;
+  hasModifiedStrokeHistory = false;
 }
 
 void StenoStrokeHistory::CreateSegments(BuildSegmentContext &context,
@@ -65,8 +67,6 @@ void StenoStrokeHistory::CreateSegments(BuildSegmentContext &context,
 
 void StenoStrokeHistory::AddSegments(BuildSegmentContext &context,
                                      size_t offset) {
-  char buffer[32];
-
   while (offset < count) {
     if (DirectLookup(context, offset)) {
       continue;
@@ -75,11 +75,7 @@ void StenoStrokeHistory::AddSegments(BuildSegmentContext &context,
       continue;
     }
 
-    strokes[offset].ToString(buffer);
-    context.segmentList.Add(StenoSegment(
-        1, states + offset,
-        StenoDictionaryLookupResult::CreateDynamicString(Str::Dup(buffer))));
-    ++offset;
+    AddRawStroke(context, offset);
   }
 }
 
@@ -99,20 +95,53 @@ bool StenoStrokeHistory::DirectLookup(BuildSegmentContext &context,
     }
 
     const char *lookupText = lookup.GetText();
+
+    if (lookupText[0] == '=') {
+      if (Str::HasPrefix(lookupText, "=retrospective_transform:")) {
+        const char *format =
+            lookupText + sizeof("=retrospective_transform:") - 1;
+
+        if (context.segmentList.IsEmpty()) {
+          context.segmentList.Add(StenoSegment(
+              length, states + offset,
+              StenoDictionaryLookupResult::CreateStaticString("")));
+          offset += length;
+        } else {
+          offset += length;
+          HandleRetrospectiveTransform(context, format, offset);
+        }
+
+        lookup.Destroy();
+        return true;
+      }
+      if (Str::Eq(lookupText, "=retrospective_toggle_asterisk")) {
+        goto HandleRetroactiveToggleAsterisk;
+      }
+      if (Str::Eq(lookupText, "=retrospective_insert_space")) {
+        goto HandleRetroactiveInsertSpace;
+      }
+      if (Str::Eq(lookupText, "=repeat_last_stroke")) {
+        goto HandleRepeatLastStroke;
+      }
+    }
+
     if (lookupText[0] == '{' && lookupText[1] == '*') {
       if (lookupText[2] == '?' && lookupText[3] == '}') { // {*?}
+      HandleRetroactiveInsertSpace:
         lookup.Destroy();
         RemoveOffset(context, offset, length);
         HandleRetroactiveInsertSpace(context, offset);
         ReevaluateSegments(context, offset);
         return true;
       } else if (lookupText[2] == '}') { // {*}
+      HandleRetroactiveToggleAsterisk:
         lookup.Destroy();
         RemoveOffset(context, offset, length);
         HandleRetroactiveToggleAsterisk(context, offset);
         ReevaluateSegments(context, offset);
         return true;
       } else if (lookupText[2] == '+' && lookupText[3] == '}') { // {*+}
+      HandleRepeatLastStroke:
         StenoState state = states[offset];
         lookup.Destroy();
         RemoveOffset(context, offset, length);
@@ -139,7 +168,7 @@ void StenoStrokeHistory::RemoveOffset(BuildSegmentContext &context,
   memmove(states + offset, states + offset + length,
           sizeof(StenoState) * remaining);
   count -= length;
-  hasModifierStrokeHistory = true;
+  hasModifiedStrokeHistory = true;
 }
 
 bool StenoStrokeHistory::AutoSuffixLookup(BuildSegmentContext &context,
@@ -242,6 +271,17 @@ StenoSegment StenoStrokeHistory::AutoSuffixTest(BuildSegmentContext &context,
   return StenoSegment::CreateInvalid();
 }
 
+void StenoStrokeHistory::AddRawStroke(BuildSegmentContext &context,
+                                      size_t &offset) {
+  char buffer[StenoStroke::MAX_STRING_LENGTH];
+
+  strokes[offset].ToString(buffer);
+  context.segmentList.Add(StenoSegment(
+      1, states + offset,
+      StenoDictionaryLookupResult::CreateDynamicString(Str::Dup(buffer))));
+  ++offset;
+}
+
 void StenoStrokeHistory::ReevaluateSegments(BuildSegmentContext &context,
                                             size_t &offset) {
   size_t currentOffset = offset;
@@ -254,6 +294,115 @@ void StenoStrokeHistory::ReevaluateSegments(BuildSegmentContext &context,
     lastSegment.lookup.Destroy();
     context.segmentList.Pop();
     offset = lastOffset;
+  }
+}
+
+void StenoStrokeHistory::HandleRetrospectiveTransform(
+    BuildSegmentContext &context, const char *format, size_t currentOffset) {
+  size_t count = 0;
+  if (Unicode::IsAsciiDigit(*format)) {
+    count = *format++ - '0';
+    while (Unicode::IsAsciiDigit(*format)) {
+      count = 10 * count + *format++ - '0';
+    }
+    if (*format) {
+      ++format;
+    }
+  } else {
+    count = 1;
+  }
+
+  size_t startingSegmentIndex = context.segmentList.GetCount();
+  for (size_t i = 0; i < count && startingSegmentIndex; ++i) {
+    --startingSegmentIndex;
+    while (
+        startingSegmentIndex &&
+        Str::HasPrefix(
+            context.segmentList[startingSegmentIndex].lookup.GetText(), "{^")) {
+      --startingSegmentIndex;
+    }
+  }
+
+  BufferWriter bufferWriter;
+  WriteRetrospectiveTransform(context.segmentList, startingSegmentIndex, format,
+                              bufferWriter);
+  bufferWriter.WriteByte('\0');
+
+  StenoSegment &segment = context.segmentList[startingSegmentIndex];
+  for (;;) {
+    StenoSegment &back = context.segmentList.Back();
+    if (&segment == &back) {
+      break;
+    }
+    back.lookup.Destroy();
+    context.segmentList.Pop();
+  }
+
+  segment.strokeLength = states + currentOffset - segment.state;
+  segment.lookup.Destroy();
+  segment.lookup = StenoDictionaryLookupResult::CreateDynamicString(
+      bufferWriter.AdoptBuffer());
+}
+
+void StenoStrokeHistory::WriteRetrospectiveTransform(
+    const StenoSegmentList &segments, size_t startingSegmentIndex,
+    const char *format, IWriter &output) const {
+
+  size_t strokeCount =
+      segments.Back().GetEndStenoState() - segments[startingSegmentIndex].state;
+
+  for (;;) {
+    char c = *format++;
+    switch (c) {
+    case '\0':
+      return;
+    case '%':
+      c = *format++;
+      switch (c) {
+      case '\0':
+        return;
+      case 's': {
+        char buffer[StenoStroke::MAX_STRING_LENGTH];
+        const StenoStroke *strokes =
+            this->strokes + (segments[startingSegmentIndex].state - states);
+
+        for (size_t i = 0; i < strokeCount; ++i) {
+          if (i != 0) {
+            output.WriteByte('/');
+          }
+          char *bufferEnd = strokes[i].ToString(buffer);
+          output.Write(buffer, bufferEnd - buffer);
+        }
+      } break;
+      case 't':
+        for (size_t i = startingSegmentIndex; i < segments.GetCount(); ++i) {
+          if (i != startingSegmentIndex) {
+            output.WriteByte(' ');
+          }
+          const char *text = segments[i].lookup.GetText();
+          // Need to escape any special characters.
+          while (*text) {
+            switch (*text) {
+            case '{':
+            case ' ':
+              output.WriteByte('\\');
+              [[fallthrough]];
+            default:
+              output.WriteByte(*text++);
+            }
+          }
+        }
+        break;
+      default:
+        output.WriteByte('%');
+        output.WriteByte(c);
+        break;
+      }
+      break;
+    default:
+      output.WriteByte(c);
+      break;
+    }
   }
 }
 
