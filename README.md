@@ -198,7 +198,7 @@ Text: `This is a test`
 
 Output: `This IS A TEST`
 
-## `{:set_case:<case>}"`
+## `{:set_case:<case>}`
 
 Sets the case for output.
 
