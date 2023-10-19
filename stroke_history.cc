@@ -97,9 +97,8 @@ bool StenoStrokeHistory::DirectLookup(BuildSegmentContext &context,
     const char *lookupText = lookup.GetText();
 
     if (lookupText[0] == '=') {
-      if (Str::HasPrefix(lookupText, "=retrospective_transform:")) {
-        const char *format =
-            lookupText + sizeof("=retrospective_transform:") - 1;
+      if (Str::HasPrefix(lookupText, "=retro_transform:")) {
+        const char *format = lookupText + sizeof("=retro_transform:") - 1;
 
         if (context.segmentList.IsEmpty()) {
           context.segmentList.Add(StenoSegment(
@@ -108,17 +107,19 @@ bool StenoStrokeHistory::DirectLookup(BuildSegmentContext &context,
           offset += length;
         } else {
           offset += length;
-          HandleRetrospectiveTransform(context, format, offset);
+          HandleRetroTransform(context, format, offset);
         }
 
         lookup.Destroy();
         return true;
       }
-      if (Str::Eq(lookupText, "=retrospective_toggle_asterisk")) {
-        goto HandleRetroactiveToggleAsterisk;
+      if (Str::Eq(lookupText, "=retro_toggle_asterisk") ||
+          Str::Eq(lookupText, "=retrospective_toggle_asterisk")) {
+        goto HandleRetroToggleAsterisk;
       }
-      if (Str::Eq(lookupText, "=retrospective_insert_space")) {
-        goto HandleRetroactiveInsertSpace;
+      if (Str::Eq(lookupText, "=retro_insert_space") ||
+          Str::Eq(lookupText, "=retrospective_insert_space")) {
+        goto HandleRetroInsertSpace;
       }
       if (Str::Eq(lookupText, "=repeat_last_stroke")) {
         goto HandleRepeatLastStroke;
@@ -127,17 +128,17 @@ bool StenoStrokeHistory::DirectLookup(BuildSegmentContext &context,
 
     if (lookupText[0] == '{' && lookupText[1] == '*') {
       if (lookupText[2] == '?' && lookupText[3] == '}') { // {*?}
-      HandleRetroactiveInsertSpace:
+      HandleRetroInsertSpace:
         lookup.Destroy();
         RemoveOffset(context, offset, length);
-        HandleRetroactiveInsertSpace(context, offset);
+        HandleRetroInsertSpace(context, offset);
         ReevaluateSegments(context, offset);
         return true;
       } else if (lookupText[2] == '}') { // {*}
-      HandleRetroactiveToggleAsterisk:
+      HandleRetroToggleAsterisk:
         lookup.Destroy();
         RemoveOffset(context, offset, length);
-        HandleRetroactiveToggleAsterisk(context, offset);
+        HandleRetroToggleAsterisk(context, offset);
         ReevaluateSegments(context, offset);
         return true;
       } else if (lookupText[2] == '+' && lookupText[3] == '}') { // {*+}
@@ -297,8 +298,9 @@ void StenoStrokeHistory::ReevaluateSegments(BuildSegmentContext &context,
   }
 }
 
-void StenoStrokeHistory::HandleRetrospectiveTransform(
-    BuildSegmentContext &context, const char *format, size_t currentOffset) {
+void StenoStrokeHistory::HandleRetroTransform(BuildSegmentContext &context,
+                                              const char *format,
+                                              size_t currentOffset) {
   size_t count = 0;
   if (Unicode::IsAsciiDigit(*format)) {
     count = *format++ - '0';
@@ -324,8 +326,8 @@ void StenoStrokeHistory::HandleRetrospectiveTransform(
   }
 
   BufferWriter bufferWriter;
-  WriteRetrospectiveTransform(context.segmentList, startingSegmentIndex, format,
-                              bufferWriter);
+  WriteRetroTransform(context.segmentList, startingSegmentIndex, format,
+                      bufferWriter);
   bufferWriter.WriteByte('\0');
 
   StenoSegment &segment = context.segmentList[startingSegmentIndex];
@@ -344,9 +346,10 @@ void StenoStrokeHistory::HandleRetrospectiveTransform(
       bufferWriter.AdoptBuffer());
 }
 
-void StenoStrokeHistory::WriteRetrospectiveTransform(
-    const StenoSegmentList &segments, size_t startingSegmentIndex,
-    const char *format, IWriter &output) const {
+void StenoStrokeHistory::WriteRetroTransform(const StenoSegmentList &segments,
+                                             size_t startingSegmentIndex,
+                                             const char *format,
+                                             IWriter &output) const {
 
   size_t strokeCount =
       segments.Back().GetEndStenoState() - segments[startingSegmentIndex].state;
@@ -415,8 +418,8 @@ void StenoStrokeHistory::WriteRetrospectiveTransform(
   }
 }
 
-void StenoStrokeHistory::HandleRetroactiveInsertSpace(
-    BuildSegmentContext &context, size_t currentOffset) {
+void StenoStrokeHistory::HandleRetroInsertSpace(BuildSegmentContext &context,
+                                                size_t currentOffset) {
   if (currentOffset == 0) {
     return;
   }
@@ -431,8 +434,8 @@ void StenoStrokeHistory::HandleRetroactiveInsertSpace(
   strokes[currentOffset - 1] = StenoStroke(0);
 }
 
-void StenoStrokeHistory::HandleRetroactiveToggleAsterisk(
-    BuildSegmentContext &context, size_t currentOffset) {
+void StenoStrokeHistory::HandleRetroToggleAsterisk(BuildSegmentContext &context,
+                                                   size_t currentOffset) {
   if (currentOffset == 0) {
     return;
   }

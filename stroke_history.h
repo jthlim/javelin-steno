@@ -102,18 +102,18 @@ private:
                     size_t length);
   void ReevaluateSegments(BuildSegmentContext &context, size_t &offset);
 
-  void HandleRetrospectiveTransform(BuildSegmentContext &context,
-                                    const char *format, size_t currentOffset);
-  void HandleRetroactiveInsertSpace(BuildSegmentContext &context,
-                                    size_t currentOffset);
-  void HandleRetroactiveToggleAsterisk(BuildSegmentContext &context,
-                                       size_t currentOffset);
+  void HandleRetroTransform(BuildSegmentContext &context, const char *format,
+                            size_t currentOffset);
+  void HandleRetroInsertSpace(BuildSegmentContext &context,
+                              size_t currentOffset);
+  void HandleRetroToggleAsterisk(BuildSegmentContext &context,
+                                 size_t currentOffset);
   void HandleRepeatLastStroke(BuildSegmentContext &context,
                               size_t currentOffset, const StenoState &state);
 
-  void WriteRetrospectiveTransform(const StenoSegmentList &segments,
-                                   size_t startingSegmentIndex,
-                                   const char *format, IWriter &output) const;
+  void WriteRetroTransform(const StenoSegmentList &segments,
+                           size_t startingSegmentIndex, const char *format,
+                           IWriter &output) const;
 
   bool DirectLookup(BuildSegmentContext &context, size_t &offset);
 

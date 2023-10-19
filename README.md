@@ -11,7 +11,7 @@ For the online firmware builder tool, go to http://lim.au/#/software/javelin-ste
 
 # Supported Commands
 
-## `=retrospective_transform:<n>:<format>`
+## `=retro_transform:<n>:<format>`
 
 Transforms the prior `n` translations using `format`.
 
@@ -25,7 +25,7 @@ Example usage:
 With `SPHRA*EUPB` defined as:
 
 ```
-  =retrospective_transform:2:%s: "%l" -> "%t"
+  =retro:2:%s: "%l" -> "%t"
 ```
 
 Assuming default main.json, then:
