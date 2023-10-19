@@ -772,7 +772,7 @@ void Script::ExecutionContext::Run(Script &script, size_t offset) {
         Gpio::SetInputPin(pin, (Gpio::Pull)pull);
         continue;
       }
-      case SF::GET_GPIO_PIN: {
+      case SF::READ_GPIO_PIN: {
         int pin = script.Pop();
         script.Push(Gpio::GetPin(pin));
         continue;
