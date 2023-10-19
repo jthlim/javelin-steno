@@ -56,7 +56,7 @@ Example usage:
   {:console:set_space_position after}
 ```
 
-## `{:disable_dictionary:<dictionary_name>}"`
+## `{:disable_dictionary:<dictionary_name>}`
 
 Disables a dictionary.
 
@@ -66,7 +66,7 @@ Example usage:
   {:disable_dictionary:main.json}
 ```
 
-## `{:enable_dictionary:<dictionary_name>}"`
+## `{:enable_dictionary:<dictionary_name>}`
 
 Enables a dictionary.
 
@@ -76,7 +76,7 @@ Example usage:
   {:enable_dictionary:main.json}
 ```
 
-## `{:keyboard_layout:<layout_name>}"`
+## `{:keyboard_layout:<layout_name>}`
 
 Sets the keyboard layout of the host computer.
 
@@ -94,7 +94,7 @@ Example usage:
   {:keyboard_layout:dvorak}
 ```
 
-## `{:reset_state}"`
+## `{:reset_state}`
 
 Resets the state of the steno engine.
 
@@ -107,7 +107,7 @@ Example usage:
   {:reset_state}
 ```
 
-## `{:retro_capitalise:<nth_word>}"`
+## `{:retro_capitalise:<nth_word>}`
 
 Converts the prior `nth_word` word to capital.
 
@@ -120,7 +120,7 @@ Text: `This is a test`
 
 Output: `This Is a test`
 
-## `{:retro_double_quotes:<n_words>}"`
+## `{:retro_double_quotes:<n_words>}`
 
 Will surround the prior `n_words` with double quotes.
 
@@ -133,7 +133,7 @@ Text: `This is a test`
 
 Output: `This is "a test"`
 
-## `{:retro_lower:<n_words>}"`
+## `{:retro_lower:<n_words>}`
 
 Will lower case the prior `n_words`.
 
@@ -146,7 +146,7 @@ Text: `THIS IS A TEST`
 
 Output: `THIS IS a test`
 
-## `{:retro_single_quotes:<n_words>}"`
+## `{:retro_single_quotes:<n_words>}`
 
 Will surround the prior `n_words` with single quotes.
 
@@ -159,7 +159,7 @@ Text: `This is a test`
 
 Output: `This is 'a test'`
 
-## `{:retro_surround:<n_words>:<prefix>:<suffix>}"`
+## `{:retro_surround:<n_words>:<prefix>:<suffix>}`
 
 Will surround the prior `n_words` with `prefix` and `suffix`.
 
@@ -172,7 +172,7 @@ Text: `This is a test`
 
 Output: `This is [a test]`
 
-## `{:retro_title:<n_words>}"`
+## `{:retro_title:<n_words>}`
 
 Converts the prior `n_words` to title case.
 
@@ -185,7 +185,7 @@ Text: `This is a test`
 
 Output: `This Is A Test`
 
-## `{:retro_upper:<n_words>}"`
+## `{:retro_upper:<n_words>}`
 
 Converts the prior `n_words` to upper case.
 
@@ -215,7 +215,7 @@ Example usage:
   {:set_case:title}
 ```
 
-## `{:set_space:<separator>}"`
+## `{:set_space:<separator>}`
 
 Use `separator` between words.
 
@@ -227,7 +227,7 @@ The following will give "snake case" words:
   {:set_space:_}
 ```
 
-## `{:disable_dictionary:<dictionary_name>}"`
+## `{:disable_dictionary:<dictionary_name>}`
 
 Toggles a dictionary between enabled and disabled.
 
@@ -237,7 +237,7 @@ Example usage:
   {:toggle_dictionary:main.json}
 ```
 
-## `{:unicode:<unicode_mode>}"`
+## `{:unicode:<unicode_mode>}`
 
 Sets the unicode output mode.
 
