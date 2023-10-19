@@ -113,12 +113,10 @@ bool StenoStrokeHistory::DirectLookup(BuildSegmentContext &context,
         lookup.Destroy();
         return true;
       }
-      if (Str::Eq(lookupText, "=retro_toggle_asterisk") ||
-          Str::Eq(lookupText, "=retrospective_toggle_asterisk")) {
+      if (Str::Eq(lookupText, "=retro_toggle_asterisk")) {
         goto HandleRetroToggleAsterisk;
       }
-      if (Str::Eq(lookupText, "=retro_insert_space") ||
-          Str::Eq(lookupText, "=retrospective_insert_space")) {
+      if (Str::Eq(lookupText, "=retro_insert_space")) {
         goto HandleRetroInsertSpace;
       }
       if (Str::Eq(lookupText, "=repeat_last_stroke")) {

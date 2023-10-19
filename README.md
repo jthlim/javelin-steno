@@ -122,7 +122,7 @@ Output: `This Is a test`
 
 ## `{:retro_double_quotes:<n_words>}`
 
-Will surround the prior `n_words` with double quotes.
+Surrounds the prior `n_words` with double quotes.
 
 Example usage:
 Text: `This is a test`
@@ -135,7 +135,7 @@ Output: `This is "a test"`
 
 ## `{:retro_lower:<n_words>}`
 
-Will lower case the prior `n_words`.
+Lower cases the prior `n_words`.
 
 Example usage:
 Text: `THIS IS A TEST`
@@ -148,7 +148,7 @@ Output: `THIS IS a test`
 
 ## `{:retro_single_quotes:<n_words>}`
 
-Will surround the prior `n_words` with single quotes.
+Surrounds the prior `n_words` with single quotes.
 
 Example usage:
 Text: `This is a test`
@@ -161,7 +161,7 @@ Output: `This is 'a test'`
 
 ## `{:retro_surround:<n_words>:<prefix>:<suffix>}`
 
-Will surround the prior `n_words` with `prefix` and `suffix`.
+Surrounds the prior `n_words` with `prefix` and `suffix`.
 
 Example usage:
 Text: `This is a test`
