@@ -405,7 +405,7 @@ void StenoEngine::PrintSuggestion(const char *p, size_t arrowPrefixCount,
   Console::Printf("\",\"outlines\":[");
   for (size_t i = 0; i < result.resultCount; ++i) {
     const StenoReverseDictionaryResult &lookup = result.results[i];
-    StenoStroke::ToString(lookup.strokes, lookup.length, buffer);
+    StenoStroke::ToString(buffer, lookup.strokes, lookup.length);
     Console::Printf(i == 0 ? "\"%s\"" : ",\"%s\"", buffer);
   }
   Console::Printf("]}\n\n");

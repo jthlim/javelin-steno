@@ -166,7 +166,7 @@ void StenoEngine::Lookup_Binding(void *context, const char *commandLine) {
   for (size_t i = 0; i < result.resultCount; ++i) {
     const StenoReverseDictionaryResult lookup = result.results[i];
 
-    StenoStroke::ToString(lookup.strokes, lookup.length, buffer);
+    StenoStroke::ToString(buffer, lookup.strokes, lookup.length);
     Console::Printf(i == 0 ? "\n  \"%s\"" : ",\n  \"%s\"", buffer);
   }
 

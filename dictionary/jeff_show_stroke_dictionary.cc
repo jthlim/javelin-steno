@@ -50,7 +50,7 @@ StenoJeffShowStrokeDictionary::LookupInternal(
   *p++ = '`';
 
   size_t end = closed ? length - 1 : length;
-  p = StenoStroke::ToString(strokes + 1, end - 1, p);
+  p = StenoStroke::ToString(p, strokes + 1, end - 1);
   if (closed) {
     p[0] = '`';
     p[1] = '\0';

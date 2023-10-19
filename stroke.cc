@@ -169,8 +169,8 @@ uint32_t StenoStroke::Hash(const StenoStroke *strokes, size_t length) {
   return Crc32(strokes, sizeof(StenoStroke) * length);
 }
 
-char *StenoStroke::ToString(const StenoStroke *strokes, size_t length,
-                            char *buffer) {
+char *StenoStroke::ToString(char *buffer, const StenoStroke *strokes,
+                            size_t length) {
   for (size_t i = 0; i < length; ++i) {
     if (i != 0) {
       *buffer++ = '/';

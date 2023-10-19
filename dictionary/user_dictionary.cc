@@ -621,7 +621,7 @@ void StenoUserDictionary::PrintJsonDictionary() const {
 void StenoUserDictionaryEntry::Print(char *buffer) const {
   char *p = buffer;
   *p++ = '\"';
-  p = StenoStroke::ToString(strokes, strokeLength, p);
+  p = StenoStroke::ToString(p, strokes, strokeLength);
   *p++ = '\"';
   *p++ = ':';
   *p++ = ' ';
