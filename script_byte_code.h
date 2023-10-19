@@ -131,6 +131,8 @@ enum class StenoScriptFunction : uint8_t {
   IS_BLE_SCANNING,
   IS_WAITING_FOR_USER_PRESENCE,
   REPLY_USER_PRESENCE,
+  SET_GPIO_INPUT_PIN,
+  GET_GPIO_PIN,
 };
 
 enum class StenoScriptOperator : uint8_t {
