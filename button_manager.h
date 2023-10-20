@@ -7,6 +7,10 @@
 
 //---------------------------------------------------------------------------
 
+class Console;
+
+//---------------------------------------------------------------------------
+
 // Handles logical buttons -> key / steno presses.
 class ButtonManager {
 public:
@@ -24,6 +28,12 @@ public:
 
   static void ExecuteScript(ScriptId scriptId);
   static ButtonManager &GetInstance() { return container.value; }
+
+  static void EnableScriptEvents_Binding(void *context,
+                                         const char *commandLine);
+  static void DisableScriptEvents_Binding(void *context,
+                                          const char *commandLine);
+  void AddConsoleCommands(Console &console);
 
 private:
   ButtonManager(const uint8_t *scriptByteCode);

@@ -59,12 +59,16 @@ public:
   static bool IsWaitingForUserPresence();
   static void ReplyUserPresence(bool present);
 
+  void EnableScriptEvents() { scriptEventsEnabled = true; }
+  void DisableScriptEvents() { scriptEventsEnabled = false; }
+
 private:
   struct ScriptTimerContext;
 
   static const size_t MAX_STACK_SIZE = 256;
 
   bool cancelStenoState = false;
+  bool scriptEventsEnabled = false;
   int inPressAllCount = 0;
   uint32_t scriptTime;
   const uint8_t *byteCode;

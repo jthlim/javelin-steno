@@ -115,8 +115,8 @@ void Console::WriteAsJson(const char *data) {
   free(buffer);
 }
 
-void Console::WriteButtonScriptEvent(const char *text) {
-  Console::Printf("EV {\"event\":\"button_script_event\",\"text\":\"");
+void Console::WriteScriptEvent(const char *text) {
+  Console::Printf("EV {\"event\":\"script_event\",\"text\":\"");
   Console::WriteAsJson(text);
   Console::Printf("\"}\n\n");
 }

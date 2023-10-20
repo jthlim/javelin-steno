@@ -74,7 +74,7 @@ public:
   static void WriteAsJson(const char *data, char *buffer);
   static void WriteAsJson(const char *data);
 
-  static void WriteButtonScriptEvent(const char *text);
+  static void WriteScriptEvent(const char *text);
 
 #ifdef NDEBUG
   template <typename T, typename... T2>

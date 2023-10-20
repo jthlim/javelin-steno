@@ -696,8 +696,10 @@ void Script::ExecutionContext::Run(Script &script, size_t offset) {
         continue;
       case SF::SEND_EVENT: {
         intptr_t offset = script.Pop();
-        const char *text = (const char *)script.byteCode + offset;
-        Console::WriteButtonScriptEvent(text);
+        if (script.scriptEventsEnabled) {
+          const char *text = (const char *)script.byteCode + offset;
+          Console::WriteScriptEvent(text);
+        }
         continue;
       }
       case SF::IS_PAIR_POWERED:

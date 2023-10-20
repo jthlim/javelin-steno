@@ -88,3 +88,25 @@ void ButtonManager::Tick(uint32_t scriptTime) {
 }
 
 //---------------------------------------------------------------------------
+
+void ButtonManager::EnableScriptEvents_Binding(void *context,
+                                               const char *commandLine) {
+  ((Script *)context)->EnableScriptEvents();
+  Console::SendOk();
+}
+
+void ButtonManager::DisableScriptEvents_Binding(void *context,
+                                                const char *commandLine) {
+  ((Script *)context)->DisableScriptEvents();
+  Console::SendOk();
+}
+
+void ButtonManager::AddConsoleCommands(Console &console) {
+  console.RegisterCommand("enable_script_events", "Enables events from scripts",
+                          EnableScriptEvents_Binding, &script);
+  console.RegisterCommand("disable_script_events",
+                          "Disables events from scripts",
+                          DisableScriptEvents_Binding, &script);
+}
+
+//---------------------------------------------------------------------------
