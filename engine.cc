@@ -120,11 +120,11 @@ void StenoEngine::PrintInfo() const {
   dictionary.PrintInfo(4);
 }
 
-void StenoEngine::PrintDictionary() const {
+void StenoEngine::PrintDictionary(const char *name) const {
   ExternalFlashSentry externalFlashSentry;
 
   Console::Printf("{");
-  dictionary.PrintDictionary(false);
+  dictionary.PrintDictionary(name, false);
   Console::Printf("\n}\n\n");
 }
 
@@ -290,7 +290,7 @@ void StenoEngineTester::TestAddTranslation(StenoEngine &engine) {
   VerifyTextBuffer(engine, "");
 
   engine.UpdateMaximumStrokeLengthCache();
-  
+
   engine.ProcessStroke(StenoStroke("KAT"));
   VerifyTextBuffer(engine, "test");
   // spellchecker: enable

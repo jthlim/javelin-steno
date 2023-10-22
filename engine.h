@@ -40,7 +40,7 @@ public:
 
   void SendText(const uint8_t *p);
   void PrintInfo() const;
-  void PrintDictionary() const;
+  void PrintDictionary(const char *name) const;
 
   void ListDictionaries() const;
   bool EnableDictionary(const char *name);

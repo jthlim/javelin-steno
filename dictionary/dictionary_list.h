@@ -17,6 +17,8 @@ struct StenoDictionaryListEntry {
   size_t combinedMaximumOutlineLength;
   const StenoDictionary *dictionary;
 
+  const StenoDictionary *operator->() const { return dictionary; }
+
   void Enable() {
     enabled = true;
     combinedMaximumOutlineLength = dictionary->GetMaximumOutlineLength();
@@ -59,7 +61,7 @@ public:
   virtual size_t GetMaximumOutlineLength() const;
   virtual const char *GetName() const;
   virtual void PrintInfo(int depth) const;
-  virtual bool PrintDictionary(bool hasData) const;
+  virtual bool PrintDictionary(const char *name, bool hasData) const;
 
   virtual void ListDictionaries() const;
   virtual bool EnableDictionary(const char *name);

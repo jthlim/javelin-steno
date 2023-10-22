@@ -25,7 +25,7 @@ public:
   virtual size_t GetMaximumOutlineLength() const;
   virtual const char *GetName() const;
   virtual void PrintInfo(int depth) const;
-  virtual bool PrintDictionary(bool hasData) const;
+  virtual bool PrintDictionary(const char *name, bool hasData) const;
 
 private:
   const uint8_t *textBlock;

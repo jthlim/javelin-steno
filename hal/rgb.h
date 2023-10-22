@@ -2,6 +2,11 @@
 
 #pragma once
 #include <stddef.h>
+#include JAVELIN_BOARD_CONFIG
+
+//---------------------------------------------------------------------------
+
+class Console;
 
 //---------------------------------------------------------------------------
 
@@ -12,6 +17,12 @@ public:
   static size_t GetCount();
 
   static void SetRgb_Binding(void *context, const char *commandLine);
+
+#if JAVELIN_RGB
+  static void AddConsoleCommands(Console &console);
+#else
+  static void AddConsoleCommands(Console &console) {}
+#endif
 };
 
 //---------------------------------------------------------------------------

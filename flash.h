@@ -6,6 +6,10 @@
 
 //---------------------------------------------------------------------------
 
+class Console;
+
+//---------------------------------------------------------------------------
+
 class Flash {
 public:
   static bool IsUpdating() { return instance.target != nullptr; }
@@ -26,6 +30,8 @@ public:
   static void BeginWriteBinding(void *context, const char *commandLine);
   static void WriteBinding(void *context, const char *commandLine);
   static void EndWriteBinding(void *context, const char *commandLine);
+
+  static void AddConsoleCommands(Console &console);
 
 private:
   static bool RequiresErase(const void *target, size_t size);

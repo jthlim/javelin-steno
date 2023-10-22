@@ -261,7 +261,8 @@ void StenoCompactMapDictionary::PrintInfo(int depth) const {
   Console::Printf("%s%s: %zu bytes\n", Spaces(depth), GetName(), end - start);
 }
 
-bool StenoCompactMapDictionary::PrintDictionary(bool hasData) const {
+bool StenoCompactMapDictionary::PrintDictionary(const char *name,
+                                                bool hasData) const {
   char *buffer = (char *)malloc(2048);
   for (size_t i = 1; i <= cachedMaximumOutlineLength; ++i) {
     if (strokes[i].PrintCompactDictionary(hasData, i, buffer, textBlock)) {

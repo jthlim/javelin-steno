@@ -583,7 +583,8 @@ void StenoUserDictionary::WriteReverseEntryIndex(size_t entryIndex,
   free(buffer);
 }
 
-bool StenoUserDictionary::PrintDictionary(bool hasData) const {
+bool StenoUserDictionary::PrintDictionary(const char *name,
+                                          bool hasData) const {
   char *buffer = (char *)malloc(2048);
 
   for (size_t i = 0; i < activeDescriptor->data.hashTableSize; ++i) {
@@ -614,7 +615,7 @@ bool StenoUserDictionary::PrintDictionary(bool hasData) const {
 
 void StenoUserDictionary::PrintJsonDictionary() const {
   Console::Printf("{");
-  PrintDictionary(false);
+  PrintDictionary(nullptr, false);
   Console::Printf("\n}\n\n");
 }
 
@@ -718,6 +719,22 @@ void StenoUserDictionary::RemoveEntry_Binding(void *context,
   StenoUserDictionary *userDictionary = (StenoUserDictionary *)context;
   userDictionary->Remove(parser.strokes, parser.length);
   Console::SendOk();
+}
+
+void StenoUserDictionary::AddConsoleCommands(Console &console) {
+#if JAVELIN_USE_USER_DICTIONARY
+  console.RegisterCommand("print_user_dictionary",
+                          "Prints the user dictionary in JSON format",
+                          &PrintJsonDictionary_Binding, this);
+  console.RegisterCommand("reset_user_dictionary", "Resets the user dictionary",
+                          &Reset_Binding, this);
+  console.RegisterCommand("add_user_entry",
+                          "Adds a definition to the user dictionary",
+                          &AddEntry_Binding, this);
+  console.RegisterCommand("remove_user_entry",
+                          "Removes a definition from the user dictionary",
+                          &RemoveEntry_Binding, this);
+#endif
 }
 
 //---------------------------------------------------------------------------

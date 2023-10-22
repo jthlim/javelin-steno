@@ -199,7 +199,9 @@ public:
   virtual const char *GetName() const = 0;
 
   virtual void PrintInfo(int depth) const;
-  virtual bool PrintDictionary(bool hasData) const { return hasData; }
+  virtual bool PrintDictionary(const char *name, bool hasData) const {
+    return hasData;
+  }
 
   virtual void ListDictionaries() const {}
   virtual bool EnableDictionary(const char *name) { return false; }

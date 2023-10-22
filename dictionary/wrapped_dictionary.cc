@@ -32,8 +32,9 @@ void StenoWrappedDictionary::PrintInfo(int depth) const {
   return dictionary->PrintInfo(depth);
 }
 
-bool StenoWrappedDictionary::PrintDictionary(bool hasData) const {
-  return dictionary->PrintDictionary(hasData);
+bool StenoWrappedDictionary::PrintDictionary(const char *name,
+                                             bool hasData) const {
+  return dictionary->PrintDictionary(name, hasData);
 }
 
 void StenoWrappedDictionary::ListDictionaries() const {

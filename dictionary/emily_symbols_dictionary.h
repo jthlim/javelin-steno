@@ -25,7 +25,7 @@ public:
     return MAXIMUM_OUTLINE_LENGTH;
   }
   virtual const char *GetName() const;
-  virtual bool PrintDictionary(bool hasData) const;
+  virtual bool PrintDictionary(const char *name, bool hasData) const;
 
   static const StenoEmilySymbolsDictionary instance;
 };

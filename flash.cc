@@ -115,6 +115,8 @@ void Flash::WriteRemaining() {
   target = nullptr;
 }
 
+//---------------------------------------------------------------------------
+
 static int HexValue(int c) {
   if ('0' <= c && c <= '9') {
     return c - '0';
@@ -179,6 +181,18 @@ void Flash::WriteBinding(void *context, const char *commandLine) {
 void Flash::EndWriteBinding(void *context, const char *commandLine) {
   instance.WriteRemaining();
   Console::SendOk();
+}
+
+void Flash::AddConsoleCommands(Console &console) {
+  console.RegisterCommand("begin_write",
+                          "Begin a flash write to the specified address",
+                          &Flash::BeginWriteBinding, nullptr);
+  console.RegisterCommand("write",
+                          "Writes base64 data to the address specified in "
+                          "begin_write",
+                          &Flash::WriteBinding, nullptr);
+  console.RegisterCommand("end_write", "Completes writing to flash",
+                          &Flash::EndWriteBinding, nullptr);
 }
 
 //---------------------------------------------------------------------------

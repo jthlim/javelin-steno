@@ -102,8 +102,13 @@ void StenoEngine::ToggleDictionary_Binding(void *context,
 
 void StenoEngine::PrintDictionary_Binding(void *context,
                                           const char *commandLine) {
+  const char *dictionary = strchr(commandLine, ' ');
+  if (dictionary) {
+    ++dictionary;
+  }
+
   StenoEngine *engine = (StenoEngine *)context;
-  engine->PrintDictionary();
+  engine->PrintDictionary(dictionary);
 }
 
 void StenoEngine::EnablePaperTape_Binding(void *context,

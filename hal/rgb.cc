@@ -74,3 +74,12 @@ __attribute__((weak)) void Rgb::SetRgb(size_t id, int r, int g, int b) {}
 __attribute__((weak)) size_t Rgb::GetCount() { return 0; }
 
 //---------------------------------------------------------------------------
+
+#if JAVELIN_RGB
+void Rgb::AddConsoleCommands(Console &console) {
+  console.RegisterCommand("set_rgb", "Sets a single RGB (index, r, g, b)",
+                          &SetRgb_Binding, nullptr);
+}
+#endif
+
+//---------------------------------------------------------------------------

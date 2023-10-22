@@ -37,7 +37,7 @@ StenoDictionaryList::Lookup(const StenoDictionaryLookup &lookup) const {
       continue;
     }
 
-    StenoDictionaryLookupResult result = entry.dictionary->Lookup(lookup);
+    StenoDictionaryLookupResult result = entry->Lookup(lookup);
     if (result.IsValid()) {
       return result;
     }
@@ -52,7 +52,7 @@ const StenoDictionary *StenoDictionaryList::GetLookupProvider(
       continue;
     }
 
-    const StenoDictionary *result = entry.dictionary->GetLookupProvider(lookup);
+    const StenoDictionary *result = entry->GetLookupProvider(lookup);
     if (result) {
       return result;
     }
@@ -66,8 +66,7 @@ void StenoDictionaryList::ReverseLookup(
     if (!entry.IsEnabled()) {
       continue;
     }
-    const StenoDictionary *dictionary = entry.dictionary;
-    dictionary->ReverseLookup(result);
+    entry->ReverseLookup(result);
   }
 }
 
@@ -75,7 +74,7 @@ void StenoDictionaryList::CacheMaximumOutlineLength() {
   size_t max = 0;
   for (StenoDictionaryListEntry &entry : dictionaries) {
     ((StenoDictionary *)entry.dictionary)->CacheMaximumOutlineLength();
-    size_t m = entry.dictionary->GetCachedMaximumOutlineLength();
+    size_t m = entry->GetCachedMaximumOutlineLength();
     entry.UpdateMaximumOutlineLength(m);
     if (m > max) {
       max = m;
@@ -90,7 +89,7 @@ size_t StenoDictionaryList::GetMaximumOutlineLength() const {
     if (!entry.IsEnabled()) {
       continue;
     }
-    size_t m = entry.dictionary->GetMaximumOutlineLength();
+    size_t m = entry->GetMaximumOutlineLength();
     if (m > max) {
       max = m;
     }
@@ -102,20 +101,25 @@ const char *StenoDictionaryList::GetName() const { return "list"; }
 
 void StenoDictionaryList::PrintInfo(int depth) const {
   for (const StenoDictionaryListEntry &entry : dictionaries) {
-    entry.dictionary->PrintInfo(depth + 2);
+    entry->PrintInfo(depth + 2);
   }
 }
 
-bool StenoDictionaryList::PrintDictionary(bool hasData) const {
+bool StenoDictionaryList::PrintDictionary(const char *name,
+                                          bool hasData) const {
   // Written in reverse order, so that if there are any conflicts,
   // higher priority items will occur later in the JSON.
   for (size_t i = dictionaries.GetCount(); i != 0;) {
     --i;
-    if (!dictionaries[i].IsEnabled()) {
+    if (name) {
+      if (!Str::Eq(dictionaries[i]->GetName(), name)) {
+        continue;
+      }
+    } else if (!dictionaries[i].IsEnabled()) {
       continue;
     }
 
-    hasData = dictionaries[i].dictionary->PrintDictionary(hasData);
+    hasData = dictionaries[i]->PrintDictionary(name, hasData);
   }
   return hasData;
 }
@@ -125,7 +129,7 @@ bool StenoDictionaryList::PrintDictionary(bool hasData) const {
 void StenoDictionaryList::ListDictionaries() const {
   bool first = true;
   for (const StenoDictionaryListEntry &entry : dictionaries) {
-    if (entry.dictionary->GetName()[0] == '#') {
+    if (entry->GetName()[0] == '#') {
       continue;
     }
     if (first) {
@@ -135,7 +139,7 @@ void StenoDictionaryList::ListDictionaries() const {
       Console::Printf(",\n");
     }
     Console::Printf(" {\"dictionary\":\"");
-    Console::WriteAsJson(entry.dictionary->GetName());
+    Console::WriteAsJson(entry->GetName());
     Console::Printf("\",\"enabled\":%s}", entry.IsEnabled() ? "true" : "false");
   }
   Console::Printf("\n]\n\n");
@@ -143,7 +147,7 @@ void StenoDictionaryList::ListDictionaries() const {
 
 bool StenoDictionaryList::EnableDictionary(const char *name) {
   for (StenoDictionaryListEntry &entry : dictionaries) {
-    if (Str::Eq(name, entry.dictionary->GetName())) {
+    if (Str::Eq(name, entry->GetName())) {
       entry.Enable();
       SendDictionaryStatus(name, true);
       return true;
@@ -154,7 +158,7 @@ bool StenoDictionaryList::EnableDictionary(const char *name) {
 
 bool StenoDictionaryList::DisableDictionary(const char *name) {
   for (StenoDictionaryListEntry &entry : dictionaries) {
-    if (Str::Eq(name, entry.dictionary->GetName())) {
+    if (Str::Eq(name, entry->GetName())) {
       entry.Disable();
       SendDictionaryStatus(name, false);
       return true;
@@ -165,7 +169,7 @@ bool StenoDictionaryList::DisableDictionary(const char *name) {
 
 bool StenoDictionaryList::ToggleDictionary(const char *name) {
   for (StenoDictionaryListEntry &entry : dictionaries) {
-    if (Str::Eq(name, entry.dictionary->GetName())) {
+    if (Str::Eq(name, entry->GetName())) {
       entry.ToggleEnable();
       SendDictionaryStatus(name, entry.IsEnabled());
       return true;

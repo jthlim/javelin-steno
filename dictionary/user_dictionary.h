@@ -65,7 +65,7 @@ public:
   virtual size_t GetMaximumOutlineLength() const final;
   virtual const char *GetName() const final;
   virtual void PrintInfo(int depth) const final;
-  virtual bool PrintDictionary(bool hasData) const final;
+  virtual bool PrintDictionary(const char *name, bool hasData) const final;
 
   void PrintJsonDictionary() const;
   void Reset();
@@ -83,6 +83,8 @@ public:
   static void RemoveEntry_Binding(void *context, const char *commandLine);
 
   static const size_t MAX_STROKE_COUNT = 16;
+
+  void AddConsoleCommands(Console &console);
 
 private:
   const StenoUserDictionaryDescriptor *descriptorBase;
