@@ -478,13 +478,13 @@ bool StenoKeyCodeBuffer::ProcessKeyPresses(const char *p, const char *end) {
       } else {
         buffer[count++] = StenoKeyCode::CreateRawKeyCodeRelease(keyCode);
       }
-      break;
-    }
-    case StenoKeyPressToken::Type::UNKNOWN:
+    } break;
+
+    case StenoKeyPressToken::Type::UNKNOWN:    // Unknown token
+    case StenoKeyPressToken::Type::OPEN_PAREN: // Unexpected open paren
+      ReleaseKeyStack(keyPressStack);
       return false;
-    case StenoKeyPressToken::Type::OPEN_PAREN:
-      // Unexpected open paren.
-      return false;
+
     case StenoKeyPressToken::Type::CLOSE_PAREN: {
       if (keyPressStack.IsEmpty()) {
         return false;
@@ -494,19 +494,23 @@ bool StenoKeyCodeBuffer::ProcessKeyPresses(const char *p, const char *end) {
         buffer[count++] = StenoKeyCode::CreateRawKeyCodeRelease(keyCode);
       }
       keyPressStack.Pop();
-      break;
-    }
+    } break;
+
     case StenoKeyPressToken::Type::END:
-      // If unmatched trailing brackets, just close them out..
-      while (keyPressStack.IsNotEmpty()) {
-        KeyCode keyCode = keyPressStack.Back();
-        if (keyCode != 0) {
-          buffer[count++] = StenoKeyCode::CreateRawKeyCodeRelease(keyCode);
-        }
-        keyPressStack.Pop();
-      }
+      // If unmatched trailing brackets, just close them out.
+      ReleaseKeyStack(keyPressStack);
       return true;
     }
+  }
+}
+
+void StenoKeyCodeBuffer::ReleaseKeyStack(List<KeyCode> &keyPressStack) {
+  while (keyPressStack.IsNotEmpty()) {
+    KeyCode keyCode = keyPressStack.Back();
+    if (keyCode != 0) {
+      buffer[count++] = StenoKeyCode::CreateRawKeyCodeRelease(keyCode);
+    }
+    keyPressStack.Pop();
   }
 }
 
