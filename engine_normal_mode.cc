@@ -523,7 +523,7 @@ void StenoEngine::PrintTextLog(
   size_t nextLength = nextKeyCodeBuffer.count;
   size_t i = 0;
   while (i < previousLength && i < nextLength &&
-         previousData[i] == nextData[i]) {
+         previousData[i].HasSameOutput(nextData[i])) {
     ++i;
   }
 

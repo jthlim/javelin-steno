@@ -45,7 +45,7 @@ public:
     return Unicode::IsAsciiDigit(unicode);
   }
 
-  bool IsUnicode(uint32_t value) {
+  bool IsUnicode(uint32_t value) const {
     // return !isRawKeyCode && unicode == value;
     return unicode == value;
   }
@@ -68,7 +68,7 @@ public:
     }
   }
 
-  StenoKeyCode WithCase(StenoCaseMode caseMode) const {
+  inline StenoKeyCode WithCase(StenoCaseMode caseMode) const {
     //    return isRawKeyCode ? *this : StenoKeyCode(unicode, caseMode);
     return StenoKeyCode(unicode, caseMode);
   }
@@ -87,7 +87,7 @@ public:
   uint32_t ResolveOutputUnicode() const;
   uint32_t ResolveSelectedUnicode() const;
 
-  bool operator==(const StenoKeyCode &other) const {
+  bool HasSameOutput(const StenoKeyCode &other) const {
     return value == other.value ||
            ResolveOutputUnicode() == other.ResolveOutputUnicode();
   }

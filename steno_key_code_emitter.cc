@@ -170,7 +170,8 @@ bool StenoKeyCodeEmitter::Process(const StenoKeyCode *previous,
                                   const StenoKeyCode *value,
                                   size_t valueLength) const {
   // Skip common prefixes.
-  while (previousLength > 0 && valueLength > 0 && *previous == *value) {
+  while (previousLength > 0 && valueLength > 0 &&
+         previous->HasSameOutput(*value)) {
     --previousLength;
     --valueLength;
     ++previous;
