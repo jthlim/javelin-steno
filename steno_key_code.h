@@ -92,6 +92,10 @@ public:
            ResolveOutputUnicode() == other.ResolveOutputUnicode();
   }
 
+  bool operator==(const StenoKeyCode &other) const {
+    return value == other.value;
+  }
+
 private:
   union {
     struct {
