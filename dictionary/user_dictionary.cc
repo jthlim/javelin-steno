@@ -8,6 +8,7 @@
 #include "../stroke.h"
 #include "../stroke_list_parser.h"
 #include <assert.h>
+#include JAVELIN_BOARD_CONFIG
 
 //---------------------------------------------------------------------------
 

@@ -4,6 +4,7 @@
 #include "base64.h"
 #include "console.h"
 #include "hal/external_flash.h"
+#include "unicode.h"
 #include <assert.h>
 #include <string.h>
 
@@ -117,20 +118,6 @@ void Flash::WriteRemaining() {
 
 //---------------------------------------------------------------------------
 
-static int HexValue(int c) {
-  if ('0' <= c && c <= '9') {
-    return c - '0';
-  }
-  if ('a' <= c && c <= 'f') {
-    return c - 'a' + 10;
-  }
-  if ('A' <= c && c <= 'F') {
-    return c - 'A' + 10;
-  }
-
-  return -1;
-}
-
 void Flash::BeginWriteBinding(void *context, const char *commandLine) {
   const char *p = strchr(commandLine, ' ');
   if (!p) {
@@ -144,7 +131,7 @@ void Flash::BeginWriteBinding(void *context, const char *commandLine) {
 
   size_t addressValue = 0;
   while (*p) {
-    int hexValue = HexValue(*p++);
+    int hexValue = Unicode::GetHexValue(*p++);
     if (hexValue == -1) {
       continue;
     }

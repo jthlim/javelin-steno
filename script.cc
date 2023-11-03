@@ -769,14 +769,14 @@ void Script::ExecutionContext::Run(Script &script, size_t offset) {
         script.ReplyUserPresence(script.Pop() != 0);
         continue;
       case SF::SET_GPIO_INPUT_PIN: {
-        int pull = script.Pop();
-        int pin = script.Pop();
-        Gpio::SetInputPin(pin, (Gpio::Pull)pull);
+        intptr_t pull = script.Pop();
+        intptr_t pin = script.Pop();
+        Gpio::SetInputPin((int) pin, (Gpio::Pull)pull);
         continue;
       }
       case SF::READ_GPIO_PIN: {
-        int pin = script.Pop();
-        script.Push(Gpio::GetPin(pin));
+        intptr_t pin = script.Pop();
+        script.Push(Gpio::GetPin((int) pin));
         continue;
       }
       }

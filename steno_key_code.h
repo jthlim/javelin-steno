@@ -8,6 +8,13 @@
 //---------------------------------------------------------------------------
 
 // Represents a value in the steno emit buffer.
+//
+// There are two types of StenoKeyCodes - Unicode with case, and raw key codes.
+// The representation of these are carefully designed to avoid specific checks
+// against isRawKeyCode in many of the functions, as the raw code flags overlap
+// with the unicode bitfield, and will just do the right thing.
+//
+// The functions that work in either mode have a comment: // *
 class StenoKeyCode {
 public:
   StenoKeyCode() = default;
@@ -29,65 +36,51 @@ public:
     return result;
   }
 
-  bool IsRawKeyCode() const { return isRawKeyCode; }
-  bool IsWhitespace() const {
-    // return !isRawKeyCode && Unicode::IsWhitespace(unicode);
-    return Unicode::IsWhitespace(unicode);
-  }
+  bool IsRawKeyCode() const { return isRawKeyCode; } // *
 
-  bool IsLetter() const {
-    // return !isRawKeyCode && Unicode::IsLetter(unicode);
-    return Unicode::IsLetter(unicode);
-  }
-
-  bool IsAsciiDigit() const {
-    // return !isRawKeyCode && Unicode::IsAsciiDigit(unicode);
-    return Unicode::IsAsciiDigit(unicode);
-  }
-
-  bool IsUnicode(uint32_t value) const {
-    // return !isRawKeyCode && unicode == value;
-    return unicode == value;
-  }
-
+  // Only for raw key codes.
   bool IsPress() const { return isPress; }
+
+  // Only for raw key codes.
   KeyCode::Value GetRawKeyCode() const { return (KeyCode::Value)rawKeyCode; }
 
-  uint32_t GetUnicode() const { return isRawKeyCode ? 0 : unicode; }
-  StenoCaseMode GetOutputCaseMode() const {
-    // In the case of isRawKeyCode, the associated outputCaseMode bits will
-    // be StenoCaseMode::NORMAL.
-    // return isRawKeyCode ? StenoCaseMode::NORMAL : outputCaseMode;
-    return outputCaseMode;
-  }
+  bool IsWhitespace() const { return Unicode::IsWhitespace(unicode); } // *
+  bool IsLetter() const { return Unicode::IsLetter(unicode); }         // *
+  bool IsAsciiDigit() const { return Unicode::IsAsciiDigit(unicode); } // *
+  bool IsUnicode(uint32_t value) const { return unicode == value; }    // *
 
-  void SetCase(StenoCaseMode newCaseMode) {
+  uint32_t GetUnicode() const { return isRawKeyCode ? 0 : unicode; }
+
+  // Returns the output case mode for unicode, and NORMAL for raw key codes.
+  StenoCaseMode GetOutputCaseMode() const { return outputCaseMode; } // *
+
+  void SetCase(StenoCaseMode newCaseMode) { // *
     if (!isRawKeyCode) {
       outputCaseMode = newCaseMode;
       selectedCaseMode = newCaseMode;
     }
   }
 
-  inline StenoKeyCode WithCase(StenoCaseMode caseMode) const {
-    //    return isRawKeyCode ? *this : StenoKeyCode(unicode, caseMode);
+  inline StenoKeyCode WithCase(StenoCaseMode caseMode) const { // *
     return StenoKeyCode(unicode, caseMode);
   }
 
-  StenoKeyCode ToUpper() const { return WithCase(StenoCaseMode::UPPER); }
-
-  StenoKeyCode ToTitle() const { return WithCase(StenoCaseMode::TITLE); }
-
-  StenoKeyCode ToTitleOnce() const {
+  StenoKeyCode ToUpper() const { return WithCase(StenoCaseMode::UPPER); } // *
+  StenoKeyCode ToLower() const { return WithCase(StenoCaseMode::LOWER); } // *
+  StenoKeyCode ToTitle() const { return WithCase(StenoCaseMode::TITLE); } // *
+  StenoKeyCode ToTitleOnce() const {                                      // *
     return WithCase(StenoCaseMode::TITLE_ONCE);
   }
 
-  StenoKeyCode ToLower() const { return WithCase(StenoCaseMode::LOWER); }
-
   // Applies output case mode on unicode and returns the result.
-  uint32_t ResolveOutputUnicode() const;
-  uint32_t ResolveSelectedUnicode() const;
+  uint32_t ResolveOutputUnicode() const {
+    return ResolveUnicode(unicode, outputCaseMode);
+  }
+  uint32_t ResolveSelectedUnicode() const {
+    return ResolveUnicode(unicode, selectedCaseMode);
+  }
 
-  bool HasSameOutput(const StenoKeyCode &other) const {
+  bool HasSameOutput(const StenoKeyCode &other) const { // *
     return value == other.value ||
            ResolveOutputUnicode() == other.ResolveOutputUnicode();
   }
@@ -99,19 +92,23 @@ public:
 private:
   union {
     struct {
-      uint32_t rawKeyCode : 22; // This is KeyCode::Value
+      // This is KeyCode::Value, but using a using a uint32_t to use more than
+      // 8 bits.
+      uint32_t rawKeyCode : 22;
       bool isPress : 1;
       bool isRawKeyCode : 1;
       uint32_t reserved : 8;
     };
     struct {
-      uint32_t unicode : 24; // This will have the top bit set if it is a
-                             // raw key code.
+      // Unicode only needs 21 bits.
+      // The upper bits intentionally overlap with the flags for raw key codes
+      // to simplify the implementation of the above methods.
+      uint32_t unicode : 24;
 
-      // StenoCaseMode type.
-      // outputCaseMode is used to display.
-      // selectedCaseMode is used for reverse lookups.
+      // Used for output case.
       StenoCaseMode outputCaseMode : 4;
+
+      // Used for reverse lookups.
       StenoCaseMode selectedCaseMode : 4;
     };
     uint32_t value;
