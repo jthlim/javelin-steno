@@ -1,6 +1,6 @@
 //---------------------------------------------------------------------------
 
-#include "button_manager.h"
+#include "script_manager.h"
 #include "clock.h"
 #include "console.h"
 #include "script_byte_code.h"
@@ -12,11 +12,11 @@
 
 //---------------------------------------------------------------------------
 
-JavelinStaticAllocate<ButtonManager> ButtonManager::container;
+JavelinStaticAllocate<ScriptManager> ScriptManager::container;
 
 //---------------------------------------------------------------------------
 
-ButtonManager::ButtonManager(const uint8_t *scriptByteCode)
+ScriptManager::ScriptManager(const uint8_t *scriptByteCode)
     : script(scriptByteCode) {
   isScriptValid = ((StenoScriptByteCodeData *)scriptByteCode)->IsValid();
   if (isScriptValid) {
@@ -24,7 +24,7 @@ ButtonManager::ButtonManager(const uint8_t *scriptByteCode)
   }
 }
 
-void ButtonManager::Update(const ButtonState &newButtonState,
+void ScriptManager::Update(const ButtonState &newButtonState,
                            uint32_t scriptTime) {
   if (!isScriptValid) {
     return;
@@ -55,14 +55,14 @@ void ButtonManager::Update(const ButtonState &newButtonState,
   }
 }
 
-void ButtonManager::ExecuteScript(ScriptId scriptId) {
-  ButtonManager &instance = GetInstance();
+void ScriptManager::ExecuteScript(ScriptId scriptId) {
+  ScriptManager &instance = GetInstance();
   if (instance.isScriptValid) {
     instance.script.ExecuteScriptId(scriptId, Clock::GetMilliseconds());
   }
 }
 
-void ButtonManager::PressButton(size_t index, uint32_t scriptTime) {
+void ScriptManager::PressButton(size_t index, uint32_t scriptTime) {
   if (buttonState.IsSet(index)) {
     return;
   }
@@ -70,7 +70,7 @@ void ButtonManager::PressButton(size_t index, uint32_t scriptTime) {
   script.HandlePress(index, scriptTime);
 }
 
-void ButtonManager::ReleaseButton(size_t index, uint32_t scriptTime) {
+void ScriptManager::ReleaseButton(size_t index, uint32_t scriptTime) {
   if (!buttonState.IsSet(index)) {
     return;
   }
@@ -80,7 +80,7 @@ void ButtonManager::ReleaseButton(size_t index, uint32_t scriptTime) {
 
 //---------------------------------------------------------------------------
 
-void ButtonManager::Tick(uint32_t scriptTime) {
+void ScriptManager::Tick(uint32_t scriptTime) {
   if (!isScriptValid) {
     return;
   }
@@ -89,19 +89,19 @@ void ButtonManager::Tick(uint32_t scriptTime) {
 
 //---------------------------------------------------------------------------
 
-void ButtonManager::EnableScriptEvents_Binding(void *context,
+void ScriptManager::EnableScriptEvents_Binding(void *context,
                                                const char *commandLine) {
   ((Script *)context)->EnableScriptEvents();
   Console::SendOk();
 }
 
-void ButtonManager::DisableScriptEvents_Binding(void *context,
+void ScriptManager::DisableScriptEvents_Binding(void *context,
                                                 const char *commandLine) {
   ((Script *)context)->DisableScriptEvents();
   Console::SendOk();
 }
 
-void ButtonManager::AddConsoleCommands(Console &console) {
+void ScriptManager::AddConsoleCommands(Console &console) {
   console.RegisterCommand("enable_script_events", "Enables events from scripts",
                           EnableScriptEvents_Binding, &script);
   console.RegisterCommand("disable_script_events",

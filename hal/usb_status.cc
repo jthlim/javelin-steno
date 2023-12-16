@@ -1,7 +1,7 @@
 //---------------------------------------------------------------------------
 
 #include "usb_status.h"
-#include "../button_manager.h"
+#include "../script_manager.h"
 
 //---------------------------------------------------------------------------
 
@@ -11,7 +11,7 @@ UsbStatus UsbStatus::instance;
 
 void UsbStatus::SetKeyboardLedStatus(KeyboardLedStatus status) {
   ledStatus = status;
-  ButtonManager::ExecuteScript(ScriptId::KEYBOARD_LED_STATUS_UPDATE);
+  ScriptManager::ExecuteScript(ScriptId::KEYBOARD_LED_STATUS_UPDATE);
 }
 
 //---------------------------------------------------------------------------

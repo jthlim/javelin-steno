@@ -1,9 +1,9 @@
 //---------------------------------------------------------------------------
 
 #include "split.h"
-#include "../button_manager.h"
 #include "../clock.h"
 #include "../crc.h"
+#include "../script_manager.h"
 #include <string.h>
 
 //---------------------------------------------------------------------------
@@ -68,14 +68,14 @@ void TxBuffer::Handlers::OnConnectionReset() const {
   for (size_t i = 0; i < handlerCount; ++i) {
     handlers[i]->OnTransmitConnectionReset();
   }
-  ButtonManager::ExecuteScript(ScriptId::PAIR_CONNECTION_UPDATE);
+  ScriptManager::ExecuteScript(ScriptId::PAIR_CONNECTION_UPDATE);
 }
 
 void TxBuffer::Handlers::OnConnect() const {
   for (size_t i = 0; i < handlerCount; ++i) {
     handlers[i]->OnTransmitConnected();
   }
-  ButtonManager::ExecuteScript(ScriptId::PAIR_CONNECTION_UPDATE);
+  ScriptManager::ExecuteScript(ScriptId::PAIR_CONNECTION_UPDATE);
 }
 
 //---------------------------------------------------------------------------
