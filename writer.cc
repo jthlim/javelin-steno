@@ -3,6 +3,7 @@
 #include "writer.h"
 #include "console.h"
 #include "str.h"
+#include "stroke.h"
 #include <string.h>
 
 //---------------------------------------------------------------------------
@@ -61,7 +62,9 @@ void IWriter::Printf(const char *p, ...) {
 
 void IWriter::Vprintf(const char *p, va_list args) {
   const char *spanStart = p;
-  char scratch[32];
+  char scratch[64];
+
+  static_assert(sizeof(scratch) >= StenoStroke::MAX_STRING_LENGTH + 1);
 
   for (;;) {
     for (;;) {
@@ -187,12 +190,50 @@ void IWriter::Vprintf(const char *p, va_list args) {
       ++p;
       continue;
 
+    case 't': {
+      // Write single stroke.
+      const StenoStroke *stroke = va_arg(args, const StenoStroke *);
+      char *p = stroke->ToString(scratch);
+      Write(scratch, p - scratch);
+      goto NextSegment;
+    }
+
+    case 'T': {
+      // Write multiple strokes.
+      const StenoStroke *strokes = va_arg(args, const StenoStroke *);
+      size_t strokeCount = va_arg(args, size_t);
+      for (size_t j = 0; j < strokeCount; ++j) {
+        char *p = scratch;
+        if (j != 0) {
+          *p++ = '/';
+        }
+        p = strokes[j].ToString(p);
+        Write(scratch, p - scratch);
+      }
+      goto NextSegment;
+    }
+    case 'J': {
+      // Write as JSON
+      const char *p = va_arg(args, char *);
+      size_t length = Str::Length(p);
+      char *jsonBuffer =
+          length <= sizeof(scratch) / 2 ? scratch : (char *)malloc(2 * length);
+      char *end = Str::WriteJson(jsonBuffer, p);
+      WriteSegment(flags, jsonBuffer, end, width);
+      if (jsonBuffer != scratch) {
+        free(jsonBuffer);
+      }
+      goto NextSegment;
+    }
+
     case '\0': // Shouldn't happen, but catc
     default:
       // Just use span start.
       continue;
     }
     WriteSegment(flags, start, end, width);
+
+  NextSegment:
     ++p;
     spanStart = p;
   }

@@ -118,8 +118,6 @@ public:
 
   static uint32_t PopCount(const StenoStroke *strokes, size_t length);
   static uint32_t Hash(const StenoStroke *strokes, size_t length);
-  static char *ToString(char *buffer, const StenoStroke *strokes,
-                        size_t length);
 
   static const size_t MAX_STRING_LENGTH = 32;
 

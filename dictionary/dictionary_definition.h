@@ -73,13 +73,13 @@ struct StenoMapDictionaryStrokesDefinition {
   size_t GetCompactOffset(size_t index) const;
   bool HasCompactEntry(size_t index) const;
   size_t GetCompactEntryCount() const;
-  bool PrintCompactDictionary(bool hasData, size_t strokeLength, char *buffer,
+  bool PrintCompactDictionary(bool hasData, size_t strokeLength,
                               const uint8_t *textBlock) const;
 
   size_t GetFullOffset(size_t index) const;
   bool HasFullEntry(size_t index) const;
   size_t GetFullEntryCount() const;
-  bool PrintFullDictionary(bool hasData, size_t strokeLength, char *buffer,
+  bool PrintFullDictionary(bool hasData, size_t strokeLength,
                            const uint8_t *textBlock) const;
 };
 

@@ -128,19 +128,18 @@ bool StenoDictionaryList::PrintDictionary(const char *name,
 
 void StenoDictionaryList::ListDictionaries() const {
   bool first = true;
+  Console::Printf("[\n");
   for (const StenoDictionaryListEntry &entry : dictionaries) {
     if (entry->GetName()[0] == '#') {
       continue;
     }
     if (first) {
-      Console::Printf("[\n");
       first = false;
     } else {
       Console::Printf(",\n");
     }
-    Console::Printf(" {\"dictionary\":\"");
-    Console::WriteAsJson(entry->GetName());
-    Console::Printf("\",\"enabled\":%s}", entry.IsEnabled() ? "true" : "false");
+    Console::Printf(" {\"dictionary\":\"%J\",\"enabled\":%s}", entry->GetName(),
+                    entry.IsEnabled() ? "true" : "false");
   }
   Console::Printf("\n]\n\n");
 }
@@ -184,9 +183,11 @@ void StenoDictionaryList::SendDictionaryStatus(const char *name,
     return;
   }
 
-  Console::Printf("EV {\"event\":\"dictionary_status\",\"dictionary\":\"");
-  Console::WriteAsJson(name);
-  Console::Printf("\",\"enabled\":%s}\n\n", enabled ? "true" : "false");
+  Console::Printf("EV "
+                  "{\"event\":\"dictionary_status\","
+                  "\"dictionary\":\"%J\","
+                  "\"enabled\":%s}\n\n",
+                  name, enabled ? "true" : "false");
 }
 
 //---------------------------------------------------------------------------

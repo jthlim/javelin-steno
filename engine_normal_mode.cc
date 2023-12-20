@@ -371,7 +371,7 @@ void StenoEngine::PrintSuggestions(const StenoSegmentList &previousSegmentList,
     }
 
     if (keyCodeCount > 1) {
-      PrintSuggestion(p, 1, buffer, keyCodeCount);
+      PrintSuggestion(p, 1, keyCodeCount);
     }
     return;
   }
@@ -380,7 +380,7 @@ void StenoEngine::PrintSuggestions(const StenoSegmentList &previousSegmentList,
   char *lastLookup = nullptr;
   for (size_t wordCount = 1; wordCount < 8; ++wordCount) {
     char *newLookup =
-        PrintSegmentSuggestion(wordCount, nextSegmentList, buffer, lastLookup);
+        PrintSegmentSuggestion(wordCount, nextSegmentList, lastLookup);
     free(lastLookup);
     lastLookup = newLookup;
     if (!lastLookup) {
@@ -391,22 +391,23 @@ void StenoEngine::PrintSuggestions(const StenoSegmentList &previousSegmentList,
 }
 
 void StenoEngine::PrintSuggestion(const char *p, size_t arrowPrefixCount,
-                                  char *buffer, size_t strokeThreshold) const {
+                                  size_t strokeThreshold) const {
   StenoReverseDictionaryLookup result(strokeThreshold, p);
   ReverseLookup(result);
   if (result.resultCount == 0) {
     return;
   }
 
-  Console::Printf(
-      "EV {\"event\":\"suggestion\",\"combine_count\":%zu,\"text\":\"",
-      arrowPrefixCount);
-  Console::WriteAsJson(p, buffer);
-  Console::Printf("\",\"outlines\":[");
+  Console::Printf("EV {"
+                  "\"event\":\"suggestion\","
+                  "\"combine_count\":%zu,"
+                  "\"text\":\"%J\","
+                  "\"outlines\":[",
+                  arrowPrefixCount, p);
   for (size_t i = 0; i < result.resultCount; ++i) {
     const StenoReverseDictionaryResult &lookup = result.results[i];
-    StenoStroke::ToString(buffer, lookup.strokes, lookup.length);
-    Console::Printf(i == 0 ? "\"%s\"" : ",\"%s\"", buffer);
+    Console::Printf(i == 0 ? "\"%T\"" : ",\"%T\"", lookup.strokes,
+                    lookup.length);
   }
   Console::Printf("]}\n\n");
 }
@@ -427,7 +428,7 @@ static bool ShouldShowSuggestions(const StenoSegmentList &segmentList) {
 
 char *StenoEngine::PrintSegmentSuggestion(size_t wordCount,
                                           const StenoSegmentList &segmentList,
-                                          char *buffer, char *lastLookup) {
+                                          char *lastLookup) {
 
   size_t startSegmentIndex = segmentList.GetCount();
   StenoState lastState = state;
@@ -503,8 +504,7 @@ char *StenoEngine::PrintSegmentSuggestion(size_t wordCount,
   }
 
   if (printSuggestion) {
-    PrintSuggestion(spaceRemoved, strokeThresholdCount, buffer,
-                    strokeThresholdCount);
+    PrintSuggestion(spaceRemoved, strokeThresholdCount, strokeThresholdCount);
   }
 
   return lookup;

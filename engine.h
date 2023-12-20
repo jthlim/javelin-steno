@@ -148,11 +148,11 @@ private:
   void PrintPaperTapeUndo(size_t undoCount) const;
   void PrintSuggestions(const StenoSegmentList &previousSegmentList,
                         const StenoSegmentList &nextSegmentList);
-  void PrintSuggestion(const char *p, size_t arrowPrefixCount, char *buffer,
+  void PrintSuggestion(const char *p, size_t arrowPrefixCount,
                        size_t strokeThreshold) const;
   char *PrintSegmentSuggestion(size_t wordCount,
                                const StenoSegmentList &segmentList,
-                               char *buffer, char *lastLookup);
+                               char *lastLookup);
   void PrintTextLog(const StenoKeyCodeBuffer &previousKeyCodeBuffer,
                     const StenoKeyCodeBuffer &nextKeyCodeBuffer) const;
 

@@ -35,7 +35,7 @@ struct StenoUserDictionaryEntry {
   StenoStroke strokes[1];
   // After strokes is a null terminated string.
 
-  void Print(char *buffer) const;
+  void Print() const;
   char *GetText() const { return (char *)(strokes + strokeLength); }
 };
 
@@ -606,7 +606,7 @@ bool StenoUserDictionary::PrintDictionary(const char *name,
           (const StenoUserDictionaryEntry *)(activeDescriptor->data.dataBlock +
                                              offset - OFFSET_DATA);
 
-      entry->Print(buffer);
+      entry->Print();
     }
   }
 
@@ -620,18 +620,8 @@ void StenoUserDictionary::PrintJsonDictionary() const {
   Console::Printf("\n}\n\n");
 }
 
-void StenoUserDictionaryEntry::Print(char *buffer) const {
-  char *p = buffer;
-  *p++ = '\"';
-  p = StenoStroke::ToString(p, strokes, strokeLength);
-  *p++ = '\"';
-  *p++ = ':';
-  *p++ = ' ';
-
-  *p++ = '\"';
-  p = Str::WriteJson(p, GetText());
-  *p++ = '\"';
-  Console::Write(buffer, p - buffer);
+void StenoUserDictionaryEntry::Print() const {
+  Console::Printf("\"%T\": \"%J\"", strokes, strokeLength, GetText());
 }
 
 const char *StenoUserDictionary::GetName() const { return "user_dictionary"; }

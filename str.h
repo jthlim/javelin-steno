@@ -16,8 +16,7 @@ public:
   static char *Join(const char *p, ...);
 
   // Returns an allocated string.
-  static char *Asprintf(const char *p, ...)
-      __attribute__((format(printf, 1, 2)));
+  static char *Asprintf(const char *p, ...);
   static size_t Sprintf(char *target, const char *p, ...);
 
   // Threadsafe version of strndup.

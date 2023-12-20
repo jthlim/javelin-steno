@@ -91,9 +91,9 @@ size_t StenoMapDictionaryStrokesDefinition::GetCompactEntryCount() const {
 }
 
 bool StenoMapDictionaryStrokesDefinition::PrintCompactDictionary(
-    bool hasData, size_t strokeLength, char *buffer,
-    const uint8_t *textBlock) const {
+    bool hasData, size_t strokeLength, const uint8_t *textBlock) const {
   size_t entryCount = GetCompactEntryCount();
+  StenoStroke strokes[strokeLength];
   for (size_t i = 0; i < entryCount; ++i) {
     if (!hasData) {
       hasData = true;
@@ -106,22 +106,11 @@ bool StenoMapDictionaryStrokesDefinition::PrintCompactDictionary(
     const CompactStenoMapDictionaryDataEntry &entry =
         (const CompactStenoMapDictionaryDataEntry &)data[dataIndex];
 
-    char *p = buffer;
-    *p++ = '\"';
     for (size_t j = 0; j < strokeLength; ++j) {
-      if (j != 0) {
-        *p++ = '/';
-      }
-      p = StenoStroke(entry.strokes[j].ToUint32()).ToString(p);
+      strokes[j] = entry.strokes[j].ToUint32();
     }
-    *p++ = '\"';
-    *p++ = ':';
-    *p++ = ' ';
-
-    *p++ = '\"';
-    p = Str::WriteJson(p, (char *)textBlock + entry.textOffset.ToUint32());
-    *p++ = '\"';
-    Console::Write(buffer, p - buffer);
+    Console::Printf("\"%T\": \"%J\"", strokes, strokeLength,
+                    (char *)textBlock + entry.textOffset.ToUint32());
   }
   return hasData;
 }
@@ -263,13 +252,11 @@ void StenoCompactMapDictionary::PrintInfo(int depth) const {
 
 bool StenoCompactMapDictionary::PrintDictionary(const char *name,
                                                 bool hasData) const {
-  char *buffer = (char *)malloc(2048);
   for (size_t i = 1; i <= cachedMaximumOutlineLength; ++i) {
-    if (strokes[i].PrintCompactDictionary(hasData, i, buffer, textBlock)) {
+    if (strokes[i].PrintCompactDictionary(hasData, i, textBlock)) {
       hasData = true;
     }
   }
-  free(buffer);
   return hasData;
 }
 

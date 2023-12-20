@@ -90,63 +90,58 @@ struct StenoCompiledOrthography::SuffixEntry {
 //---------------------------------------------------------------------------
 
 void StenoOrthography::Print() const {
-  char buffer[256];
-
-  Console::Printf("{\n");
-  Console::Printf("\t\"rules\": [");
+  Console::Printf("{"
+                  "\n\t\"rules\": [");
   for (size_t i = 0; i < ruleCount; ++i) {
     if (i != 0) {
       Console::Printf(",");
     }
-    Console::Printf("\n\t\t{\n\t\t\t\"pattern\": \"");
-    Console::WriteAsJson(rules[i].testPattern, buffer);
-    Console::Printf("\",\n\t\t\t\"replacement\": \"");
-    Console::WriteAsJson(rules[i].replacement, buffer);
-    Console::Printf("\"\n\t\t}");
+    Console::Printf("\n\t\t{"
+                    "\n\t\t\t\"pattern\": \"%J\","
+                    "\n\t\t\t\"replacement\": \"%J\""
+                    "\n\t\t}",
+                    rules[i].testPattern, rules[i].replacement);
   }
-  Console::Printf("\n\t],");
-  Console::Printf("\n\t\"aliases\": [");
+  Console::Printf("\n\t],"
+                  "\n\t\"aliases\": [");
   for (size_t i = 0; i < aliasCount; ++i) {
     if (i != 0) {
       Console::Printf(",");
     }
-    Console::Printf("\n\t\t{\n\t\t\t\"suffix\": \"");
-    Console::WriteAsJson(aliases[i].text, buffer);
-    Console::Printf("\",\n\t\t\t\"alias\": \"");
-    Console::WriteAsJson(aliases[i].alias, buffer);
-    Console::Printf("\"\n\t\t}");
+    Console::Printf("\n\t\t{"
+                    "\n\t\t\t\"suffix\": \"%J\","
+                    "\n\t\t\t\"alias\": \"%J\""
+                    "\n\t\t}",
+                    aliases[i].text, aliases[i].alias);
   }
-  Console::Printf("\n\t],");
-  Console::Printf("\n\t\"auto-suffix\": [");
+  Console::Printf("\n\t],"
+                  "\n\t\"auto-suffix\": [");
   for (size_t i = 0; i < autoSuffixCount; ++i) {
     if (i != 0) {
       Console::Printf(",");
     }
-    Console::Printf("\n\t\t{\n\t\t\t\"key\": \"");
-    char *p = autoSuffixes[i].stroke.ToString(buffer);
-    Console::Write(buffer, p - buffer);
-    Console::Printf("\",\n\t\t\t\"suffix\": \"");
-    Console::WriteAsJson(autoSuffixes[i].text + 1, buffer);
-    Console::Write(buffer, p - buffer);
-    Console::Printf("\"\n\t\t}");
+    Console::Printf("\n\t\t{"
+                    "\n\t\t\t\"key\": \"%t\","
+                    "\n\t\t\t\"suffix\": \"%J\""
+                    "\n\t\t}",
+                    &autoSuffixes[i].stroke, autoSuffixes[i].text + 1);
   }
-  Console::Printf("\n\t],");
-  Console::Printf("\n\t\"reverse-auto-suffix\": [");
+  Console::Printf("\n\t],"
+                  "\n\t\"reverse-auto-suffix\": [");
   for (size_t i = 0; i < reverseAutoSuffixCount; ++i) {
     if (i != 0) {
       Console::Printf(",");
     }
-    Console::Printf("\n\t\t{\n\t\t\t\"key\": \"");
-    char *p = reverseAutoSuffixes[i].autoSuffix->stroke.ToString(buffer);
-    Console::Write(buffer, p - buffer);
-    Console::Printf("\",\n\t\t\t\"suppressMask\": \"");
-    p = reverseAutoSuffixes[i].suppressMask.ToString(buffer);
-    Console::Write(buffer, p - buffer);
-    Console::Printf("\",\n\t\t\t\"pattern\": \"");
-    Console::WriteAsJson(reverseAutoSuffixes[i].testPattern, buffer);
-    Console::Printf("\",\n\t\t\t\"replacement\": \"");
-    Console::WriteAsJson(reverseAutoSuffixes[i].replacement, buffer);
-    Console::Printf("\"\n\t\t}");
+    Console::Printf("\n\t\t{"
+                    "\n\t\t\t\"key\": \"%t\","
+                    "\n\t\t\t\"suppressMask\": \"%t\","
+                    "\n\t\t\t\"pattern\": \"%J\","
+                    "\n\t\t\t\"replacement\": \"%J\""
+                    "\n\t\t}",
+                    &reverseAutoSuffixes[i].autoSuffix->stroke,
+                    &reverseAutoSuffixes[i].suppressMask,
+                    reverseAutoSuffixes[i].testPattern,
+                    reverseAutoSuffixes[i].replacement);
   }
   Console::Printf("\n\t]\n}\n\n");
 }

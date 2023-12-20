@@ -166,13 +166,11 @@ void StenoEngine::Lookup_Binding(void *context, const char *commandLine) {
   StenoEngine *engine = (StenoEngine *)context;
   engine->ReverseLookup(result);
 
-  char buffer[256];
   Console::Printf("[");
   for (size_t i = 0; i < result.resultCount; ++i) {
-    const StenoReverseDictionaryResult lookup = result.results[i];
-
-    StenoStroke::ToString(buffer, lookup.strokes, lookup.length);
-    Console::Printf(i == 0 ? "\n  \"%s\"" : ",\n  \"%s\"", buffer);
+    const StenoReverseDictionaryResult &lookup = result.results[i];
+    Console::Printf(i == 0 ? "\n  \"T\"" : ",\n  \"%T\"", lookup.strokes,
+                    lookup.length);
   }
 
   Console::Printf("\n]\n\n");
@@ -197,9 +195,7 @@ void StenoEngine::LookupStroke_Binding(void *context, const char *commandLine) {
       engine->dictionary.Lookup(parser.strokes, parser.length);
 
   if (result.IsValid()) {
-    Console::Printf("\"");
-    Console::WriteAsJson(result.GetText());
-    Console::Printf("\"\n\n");
+    Console::Printf("\"%J\"\n\n", result.GetText());
   } else {
     Console::Printf("null\n\n");
   }
