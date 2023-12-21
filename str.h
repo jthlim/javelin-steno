@@ -46,6 +46,9 @@ public:
   // the result;
   static char *WriteJson(char *buffer, const char *text);
 
+  template <size_t N> static size_t Length(const char (&text)[N]) {
+    return N - 1;
+  }
   static size_t Length(const uint8_t *p) { return strlen((const char *)p); }
   static size_t Length(const char *p) { return strlen(p); }
 

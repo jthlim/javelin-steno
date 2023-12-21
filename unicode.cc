@@ -24,7 +24,7 @@ static uint32_t Lookup(uint32_t c, const UnicodePair *data, size_t length) {
   return c;
 }
 
-static uint32_t Lookup(uint32_t c, const UnicodeRange *data, size_t length) {
+static bool Lookup(uint32_t c, const UnicodeRange *data, size_t length) {
   size_t left = 0;
   size_t right = length;
   while (left < right) {
@@ -37,7 +37,7 @@ static uint32_t Lookup(uint32_t c, const UnicodeRange *data, size_t length) {
       return c != data[mid].end;
     }
   }
-  return c;
+  return false;
 }
 
 //---------------------------------------------------------------------------

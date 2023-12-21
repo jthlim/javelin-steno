@@ -25,6 +25,9 @@ size_t StenoSegmentList::GetCommonStartingSegmentsCount(StenoSegmentList &a,
 
   size_t commonPrefixCount = 0;
   for (; commonPrefixCount < limit; ++commonPrefixCount) {
+    if (a[commonPrefixCount].lookup == b[commonPrefixCount].lookup) {
+      continue;
+    }
     if (!Str::Eq(a[commonPrefixCount].lookup.GetText(),
                  b[commonPrefixCount].lookup.GetText())) {
       break;

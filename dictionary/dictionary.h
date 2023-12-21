@@ -56,6 +56,10 @@ public:
   static StenoDictionaryLookupResult CreateDynamicString(const char *p) {
     return StenoDictionaryLookupResult((intptr_t(p) << 1) + 1);
   }
+
+  bool operator==(const StenoDictionaryLookupResult &other) const {
+    return text == other.text;
+  }
 };
 #else
 class StenoDictionaryLookupResult {
@@ -104,6 +108,10 @@ public:
     result.text = p;
     result.destroyMethod = &FreeText;
     return result;
+  }
+
+  bool operator==(const StenoDictionaryLookupResult &other) const {
+    return text == other.text;
   }
 };
 #endif
