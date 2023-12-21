@@ -46,6 +46,8 @@ public:
   // the result;
   static char *WriteJson(char *buffer, const char *text);
 
+  // Needs to be invoked with Str::Length<>(...), otherwise the strlen()
+  // version is used instead.
   template <size_t N> static size_t Length(const char (&text)[N]) {
     return N - 1;
   }

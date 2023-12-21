@@ -403,6 +403,9 @@ void StenoStrokeHistory::WriteRetroTransform(const StenoSegmentList &segments,
         }
         output.Write("{^}", 3);
         break;
+      case '%':
+        output.WriteByte('%');
+        break;
       default:
         output.WriteByte('%');
         output.WriteByte(c);

@@ -110,7 +110,7 @@ size_t
 StenoEngine::UpdateAddTranslationModeTextBuffer(ConversionBuffer &buffer) {
   buffer.keyCodeBuffer.Reset();
   buffer.keyCodeBuffer.AppendText(ADD_TRANSLATION_PROMPT,
-                                  sizeof(ADD_TRANSLATION_PROMPT) - 1,
+                                  Str::Length<>(ADD_TRANSLATION_PROMPT),
                                   StenoCaseMode::NORMAL);
 
   size_t i = 0;
@@ -134,7 +134,7 @@ StenoEngine::UpdateAddTranslationModeTextBuffer(ConversionBuffer &buffer) {
   }
 
   buffer.keyCodeBuffer.AppendText(TRANSLATION_PROMPT,
-                                  sizeof(TRANSLATION_PROMPT) - 1,
+                                  Str::Length<>(TRANSLATION_PROMPT),
                                   StenoCaseMode::NORMAL);
 
   StenoSegmentList segmentList;

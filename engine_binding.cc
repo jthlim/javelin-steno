@@ -169,7 +169,7 @@ void StenoEngine::Lookup_Binding(void *context, const char *commandLine) {
   Console::Printf("[");
   for (size_t i = 0; i < result.resultCount; ++i) {
     const StenoReverseDictionaryResult &lookup = result.results[i];
-    Console::Printf(i == 0 ? "\n  \"T\"" : ",\n  \"%T\"", lookup.strokes,
+    Console::Printf(i == 0 ? "\n  \"%T\"" : ",\n  \"%T\"", lookup.strokes,
                     lookup.length);
   }
 
