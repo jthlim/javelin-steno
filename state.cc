@@ -35,6 +35,7 @@ void StenoState::Reset() {
   isGlue = false;
   isManualStateChange = false;
   spaceCharacterLength = 1;
+  isDefinitionStart = 0;
   spaceCharacter = " ";
 }
 

@@ -7,7 +7,9 @@
 static const char MISMATCHED_MAGIC_ERROR[] =
     "Dictionary Format Error. Please recreate a full firmware";
 
-const StenoCorruptedDictionary StenoCorruptedDictionary::instance;
+//---------------------------------------------------------------------------
+
+StenoCorruptedDictionary StenoCorruptedDictionary::instance;
 
 //---------------------------------------------------------------------------
 

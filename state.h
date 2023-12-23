@@ -25,6 +25,7 @@ struct StenoState {
   bool isGlue : 1;
   bool isManualStateChange : 1;
   bool shouldCombineUndo : 1;
+  bool isDefinitionStart : 1;
   uint8_t spaceCharacterLength;
   const char *spaceCharacter;
 

@@ -12,12 +12,13 @@ bool StenoDictionaryList::isSendDictionaryStatusEnabled = false;
 
 StenoDictionaryList::StenoDictionaryList(
     List<StenoDictionaryListEntry> &dictionaries)
-    : dictionaries(dictionaries) {
-  CacheMaximumOutlineLength();
+    : StenoDictionary(GetMaximumOutlineLength(dictionaries)),
+      dictionaries(dictionaries) {
+  SetParentRecursively(nullptr);
 }
 
-List<StenoDictionaryListEntry> &
-CreateList(const StenoDictionary *const *dictionaries, size_t count) {
+List<StenoDictionaryListEntry> &CreateList(StenoDictionary *const *dictionaries,
+                                           size_t count) {
   List<StenoDictionaryListEntry> *result = new List<StenoDictionaryListEntry>();
   for (size_t i = 0; i < count; ++i) {
     result->Add(StenoDictionaryListEntry(dictionaries[i], true));
@@ -26,8 +27,8 @@ CreateList(const StenoDictionary *const *dictionaries, size_t count) {
   return *result;
 }
 
-StenoDictionaryList::StenoDictionaryList(
-    const StenoDictionary *const *dictionaries, size_t count)
+StenoDictionaryList::StenoDictionaryList(StenoDictionary *const *dictionaries,
+                                         size_t count)
     : StenoDictionaryList(CreateList(dictionaries, count)) {}
 
 StenoDictionaryLookupResult
@@ -70,28 +71,28 @@ void StenoDictionaryList::ReverseLookup(
   }
 }
 
-void StenoDictionaryList::CacheMaximumOutlineLength() {
-  size_t max = 0;
+void StenoDictionaryList::SetParentRecursively(StenoDictionary *parent) {
+  StenoDictionary::SetParentRecursively(parent);
   for (StenoDictionaryListEntry &entry : dictionaries) {
-    ((StenoDictionary *)entry.dictionary)->CacheMaximumOutlineLength();
-    size_t m = entry->GetCachedMaximumOutlineLength();
-    entry.UpdateMaximumOutlineLength(m);
-    if (m > max) {
-      max = m;
-    }
+    entry.dictionary->SetParentRecursively(this);
   }
-  cachedMaximumOutlineLength = max;
 }
 
-size_t StenoDictionaryList::GetMaximumOutlineLength() const {
+void StenoDictionaryList::UpdateMaximumOutlineLength() {
+  for (StenoDictionaryListEntry &entry : dictionaries) {
+    entry.UpdateMaximumOutlineLength();
+  }
+
+  maximumOutlineLength = GetMaximumOutlineLength(dictionaries);
+  StenoDictionary::UpdateMaximumOutlineLength();
+}
+
+size_t StenoDictionaryList::GetMaximumOutlineLength(
+    const List<StenoDictionaryListEntry> &dictionaries) {
   size_t max = 0;
   for (const StenoDictionaryListEntry &entry : dictionaries) {
-    if (!entry.IsEnabled()) {
-      continue;
-    }
-    size_t m = entry->GetMaximumOutlineLength();
-    if (m > max) {
-      max = m;
+    if (entry.combinedMaximumOutlineLength > max) {
+      max = entry.combinedMaximumOutlineLength;
     }
   }
   return max;
@@ -138,8 +139,8 @@ void StenoDictionaryList::ListDictionaries() const {
     } else {
       Console::Printf(",\n");
     }
-    Console::Printf(" {\"dictionary\":\"%J\",\"enabled\":%s}", entry->GetName(),
-                    entry.IsEnabled() ? "true" : "false");
+    Console::Printf(" {\"dictionary\":\"%J\",\"enabled\":%B}", entry->GetName(),
+                    entry.IsEnabled());
   }
   Console::Printf("\n]\n\n");
 }
@@ -149,6 +150,7 @@ bool StenoDictionaryList::EnableDictionary(const char *name) {
     if (Str::Eq(name, entry->GetName())) {
       entry.Enable();
       SendDictionaryStatus(name, true);
+      UpdateMaximumOutlineLength();
       return true;
     }
   }
@@ -160,6 +162,7 @@ bool StenoDictionaryList::DisableDictionary(const char *name) {
     if (Str::Eq(name, entry->GetName())) {
       entry.Disable();
       SendDictionaryStatus(name, false);
+      UpdateMaximumOutlineLength();
       return true;
     }
   }
@@ -171,6 +174,7 @@ bool StenoDictionaryList::ToggleDictionary(const char *name) {
     if (Str::Eq(name, entry->GetName())) {
       entry.ToggleEnable();
       SendDictionaryStatus(name, entry.IsEnabled());
+      UpdateMaximumOutlineLength();
       return true;
     }
   }
@@ -183,11 +187,12 @@ void StenoDictionaryList::SendDictionaryStatus(const char *name,
     return;
   }
 
-  Console::Printf("EV "
-                  "{\"event\":\"dictionary_status\","
+  Console::Printf("EV {"
+                  "\"event\":\"dictionary_status\","
                   "\"dictionary\":\"%J\","
-                  "\"enabled\":%s}\n\n",
-                  name, enabled ? "true" : "false");
+                  "\"enabled\":%B"
+                  "}\n\n",
+                  name, enabled);
 }
 
 //---------------------------------------------------------------------------

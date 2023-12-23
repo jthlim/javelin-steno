@@ -63,6 +63,10 @@ public:
 
   void PopCount(size_t popCount) { count -= popCount; }
 
+  void UpdateDefinitionBoundaries(size_t startingOffset,
+                                  const StenoSegmentList &segments);
+  size_t GetStartingStroke(size_t maximumCount) const;
+
   void TransferStartFrom(const StenoStrokeHistory &source, size_t count);
   void TransferFrom(const StenoStrokeHistory &source, size_t sourceStrokeCount,
                     size_t maxCount);

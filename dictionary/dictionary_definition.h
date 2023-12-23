@@ -111,7 +111,7 @@ struct StenoDictionaryDefinition {
   const uint8_t *textBlock;
   const StenoMapDictionaryStrokesDefinition *strokes;
 
-  const StenoDictionary *Create() const;
+  StenoDictionary *Create() const;
 };
 
 //---------------------------------------------------------------------------

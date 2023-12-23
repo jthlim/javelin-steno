@@ -195,15 +195,17 @@ public:
 
   virtual void ReverseLookup(StenoReverseDictionaryLookup &result) const;
 
-  size_t GetCachedMaximumOutlineLength() const {
-    return cachedMaximumOutlineLength;
+  size_t GetMaximumOutlineLength() const { return maximumOutlineLength; }
+  virtual void UpdateMaximumOutlineLength() {
+    if (parent) {
+      parent->UpdateMaximumOutlineLength();
+    }
   }
-  virtual void CacheMaximumOutlineLength() {
-    cachedMaximumOutlineLength = GetMaximumOutlineLength();
-  }
-  static void InvalidateMaximumOutlineLengthCache();
 
-  virtual size_t GetMaximumOutlineLength() const = 0;
+  virtual void SetParentRecursively(StenoDictionary *parent) {
+    this->parent = parent;
+  }
+
   virtual const char *GetName() const = 0;
 
   virtual void PrintInfo(int depth) const;
@@ -217,12 +219,12 @@ public:
   virtual bool ToggleDictionary(const char *name) { return false; }
 
 protected:
-  StenoDictionary() = default;
+  StenoDictionary(size_t maximumOutlineLength)
+      : maximumOutlineLength(maximumOutlineLength), parent(nullptr) {}
 
-  constexpr StenoDictionary(size_t cachedMaximumOutlineLength)
-      : cachedMaximumOutlineLength(cachedMaximumOutlineLength) {}
+  size_t maximumOutlineLength;
+  StenoDictionary *parent;
 
-  size_t cachedMaximumOutlineLength;
   static const char *Spaces(int count) { return SPACES + SPACES_COUNT - count; }
 
 private:

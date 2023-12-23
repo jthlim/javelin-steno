@@ -7,7 +7,7 @@
 //---------------------------------------------------------------------------
 
 struct StenoDictionaryListEntry {
-  StenoDictionaryListEntry(const StenoDictionary *dictionary, bool enabled)
+  StenoDictionaryListEntry(StenoDictionary *dictionary, bool enabled)
       : enabled(enabled),
         combinedMaximumOutlineLength(
             enabled ? dictionary->GetMaximumOutlineLength() : 0),
@@ -15,9 +15,9 @@ struct StenoDictionaryListEntry {
 
   bool enabled;
   size_t combinedMaximumOutlineLength;
-  const StenoDictionary *dictionary;
+  StenoDictionary *dictionary;
 
-  const StenoDictionary *operator->() const { return dictionary; }
+  StenoDictionary *operator->() const { return dictionary; }
 
   void Enable() {
     enabled = true;
@@ -35,9 +35,9 @@ struct StenoDictionaryListEntry {
       Enable();
     }
   }
-  void UpdateMaximumOutlineLength(size_t maximumOutlineLength) {
+  void UpdateMaximumOutlineLength() {
     if (enabled) {
-      combinedMaximumOutlineLength = maximumOutlineLength;
+      combinedMaximumOutlineLength = dictionary->GetMaximumOutlineLength();
     }
   }
 };
@@ -47,7 +47,7 @@ struct StenoDictionaryListEntry {
 class StenoDictionaryList final : public StenoDictionary {
 public:
   StenoDictionaryList(List<StenoDictionaryListEntry> &dictionaries);
-  StenoDictionaryList(const StenoDictionary *const *dictionaries, size_t count);
+  StenoDictionaryList(StenoDictionary *const *dictionaries, size_t count);
 
   virtual StenoDictionaryLookupResult
   Lookup(const StenoDictionaryLookup &lookup) const;
@@ -57,8 +57,10 @@ public:
 
   virtual void ReverseLookup(StenoReverseDictionaryLookup &result) const;
 
-  virtual void CacheMaximumOutlineLength();
-  virtual size_t GetMaximumOutlineLength() const;
+  virtual void SetParentRecursively(StenoDictionary *parent);
+
+  virtual void UpdateMaximumOutlineLength();
+
   virtual const char *GetName() const;
   virtual void PrintInfo(int depth) const;
   virtual bool PrintDictionary(const char *name, bool hasData) const;
@@ -82,11 +84,13 @@ public:
 
 private:
   List<StenoDictionaryListEntry> &dictionaries;
-  size_t maximumOutlineLength;
 
   static bool isSendDictionaryStatusEnabled;
 
   void SendDictionaryStatus(const char *name, bool enabled) const;
+
+  static size_t
+  GetMaximumOutlineLength(const List<StenoDictionaryListEntry> &dictionaries);
 };
 
 //---------------------------------------------------------------------------

@@ -21,7 +21,11 @@ const StenoStroke STRUCTURE_EXCEPTION1_MASK(0x3ffe); // STKPWHRAO*EUF
 const StenoStroke STRUCTURE_EXCEPTION2_MASK(0x3f00); // AO*EUF
 // spellchecker: enable
 
-const StenoJeffPhrasingDictionary StenoJeffPhrasingDictionary::instance;
+//---------------------------------------------------------------------------
+
+StenoJeffPhrasingDictionary StenoJeffPhrasingDictionary::instance;
+
+//---------------------------------------------------------------------------
 
 struct StenoJeffPhrasingDictionary::ReverseLookupContext {
   ReverseLookupContext(StenoReverseDictionaryLookup &result) : result(result) {}

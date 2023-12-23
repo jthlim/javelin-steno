@@ -11,7 +11,9 @@ constexpr StenoStroke StenoDebugDictionary::trigger(StrokeMask::NUM |
                                                     StrokeMask::E |
                                                     StrokeMask::U);
 
-const StenoDebugDictionary StenoDebugDictionary::instance;
+//---------------------------------------------------------------------------
+
+StenoDebugDictionary StenoDebugDictionary::instance;
 
 //---------------------------------------------------------------------------
 

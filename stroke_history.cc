@@ -14,7 +14,7 @@ BuildSegmentContext::BuildSegmentContext(
     StenoSegmentList &segmentList, const StenoDictionary &dictionary,
     const StenoCompiledOrthography &orthography)
     : segmentList(segmentList), dictionary(dictionary),
-      maximumOutlineLength(dictionary.GetCachedMaximumOutlineLength()),
+      maximumOutlineLength(dictionary.GetMaximumOutlineLength()),
       orthography(orthography) {}
 
 //---------------------------------------------------------------------------
@@ -39,6 +39,30 @@ size_t StenoStrokeHistory::GetUndoCount(size_t maxCount) const {
     ++result;
   }
   return result;
+}
+
+void StenoStrokeHistory::UpdateDefinitionBoundaries(
+    size_t startingOffset, const StenoSegmentList &segments) {
+  for (size_t i = startingOffset; i < count; ++i) {
+    states[i].isDefinitionStart = false;
+  }
+  const StenoState *firstState = segments[0].state;
+  for (const StenoSegment &segment : segments) {
+    states[startingOffset + (segment.state - firstState)].isDefinitionStart =
+        true;
+  }
+}
+
+size_t StenoStrokeHistory::GetStartingStroke(size_t maximumCount) const {
+  if (maximumCount >= count) {
+    return 0;
+  }
+  for (size_t i = count - maximumCount; i < count; ++i) {
+    if (states[i].isDefinitionStart) {
+      return i;
+    }
+  }
+  return count - maximumCount;
 }
 
 void StenoStrokeHistory::TransferStartFrom(const StenoStrokeHistory &source,
@@ -475,7 +499,7 @@ void StenoStrokeHistory::HandleRepeatLastStroke(BuildSegmentContext &context,
 
 static StenoCompactMapDictionary mainDictionary(TestDictionary::definition);
 
-const StenoDictionary *const DICTIONARIES[] = {
+StenoDictionary *const DICTIONARIES[] = {
     &StenoEmilySymbolsDictionary::instance,
     &mainDictionary,
 };

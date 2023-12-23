@@ -12,7 +12,7 @@
 
 //---------------------------------------------------------------------------
 
-const StenoDictionary *StenoDictionaryDefinition::Create() const {
+StenoDictionary *StenoDictionaryDefinition::Create() const {
 #if defined(JAVELIN_PLATFORM_NRF5_SDK)
   // Avoid XIP anomaly 216.
   asm volatile("dsb");
@@ -58,7 +58,7 @@ void StenoDictionaryCollection::AddDictionariesToList(
   for (size_t i = 0; i < dictionaryCount; ++i) {
     const StenoDictionaryDefinition *definition = dictionaries[i];
 
-    const StenoDictionary *dictionary = definition->Create();
+    StenoDictionary *dictionary = definition->Create();
     if (dictionary) {
       list.Add(
           StenoDictionaryListEntry(dictionary, definition->defaultEnabled));

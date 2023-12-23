@@ -8,7 +8,7 @@
 class StenoWrappedDictionary : public StenoDictionary {
 public:
   StenoWrappedDictionary(StenoDictionary *dictionary)
-      : StenoDictionary(dictionary->GetCachedMaximumOutlineLength()),
+      : StenoDictionary(dictionary->GetMaximumOutlineLength()),
         dictionary(dictionary) {}
 
   virtual StenoDictionaryLookupResult
@@ -29,8 +29,8 @@ public:
 
   virtual void ReverseLookup(StenoReverseDictionaryLookup &result) const;
 
-  virtual void CacheMaximumOutlineLength();
-  virtual size_t GetMaximumOutlineLength() const;
+  virtual void SetParentRecursively(StenoDictionary *parent) final;
+
   virtual const char *GetName() const = 0;
 
   virtual void PrintInfo(int depth) const;

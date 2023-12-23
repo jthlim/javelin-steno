@@ -31,12 +31,17 @@ const StenoStroke REPEAT_EXTRA_2(StrokeMask::TR);
 const StenoStroke DATA_MASK(StrokeMask::FR | StrokeMask::RR | StrokeMask::PR |
                             StrokeMask::BR | StrokeMask::LR | StrokeMask::GR);
 
+//---------------------------------------------------------------------------
+
+StenoEmilySymbolsDictionary StenoEmilySymbolsDictionary::instance;
+
+//---------------------------------------------------------------------------
+
 struct EmilySymbolData {
+
   StenoStroke trigger;
   const char *text[4];
 };
-
-const StenoEmilySymbolsDictionary StenoEmilySymbolsDictionary::instance;
 
 constexpr EmilySymbolData DATA[] = {
     {

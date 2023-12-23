@@ -2,6 +2,7 @@
 
 #include "pattern_component.h"
 #include "pattern_quick_reject.h"
+#include <stdlib.h>
 #include <string.h>
 
 //---------------------------------------------------------------------------
@@ -184,19 +185,20 @@ bool LiteralPatternComponent::Match(const char *p,
 ContainerPatternComponent::ContainerPatternComponent(
     PatternComponent *initialComponent) {
   componentCount = 1;
-  components = new PatternComponent *[4];
+  components = (PatternComponent **)malloc(4 * sizeof(PatternComponent *));
   components[0] = initialComponent;
 }
 
 void ContainerPatternComponent::Add(PatternComponent *component) {
   size_t capacity = (componentCount + 3) & -4;
   if (componentCount == capacity) {
-    PatternComponent **newComponents = new PatternComponent *[capacity + 4];
+    PatternComponent **newComponents = (PatternComponent **)malloc(
+        (capacity + 4) * sizeof(PatternComponent *));
 
     memcpy(newComponents, components,
            capacity * sizeof(PatternComponent *)); // NOLINT
 
-    delete[] components;
+    free(components);
     components = newComponents;
   }
   components[componentCount++] = component;

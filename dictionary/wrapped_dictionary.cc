@@ -19,13 +19,9 @@ void StenoWrappedDictionary::ReverseLookup(
   return dictionary->ReverseLookup(result);
 }
 
-void StenoWrappedDictionary::CacheMaximumOutlineLength() {
-  dictionary->CacheMaximumOutlineLength();
-  cachedMaximumOutlineLength = dictionary->GetCachedMaximumOutlineLength();
-}
-
-size_t StenoWrappedDictionary::GetMaximumOutlineLength() const {
-  return dictionary->GetMaximumOutlineLength();
+void StenoWrappedDictionary::SetParentRecursively(StenoDictionary *parent) {
+  StenoDictionary::SetParentRecursively(parent);
+  dictionary->SetParentRecursively(this);
 }
 
 void StenoWrappedDictionary::PrintInfo(int depth) const {

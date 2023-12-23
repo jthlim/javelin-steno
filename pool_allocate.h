@@ -17,7 +17,7 @@ struct PoolAllocateData {
 
 template <typename T, size_t BLOCK_SIZE> class PoolAllocate {
 public:
-  static void *operator new(size_t size);
+  static void *operator new(size_t size) noexcept;
 
 private:
   static PoolAllocateData data;
@@ -26,7 +26,7 @@ private:
 //---------------------------------------------------------------------------
 
 template <typename T, size_t BLOCK_SIZE>
-void *PoolAllocate<T, BLOCK_SIZE>::operator new(size_t size) {
+void *PoolAllocate<T, BLOCK_SIZE>::operator new(size_t size) noexcept {
   return data.Allocate(BLOCK_SIZE, size);
 }
 

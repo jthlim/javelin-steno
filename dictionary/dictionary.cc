@@ -143,9 +143,6 @@ StenoDictionary::GetLookupProvider(const StenoDictionaryLookup &lookup) const {
 void StenoDictionary::ReverseLookup(
     StenoReverseDictionaryLookup &result) const {}
 
-__attribute__((weak)) void
-StenoDictionary::InvalidateMaximumOutlineLengthCache() {}
-
 void StenoDictionary::PrintInfo(int depth) const {
   Console::Printf("%s%s\n", Spaces(depth), GetName());
 }

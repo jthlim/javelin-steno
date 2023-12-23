@@ -13,8 +13,7 @@ private:
   static const size_t MAXIMUM_OUTLINE_LENGTH = 1;
 
 public:
-  constexpr StenoJeffPhrasingDictionary()
-      : StenoDictionary(MAXIMUM_OUTLINE_LENGTH) {}
+  StenoJeffPhrasingDictionary() : StenoDictionary(MAXIMUM_OUTLINE_LENGTH) {}
 
   virtual StenoDictionaryLookupResult
   Lookup(const StenoDictionaryLookup &lookup) const;
@@ -23,14 +22,10 @@ public:
   virtual const StenoDictionary *
   GetLookupProvider(const StenoDictionaryLookup &lookup) const;
 
-  virtual void CacheMaximumOutlineLength() {}
-  virtual size_t GetMaximumOutlineLength() const {
-    return MAXIMUM_OUTLINE_LENGTH;
-  }
   virtual const char *GetName() const;
   virtual void ReverseLookup(StenoReverseDictionaryLookup &result) const;
 
-  static const StenoJeffPhrasingDictionary instance;
+  static StenoJeffPhrasingDictionary instance;
 
 private:
   static size_t CountNumberOfSpaces(const char *p);

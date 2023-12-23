@@ -81,7 +81,9 @@ void StenoUserDictionaryDescriptor::UpdateCrc32() {
 //---------------------------------------------------------------------------
 
 StenoUserDictionary::StenoUserDictionary(const StenoUserDictionaryData &layout)
-    : descriptorBase(layout.GetDescriptor()), layout(layout) {
+    : StenoDictionary(0),
+
+      descriptorBase(layout.GetDescriptor()), layout(layout) {
   activeDescriptor = FindMostRecentDescriptor();
   if (activeDescriptor == nullptr) {
     Reset();
@@ -89,6 +91,7 @@ StenoUserDictionary::StenoUserDictionary(const StenoUserDictionaryData &layout)
   if (activeDescriptor->version == LEGACY_USER_DICTIONARY_VERSION) {
     UpgradeToVersionWithReverseLookup();
   }
+  maximumOutlineLength = activeDescriptor->data.maximumOutlineLength;
 }
 
 const StenoUserDictionaryDescriptor *
@@ -208,10 +211,6 @@ void StenoUserDictionary::ReverseLookup(
 
     ++entryIndex;
   }
-}
-
-size_t StenoUserDictionary::GetMaximumOutlineLength() const {
-  return activeDescriptor->data.maximumOutlineLength;
 }
 
 void StenoUserDictionary::UpgradeToVersionWithReverseLookup() {
@@ -345,7 +344,8 @@ bool StenoUserDictionary::Add(const StenoStroke *strokes, size_t length,
 
   AddToReverseHashTable(word, data.offset);
 
-  InvalidateMaximumOutlineLengthCache();
+  maximumOutlineLength = activeDescriptor->data.maximumOutlineLength;
+  UpdateMaximumOutlineLength();
 
   return true;
 }

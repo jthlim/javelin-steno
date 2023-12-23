@@ -10,7 +10,7 @@
 
 //---------------------------------------------------------------------------
 
-const StenoJeffNumbersDictionary StenoJeffNumbersDictionary::instance;
+StenoJeffNumbersDictionary StenoJeffNumbersDictionary::instance;
 
 //---------------------------------------------------------------------------
 

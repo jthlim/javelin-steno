@@ -146,12 +146,10 @@ void Connection::PrintInfo() {
   Console::Printf("  Active: %s\n", NAMES[(size_t)GetActiveConnection()]);
 
 #if JAVELIN_BLE
-  Console::Printf("  BLE Pair: %s\n",
-                  Ble::IsPairConnected() ? "true" : "false");
+  Console::Printf("  BLE Pair: %B\n", Ble::IsPairConnected());
 #endif
 #if JAVELIN_SPLIT
-  Console::Printf("  Cable Pair: %s\n",
-                  Split::IsPairConnected() ? "true" : "false");
+  Console::Printf("  Cable Pair: %B\n", Split::IsPairConnected());
 #endif
 
 #endif

@@ -186,11 +186,11 @@ void StenoFullMapDictionary::ReverseLookup(StenoReverseDictionaryLookup &result,
   if (data < strokes[1].data) {
     return;
   }
-  if (data >= strokes[cachedMaximumOutlineLength].offsets) {
+  if (data >= strokes[maximumOutlineLength].offsets) {
     return;
   }
 
-  for (size_t i = 1; i <= cachedMaximumOutlineLength; ++i) {
+  for (size_t i = 1; i <= maximumOutlineLength; ++i) {
     const StenoMapDictionaryStrokesDefinition &strokeDefinition = strokes[i];
 
     if (!strokeDefinition.ContainsData(data)) {
@@ -210,7 +210,7 @@ const char *StenoFullMapDictionary::GetName() const { return definition.name; }
 
 void StenoFullMapDictionary::PrintInfo(int depth) const {
   const StenoMapDictionaryStrokesDefinition &lastStrokeDefinition =
-      strokes[cachedMaximumOutlineLength];
+      strokes[maximumOutlineLength];
 
   const uint8_t *start = (const uint8_t *)&definition;
   const uint8_t *end = (const uint8_t *)(lastStrokeDefinition.fullOffsets +
@@ -221,16 +221,12 @@ void StenoFullMapDictionary::PrintInfo(int depth) const {
 
 bool StenoFullMapDictionary::PrintDictionary(const char *name,
                                              bool hasData) const {
-  for (size_t i = 1; i <= cachedMaximumOutlineLength; ++i) {
+  for (size_t i = 1; i <= maximumOutlineLength; ++i) {
     if (strokes[i].PrintFullDictionary(hasData, i, textBlock)) {
       hasData = true;
     }
   }
   return hasData;
-}
-
-size_t StenoFullMapDictionary::GetMaximumOutlineLength() const {
-  return cachedMaximumOutlineLength;
 }
 
 const StenoMapDictionaryStrokesDefinition *

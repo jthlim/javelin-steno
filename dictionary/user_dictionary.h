@@ -62,7 +62,6 @@ public:
 
   virtual void ReverseLookup(StenoReverseDictionaryLookup &result) const;
 
-  virtual size_t GetMaximumOutlineLength() const final;
   virtual const char *GetName() const final;
   virtual void PrintInfo(int depth) const final;
   virtual bool PrintDictionary(const char *name, bool hasData) const final;

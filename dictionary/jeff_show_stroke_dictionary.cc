@@ -12,7 +12,9 @@ constexpr StenoStroke StenoJeffShowStrokeDictionary::trigger(StrokeMask::SL |
                                                              StrokeMask::RL |
                                                              StrokeMask::STAR);
 
-const StenoJeffShowStrokeDictionary StenoJeffShowStrokeDictionary::instance;
+//---------------------------------------------------------------------------
+
+StenoJeffShowStrokeDictionary StenoJeffShowStrokeDictionary::instance;
 
 //---------------------------------------------------------------------------
 

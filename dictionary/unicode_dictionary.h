@@ -15,7 +15,6 @@ public:
   virtual const StenoDictionary *
   GetLookupProvider(const StenoDictionaryLookup &lookup) const;
 
-  virtual size_t GetMaximumOutlineLength() const { return 1; }
   virtual const char *GetName() const;
 
   static StenoStroke CreateUnicodeStroke(uint32_t unicode) {
@@ -23,6 +22,12 @@ public:
   }
 
   static StenoUnicodeDictionary instance;
+
+private:
+private:
+  static const size_t MAXIMUM_OUTLINE_LENGTH = 1;
+
+  StenoUnicodeDictionary() : StenoDictionary(MAXIMUM_OUTLINE_LENGTH) {}
 };
 
 //---------------------------------------------------------------------------

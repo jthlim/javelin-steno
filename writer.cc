@@ -190,6 +190,17 @@ void IWriter::Vprintf(const char *p, va_list args) {
       ++p;
       continue;
 
+    case 'B': {
+      // Write the string true or false based on a bool.
+      int value = va_arg(args, int);
+      if (value) {
+        Write("true", 4);
+      } else {
+        Write("false", 5);
+      }
+      goto NextSegment;
+    }
+
     case 't': {
       // Write single stroke.
       const StenoStroke *stroke = va_arg(args, const StenoStroke *);
