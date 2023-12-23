@@ -43,6 +43,10 @@ size_t StenoStrokeHistory::GetUndoCount(size_t maxCount) const {
 
 void StenoStrokeHistory::UpdateDefinitionBoundaries(
     size_t startingOffset, const StenoSegmentList &segments) {
+  if (segments.IsEmpty()) {
+    return;
+  }
+
   for (size_t i = startingOffset; i < count; ++i) {
     states[i].isDefinitionStart = false;
   }
