@@ -133,6 +133,7 @@ enum class StenoScriptFunction : uint8_t {
   REPLY_USER_PRESENCE,
   SET_GPIO_INPUT_PIN,
   READ_GPIO_PIN,
+  DRAW_GRAYSCALE_RANGE,
 };
 
 enum class StenoScriptOperator : uint8_t {

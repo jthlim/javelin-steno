@@ -399,6 +399,7 @@ void StenoEngine::PrintSuggestions(const StenoSegmentList &previousSegmentList,
   // General suggestions. Search back up to 8 word segments.
   char *lastLookup = nullptr;
   for (size_t wordCount = 1; wordCount < 8; ++wordCount) {
+    Pump();
     char *newLookup =
         PrintSegmentSuggestion(wordCount, nextSegmentList, lastLookup);
     free(lastLookup);

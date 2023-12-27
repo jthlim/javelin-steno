@@ -42,14 +42,16 @@ void ScriptManager::Update(const ButtonState &newButtonState,
 
   for (size_t buttonIndex : releasedButtons) {
 #if CONSOLE_LOG_BUTTON_PRESSES
-    Console::Printf("Release %zu at %u ms\n\n", buttonIndex, scriptTime);
+    Console::Printf("Release %zu at %u ms, now: %u ms\n\n", buttonIndex,
+                    scriptTime, Clock::GetMilliseconds());
 #endif
     script.HandleRelease(buttonIndex, scriptTime);
   }
 
   for (size_t buttonIndex : pressedButtons) {
 #if CONSOLE_LOG_BUTTON_PRESSES
-    Console::Printf("Press %zu at %u ms\n\n", buttonIndex, scriptTime);
+    Console::Printf("Press %zu at %u ms, now: %u ms\n\n", buttonIndex,
+                    scriptTime, Clock::GetMilliseconds());
 #endif
     script.HandlePress(buttonIndex, scriptTime);
   }

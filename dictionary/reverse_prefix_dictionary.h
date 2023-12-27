@@ -15,13 +15,16 @@ public:
   virtual void ReverseLookup(StenoReverseDictionaryLookup &result) const;
   virtual const char *GetName() const;
 
+  struct Prefix;
   class TextBlockHandler;
 
 private:
+  static const size_t MAXIMUM_REVERSE_PREFIX_DEPTH = 2;
+
   const uint8_t *baseAddress;
 
   size_t prefixCount;
-  const uint8_t **prefixes;
+  const Prefix *prefixes;
 
   struct ReverseLookupContext;
 

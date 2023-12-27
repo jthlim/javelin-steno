@@ -2,6 +2,7 @@
 
 #include "reverse_map_dictionary.h"
 #include "../str.h"
+#include "map_data_lookup.h"
 
 //---------------------------------------------------------------------------
 
@@ -45,15 +46,14 @@ void StenoReverseMapDictionary::AddMapDictionaryData(
         ++p;
       }
       ++p;
-      while (*p != 0xff) {
-        uint32_t offset = p[0] + (p[1] << 7) + (p[2] << 14) + (p[3] << 21);
-        result.mapDataLookup[result.mapDataLookupCount++] =
-            baseAddress + offset;
-        if (result.mapDataLookupCount >=
-            StenoReverseDictionaryLookup::MAX_MAP_DATA_LOOKUP_COUNT) {
+
+      MapDataLookup mapDataLookup(p);
+      while (mapDataLookup.HasData()) {
+        result.AddMapDataLookup(mapDataLookup.GetData(baseAddress));
+        if (result.IsMapDataLookupFull()) {
           break;
         }
-        p += 4;
+        ++mapDataLookup;
       }
 
       return;

@@ -10,6 +10,8 @@
 
 #if USE_ORTHOGRAPHY_CACHE
 
+#define RECORD_ORTHOGRAPHY_CACHE_STATS 0
+
 #if RUN_TESTS
 
 void StenoCompiledOrthography::LockCache() {}
@@ -167,13 +169,25 @@ StenoCompiledOrthography::CreatePatterns(const StenoOrthography &orthography) {
 }
 
 #if USE_ORTHOGRAPHY_CACHE
+
+#if RECORD_ORTHOGRAPHY_CACHE_STATS
+static size_t cacheHits;
+static size_t cacheMisses;
+#endif
 char *StenoCompiledOrthography::AddSuffix(const char *word,
                                           const char *suffix) const {
   size_t blockIndex = Crc32(word, Str::Length(word)) & (CACHE_BLOCK_COUNT - 1);
   char *cachedResult = cache[blockIndex].Lookup(word, suffix);
   if (cachedResult) {
+#if RECORD_ORTHOGRAPHY_CACHE_STATS
+    cacheHits++;
+#endif
     return cachedResult;
   }
+
+#if RECORD_ORTHOGRAPHY_CACHE_STATS
+  cacheMisses++;
+#endif
 
   char *result = AddSuffixInternal(word, suffix);
   CacheEntry *entry = new CacheEntry(word, suffix, result);
@@ -290,6 +304,10 @@ void StenoCompiledOrthography::PrintInfo() const {
   Console::Printf("      Auto-suffixes: %zu\n", data.autoSuffixCount);
   Console::Printf("      Reverse auto-suffixes: %zu\n",
                   data.reverseAutoSuffixCount);
+#if RECORD_ORTHOGRAPHY_CACHE_STATS
+  Console::Printf("      Cache hits: %zu/%zu\n", cacheHits,
+                  cacheHits + cacheMisses);
+#endif
 }
 
 //---------------------------------------------------------------------------

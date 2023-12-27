@@ -771,13 +771,26 @@ void Script::ExecutionContext::Run(Script &script, size_t offset) {
       case SF::SET_GPIO_INPUT_PIN: {
         intptr_t pull = script.Pop();
         intptr_t pin = script.Pop();
-        Gpio::SetInputPin((int) pin, (Gpio::Pull)pull);
+        Gpio::SetInputPin((int)pin, (Gpio::Pull)pull);
         continue;
       }
       case SF::READ_GPIO_PIN: {
         intptr_t pin = script.Pop();
-        script.Push(Gpio::GetPin((int) pin));
+        script.Push(Gpio::GetPin((int)pin));
         continue;
+      }
+      case SF::DRAW_GRAYSCALE_RANGE: {
+        int max = (int)script.Pop();
+        int min = (int)script.Pop();
+        intptr_t offset = script.Pop();
+        const uint8_t *data = (const uint8_t *)script.byteCode + offset;
+        int y = (int)script.Pop();
+        int x = (int)script.Pop();
+        int displayId = (int)script.Pop();
+        int width = *data++;
+        int height = *data++;
+        Display::DrawGrayscaleRange(displayId, x, y, width, height, data, min,
+                                    max);
       }
       }
       continue;

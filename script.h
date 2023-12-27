@@ -24,9 +24,12 @@ enum class ScriptId {
   BLE_SCANNING_UPDATE,
   U2F_STATUS_UPDATE,
   U2F_WINK,
+  STENO_MODE_UPDATE,
 
   COUNT,
 };
+
+//---------------------------------------------------------------------------
 
 class Script {
 public:

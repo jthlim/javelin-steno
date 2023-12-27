@@ -126,6 +126,7 @@ private:
   void AddTranslation(size_t newlineIndex);
   void DeleteTranslation(size_t newlineIndex);
   void ResetState();
+  static void Pump();
 
   void CreateSegments(size_t sourceStrokeCount, ConversionBuffer &buffer,
                       size_t conversionLimit, StenoSegmentList &segmentList);

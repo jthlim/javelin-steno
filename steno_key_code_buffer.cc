@@ -154,7 +154,10 @@ void StenoKeyCodeBuffer::ProcessCommand(const char *p) {
     }
 
     if (p == end) {
-      // suffix
+      // {^} handling.
+      state.caseMode = caseMode != StenoCaseMode::UNSPECIFIED
+                           ? caseMode
+                           : state.GetNextWordCaseMode();
       state.joinNext = true;
       return;
     }

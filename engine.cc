@@ -190,6 +190,8 @@ void StenoEngine::SendText(const uint8_t *p) {
                   nextConversionBuffer.keyCodeBuffer);
 }
 
+__attribute__((weak)) void StenoEngine::Pump() {}
+
 //---------------------------------------------------------------------------
 
 #include "key_code.h"

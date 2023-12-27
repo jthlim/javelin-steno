@@ -3,9 +3,15 @@
 #include "reverse_prefix_dictionary.h"
 #include "../list.h"
 #include "dictionary.h"
+#include "map_data_lookup.h"
 #include <assert.h>
 
 //---------------------------------------------------------------------------
+
+struct StenoReversePrefixDictionary::Prefix {
+  const uint8_t *text;
+  const uint8_t *mapDataLookup;
+};
 
 class StenoReversePrefixDictionary::TextBlockHandler {
 public:
@@ -23,19 +29,24 @@ public:
 class PopulateTextBlockHandler
     : public StenoReversePrefixDictionary::TextBlockHandler {
 public:
-  PopulateTextBlockHandler(const uint8_t **prefixes) : prefixes(prefixes) {}
+  PopulateTextBlockHandler(StenoReversePrefixDictionary::Prefix *prefixes)
+      : prefixes(prefixes) {}
 
-  virtual void AddPrefix(const uint8_t *prefix) { *prefixes++ = prefix; }
+  virtual void AddPrefix(const uint8_t *prefix) {
+    prefixes->text = prefix;
+    prefixes->mapDataLookup = prefix + Str::Length(prefix) + 1;
+    ++prefixes;
+  }
 
-  const uint8_t **prefixes;
+  StenoReversePrefixDictionary::Prefix *prefixes;
 };
 
 //---------------------------------------------------------------------------
 
 struct StenoReversePrefixDictionary::ReverseLookupContext {
   size_t characterIndex = 1;
-  const uint8_t **left;
-  const uint8_t **right;
+  const Prefix *left;
+  const Prefix *right;
 
   bool IsValid() const { return left < right; }
   void Narrow(uint8_t c);
@@ -43,17 +54,17 @@ struct StenoReversePrefixDictionary::ReverseLookupContext {
   // Binary search for '^', then confirm suffix of '^}\0'.
   // This is because ascii wise, ^ lies between upper case and lower case
   // letters.
-  const uint8_t *FindPrefixLookup() const;
+  const Prefix *FindPrefixLookup() const;
 };
 
 void StenoReversePrefixDictionary::ReverseLookupContext::Narrow(uint8_t c) {
 
   // Update left
-  const uint8_t **l = left;
-  const uint8_t **r = right;
+  const Prefix *l = left;
+  const Prefix *r = right;
   while (l < r) {
-    const uint8_t **mid = l + ((r - l) >> 1);
-    uint8_t cm = (*mid)[characterIndex];
+    const Prefix *mid = l + ((r - l) >> 1);
+    uint8_t cm = mid->text[characterIndex];
     if (cm < c) {
       l = mid + 1;
     } else {
@@ -65,8 +76,8 @@ void StenoReversePrefixDictionary::ReverseLookupContext::Narrow(uint8_t c) {
   // Update right, using new l.
   r = right;
   while (l < r) {
-    const uint8_t **mid = l + ((r - l) >> 1);
-    uint8_t cm = (*mid)[characterIndex];
+    const Prefix *mid = l + ((r - l) >> 1);
+    uint8_t cm = mid->text[characterIndex];
     if (cm <= c) {
       l = mid + 1;
     } else {
@@ -78,14 +89,14 @@ void StenoReversePrefixDictionary::ReverseLookupContext::Narrow(uint8_t c) {
   ++characterIndex;
 }
 
-const uint8_t *
+const StenoReversePrefixDictionary::Prefix *
 StenoReversePrefixDictionary::ReverseLookupContext::FindPrefixLookup() const {
-  const uint8_t **l = left;
-  const uint8_t **r = right;
+  const Prefix *l = left;
+  const Prefix *r = right;
 
   while (l < r) {
-    const uint8_t **mid = l + ((r - l) >> 1);
-    const uint8_t *midString = (*mid) + characterIndex;
+    const Prefix *mid = l + ((r - l) >> 1);
+    const uint8_t *midString = mid->text + characterIndex;
     uint8_t c = midString[0];
     if (c < '^') {
       l = mid + 1;
@@ -94,7 +105,7 @@ StenoReversePrefixDictionary::ReverseLookupContext::FindPrefixLookup() const {
     } else {
       // Equal!
       assert(midString[1] == '}' && midString[2] == '\0');
-      return *mid;
+      return mid;
     }
   }
   return nullptr;
@@ -111,7 +122,8 @@ StenoReversePrefixDictionary::StenoReversePrefixDictionary(
   ProcessTextBlock(textBlock, textBlockLength, counter);
 
   prefixCount = counter.counter;
-  prefixes = new const uint8_t *[prefixCount];
+  Prefix *prefixes = (Prefix *)malloc(prefixCount * sizeof(Prefix));
+  this->prefixes = prefixes;
 
   PopulateTextBlockHandler populate(prefixes);
   ProcessTextBlock(textBlock, textBlockLength, populate);
@@ -186,7 +198,8 @@ void StenoReversePrefixDictionary::ProcessTextBlock(const uint8_t *textBlock,
 void StenoReversePrefixDictionary::ReverseLookup(
     StenoReverseDictionaryLookup &result) const {
   dictionary->ReverseLookup(result);
-  if (result.strokeThreshold > 2) {
+  if (result.strokeThreshold > 2 &&
+      result.prefixLookupDepth < MAXIMUM_REVERSE_PREFIX_DEPTH) {
     ReverseLookupContext context;
     context.left = prefixes;
     context.right = prefixes + prefixCount;
@@ -206,7 +219,7 @@ void StenoReversePrefixDictionary::AddPrefixReverseLookup(
 
   // Build a list of suffixes to prefixes to use and suffixes to test
   struct Test {
-    const uint8_t *prefix;
+    const Prefix *prefix;
     const uint8_t *suffix;
   };
   List<Test> tests;
@@ -214,7 +227,7 @@ void StenoReversePrefixDictionary::AddPrefixReverseLookup(
     if (!context.IsValid()) {
       break;
     }
-    const uint8_t *prefix = context.FindPrefixLookup();
+    const Prefix *prefix = context.FindPrefixLookup();
     if (prefix) {
       tests.Add(Test{
           .prefix = prefix,
@@ -227,10 +240,15 @@ void StenoReversePrefixDictionary::AddPrefixReverseLookup(
   // Do reverse ordering to find longest matches first.
   for (size_t i = tests.GetCount(); i > 0; --i) {
     const Test &test = tests[i - 1];
+
+    // In theory, this should use:
+    //   result.strokeThreshold - minimumStrokesForPrefix
+    // Use "1" as an quick approximation.
     StenoReverseDictionaryLookup *suffixLookup =
         new StenoReverseDictionaryLookup(result.strokeThreshold - 1,
                                          (const char *)test.suffix);
 
+    suffixLookup->prefixLookupDepth = result.prefixLookupDepth + 1;
     ReverseLookup(*suffixLookup);
 
     bool hasResult = false;
@@ -242,21 +260,14 @@ void StenoReversePrefixDictionary::AddPrefixReverseLookup(
               (const char *)test.prefix);
 
       // Add map lookup hints.
-      size_t prefixLength = test.suffix - (const uint8_t *)result.lookup;
-
       // Given format '{prefix^}\0', skip 4 extra bytes to get to prefix strokes
-      const uint8_t *prefixStrokes = test.prefix + prefixLength + 4;
-      while (*prefixStrokes != 0xff) {
-        uint32_t offset = prefixStrokes[0] | (prefixStrokes[1] << 7) |
-                          (prefixStrokes[2] << 14) + (prefixStrokes[3] << 21);
-        const void *data = baseAddress + offset;
-        prefixStrokes += 4;
-
-        prefixLookup->mapDataLookup[prefixLookup->mapDataLookupCount++] = data;
-        if (prefixLookup->mapDataLookupCount >=
-            StenoReverseDictionaryLookup::MAX_MAP_DATA_LOOKUP_COUNT) {
+      MapDataLookup mapDataLookup(test.prefix->mapDataLookup);
+      while (mapDataLookup.HasData()) {
+        prefixLookup->AddMapDataLookup(mapDataLookup.GetData(baseAddress));
+        if (prefixLookup->IsMapDataLookupFull()) {
           break;
         }
+        ++mapDataLookup;
       }
 
       dictionary->ReverseLookup(*prefixLookup);
@@ -267,6 +278,9 @@ void StenoReversePrefixDictionary::AddPrefixReverseLookup(
           for (size_t s = 0; s < suffixLookup->resultCount; ++s) {
             StenoReverseDictionaryResult &suffix = suffixLookup->results[s];
             size_t combinedLength = prefix.length + suffix.length;
+            if (combinedLength >= result.strokeThreshold) {
+              continue;
+            }
             StenoStroke strokes[combinedLength];
             memcpy(strokes, prefix.strokes,
                    prefix.length * sizeof(StenoStroke));
