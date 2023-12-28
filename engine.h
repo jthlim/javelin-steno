@@ -3,6 +3,7 @@
 #pragma once
 #include "orthography.h"
 #include "processor/processor.h"
+#include "segment_builder.h"
 #include "steno_key_code_buffer.h"
 #include "steno_key_code_emitter.h"
 #include "stroke_history.h"
@@ -100,7 +101,7 @@ private:
   StenoStrokeHistory addTranslationHistory;
 
   struct ConversionBuffer {
-    StenoStrokeHistory strokeHistory;
+    StenoSegmentBuilder segmentBuilder;
     StenoKeyCodeBuffer keyCodeBuffer;
 
     void Prepare(const StenoCompiledOrthography *orthography,

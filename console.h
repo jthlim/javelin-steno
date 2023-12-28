@@ -76,7 +76,6 @@ public:
 
   static void WriteScriptEvent(const char *text);
 
-#ifdef NDEBUG
   template <typename T, typename... T2>
   static void Printf(const char *format, T arg, T2... args) {
     PrintfInternal(format, arg, args...);
@@ -85,10 +84,6 @@ public:
   template <size_t N> static void Printf(const char (&text)[N]) {
     Write(text, N - 1);
   }
-#else
-  static void Printf(const char *format, ...)
-      __attribute__((format(printf, 1, 2)));
-#endif
 
   static void Dump(const void *data, size_t length);
   static void Flush();

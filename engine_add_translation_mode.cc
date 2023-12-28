@@ -33,7 +33,7 @@ void StenoEngine::InitiateAddTranslationMode() {
 void StenoEngine::ProcessAddTranslationModeStroke(StenoStroke stroke) {
   size_t newlineIndex = 0;
   for (size_t i = 0; i < addTranslationHistory.GetCount(); ++i) {
-    if (IsNewline(addTranslationHistory.GetStroke(i))) {
+    if (IsNewline(addTranslationHistory[i].stroke)) {
       newlineIndex = i;
       break;
     }
@@ -95,10 +95,10 @@ void StenoEngine::ProcessAddTranslationModeUndo() {
   UpdateAddTranslationModeTextBuffer(previousConversionBuffer);
 
   size_t undoCount =
-      addTranslationHistory.GetUndoCount(StenoStrokeHistory::BUFFER_SIZE);
-  state = addTranslationHistory.BackState(undoCount);
+      addTranslationHistory.GetUndoCount(StenoSegmentBuilder::BUFFER_SIZE);
+  state = addTranslationHistory.Back(undoCount).state;
   state.shouldCombineUndo = false;
-  addTranslationHistory.PopCount(undoCount);
+  addTranslationHistory.RemoveBackCount(undoCount);
 
   UpdateAddTranslationModeTextBuffer(nextConversionBuffer);
 
@@ -118,7 +118,7 @@ StenoEngine::UpdateAddTranslationModeTextBuffer(ConversionBuffer &buffer) {
     if (i >= addTranslationHistory.GetCount()) {
       return i;
     }
-    StenoStroke stroke = addTranslationHistory.GetStroke(i++);
+    StenoStroke stroke = addTranslationHistory[i++].stroke;
     if (IsNewline(stroke)) {
       break;
     }
@@ -140,16 +140,16 @@ StenoEngine::UpdateAddTranslationModeTextBuffer(ConversionBuffer &buffer) {
   StenoSegmentList segmentList;
   BuildSegmentContext context(segmentList, dictionary, orthography);
 
-  buffer.strokeHistory.TransferFrom(addTranslationHistory,
-                                    addTranslationHistory.GetCount(),
-                                    StenoStrokeHistory::BUFFER_SIZE);
-  buffer.strokeHistory.CreateSegments(context, i);
+  buffer.segmentBuilder.TransferFrom(addTranslationHistory,
+                                     addTranslationHistory.GetCount(),
+                                     StenoSegmentBuilder::BUFFER_SIZE);
+  buffer.segmentBuilder.CreateSegments(context, i);
 
   StenoTokenizer *tokenizer = segmentList.CreateTokenizer();
   buffer.keyCodeBuffer.Append(tokenizer);
   delete tokenizer;
   if (placeSpaceAfter && !buffer.keyCodeBuffer.state.joinNext &&
-      buffer.strokeHistory.IsNotEmpty()) {
+      buffer.segmentBuilder.IsNotEmpty()) {
     buffer.keyCodeBuffer.AppendSpace();
   }
   return i + segmentList.GetCount();
@@ -174,17 +174,21 @@ void StenoEngine::AddTranslation(size_t newlineIndex) {
   StenoSegmentList segmentList;
   BuildSegmentContext context(segmentList, dictionary, orthography);
 
-  nextConversionBuffer.strokeHistory.TransferFrom(
+  nextConversionBuffer.segmentBuilder.TransferFrom(
       addTranslationHistory, addTranslationHistory.GetCount(),
-      StenoStrokeHistory::BUFFER_SIZE);
-  nextConversionBuffer.strokeHistory.CreateSegments(context, newlineIndex + 1);
+      StenoSegmentBuilder::BUFFER_SIZE);
+  nextConversionBuffer.segmentBuilder.CreateSegments(context, newlineIndex + 1);
 
   StenoTokenizer *tokenizer = segmentList.CreateTokenizer();
   nextConversionBuffer.keyCodeBuffer.Append(tokenizer);
   delete tokenizer;
 
   char *word = nextConversionBuffer.keyCodeBuffer.ToString();
-  userDictionary->Add(&addTranslationHistory.GetStroke(0), newlineIndex, word);
+  StenoStroke strokes[newlineIndex];
+  for (size_t i = 0; i < newlineIndex; ++i) {
+    strokes[i] = addTranslationHistory[i].stroke;
+  }
+  userDictionary->Add(strokes, newlineIndex, word);
   free(word);
 }
 
@@ -193,7 +197,11 @@ void StenoEngine::DeleteTranslation(size_t newlineIndex) {
     return;
   }
 
-  userDictionary->Remove(&addTranslationHistory.GetStroke(0), newlineIndex);
+  StenoStroke strokes[newlineIndex];
+  for (size_t i = 0; i < newlineIndex; ++i) {
+    strokes[i] = addTranslationHistory[i].stroke;
+  }
+  userDictionary->Remove(strokes, newlineIndex);
 }
 
 //---------------------------------------------------------------------------

@@ -18,6 +18,7 @@ public:
   bool IsEmpty() const { return start == end; }
   bool IsNotEmpty() const { return start != end; }
   bool IsFull() const { return end - start == N; }
+  bool IsNotFull() const { return end - start != N; }
   size_t GetCount() const { return end - start; }
   size_t GetAvailable() const { return N - GetCount(); }
 
@@ -25,11 +26,26 @@ public:
   void Add(const T &value) { data[end++ & (N - 1)] = value; }
 
   T &RemoveFront() { return data[start++ & (N - 1)]; }
+  void RemoveFrontCount(size_t count) {
+    assert(GetCount() >= count);
+    start += count;
+  }
 
-  T &Back() { return data[(end - 1) & (N - 1)]; }
-  const T &Back() const { return data[(end - 1) & (N - 1)]; }
+  T &RemoveBack() { return data[--end & (N - 1)]; }
+  void RemoveBackCount(size_t count) {
+    assert(GetCount() >= count);
+    end -= count;
+  }
+
+  T &Back(size_t fromEnd = 1) { return data[(end - fromEnd) & (N - 1)]; }
+  const T &Back(size_t fromEnd = 1) const {
+    return data[(end - fromEnd) & (N - 1)];
+  }
   T &Front() { return data[start & (N - 1)]; }
   const T &Front() const { return data[start & (N - 1)]; }
+
+  T &operator[](size_t n) { return data[(start + n) & (N - 1)]; }
+  const T &operator[](size_t n) const { return data[(start + n) & (N - 1)]; }
 
 private:
   size_t start = 0;

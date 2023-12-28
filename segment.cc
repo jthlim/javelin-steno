@@ -168,14 +168,14 @@ StenoTokenizer *StenoSegmentList::CreateTokenizer(size_t startingOffset) {
 #include "dictionary/compact_map_dictionary.h"
 #include "dictionary/test_dictionary.h"
 #include "orthography.h"
+#include "segment_builder.h"
 #include "str.h"
-#include "stroke_history.h"
 #include "unit_test.h"
 
 static StenoCompactMapDictionary dictionary(TestDictionary::definition);
 
 TEST_BEGIN("Segment tests") {
-  StenoStrokeHistory history;
+  StenoSegmentBuilder history;
   // spellchecker: disable
   history.Add(StenoStroke("TEFT"), StenoState());
   history.Add(StenoStroke("-G"), StenoState());

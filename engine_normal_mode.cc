@@ -42,7 +42,7 @@ struct StenoEngine::UpdateNormalModeTextBufferThreadData {
 #endif
 
 void StenoEngine::ProcessNormalModeStroke(StenoStroke stroke) {
-  history.ShiftIfFull();
+  history.PruneIfFull();
 
   size_t previousSourceStrokeCount = history.GetCount();
   history.Add(stroke, state);
@@ -67,7 +67,7 @@ void StenoEngine::ProcessNormalModeStroke(StenoStroke stroke) {
 #endif
 
   StenoSegmentList previousSegmentList;
-  if (nextConversionBuffer.strokeHistory.HasModifiedStrokeHistory()) {
+  if (nextConversionBuffer.segmentBuilder.HasModifiedStrokeHistory()) {
     CreateSegments(previousSourceStrokeCount, previousConversionBuffer,
                    conversionCount - 1, previousSegmentList);
   } else {
@@ -119,7 +119,7 @@ void StenoEngine::ProcessNormalModeStroke(StenoStroke stroke) {
       previousConversionBuffer.keyCodeBuffer.addTranslationCount) {
     PrintPaperTape(stroke, previousSegmentList, nextSegmentList);
 
-    history.Pop();
+    history.RemoveBack();
     InitiateAddTranslationMode();
     return;
   }
@@ -184,16 +184,16 @@ void StenoEngine::ProcessNormalModeUndo() {
   CreateSegments(history.GetCount(), previousConversionBuffer, conversionCount,
                  previousSegmentList);
 
-  state = history.BackState(undoCount);
+  state = history.Back(undoCount).state;
   state.shouldCombineUndo = false;
   state.isDefinitionStart = false;
-  history.PopCount(undoCount);
+  history.RemoveBackCount(undoCount);
 
   size_t nextConversionCount =
       undoCount >= conversionCount ? 0 : conversionCount - undoCount;
 
   StenoSegmentList nextSegmentList;
-  if (previousConversionBuffer.strokeHistory.HasModifiedStrokeHistory()) {
+  if (previousConversionBuffer.segmentBuilder.HasModifiedStrokeHistory()) {
     CreateSegments(history.GetCount(), nextConversionBuffer,
                    nextConversionCount, nextSegmentList);
 
@@ -239,10 +239,10 @@ void StenoEngine::CreateSegments(size_t sourceStrokeCount,
                                  ConversionBuffer &buffer,
                                  size_t conversionLimit,
                                  StenoSegmentList &segmentList) {
-  buffer.strokeHistory.TransferFrom(history, sourceStrokeCount,
-                                    conversionLimit);
+  buffer.segmentBuilder.TransferFrom(history, sourceStrokeCount,
+                                     conversionLimit);
   BuildSegmentContext context(segmentList, dictionary, orthography);
-  buffer.strokeHistory.CreateSegments(context);
+  buffer.segmentBuilder.CreateSegments(context);
 }
 
 void StenoEngine::CreateSegmentsUsingLongerResult(
@@ -253,8 +253,8 @@ void StenoEngine::CreateSegmentsUsingLongerResult(
   // state pointers are used to track segment length, so a proper stroke
   // history needs to be set up and translated.
 
-  buffer.strokeHistory.TransferFrom(history, sourceStrokeCount,
-                                    conversionLimit);
+  buffer.segmentBuilder.TransferFrom(history, sourceStrokeCount,
+                                     conversionLimit);
 
   size_t startingOffset = 0;
   if (conversionLimit > sourceStrokeCount) {
@@ -267,8 +267,8 @@ void StenoEngine::CreateSegmentsUsingLongerResult(
     startingOffset += segment.strokeLength;
     segmentList.Add(StenoSegment(
         segment.strokeLength,
-        buffer.strokeHistory.GetStatePointer(
-            longerBuffer.strokeHistory.GetStateIndex(segment.state)),
+        buffer.segmentBuilder.GetStatePointer(
+            longerBuffer.segmentBuilder.GetStateIndex(segment.state)),
         segment.lookup.Clone()));
   }
 
@@ -276,10 +276,10 @@ void StenoEngine::CreateSegmentsUsingLongerResult(
     return;
   }
 
-  buffer.strokeHistory.TransferStartFrom(longerBuffer.strokeHistory,
-                                         startingOffset);
+  buffer.segmentBuilder.TransferStartFrom(longerBuffer.segmentBuilder,
+                                          startingOffset);
   BuildSegmentContext context(segmentList, dictionary, orthography);
-  buffer.strokeHistory.CreateSegments(context, startingOffset);
+  buffer.segmentBuilder.CreateSegments(context, startingOffset);
 }
 
 void StenoEngine::ConvertText(ConversionBuffer &buffer,
