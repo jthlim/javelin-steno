@@ -63,18 +63,18 @@ private:
 
   void AddSegments(BuildSegmentContext &context, size_t offset);
 
-  void RemoveOffset(BuildSegmentContext &context, size_t &offset,
-                    size_t length);
+  void ResetStrokes(size_t offset, size_t length);
+
   void ReevaluateSegments(BuildSegmentContext &context, size_t &offset);
 
   void HandleRetroTransform(BuildSegmentContext &context, const char *format,
                             size_t currentOffset);
   void HandleRetroInsertSpace(BuildSegmentContext &context,
-                              size_t currentOffset);
+                              size_t currentOffset, size_t length);
   void HandleRetroToggleAsterisk(BuildSegmentContext &context,
-                                 size_t currentOffset);
+                                 size_t currentOffset, size_t length);
   void HandleRepeatLastStroke(BuildSegmentContext &context,
-                              size_t currentOffset, const StenoState &state);
+                              size_t currentOffset, size_t length);
 
   void WriteRetroTransform(const StenoSegmentList &segments,
                            size_t startingSegmentIndex, const char *format,
@@ -90,6 +90,8 @@ private:
 
   StenoSegment AutoSuffixTest(BuildSegmentContext &context,
                               const StenoSegment &segment, size_t offset);
+
+  size_t GetFirstDefinitionBoundaryLength(size_t offset, size_t length) const;
 };
 
 //---------------------------------------------------------------------------

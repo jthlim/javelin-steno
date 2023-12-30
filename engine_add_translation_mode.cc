@@ -98,7 +98,7 @@ void StenoEngine::ProcessAddTranslationModeUndo() {
       addTranslationHistory.GetUndoCount(StenoSegmentBuilder::BUFFER_SIZE);
   state = addTranslationHistory.Back(undoCount).state;
   state.shouldCombineUndo = false;
-  addTranslationHistory.RemoveBackCount(undoCount);
+  addTranslationHistory.RemoveBack(undoCount);
 
   UpdateAddTranslationModeTextBuffer(nextConversionBuffer);
 
@@ -144,6 +144,7 @@ StenoEngine::UpdateAddTranslationModeTextBuffer(ConversionBuffer &buffer) {
                                      addTranslationHistory.GetCount(),
                                      StenoSegmentBuilder::BUFFER_SIZE);
   buffer.segmentBuilder.CreateSegments(context, i);
+  addTranslationHistory.UpdateDefinitionBoundaries(i, segmentList);
 
   StenoTokenizer *tokenizer = segmentList.CreateTokenizer();
   buffer.keyCodeBuffer.Append(tokenizer);

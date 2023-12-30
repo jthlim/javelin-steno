@@ -19,6 +19,7 @@ struct StenoStrokeHistoryEntry {
   void Set(StenoStroke stroke, StenoState state) {
     this->stroke = stroke;
     this->state = state;
+    this->state.isDefinitionStart = true;
   }
 };
 

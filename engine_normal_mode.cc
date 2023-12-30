@@ -113,7 +113,6 @@ void StenoEngine::ProcessNormalModeStroke(StenoStroke stroke) {
   state = nextConversionBuffer.keyCodeBuffer.state;
   state.shouldCombineUndo = false;
   state.isManualStateChange = false;
-  state.isDefinitionStart = false;
 
   if (nextConversionBuffer.keyCodeBuffer.addTranslationCount >
       previousConversionBuffer.keyCodeBuffer.addTranslationCount) {
@@ -186,8 +185,7 @@ void StenoEngine::ProcessNormalModeUndo() {
 
   state = history.Back(undoCount).state;
   state.shouldCombineUndo = false;
-  state.isDefinitionStart = false;
-  history.RemoveBackCount(undoCount);
+  history.RemoveBack(undoCount);
 
   size_t nextConversionCount =
       undoCount >= conversionCount ? 0 : conversionCount - undoCount;

@@ -26,13 +26,13 @@ public:
   void Add(const T &value) { data[end++ & (N - 1)] = value; }
 
   T &RemoveFront() { return data[start++ & (N - 1)]; }
-  void RemoveFrontCount(size_t count) {
+  void RemoveFront(size_t count) {
     assert(GetCount() >= count);
     start += count;
   }
 
   T &RemoveBack() { return data[--end & (N - 1)]; }
-  void RemoveBackCount(size_t count) {
+  void RemoveBack(size_t count) {
     assert(GetCount() >= count);
     end -= count;
   }
