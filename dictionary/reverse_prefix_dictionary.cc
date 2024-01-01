@@ -10,7 +10,7 @@
 
 struct StenoReversePrefixDictionary::Prefix {
   const uint8_t *text;
-  const uint8_t *mapDataLookup;
+  MapDataLookup mapDataLookup;
 };
 
 class StenoReversePrefixDictionary::TextBlockHandler {
@@ -261,7 +261,7 @@ void StenoReversePrefixDictionary::AddPrefixReverseLookup(
 
       // Add map lookup hints.
       // Given format '{prefix^}\0', skip 4 extra bytes to get to prefix strokes
-      MapDataLookup mapDataLookup(test.prefix->mapDataLookup);
+      MapDataLookup mapDataLookup = test.prefix->mapDataLookup;
       while (mapDataLookup.HasData()) {
         prefixLookup->AddMapDataLookup(mapDataLookup.GetData(baseAddress));
         if (prefixLookup->IsMapDataLookupFull()) {

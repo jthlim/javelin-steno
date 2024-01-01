@@ -6,6 +6,7 @@
 
 class MapDataLookup {
 public:
+  MapDataLookup() = default;
   MapDataLookup(const uint8_t *p) : p(p) {}
 
   bool HasData() const { return *p != 0xff; }
