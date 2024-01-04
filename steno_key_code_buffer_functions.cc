@@ -23,6 +23,7 @@ constexpr KeyCodeFunctionEntry HANDLERS[] = {
     {"retro_capitalise", &StenoKeyCodeBuffer::RetroCapitalizeFunction},
     {"retro_double_quotes", &StenoKeyCodeBuffer::RetroDoubleQuotesFunction},
     {"retro_lower", &StenoKeyCodeBuffer::RetroLowerCaseFunction},
+    {"retro_replace_space", &StenoKeyCodeBuffer::RetroReplaceSpaceFunction},
     {"retro_single_quotes", &StenoKeyCodeBuffer::RetroSingleQuotesFunction},
     {"retro_surround", &StenoKeyCodeBuffer::RetroSurroundFunction},
     {"retro_title", &StenoKeyCodeBuffer::RetroTitleCaseFunction},
@@ -232,6 +233,35 @@ void StenoKeyCodeBuffer::RetroactiveLowerCase(int wordCount) {
   }
 }
 
+void StenoKeyCodeBuffer::RetroactiveReplaceSpace(int wordCount,
+                                                 const char *replacement) {
+  size_t replacementLength = Str::Length(replacement);
+  StenoKeyCode *p = buffer + count;
+  while (wordCount) {
+    for (;;) {
+      if (p <= buffer) {
+        return;
+      }
+      --p;
+      if (p->IsSpace()) {
+        break;
+      }
+    }
+
+    StenoKeyCode *endText = buffer + count;
+    AppendText(replacement, replacementLength, StenoCaseMode::NORMAL);
+    StenoKeyCode *endReplacement = buffer + count;
+
+    // Rotate in place.
+    Reverse(endText, endReplacement);
+    Reverse(p, endReplacement);
+    Reverse(p + (endReplacement - endText), endReplacement - 1);
+    --count; // Remove space at end
+
+    --wordCount;
+  }
+}
+
 void StenoKeyCodeBuffer::RetroactiveQuotes(int wordCount,
                                            const char *startQuote,
                                            const char *endQuote) {
@@ -277,6 +307,14 @@ void StenoKeyCodeBuffer::RetroactiveQuotes(int wordCount,
   Reverse(p, startQuoteBufferPointer);
   Reverse(startQuoteBufferPointer, buffer + count);
   Reverse(p, buffer + count);
+}
+
+void StenoKeyCodeBuffer::RetroactiveSingleQuotes(int count) {
+  RetroactiveQuotes(count, "'", "'");
+}
+
+void StenoKeyCodeBuffer::RetroactiveDoubleQuotes(int count) {
+  RetroactiveQuotes(count, "\"", "\"");
 }
 
 void StenoKeyCodeBuffer::RetroactiveDeleteSpace() {
@@ -414,8 +452,8 @@ bool StenoKeyCodeBuffer::ToggleDictionaryFunction(
   return rootDictionary->ToggleDictionary(parameters[1]);
 }
 
-bool StenoKeyCodeBuffer::RetroCapitalizeFunction(
-    const List<char *> &parameters) {
+bool StenoKeyCodeBuffer::RetroWordCountHandler(
+    void (StenoKeyCodeBuffer::*handler)(int), const List<char *> &parameters) {
   if (parameters.GetCount() != 2) {
     return false;
   }
@@ -425,43 +463,37 @@ bool StenoKeyCodeBuffer::RetroCapitalizeFunction(
     return false;
   }
 
-  RetroactiveCapitalize(wordCount);
+  (this->*handler)(wordCount);
   return true;
+}
+
+bool StenoKeyCodeBuffer::RetroCapitalizeFunction(
+    const List<char *> &parameters) {
+  return RetroWordCountHandler(&StenoKeyCodeBuffer::RetroactiveCapitalize,
+                               parameters);
 }
 
 bool StenoKeyCodeBuffer::RetroTitleCaseFunction(
     const List<char *> &parameters) {
-  if (parameters.GetCount() != 2) {
-    return false;
-  }
-
-  int wordCount;
-  if (!ReadIntegerParameter(wordCount, parameters[1])) {
-    return false;
-  }
-
-  RetroactiveTitleCase(wordCount);
-  return true;
+  return RetroWordCountHandler(&StenoKeyCodeBuffer::RetroactiveTitleCase,
+                               parameters);
 }
 
 bool StenoKeyCodeBuffer::RetroUpperCaseFunction(
     const List<char *> &parameters) {
-  if (parameters.GetCount() != 2) {
-    return false;
-  }
-
-  int wordCount;
-  if (!ReadIntegerParameter(wordCount, parameters[1])) {
-    return false;
-  }
-
-  RetroactiveUpperCase(wordCount);
-  return true;
+  return RetroWordCountHandler(&StenoKeyCodeBuffer::RetroactiveUpperCase,
+                               parameters);
 }
 
 bool StenoKeyCodeBuffer::RetroLowerCaseFunction(
     const List<char *> &parameters) {
-  if (parameters.GetCount() != 2) {
+  return RetroWordCountHandler(&StenoKeyCodeBuffer::RetroactiveLowerCase,
+                               parameters);
+}
+
+bool StenoKeyCodeBuffer::RetroReplaceSpaceFunction(
+    const List<char *> &parameters) {
+  if (parameters.GetCount() != 3) {
     return false;
   }
 
@@ -470,23 +502,14 @@ bool StenoKeyCodeBuffer::RetroLowerCaseFunction(
     return false;
   }
 
-  RetroactiveLowerCase(wordCount);
+  RetroactiveReplaceSpace(wordCount, parameters[2]);
   return true;
 }
 
 bool StenoKeyCodeBuffer::RetroSingleQuotesFunction(
     const List<char *> &parameters) {
-  if (parameters.GetCount() != 2) {
-    return false;
-  }
-
-  int wordCount;
-  if (!ReadIntegerParameter(wordCount, parameters[1])) {
-    return false;
-  }
-
-  RetroactiveQuotes(wordCount, "'", "'");
-  return true;
+  return RetroWordCountHandler(&StenoKeyCodeBuffer::RetroactiveSingleQuotes,
+                               parameters);
 }
 
 bool StenoKeyCodeBuffer::RetroSurroundFunction(const List<char *> &parameters) {
@@ -505,17 +528,8 @@ bool StenoKeyCodeBuffer::RetroSurroundFunction(const List<char *> &parameters) {
 
 bool StenoKeyCodeBuffer::RetroDoubleQuotesFunction(
     const List<char *> &parameters) {
-  if (parameters.GetCount() != 2) {
-    return false;
-  }
-
-  int wordCount;
-  if (!ReadIntegerParameter(wordCount, parameters[1])) {
-    return false;
-  }
-
-  RetroactiveQuotes(wordCount, "\"", "\"");
-  return true;
+  return RetroWordCountHandler(&StenoKeyCodeBuffer::RetroactiveDoubleQuotes,
+                               parameters);
 }
 
 bool StenoKeyCodeBuffer::SetCaseFunction(const List<char *> &parameters) {
@@ -650,6 +664,60 @@ TEST_BEGIN("StenoKeyCodeBuffer: Backspace() should give expected results") {
   assert(buffer.buffer[1] == StenoKeyCode::CreateRawKeyCodePress(KeyCode::F1));
   assert(buffer.buffer[2] ==
          StenoKeyCode::CreateRawKeyCodeRelease(KeyCode::F1));
+}
+TEST_END
+
+TEST_BEGIN("StenoKeyCodeBuffer: RetroReplaceSpace") {
+  StenoKeyCodeBuffer buffer;
+  buffer.buffer[0] = StenoKeyCode('a', StenoCaseMode::NORMAL);
+  buffer.buffer[1] = StenoKeyCode('b', StenoCaseMode::NORMAL);
+  buffer.buffer[2] = StenoKeyCode(' ', StenoCaseMode::NORMAL);
+  buffer.buffer[3] = StenoKeyCode('c', StenoCaseMode::NORMAL);
+  buffer.count = 4;
+
+  buffer.RetroactiveReplaceSpace(1, "");
+
+  assert(buffer.count == 3);
+  assert(buffer.buffer[0] == StenoKeyCode('a', StenoCaseMode::NORMAL));
+  assert(buffer.buffer[1] == StenoKeyCode('b', StenoCaseMode::NORMAL));
+  assert(buffer.buffer[2] == StenoKeyCode('c', StenoCaseMode::NORMAL));
+}
+TEST_END
+
+TEST_BEGIN("StenoKeyCodeBuffer: RetroReplaceSpace _") {
+  StenoKeyCodeBuffer buffer;
+  buffer.buffer[0] = StenoKeyCode('a', StenoCaseMode::NORMAL);
+  buffer.buffer[1] = StenoKeyCode('b', StenoCaseMode::NORMAL);
+  buffer.buffer[2] = StenoKeyCode(' ', StenoCaseMode::NORMAL);
+  buffer.buffer[3] = StenoKeyCode('c', StenoCaseMode::NORMAL);
+  buffer.count = 4;
+
+  buffer.RetroactiveReplaceSpace(1, "_");
+
+  assert(buffer.count == 4);
+  assert(buffer.buffer[0] == StenoKeyCode('a', StenoCaseMode::NORMAL));
+  assert(buffer.buffer[1] == StenoKeyCode('b', StenoCaseMode::NORMAL));
+  assert(buffer.buffer[2] == StenoKeyCode('_', StenoCaseMode::NORMAL));
+  assert(buffer.buffer[3] == StenoKeyCode('c', StenoCaseMode::NORMAL));
+}
+TEST_END
+
+TEST_BEGIN("StenoKeyCodeBuffer: RetroReplaceSpace <>") {
+  StenoKeyCodeBuffer buffer;
+  buffer.buffer[0] = StenoKeyCode('a', StenoCaseMode::NORMAL);
+  buffer.buffer[1] = StenoKeyCode('b', StenoCaseMode::NORMAL);
+  buffer.buffer[2] = StenoKeyCode(' ', StenoCaseMode::NORMAL);
+  buffer.buffer[3] = StenoKeyCode('c', StenoCaseMode::NORMAL);
+  buffer.count = 4;
+
+  buffer.RetroactiveReplaceSpace(1, "<>");
+
+  assert(buffer.count == 5);
+  assert(buffer.buffer[0] == StenoKeyCode('a', StenoCaseMode::NORMAL));
+  assert(buffer.buffer[1] == StenoKeyCode('b', StenoCaseMode::NORMAL));
+  assert(buffer.buffer[2] == StenoKeyCode('<', StenoCaseMode::NORMAL));
+  assert(buffer.buffer[3] == StenoKeyCode('>', StenoCaseMode::NORMAL));
+  assert(buffer.buffer[4] == StenoKeyCode('c', StenoCaseMode::NORMAL));
 }
 TEST_END
 

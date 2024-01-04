@@ -15,6 +15,7 @@ public:
   static void SetInputPin(int pin, Pull pull);
   static bool GetPin(int pin);
   static void SetPin(int pin, bool value);
+  static void SetPinDutyCycle(int pin, int dutyCycle);
 };
 
 //---------------------------------------------------------------------------

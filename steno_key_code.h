@@ -48,6 +48,7 @@ public:
   bool IsLetter() const { return Unicode::IsLetter(unicode); }         // *
   bool IsAsciiDigit() const { return Unicode::IsAsciiDigit(unicode); } // *
   bool IsUnicode(uint32_t value) const { return unicode == value; }    // *
+  bool IsSpace() const { return unicode == ' '; }                      // *
 
   uint32_t GetUnicode() const { return isRawKeyCode ? 0 : unicode; }
 

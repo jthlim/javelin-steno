@@ -146,6 +146,19 @@ Text: `THIS IS A TEST`
 
 Output: `THIS IS a test`
 
+## `{:retro_replace_space:<n>:<replacement>}`
+
+Replaces the prior `n` spaces with `<replacement>`.
+
+Example usage:
+Text: `This is a test`
+
+```
+  {:retro_replace_space:2:_}
+```
+
+Output: `This is_a_test`
+
 ## `{:retro_single_quotes:<n_words>}`
 
 Surrounds the prior `n_words` with single quotes.

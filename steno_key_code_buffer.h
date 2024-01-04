@@ -73,8 +73,11 @@ public:
   void RetroactiveTitleCase(int count);
   void RetroactiveUpperCase(int count);
   void RetroactiveLowerCase(int count);
+  void RetroactiveReplaceSpace(int count, const char *replacement);
   void RetroactiveQuotes(int count, const char *startQuote,
                          const char *endQuote);
+  void RetroactiveSingleQuotes(int count);
+  void RetroactiveDoubleQuotes(int count);
   void RetroactiveDeleteSpace();
   void RetroactiveFormatCurrency(const char *pStart, const char *pEnd);
 
@@ -89,10 +92,11 @@ public:
   bool RetroCapitalizeFunction(const List<char *> &parameters);
   bool RetroDoubleQuotesFunction(const List<char *> &parameters);
   bool RetroLowerCaseFunction(const List<char *> &parameters);
+  bool RetroReplaceSpaceFunction(const List<char *> &parameters);
   bool RetroSingleQuotesFunction(const List<char *> &parameters);
+  bool RetroSurroundFunction(const List<char *> &parameters);
   bool RetroTitleCaseFunction(const List<char *> &parameters);
   bool RetroUpperCaseFunction(const List<char *> &parameters);
-  bool RetroSurroundFunction(const List<char *> &parameters);
   bool SetCaseFunction(const List<char *> &parameters);
   bool SetSpaceFunction(const List<char *> &parameters);
   bool ToggleDictionaryFunction(const List<char *> &parameters);
@@ -103,6 +107,9 @@ public:
 
 private:
   static void Reverse(StenoKeyCode *start, StenoKeyCode *end);
+
+  bool RetroWordCountHandler(void (StenoKeyCodeBuffer::*handler)(int),
+                             const List<char *> &parameters);
 };
 
 //---------------------------------------------------------------------------
