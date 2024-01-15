@@ -309,7 +309,7 @@ bool StenoReversePrefixDictionary::IsStrokeDefined(
     const StenoStroke *strokes, size_t prefixStrokeCount,
     size_t combinedStrokeCount) const {
   for (size_t i = prefixStrokeCount + 1; i <= combinedStrokeCount; ++i) {
-    if (dictionary->GetLookupProvider(strokes, i)) {
+    if (dictionary->HasOutline(strokes, i)) {
       return true;
     }
   }

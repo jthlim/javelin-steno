@@ -132,8 +132,8 @@ bool StenoReverseDictionaryLookup::HasResult(const StenoStroke *c,
 
 //---------------------------------------------------------------------------
 
-const StenoDictionary *
-StenoDictionary::GetLookupProvider(const StenoDictionaryLookup &lookup) const {
+const StenoDictionary *StenoDictionary::GetDictionaryForOutline(
+    const StenoDictionaryLookup &lookup) const {
   StenoDictionaryLookupResult lookupResult = Lookup(lookup);
   bool result = lookupResult.IsValid();
   lookupResult.Destroy();

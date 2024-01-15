@@ -18,7 +18,7 @@ public:
   using StenoDictionary::Lookup;
 
   virtual const StenoDictionary *
-  GetLookupProvider(const StenoDictionaryLookup &lookup) const;
+  GetDictionaryForOutline(const StenoDictionaryLookup &lookup) const;
 
   virtual void ReverseLookup(StenoReverseDictionaryLookup &result) const;
 

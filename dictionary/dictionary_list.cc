@@ -46,14 +46,14 @@ StenoDictionaryList::Lookup(const StenoDictionaryLookup &lookup) const {
   return StenoDictionaryLookupResult::CreateInvalid();
 }
 
-const StenoDictionary *StenoDictionaryList::GetLookupProvider(
+const StenoDictionary *StenoDictionaryList::GetDictionaryForOutline(
     const StenoDictionaryLookup &lookup) const {
   for (const StenoDictionaryListEntry &entry : dictionaries) {
     if (entry.combinedMaximumOutlineLength < lookup.length) {
       continue;
     }
 
-    const StenoDictionary *result = entry->GetLookupProvider(lookup);
+    const StenoDictionary *result = entry->GetDictionaryForOutline(lookup);
     if (result) {
       return result;
     }

@@ -90,7 +90,7 @@ void StenoReverseMapDictionary::FilterResult(
   size_t newCount = 0;
   for (size_t i = 0; i < result.resultCount; ++i) {
     const StenoReverseDictionaryResult &r = result.results[i];
-    if (dictionary->GetLookupProvider(r.strokes, r.length) ==
+    if (dictionary->GetDictionaryForOutline(r.strokes, r.length) ==
         r.lookupProvider) {
       result.results[newCount++] = r;
     }

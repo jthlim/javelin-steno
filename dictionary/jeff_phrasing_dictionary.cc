@@ -292,7 +292,7 @@ StenoJeffPhrasingDictionary::Lookup(const StenoDictionaryLookup &lookup) const {
   return StenoDictionaryLookupResult::CreateDynamicString(parts.CreatePhrase());
 }
 
-const StenoDictionary *StenoJeffPhrasingDictionary::GetLookupProvider(
+const StenoDictionary *StenoJeffPhrasingDictionary::GetDictionaryForOutline(
     const StenoDictionaryLookup &lookup) const {
   assert(lookup.length == 1);
 

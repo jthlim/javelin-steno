@@ -149,7 +149,7 @@ StenoUserDictionary::Lookup(const StenoDictionaryLookup &lookup) const {
   }
 }
 
-const StenoDictionary *StenoUserDictionary::GetLookupProvider(
+const StenoDictionary *StenoUserDictionary::GetDictionaryForOutline(
     const StenoDictionaryLookup &lookup) const {
   size_t entryIndex = lookup.hash;
   for (;;) {

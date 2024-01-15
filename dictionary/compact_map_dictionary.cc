@@ -158,7 +158,7 @@ StenoCompactMapDictionary::Lookup(const StenoDictionaryLookup &lookup) const {
   }
 }
 
-const StenoDictionary *StenoCompactMapDictionary::GetLookupProvider(
+const StenoDictionary *StenoCompactMapDictionary::GetDictionaryForOutline(
     const StenoDictionaryLookup &lookup) const {
 
   const StenoMapDictionaryStrokesDefinition &strokesDefinition =

@@ -9,9 +9,9 @@ StenoWrappedDictionary::Lookup(const StenoDictionaryLookup &lookup) const {
   return dictionary->Lookup(lookup);
 }
 
-const StenoDictionary *StenoWrappedDictionary::GetLookupProvider(
+const StenoDictionary *StenoWrappedDictionary::GetDictionaryForOutline(
     const StenoDictionaryLookup &lookup) const {
-  return dictionary->GetLookupProvider(lookup);
+  return dictionary->GetDictionaryForOutline(lookup);
 }
 
 void StenoWrappedDictionary::ReverseLookup(

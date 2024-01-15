@@ -13,7 +13,7 @@ public:
   using StenoDictionary::Lookup;
 
   virtual const StenoDictionary *
-  GetLookupProvider(const StenoDictionaryLookup &lookup) const;
+  GetDictionaryForOutline(const StenoDictionaryLookup &lookup) const;
 
   virtual const char *GetName() const;
 

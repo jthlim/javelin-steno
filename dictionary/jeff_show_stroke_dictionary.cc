@@ -48,7 +48,7 @@ StenoJeffShowStrokeDictionary::LookupInternal(
   return StenoDictionaryLookupResult::CreateDynamicString(text);
 }
 
-const StenoDictionary *StenoJeffShowStrokeDictionary::GetLookupProvider(
+const StenoDictionary *StenoJeffShowStrokeDictionary::GetDictionaryForOutline(
     const StenoDictionaryLookup &lookup) const {
   const StenoStroke *strokes = lookup.strokes;
   if (strokes[0] != trigger) {

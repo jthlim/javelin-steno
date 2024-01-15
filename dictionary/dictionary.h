@@ -198,11 +198,14 @@ public:
   }
 
   virtual const StenoDictionary *
-  GetLookupProvider(const StenoDictionaryLookup &lookup) const;
+  GetDictionaryForOutline(const StenoDictionaryLookup &lookup) const;
 
-  inline const StenoDictionary *GetLookupProvider(const StenoStroke *strokes,
-                                                  size_t length) const {
-    return GetLookupProvider(StenoDictionaryLookup(strokes, length));
+  inline const StenoDictionary *
+  GetDictionaryForOutline(const StenoStroke *strokes, size_t length) const {
+    return GetDictionaryForOutline(StenoDictionaryLookup(strokes, length));
+  }
+  inline bool HasOutline(const StenoStroke *strokes, size_t length) const {
+    return GetDictionaryForOutline(strokes, length) != nullptr;
   }
 
   virtual void ReverseLookup(StenoReverseDictionaryLookup &result) const;

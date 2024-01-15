@@ -112,9 +112,7 @@ void StenoReverseAutoSuffixDictionary::ProcessReverseAutoSuffix(
 
           if ((strokes[length - 1] & autoSuffix->stroke).IsNotEmpty()) {
             strokes[length - 1] &= ~autoSuffix->stroke;
-            const StenoDictionary *lookupProvider =
-                dictionary->GetLookupProvider(strokes, length);
-            if (lookupProvider) {
+            if (dictionary->HasOutline(strokes, length)) {
               break;
             }
             strokes[length - 1] |= autoSuffix->stroke;
@@ -129,8 +127,7 @@ void StenoReverseAutoSuffixDictionary::ProcessReverseAutoSuffix(
       memcpy(strokesWithSuffixStroke, strokes, length * sizeof(StenoStroke));
       strokesWithSuffixStroke[length] = reverseAutoSuffix.autoSuffix->stroke;
 
-      if (dictionary->GetLookupProvider(strokesWithSuffixStroke, length + 1) ==
-          nullptr) {
+      if (!dictionary->HasOutline(strokesWithSuffixStroke, length + 1)) {
         result.AddResult(strokesWithSuffixStroke, length + 1, this);
       }
     }
@@ -149,7 +146,7 @@ bool StenoReverseAutoSuffixDictionary::CanAutoSuffixLookup(
 bool StenoReverseAutoSuffixDictionary::HasPrefixLookup(
     const StenoStroke *strokes, size_t length) const {
   for (size_t strokeLength = 1; strokeLength <= length; ++strokeLength) {
-    if (dictionary->GetLookupProvider(strokes, strokeLength)) {
+    if (dictionary->HasOutline(strokes, strokeLength)) {
       return true;
     }
   }
@@ -160,7 +157,7 @@ bool StenoReverseAutoSuffixDictionary::HasPrefixLookup(
 // Returns true if the last stroke lookup is valid.
 bool StenoReverseAutoSuffixDictionary::HasSuffixLookup(
     const StenoStroke *strokes, size_t length) const {
-  return dictionary->GetLookupProvider(strokes + length - 1, 1) != nullptr;
+  return dictionary->HasOutline(strokes + length - 1, 1);
 }
 
 //---------------------------------------------------------------------------

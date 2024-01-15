@@ -41,7 +41,7 @@ StenoUnicodeDictionary::Lookup(const StenoDictionaryLookup &lookup) const {
   }
 }
 
-const StenoDictionary *StenoUnicodeDictionary::GetLookupProvider(
+const StenoDictionary *StenoUnicodeDictionary::GetDictionaryForOutline(
     const StenoDictionaryLookup &lookup) const {
   assert(lookup.length == 1);
   const StenoStroke stroke = lookup.strokes[0];

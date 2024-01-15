@@ -254,7 +254,7 @@ StenoEmilySymbolsDictionary::Lookup(const StenoDictionaryLookup &lookup) const {
       Str::Join(leftSpace, text, r1, r2, r2, rightSpace, capitalize, nullptr));
 }
 
-const StenoDictionary *StenoEmilySymbolsDictionary::GetLookupProvider(
+const StenoDictionary *StenoEmilySymbolsDictionary::GetDictionaryForOutline(
     const StenoDictionaryLookup &lookup) const {
   assert(lookup.length == 1);
   const StenoStroke c = lookup.strokes[0];
