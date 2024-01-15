@@ -20,6 +20,7 @@ void StenoReverseMapDictionary::ReverseLookup(
     AddMapDictionaryData(result);
   }
   dictionary->ReverseLookup(result);
+  FilterResult(result);
 }
 
 void StenoReverseMapDictionary::AddMapDictionaryData(
@@ -80,6 +81,21 @@ void StenoReverseMapDictionary::AddMapDictionaryData(
       return;
     }
   }
+}
+
+// This ensures that the results are not conflicting with higher priority
+// dictionaries.
+void StenoReverseMapDictionary::FilterResult(
+    StenoReverseDictionaryLookup &result) const {
+  size_t newCount = 0;
+  for (size_t i = 0; i < result.resultCount; ++i) {
+    const StenoReverseDictionaryResult &r = result.results[i];
+    if (dictionary->GetLookupProvider(r.strokes, r.length) ==
+        r.lookupProvider) {
+      result.results[newCount++] = r;
+    }
+  }
+  result.resultCount = newCount;
 }
 
 void StenoReverseMapDictionary::BuildIndex() {

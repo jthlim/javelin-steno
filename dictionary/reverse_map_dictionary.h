@@ -25,6 +25,7 @@ private:
   size_t indexSize = 0;
 
   void AddMapDictionaryData(StenoReverseDictionaryLookup &result) const;
+  void FilterResult(StenoReverseDictionaryLookup &result) const;
 
   void BuildIndex();
 };
