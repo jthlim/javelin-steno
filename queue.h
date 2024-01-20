@@ -1,22 +1,24 @@
 //---------------------------------------------------------------------------
 
 #pragma once
-#include <stddef.h>
-#include <stdlib.h>
+#include "malloc_allocate.h"
 
 //---------------------------------------------------------------------------
 
-template <typename T> struct QueueEntry {
+template <typename T> struct QueueEntry : public JavelinMallocAllocate {
   QueueEntry *next;
 
   T data;
 
-  static void *operator new(size_t n) noexcept { return malloc(n); }
+  using JavelinMallocAllocate::operator new;
+  using JavelinMallocAllocate::operator delete;
+
   static void *operator new(size_t n, size_t extra) noexcept {
-    return malloc(n + extra);
+    return operator new(n + extra);
   }
-  static void operator delete(void *p) noexcept { free(p); }
-  static void operator delete(void *p, size_t extra) noexcept { free(p); }
+  static void operator delete(void *p, size_t extra) noexcept {
+    operator delete(p);
+  }
 };
 
 template <typename T> class Queue {

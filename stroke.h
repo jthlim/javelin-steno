@@ -118,6 +118,15 @@ public:
 
   static uint32_t PopCount(const StenoStroke *strokes, size_t length);
   static uint32_t Hash(const StenoStroke *strokes, size_t length);
+  static bool Equals(const StenoStroke *a, const StenoStroke *b,
+                     size_t length) {
+    for (size_t i = 0; i < length; ++i) {
+      if (a[i] != b[i]) {
+        return false;
+      }
+    }
+    return true;
+  }
 
   static const size_t MAX_STRING_LENGTH = 32;
 

@@ -355,6 +355,7 @@ void StenoSegmentBuilder::WriteRetroTransform(const StenoSegmentList &segments,
       switch (c) {
       case '\0':
         return;
+      case 'd':
       case 'l':
         for (size_t i = startingSegmentIndex; i < segments.GetCount(); ++i) {
           if (i != startingSegmentIndex) {
@@ -374,6 +375,7 @@ void StenoSegmentBuilder::WriteRetroTransform(const StenoSegmentList &segments,
           }
         }
         break;
+      case 'o':
       case 's': {
         char buffer[StenoStroke::MAX_STRING_LENGTH];
         const StenoStroke *strokes =

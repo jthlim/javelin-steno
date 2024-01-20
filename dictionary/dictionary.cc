@@ -122,7 +122,7 @@ bool StenoReverseDictionaryLookup::HasResult(const StenoStroke *c,
   for (size_t i = 0; i < resultCount; ++i) {
     const StenoReverseDictionaryResult &result = results[i];
     if (result.length == length &&
-        memcmp(result.strokes, c, length * sizeof(StenoStroke)) == 0) {
+        StenoStroke::Equals(result.strokes, c, length)) {
       return true;
     }
   }

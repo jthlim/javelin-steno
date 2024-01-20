@@ -17,8 +17,8 @@ Transforms the prior `n` translations using `format`.
 
 Format has the following special keys:
 
-- `%s`: Stroke list
-- `%l`: Lookup results
+- `%s` or `%o`: Stroke list
+- `%l` or `%d`: Lookup results
 - `%t`: Text results
 
 Example usage:
