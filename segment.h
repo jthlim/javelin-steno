@@ -66,6 +66,8 @@ public:
 
   static size_t GetCommonStartingSegmentsCount(StenoSegmentList &a,
                                                StenoSegmentList &b);
+
+  bool HasManualStateChange() const;
 };
 
 //---------------------------------------------------------------------------

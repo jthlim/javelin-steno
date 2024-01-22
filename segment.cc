@@ -49,6 +49,14 @@ size_t StenoSegmentList::GetCommonStartingSegmentsCount(StenoSegmentList &a,
   return commonPrefixCount;
 }
 
+bool StenoSegmentList::HasManualStateChange() const {
+  for (const StenoSegment &segment : *this) {
+    if (segment.state->isManualStateChange) {
+      return true;
+    }
+  }
+  return false;
+}
 //---------------------------------------------------------------------------
 
 class StenoSegmentListTokenizer final : public StenoTokenizer {
