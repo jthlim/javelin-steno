@@ -525,18 +525,35 @@ char *StenoEngine::PrintSegmentSuggestion(size_t wordCount,
     return lookup;
   }
 
-  testSegments.Reset();
-
   bool printSuggestion = *spaceRemoved != '\0' &&
                          (startSegmentIndex != segmentList.GetCount() - 1 ||
                           strokeThresholdCount != 1);
 
   if (state.joinNext) {
-    char *prefixLookup = Str::Asprintf("{%s^}", spaceRemoved);
-    free(lookup);
-    lookup = prefixLookup;
-    spaceRemoved = prefixLookup;
+    bool usePrefixSyntax = true;
+    if (segmentList.GetCount() >= 2) {
+      // If the previous state is the same, and the new state ends in a space,
+      // truncate the space and treat it as a non-space lookup.
+      if (*segmentList.Back().state == state) {
+        size_t length = Str::Length(spaceRemoved);
+        if (length != 0 && spaceRemoved[length - 1] == ' ') {
+          spaceRemoved = Str::DupN(spaceRemoved, length - 1);
+          free(lookup);
+          lookup = spaceRemoved;
+          usePrefixSyntax = false;
+        }
+      }
+    }
+
+    if (usePrefixSyntax) {
+      char *prefixLookup = Str::Asprintf("{%s^}", spaceRemoved);
+      free(lookup);
+      lookup = prefixLookup;
+      spaceRemoved = prefixLookup;
+    }
   }
+
+  testSegments.Reset();
 
   if (!printSuggestion && lastLookup) {
     char *lastLookupSpaceRemoved =

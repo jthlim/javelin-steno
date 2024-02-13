@@ -39,7 +39,7 @@ private:
 template <size_t N> class BitField {
 private:
   static const size_t BITS_PER_WORD = 8 * sizeof(size_t);
-  static const size_t NUMBER_OF_WORDS = (N + BITS_PER_WORD - 1) / BITS_PER_WORD;
+  static const size_t WORD_COUNT = (N + BITS_PER_WORD - 1) / BITS_PER_WORD;
 
 public:
   bool IsSet(size_t n) const {
@@ -48,7 +48,7 @@ public:
 
   bool IsAnySet() const {
     size_t v = data[0];
-    for (size_t i = 1; i < NUMBER_OF_WORDS; ++i) {
+    for (size_t i = 1; i < WORD_COUNT; ++i) {
       v |= data[i];
     }
     return v != 0;
@@ -56,7 +56,7 @@ public:
 
   size_t PopCount() const {
     size_t result = 0;
-    for (size_t i = 0; i < NUMBER_OF_WORDS; ++i) {
+    for (size_t i = 0; i < WORD_COUNT; ++i) {
       result += Bit<sizeof(size_t)>::PopCount(data[i]);
     }
     return result;
@@ -77,14 +77,14 @@ public:
   }
 
   void ClearAll() {
-    for (size_t i = 0; i < NUMBER_OF_WORDS; ++i) {
+    for (size_t i = 0; i < WORD_COUNT; ++i) {
       data[i] = 0;
     }
   }
 
   BitField operator~() const {
     BitField result;
-    for (size_t i = 0; i < NUMBER_OF_WORDS; ++i) {
+    for (size_t i = 0; i < WORD_COUNT; ++i) {
       result.data[i] = ~data[i];
     }
     return result;
@@ -92,7 +92,7 @@ public:
 
   BitField operator&(const BitField &other) const {
     BitField result;
-    for (size_t i = 0; i < NUMBER_OF_WORDS; ++i) {
+    for (size_t i = 0; i < WORD_COUNT; ++i) {
       result.data[i] = data[i] & other.data[i];
     }
     return result;
@@ -100,7 +100,7 @@ public:
 
   BitField operator|(const BitField &other) const {
     BitField result;
-    for (size_t i = 0; i < NUMBER_OF_WORDS; ++i) {
+    for (size_t i = 0; i < WORD_COUNT; ++i) {
       result.data[i] = data[i] | other.data[i];
     }
     return result;
@@ -108,26 +108,26 @@ public:
 
   BitField operator^(const BitField &other) const {
     BitField result;
-    for (size_t i = 0; i < NUMBER_OF_WORDS; ++i) {
+    for (size_t i = 0; i < WORD_COUNT; ++i) {
       result.data[i] = data[i] ^ other.data[i];
     }
     return result;
   }
 
   void operator&=(const BitField &other) {
-    for (size_t i = 0; i < NUMBER_OF_WORDS; ++i) {
+    for (size_t i = 0; i < WORD_COUNT; ++i) {
       data[i] &= other.data[i];
     }
   }
 
   void operator|=(const BitField &other) {
-    for (size_t i = 0; i < NUMBER_OF_WORDS; ++i) {
+    for (size_t i = 0; i < WORD_COUNT; ++i) {
       data[i] |= other.data[i];
     }
   }
 
   void operator^=(const BitField &other) {
-    for (size_t i = 0; i < NUMBER_OF_WORDS; ++i) {
+    for (size_t i = 0; i < WORD_COUNT; ++i) {
       data[i] ^= other.data[i];
     }
   }
@@ -140,17 +140,15 @@ public:
   }
 
   friend BitFieldIterator begin(const BitField &b) {
-    return BitFieldIterator(b.data, b.data + NUMBER_OF_WORDS);
+    return BitFieldIterator(b.data, b.data + WORD_COUNT);
   }
 
-  friend const size_t *end(const BitField &b) {
-    return b.data + NUMBER_OF_WORDS;
-  }
+  friend const size_t *end(const BitField &b) { return b.data + WORD_COUNT; }
 
-  static const size_t NUMBER_OF_BITS = N;
+  static const size_t BIT_COUNT = N;
 
 private:
-  size_t data[NUMBER_OF_WORDS];
+  size_t data[WORD_COUNT];
 };
 
 //---------------------------------------------------------------------------

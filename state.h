@@ -2,6 +2,7 @@
 
 #pragma once
 #include <stdint.h>
+#include <string.h>
 
 //---------------------------------------------------------------------------
 
@@ -37,6 +38,10 @@ struct StenoState {
   }
 
   void Reset();
+
+  bool operator==(const StenoState &a) const {
+    return memcmp(this, &a, sizeof(*this)) == 0;
+  }
 };
 
 //---------------------------------------------------------------------------

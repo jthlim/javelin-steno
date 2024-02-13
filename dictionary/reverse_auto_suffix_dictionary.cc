@@ -138,6 +138,9 @@ bool StenoReverseAutoSuffixDictionary::CanAutoSuffixLookup(
     const StenoStroke *strokes, size_t length) const {
   // For autosuffix to be used, there must be no valid shorter lookup,
   // or there must be no valid suffix lookup
+  if (dictionary->HasOutline(strokes, length)) {
+    return false;
+  }
   return !HasPrefixLookup(strokes, length) ||
          (length > 1 && !HasSuffixLookup(strokes, length));
 }
@@ -145,7 +148,7 @@ bool StenoReverseAutoSuffixDictionary::CanAutoSuffixLookup(
 // Returns true if there's any valid prefix lookup.
 bool StenoReverseAutoSuffixDictionary::HasPrefixLookup(
     const StenoStroke *strokes, size_t length) const {
-  for (size_t strokeLength = 1; strokeLength <= length; ++strokeLength) {
+  for (size_t strokeLength = 1; strokeLength < length; ++strokeLength) {
     if (dictionary->HasOutline(strokes, strokeLength)) {
       return true;
     }

@@ -274,9 +274,10 @@ void StenoReversePrefixDictionary::AddPrefixReverseLookup(
 
       if (prefixLookup->HasResults()) {
         for (size_t p = 0; p < prefixLookup->resultCount; p++) {
-          StenoReverseDictionaryResult &prefix = prefixLookup->results[p];
+          const StenoReverseDictionaryResult &prefix = prefixLookup->results[p];
           for (size_t s = 0; s < suffixLookup->resultCount; ++s) {
-            StenoReverseDictionaryResult &suffix = suffixLookup->results[s];
+            const StenoReverseDictionaryResult &suffix =
+                suffixLookup->results[s];
             size_t combinedLength = prefix.length + suffix.length;
             if (combinedLength >= result.strokeThreshold) {
               continue;
