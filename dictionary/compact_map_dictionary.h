@@ -6,7 +6,8 @@
 
 //---------------------------------------------------------------------------
 
-class StenoCompactMapDictionary final : public StenoDictionary {
+class StenoCompactMapDictionary final : public StenoDictionary,
+                                        public JavelinMallocAllocate {
 public:
   StenoCompactMapDictionary(const StenoDictionaryDefinition &definition)
       : StenoDictionary(definition.maximumOutlineLength),

@@ -1,6 +1,7 @@
 //---------------------------------------------------------------------------
 
 #pragma once
+#include <stdint.h>
 
 //---------------------------------------------------------------------------
 
@@ -20,6 +21,8 @@ public:
   }
 
   void operator++() { p += 4; }
+
+  const uint8_t *GetPointer() const { return p; }
 
 private:
   const uint8_t *p;

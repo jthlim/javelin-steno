@@ -199,7 +199,8 @@ void StenoReversePrefixDictionary::ReverseLookup(
     StenoReverseDictionaryLookup &result) const {
   dictionary->ReverseLookup(result);
   if (result.strokeThreshold > 2 &&
-      result.prefixLookupDepth < MAXIMUM_REVERSE_PREFIX_DEPTH) {
+      result.prefixLookupDepth < MAXIMUM_REVERSE_PREFIX_DEPTH &&
+      !Str::Contains(result.lookup, ' ')) {
     ReverseLookupContext context;
     context.left = prefixes;
     context.right = prefixes + prefixCount;
@@ -260,15 +261,7 @@ void StenoReversePrefixDictionary::AddPrefixReverseLookup(
               (const char *)test.prefix);
 
       // Add map lookup hints.
-      // Given format '{prefix^}\0', skip 4 extra bytes to get to prefix strokes
-      MapDataLookup mapDataLookup = test.prefix->mapDataLookup;
-      while (mapDataLookup.HasData()) {
-        prefixLookup->AddMapDataLookup(mapDataLookup.GetData(baseAddress));
-        if (prefixLookup->IsMapDataLookupFull()) {
-          break;
-        }
-        ++mapDataLookup;
-      }
+      prefixLookup->AddMapDataLookup(test.prefix->mapDataLookup, baseAddress);
 
       dictionary->ReverseLookup(*prefixLookup);
 

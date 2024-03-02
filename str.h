@@ -12,6 +12,9 @@ public:
   static bool IsFingerSpellingCommand(const char *p);
   static bool IsJoinPrevious(const char *p);
   static bool ContainsKeyCode(const char *p);
+  static bool Contains(const char *p, char c) {
+    return strchr(p, c) != nullptr;
+  }
 
   static char *Join(const char *p, ...);
 

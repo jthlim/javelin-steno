@@ -1,6 +1,7 @@
 //---------------------------------------------------------------------------
 
 #include "dictionary.h"
+#include "map_data_lookup.h"
 
 #include "../console.h"
 #include <stddef.h>
@@ -128,6 +129,17 @@ bool StenoReverseDictionaryLookup::HasResult(const StenoStroke *c,
   }
 
   return false;
+}
+
+void StenoReverseDictionaryLookup::AddMapDataLookup(
+    MapDataLookup mapDataLookup, const uint8_t *baseAddress) {
+  while (mapDataLookup.HasData()) {
+    AddMapDataLookup(mapDataLookup.GetData(baseAddress));
+    if (IsMapDataLookupFull()) {
+      return;
+    }
+    ++mapDataLookup;
+  }
 }
 
 //---------------------------------------------------------------------------

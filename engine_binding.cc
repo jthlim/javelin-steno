@@ -201,4 +201,28 @@ void StenoEngine::LookupStroke_Binding(void *context, const char *commandLine) {
   }
 }
 
+void StenoEngine::ProcessStrokes_Binding(void *context,
+                                         const char *commandLine) {
+  const char *strokeStart = strchr(commandLine, ' ');
+  if (!strokeStart) {
+    Console::Printf("ERR No stroke specified\n\n");
+    return;
+  }
+
+  StrokeListParser parser;
+  if (!parser.Parse(strokeStart + 1)) {
+    Console::Printf("ERR Cannot parse stroke near %s\n\n", parser.failureOrEnd);
+    return;
+  }
+
+  Console::SendOk();
+
+  ConsoleWriter::Push(&ConsoleWriter::instance);
+  StenoEngine *engine = (StenoEngine *)context;
+  for (size_t i = 0; i < parser.length; ++i) {
+    engine->ProcessStroke(parser.strokes[i]);
+  }
+  ConsoleWriter::Pop();
+}
+
 //---------------------------------------------------------------------------

@@ -1,6 +1,7 @@
 //---------------------------------------------------------------------------
 
 #pragma once
+#include "malloc_allocate.h"
 #include <assert.h>
 #include <stdint.h>
 #include <stdlib.h>
@@ -8,7 +9,7 @@
 
 //---------------------------------------------------------------------------
 
-class _ListBase {
+class _ListBase : public JavelinMallocAllocate {
 public:
   ~_ListBase() { free(buffer); }
   _ListBase(_ListBase &&other) {

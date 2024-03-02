@@ -1,6 +1,7 @@
 //---------------------------------------------------------------------------
 
 #pragma once
+#include "../malloc_allocate.h"
 #include "../str.h"
 #include "../stroke.h"
 #include <stddef.h>
@@ -8,6 +9,7 @@
 
 //---------------------------------------------------------------------------
 
+class MapDataLookup;
 class StenoDictionary;
 
 //---------------------------------------------------------------------------
@@ -136,7 +138,7 @@ struct StenoReverseDictionaryResult {
   const StenoDictionary *lookupProvider;
 };
 
-class StenoReverseDictionaryLookup {
+class StenoReverseDictionaryLookup : public JavelinMallocAllocate {
 private:
   static const size_t MAX_MAP_DATA_LOOKUP_COUNT = 24;
 
@@ -176,6 +178,8 @@ public:
   bool IsMapDataLookupFull() const {
     return mapDataLookupCount >= MAX_MAP_DATA_LOOKUP_COUNT;
   }
+  void AddMapDataLookup(MapDataLookup mapDataLookup,
+                        const uint8_t *baseAddress);
 
   StenoReverseDictionaryResult results[24];
 

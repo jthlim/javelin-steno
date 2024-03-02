@@ -1,3 +1,4 @@
+
 //---------------------------------------------------------------------------
 
 #include "reverse_map_dictionary.h"
@@ -54,32 +55,41 @@ void StenoReverseMapDictionary::AddMapDictionaryData(
       --wordStart;
     }
 
-    int compare = strcmp(result.lookup, (const char *)wordStart);
+    // Inline strcmp because the end of the match is useful.
+    const uint8_t *p = wordStart;
+    const uint8_t *l = (const uint8_t *)result.lookup;
+    int compare;
+    int cp;
+    for (;;) {
+      int cl = *l++;
+      cp = *p++;
+
+      compare = cp - cl;
+      if (compare != 0 || cp == 0) {
+        break;
+      }
+    }
+
     if (compare < 0) {
       right = wordStart;
-    } else if (compare > 0) {
-      while (*mid != 0xff) {
-        ++mid;
-      }
-      left = mid + 1;
-    } else {
-      const uint8_t *p = wordStart;
-      while (*p != 0) {
-        ++p;
-      }
-      ++p;
-
-      MapDataLookup mapDataLookup(p);
-      while (mapDataLookup.HasData()) {
-        result.AddMapDataLookup(mapDataLookup.GetData(baseAddress));
-        if (result.IsMapDataLookupFull()) {
-          break;
-        }
-        ++mapDataLookup;
-      }
-
-      return;
+      continue;
     }
+
+    while (cp != 0) {
+      cp = *p++;
+    }
+
+    if (compare > 0) {
+      MapDataLookup lookup(p);
+      while (lookup.HasData()) {
+        ++lookup;
+      }
+      left = lookup.GetPointer() + 1;
+      continue;
+    }
+
+    result.AddMapDataLookup(p, baseAddress);
+    return;
   }
 }
 
