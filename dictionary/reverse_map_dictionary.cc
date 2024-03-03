@@ -64,7 +64,7 @@ void StenoReverseMapDictionary::AddMapDictionaryData(
       int cl = *l++;
       cp = *p++;
 
-      compare = cp - cl;
+      compare = cl - cp;
       if (compare != 0 || cp == 0) {
         break;
       }

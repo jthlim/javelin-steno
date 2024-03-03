@@ -793,7 +793,7 @@ void Script::ExecutionContext::Run(Script &script, size_t offset) {
                                     max);
       }
       case SF::SET_GPIO_PIN_DUTY_CYCLE: {
-        int dutyCycle = script.Pop();
+        int dutyCycle = (int)script.Pop();
         int pin = (int)script.Pop();
         Gpio::SetPinDutyCycle(pin, dutyCycle);
         continue;

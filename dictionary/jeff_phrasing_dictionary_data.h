@@ -1,5 +1,6 @@
 //---------------------------------------------------------------------------
 
+#pragma once
 #include "../stroke.h"
 #include <assert.h>
 #include <stddef.h>

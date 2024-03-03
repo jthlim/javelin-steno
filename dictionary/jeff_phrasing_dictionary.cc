@@ -7,6 +7,7 @@
 #include "../stroke.h"
 #include "dictionary.h"
 #include "jeff_phrasing_dictionary_data.h"
+#include "jeff_phrasing_dictionary_generated.h"
 #include <assert.h>
 
 //---------------------------------------------------------------------------
@@ -379,7 +380,7 @@ void StenoJeffPhrasingDictionary::RecurseCheckReverseLookup(
       }
 
       componentMask |= ComponentMask::STARTER;
-      hash += 0x710e300b; // CRC for "\\0"
+      hash += STARTER_REPLACEMENT_CRC; // CRC for "\\0"
 
       // Reverse empty starter check.
       for (const JeffPhrasingReverseHashMapEntry *entry =
@@ -401,12 +402,12 @@ void StenoJeffPhrasingDictionary::RecurseCheckReverseLookup(
       // Recurse, once with no change, then proceed with \\1 appended.
       RecurseCheckReverseLookup(context, p, stroke, hash, componentMask,
                                 modeMask);
-      hash += 0x0609009d; // CRC for "\\1"
+      hash += MIDDLE_REPLACEMENT_CRC; // CRC for "\\1"
     }
 
     if ((componentMask & ComponentMask::VERB) == 0) {
-      hash += 0x9f005127; // CRC for "\\2"
-      hash += 0xe80761b1; // CRC for "\\3"
+      hash += VERB_REPLACEMENT_CRC;   // CRC for "\\2"
+      hash += SUFFIX_REPLACEMENT_CRC; // CRC for "\\3"
 
       if ((modeMask & (ModeMask::PRESENT | ModeMask::PAST)) == ModeMask::PAST) {
         stroke |= StenoStroke(StrokeMask::DR);
@@ -520,13 +521,6 @@ inline bool IsValidPhraseCharacter(int c) {
   //         || c == 'I'
   //         || c == '\''
   //         || c == ' ';
-  static const uint8_t VALID_CHARACTERS[32] = {
-      0x00, 0x00, 0x00, 0x00, 0x81, 0x00, 0x00, 0x00, //
-      0x00, 0x02, 0x00, 0x00, 0xfe, 0xff, 0xfd, 0x07, //
-      0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, //
-      0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, //
-  };
-
   return (VALID_CHARACTERS[c / 8] & (1 << c % 8)) != 0;
 }
 
