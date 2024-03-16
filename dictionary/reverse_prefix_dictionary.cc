@@ -18,16 +18,16 @@ public:
   virtual void AddPrefix(const uint8_t *prefix) = 0;
 };
 
-class CountTextBlockHandler
-    : public StenoReversePrefixDictionary::TextBlockHandler {
+class StenoReversePrefixDictionary::CountTextBlockHandler
+    : public TextBlockHandler {
 public:
   virtual void AddPrefix(const uint8_t *prefix) { ++counter; }
 
   size_t counter = 0;
 };
 
-class PopulateTextBlockHandler
-    : public StenoReversePrefixDictionary::TextBlockHandler {
+class StenoReversePrefixDictionary::PopulateTextBlockHandler
+    : public TextBlockHandler {
 public:
   PopulateTextBlockHandler(StenoReversePrefixDictionary::Prefix *prefixes)
       : prefixes(prefixes) {}
@@ -152,10 +152,10 @@ void StenoReversePrefixDictionary::ProcessTextBlock(const uint8_t *textBlock,
     if (*wordStart >= '{') {
       right = wordStart;
     } else {
-      while (*wordStart != 0xff) {
-        ++wordStart;
+      while (*mid != 0xff) {
+        ++mid;
       }
-      left = wordStart + 1;
+      left = mid + 1;
     }
   }
 
@@ -166,6 +166,7 @@ void StenoReversePrefixDictionary::ProcessTextBlock(const uint8_t *textBlock,
     const uint8_t *wordStart = p;
     int braceCounter = 0;
     int caretCounter = 0;
+    bool hasSpace = false;
 
     // Search for '\0'
     while (*p) {
@@ -175,23 +176,32 @@ void StenoReversePrefixDictionary::ProcessTextBlock(const uint8_t *textBlock,
       if (*p == '^') {
         ++caretCounter;
       }
+      if (*p == ' ') {
+        hasSpace = true;
+        while (*p) {
+          ++p;
+        }
+        break;
+      }
       ++p;
     }
     ++p;
 
     // Word end.
-    if (braceCounter == 2 && caretCounter == 1 && *wordStart == '{' &&
-        p[-2] == '}' && p[-3] == '^' && p - wordStart > 4) {
+    if (!hasSpace && braceCounter == 2 && caretCounter == 1 &&
+        *wordStart == '{' && p[-2] == '}' && p[-3] == '^' &&
+        p - wordStart > 4) {
       // Since the textblock is already sorted, entries added here are
       // sorted too.
       handler.AddPrefix(wordStart);
     }
 
     // Search for end marker
-    while (*p != 0xff) {
-      ++p;
+    MapDataLookup data(p);
+    while (data.HasData()) {
+      ++data;
     }
-    ++p;
+    p = data.GetPointer() + 1;
   }
 }
 
@@ -266,11 +276,10 @@ void StenoReversePrefixDictionary::AddPrefixReverseLookup(
       dictionary->ReverseLookup(*prefixLookup);
 
       if (prefixLookup->HasResults()) {
-        for (size_t p = 0; p < prefixLookup->resultCount; p++) {
-          const StenoReverseDictionaryResult &prefix = prefixLookup->results[p];
-          for (size_t s = 0; s < suffixLookup->resultCount; ++s) {
-            const StenoReverseDictionaryResult &suffix =
-                suffixLookup->results[s];
+        for (const StenoReverseDictionaryResult &prefix :
+             prefixLookup->results) {
+          for (const StenoReverseDictionaryResult &suffix :
+               suffixLookup->results) {
             size_t combinedLength = prefix.length + suffix.length;
             if (combinedLength >= result.strokeThreshold) {
               continue;

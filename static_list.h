@@ -1,0 +1,66 @@
+//---------------------------------------------------------------------------
+
+#pragma once
+#include <assert.h>
+#include <stdlib.h>
+
+//---------------------------------------------------------------------------
+
+template <typename T, size_t CAPACITY> class StaticList {
+public:
+  bool IsEmpty() const { return count == 0; }
+  bool IsNotEmpty() const { return count != 0; }
+  bool IsFull() const { return count == CAPACITY; }
+  size_t GetCount() const { return count; }
+  void SetCount(size_t value) { count = value; }
+  size_t GetCapacity() const { return CAPACITY; }
+  void Reset() { count = 0; }
+
+  T &Add() {
+    assert(count < CAPACITY);
+    return data[count++];
+  }
+  void Add(const T &value) {
+    assert(count < CAPACITY);
+    data[count++] = value;
+  }
+  void PopFront() {
+    assert(count > 0);
+    memmove(&data[0], &data[1], sizeof(T) * --count);
+  }
+  T &PopBack() {
+    assert(count > 0);
+    return data[--count];
+  }
+
+  T &operator[](size_t i) {
+    assert(i < count);
+    return data[i];
+  }
+  const T &operator[](size_t i) const {
+    assert(i < count);
+    return data[i];
+  }
+
+  T &Front() { return data[0]; }
+  const T &Front() const { return data[0]; }
+  T &Back() { return data[count - 1]; }
+  const T &Back() const { return data[count - 1]; }
+
+  void Sort(int (*comparator)(const T *a, const T *b)) {
+    qsort(data, count, sizeof(T),
+          (int (*)(const void *, const void *))comparator);
+  }
+
+  friend const T *begin(const StaticList &list) { return list.data; }
+  friend const T *end(const StaticList &list) { return list.data + list.count; }
+
+  friend T *begin(StaticList &list) { return list.data; }
+  friend T *end(StaticList &list) { return list.data + list.count; }
+
+private:
+  size_t count = 0;
+  T data[CAPACITY];
+};
+
+//---------------------------------------------------------------------------

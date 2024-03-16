@@ -650,6 +650,7 @@ bool StenoKeyCodeBuffer::ConsoleFunction(const List<char *> &parameters) {
 
 TEST_BEGIN("StenoKeyCodeBuffer: Backspace() should give expected results") {
   StenoKeyCodeBuffer buffer;
+  buffer.Reset();
   buffer.buffer[0] = StenoKeyCode('a', StenoCaseMode::NORMAL);
   buffer.buffer[1] = StenoKeyCode('b', StenoCaseMode::NORMAL);
   buffer.buffer[2] = StenoKeyCode::CreateRawKeyCodePress(KeyCode::F1);
@@ -669,6 +670,7 @@ TEST_END
 
 TEST_BEGIN("StenoKeyCodeBuffer: RetroReplaceSpace") {
   StenoKeyCodeBuffer buffer;
+  buffer.Reset();
   buffer.buffer[0] = StenoKeyCode('a', StenoCaseMode::NORMAL);
   buffer.buffer[1] = StenoKeyCode('b', StenoCaseMode::NORMAL);
   buffer.buffer[2] = StenoKeyCode(' ', StenoCaseMode::NORMAL);
@@ -686,6 +688,7 @@ TEST_END
 
 TEST_BEGIN("StenoKeyCodeBuffer: RetroReplaceSpace _") {
   StenoKeyCodeBuffer buffer;
+  buffer.Reset();
   buffer.buffer[0] = StenoKeyCode('a', StenoCaseMode::NORMAL);
   buffer.buffer[1] = StenoKeyCode('b', StenoCaseMode::NORMAL);
   buffer.buffer[2] = StenoKeyCode(' ', StenoCaseMode::NORMAL);
@@ -704,6 +707,7 @@ TEST_END
 
 TEST_BEGIN("StenoKeyCodeBuffer: RetroReplaceSpace <>") {
   StenoKeyCodeBuffer buffer;
+  buffer.Reset();
   buffer.buffer[0] = StenoKeyCode('a', StenoCaseMode::NORMAL);
   buffer.buffer[1] = StenoKeyCode('b', StenoCaseMode::NORMAL);
   buffer.buffer[2] = StenoKeyCode(' ', StenoCaseMode::NORMAL);

@@ -24,6 +24,9 @@ public:
 
   // Threadsafe version of strndup.
   static char *DupN(const char *p, size_t length);
+  static char *DupN(const uint8_t *p, size_t length) {
+    return DupN((const char *)p, length);
+  }
 
   // Threadsafe version of strdup.
   static char *Dup(const char *p);

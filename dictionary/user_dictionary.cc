@@ -801,8 +801,8 @@ static void VerifyReverseLookup(StenoUserDictionary &userDictionary,
                                 const char *text, StenoStroke expected) {
   StenoReverseDictionaryLookup lookup(2, text);
   userDictionary.ReverseLookup(lookup);
-  assert(lookup.resultCount > 0);
-  for (size_t i = 0; i < lookup.resultCount; ++i) {
+  assert(lookup.results.IsNotEmpty() > 0);
+  for (size_t i = 0; i < lookup.results.GetCount(); ++i) {
     assert(lookup.results[i].length == 1);
     if (lookup.strokes[i] == expected) {
       return;
@@ -815,7 +815,7 @@ static void VerifyNoReverseLookup(StenoUserDictionary &userDictionary,
                                   const char *text) {
   StenoReverseDictionaryLookup lookup(2, text);
   userDictionary.ReverseLookup(lookup);
-  assert(lookup.resultCount == 0);
+  assert(lookup.results.IsEmpty());
 }
 
 TEST_BEGIN("StenoUserDictionary will dump Json dictionary") {

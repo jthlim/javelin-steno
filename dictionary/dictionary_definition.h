@@ -3,6 +3,7 @@
 #pragma once
 #include "../list.h"
 #include "../stroke.h"
+#include "../xip_pointer.h"
 #include <stddef.h>
 
 //---------------------------------------------------------------------------
@@ -125,7 +126,7 @@ struct StenoDictionaryCollection {
   bool _padding7;
   const uint8_t *textBlock;
   size_t textBlockLength;
-  const StenoDictionaryDefinition *const dictionaries[];
+  const XipPointer<StenoDictionaryDefinition> dictionaries[];
 
   void AddDictionariesToList(List<StenoDictionaryListEntry> &list) const;
 };

@@ -152,30 +152,24 @@ void StenoEngine::ReverseLookup(StenoReverseDictionaryLookup &result) const {
   ExternalFlashSentry externalFlashSentry;
 
   dictionary.ReverseLookup(result);
-  if (result.resultCount == 0) {
+  if (result.results.IsEmpty()) {
     return;
   }
 
-  qsort(result.results, result.resultCount,
-        sizeof(StenoReverseDictionaryResult),
-        [](const void *a, const void *b) -> int {
-          const StenoReverseDictionaryResult *pa =
-              (const StenoReverseDictionaryResult *)a;
-          const StenoReverseDictionaryResult *pb =
-              (const StenoReverseDictionaryResult *)b;
+  result.results.Sort([](const StenoReverseDictionaryResult *pa,
+                         const StenoReverseDictionaryResult *pb) -> int {
+    if (pa->length != pb->length) {
+      return (int)pa->length - (int)pb->length;
+    }
 
-          if (pa->length != pb->length) {
-            return (int)pa->length - (int)pb->length;
-          }
+    uint32_t popCountA = StenoStroke::PopCount(pa->strokes, pa->length);
+    uint32_t popCountB = StenoStroke::PopCount(pb->strokes, pb->length);
+    if (popCountA != popCountB) {
+      return (int)popCountA - (int)popCountB;
+    }
 
-          uint32_t popCountA = StenoStroke::PopCount(pa->strokes, pa->length);
-          uint32_t popCountB = StenoStroke::PopCount(pb->strokes, pb->length);
-          if (popCountA != popCountB) {
-            return (int)popCountA - (int)popCountB;
-          }
-
-          return int(intptr_t(pa) - intptr_t(pb));
-        });
+    return int(intptr_t(pa) - intptr_t(pb));
+  });
 }
 
 void StenoEngine::SendText(const uint8_t *p) {

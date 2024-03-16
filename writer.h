@@ -15,7 +15,7 @@ public:
   virtual void WriteByte(char c) { Write(&c, 1); }
   virtual void Write(const char *data, size_t length) = 0;
 
-  void Printf(const char *p, ...) __attribute__((format(printf, 2, 3)));
+  void Printf(const char *p, ...);
   void Vprintf(const char *p, va_list args);
 
 private:

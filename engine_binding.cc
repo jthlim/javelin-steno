@@ -7,6 +7,18 @@
 
 //---------------------------------------------------------------------------
 
+void StenoEngine::CreateSegments(StenoSegmentList &segmentList,
+                                 StenoSegmentBuilder &segmentBuilder,
+                                 const StenoStroke *strokes, size_t length) {
+  segmentBuilder.Reset();
+  segmentBuilder.Add(strokes, length);
+
+  BuildSegmentContext context(segmentList, dictionary, orthography);
+  segmentBuilder.CreateSegments(context);
+}
+
+//---------------------------------------------------------------------------
+
 void StenoEngine::SetSpacePosition_Binding(void *context,
                                            const char *commandLine) {
   const char *stenoMode = strchr(commandLine, ' ');
@@ -160,6 +172,8 @@ void StenoEngine::Lookup_Binding(void *context, const char *commandLine) {
     return;
   }
 
+  ExternalFlashSentry externalFlashSentry;
+
   ++lookup;
   StenoReverseDictionaryLookup result(
       StenoReverseDictionaryLookup::MAX_STROKE_THRESHOLD, lookup);
@@ -167,10 +181,35 @@ void StenoEngine::Lookup_Binding(void *context, const char *commandLine) {
   engine->ReverseLookup(result);
 
   Console::Printf("[");
-  for (size_t i = 0; i < result.resultCount; ++i) {
+  for (size_t i = 0; i < result.results.GetCount(); ++i) {
     const StenoReverseDictionaryResult &lookup = result.results[i];
-    Console::Printf(i == 0 ? "\n  \"%T\"" : ",\n  \"%T\"", lookup.strokes,
-                    lookup.length);
+
+    StenoSegmentList segmentList;
+    ConversionBuffer &buffer = engine->previousConversionBuffer;
+    engine->CreateSegments(segmentList, buffer.segmentBuilder, lookup.strokes,
+                           lookup.length);
+
+    Console::Printf(i == 0 ? "\n{" : ",\n{", nullptr);
+    Console::Printf("\"outline\":\"%T\",", lookup.strokes, lookup.length);
+    Console::Printf("\"definition\":\"");
+
+    bool isFirst = true;
+    StenoTokenizer *tokenizer = segmentList.CreateTokenizer();
+    while (tokenizer->HasMore()) {
+      Console::Printf(isFirst ? "%J" : " %J", tokenizer->GetNext().text);
+      isFirst = false;
+    }
+    delete tokenizer;
+    Console::Printf("\",");
+
+    const char *name = lookup.lookupProvider->GetName();
+    if (*name == '#') {
+      Console::Printf("\"dictionary\":\"#\"");
+    } else {
+      Console::Printf("\"dictionary\":\"%J\"", name);
+    }
+
+    Console::Printf("}");
   }
 
   Console::Printf("\n]\n\n");
@@ -195,9 +234,32 @@ void StenoEngine::LookupStroke_Binding(void *context, const char *commandLine) {
       engine->dictionary.Lookup(parser.strokes, parser.length);
 
   if (result.IsValid()) {
-    Console::Printf("\"%J\"\n\n", result.GetText());
+    const StenoDictionary *provider =
+        engine->dictionary.GetDictionaryForOutline(parser.strokes,
+                                                   parser.length);
+    Console::Printf("{\"definition\":\"%J\",\"dictionary\":\"%J\"}\n\n",
+                    result.GetText(), provider->GetName());
   } else {
-    Console::Printf("null\n\n");
+
+    StenoSegmentList segmentList;
+    ConversionBuffer &buffer = engine->previousConversionBuffer;
+    engine->CreateSegments(segmentList, buffer.segmentBuilder, parser.strokes,
+                           parser.length);
+
+    if (!buffer.segmentBuilder.HasRawStroke()) {
+      Console::Printf("{\"definition\":\"");
+
+      bool isFirst = true;
+      StenoTokenizer *tokenizer = segmentList.CreateTokenizer();
+      while (tokenizer->HasMore()) {
+        Console::Printf(isFirst ? "%J" : " %J", tokenizer->GetNext().text);
+        isFirst = false;
+      }
+      delete tokenizer;
+      Console::Printf("\",\"dictionary\":\"#\"}\n\n");
+    } else {
+      Console::Printf("null\n\n");
+    }
   }
 }
 

@@ -180,6 +180,11 @@ void IWriter::Vprintf(const char *p, va_list args) {
       Reverse(start, end);
       break;
 
+    case 'c':
+      *start = va_arg(args, int);
+      end = start + 1;
+      break;
+
     case 's':
       start = va_arg(args, char *);
       end = start + Str::Length(start);

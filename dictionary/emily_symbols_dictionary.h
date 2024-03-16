@@ -19,6 +19,8 @@ public:
   virtual const StenoDictionary *
   GetDictionaryForOutline(const StenoDictionaryLookup &lookup) const;
 
+  virtual void ReverseLookup(StenoReverseDictionaryLookup &result) const;
+
   virtual const char *GetName() const;
   virtual bool PrintDictionary(const char *name, bool hasData) const;
 

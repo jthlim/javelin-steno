@@ -145,9 +145,7 @@ void Console::Dump(const void *data, size_t length) {
     line[62 + pos] = c < 32 || c >= 128 ? '.' : c;
   }
 
-  if (length & 15) {
-    Console::Write(line, 80);
-  }
+  Console::Write(line, 80);
 }
 
 __attribute__((weak)) void Console::Flush() {}

@@ -340,12 +340,27 @@ void StenoEngine::PrintPaperTape(
     Console::Printf(",\"undo\":%zu", undoCount);
   }
 
+  if (commonIndex + 1 == nextSegmentList.GetCount()) {
+    const StenoSegment &segment = nextSegmentList[commonIndex];
+    size_t strokeStartIndex =
+        nextConversionBuffer.segmentBuilder.GetStateIndex(segment.state);
+
+    const StenoStroke *strokes =
+        nextConversionBuffer.segmentBuilder.GetStrokes(strokeStartIndex);
+    size_t length = segment.strokeLength;
+    const StenoDictionary *provider =
+        dictionary.GetDictionaryForOutline(strokes, length);
+    if (provider != nullptr) {
+      Console::Printf(",\"dictionary\":\"%J\"", provider->GetName());
+    }
+  }
+
   StenoSegmentList newSegments;
   for (size_t i = commonIndex; i < nextSegmentList.GetCount(); ++i) {
     newSegments.Add(nextSegmentList[i]);
   }
 
-  Console::Printf(",\"text\":\"");
+  Console::Printf(",\"definition\":\"");
   StenoTokenizer *tokenizer = newSegments.CreateTokenizer();
   bool isFirstToken = true;
   while (tokenizer->HasMore()) {
@@ -423,7 +438,7 @@ void StenoEngine::PrintSuggestion(const char *p, size_t arrowPrefixCount,
                                   size_t strokeThreshold) const {
   StenoReverseDictionaryLookup result(strokeThreshold, p);
   ReverseLookup(result);
-  if (result.resultCount == 0) {
+  if (result.results.IsEmpty()) {
     return;
   }
 
@@ -433,7 +448,7 @@ void StenoEngine::PrintSuggestion(const char *p, size_t arrowPrefixCount,
                   "\"text\":\"%J\","
                   "\"outlines\":[",
                   arrowPrefixCount, p);
-  for (size_t i = 0; i < result.resultCount; ++i) {
+  for (size_t i = 0; i < result.results.GetCount(); ++i) {
     const StenoReverseDictionaryResult &lookup = result.results[i];
     Console::Printf(i == 0 ? "\"%T\"" : ",\"%T\"", lookup.strokes,
                     lookup.length);

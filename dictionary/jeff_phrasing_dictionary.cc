@@ -1621,7 +1621,7 @@ TEST_END
 TEST_BEGIN("JeffPhrasing: Omit past tense lookup when present exists") {
   StenoReverseDictionaryLookup lookup(2, "to read");
   StenoJeffPhrasingDictionary::instance.ReverseLookup(lookup);
-  assert(lookup.resultCount == 2);
+  assert(lookup.results.GetCount() == 2);
 }
 TEST_END
 
@@ -1629,15 +1629,15 @@ TEST_BEGIN("JeffPhrasing: Include all past tense results when there's no "
            "present tense") {
   StenoReverseDictionaryLookup lookup(2, "you were");
   StenoJeffPhrasingDictionary::instance.ReverseLookup(lookup);
-  assert(lookup.resultCount == 2);
+  assert(lookup.results.GetCount() == 2);
 }
 TEST_END
 
 static void VerifyReverseLookup(const char *text, StenoStroke expected) {
   StenoReverseDictionaryLookup lookup(2, text);
   StenoJeffPhrasingDictionary::instance.ReverseLookup(lookup);
-  assert(lookup.resultCount > 0);
-  for (size_t i = 0; i < lookup.resultCount; ++i) {
+  assert(lookup.results.IsNotEmpty());
+  for (size_t i = 0; i < lookup.results.GetCount(); ++i) {
     assert(lookup.results[i].length == 1);
     if (lookup.strokes[i] == expected) {
       return;

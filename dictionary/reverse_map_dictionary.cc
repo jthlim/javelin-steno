@@ -17,7 +17,7 @@ StenoReverseMapDictionary::StenoReverseMapDictionary(
 
 void StenoReverseMapDictionary::ReverseLookup(
     StenoReverseDictionaryLookup &result) const {
-  if (result.mapDataLookupCount == 0) {
+  if (result.mapDataLookups.IsEmpty()) {
     AddMapDictionaryData(result);
   }
   dictionary->ReverseLookup(result);
@@ -98,14 +98,13 @@ void StenoReverseMapDictionary::AddMapDictionaryData(
 void StenoReverseMapDictionary::FilterResult(
     StenoReverseDictionaryLookup &result) const {
   size_t newCount = 0;
-  for (size_t i = 0; i < result.resultCount; ++i) {
-    const StenoReverseDictionaryResult &r = result.results[i];
+  for (const StenoReverseDictionaryResult &r : result.results) {
     if (dictionary->GetDictionaryForOutline(r.strokes, r.length) ==
         r.lookupProvider) {
       result.results[newCount++] = r;
     }
   }
-  result.resultCount = newCount;
+  result.results.SetCount(newCount);
 }
 
 void StenoReverseMapDictionary::BuildIndex() {

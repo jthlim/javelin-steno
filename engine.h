@@ -130,6 +130,10 @@ private:
   void ResetState();
   static void Pump();
 
+  void CreateSegments(StenoSegmentList &segmentList,
+                      StenoSegmentBuilder &builder, const StenoStroke *strokes,
+                      size_t length);
+
   void CreateSegments(size_t sourceStrokeCount, ConversionBuffer &buffer,
                       size_t conversionLimit, StenoSegmentList &segmentList);
   void CreateSegmentsUsingLongerResult(

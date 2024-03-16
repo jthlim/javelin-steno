@@ -17,6 +17,7 @@ constexpr JeffPhrasingSimpleStarter SIMPLE_STARTERS[] = {
     {StenoStroke(0x162 /*SWHA*/), {VerbForm::UNSPECIFIED, "what"}},
     {StenoStroke(0xe2 /*SWHR*/), {VerbForm::UNSPECIFIED, "where"}},
     {StenoStroke(0x262 /*SWHO*/), {VerbForm::UNSPECIFIED, "who"}},
+    {StenoStroke(0x362 /*SWHAO*/), {VerbForm::UNSPECIFIED, "why"}},
     {StenoStroke(0x72 /*SPWH*/), {VerbForm::UNSPECIFIED, "but"}},
     {StenoStroke(0x96 /*STPR*/), {VerbForm::UNSPECIFIED, "for"}},
 

@@ -86,9 +86,8 @@ void StenoReverseAutoSuffixDictionary::ProcessReverseAutoSuffix(
   free(withoutSuffix);
 
   // 4. Verify that lookup up with suffix produces an invalid lookup.
-  for (size_t i = 0; i < resultWithoutSuffix.resultCount; ++i) {
-    const StenoReverseDictionaryResult &lookup = resultWithoutSuffix.results[i];
-
+  for (const StenoReverseDictionaryResult &lookup :
+       resultWithoutSuffix.results) {
     size_t length = lookup.length;
     StenoStroke *strokes = lookup.strokes;
 

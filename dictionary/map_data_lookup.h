@@ -1,6 +1,7 @@
 //---------------------------------------------------------------------------
 
 #pragma once
+#include "../xip_pointer.h"
 #include <stdint.h>
 
 //---------------------------------------------------------------------------
@@ -10,13 +11,10 @@ public:
   MapDataLookup() = default;
   MapDataLookup(const uint8_t *p) : p(p) {}
 
-  bool HasData() const { return *p != 0xff; }
+  bool HasData() const { return *XipPointer(p) != 0xff; }
   const void *GetData(const uint8_t *baseAddress) const {
-#if defined(JAVELIN_PLATFORM_NRF5_SDK)
-    // Avoid XIP anomaly 216.
-    asm volatile("dsb");
-#endif
-    uint32_t offset = p[0] | (p[1] << 7) | (p[2] << 14) + (p[3] << 21);
+    const uint8_t *d = XipPointer(p);
+    uint32_t offset = d[0] | (d[1] << 7) | (d[2] << 14) + (d[3] << 21);
     return baseAddress + offset;
   }
 

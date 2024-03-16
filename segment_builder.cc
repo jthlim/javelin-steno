@@ -265,6 +265,8 @@ StenoSegment StenoSegmentBuilder::AutoSuffixTest(BuildSegmentContext &context,
 
 void StenoSegmentBuilder::AddRawStroke(BuildSegmentContext &context,
                                        size_t &offset) {
+  hasRawStroke = true;
+
   char buffer[StenoStroke::MAX_STRING_LENGTH];
 
   strokes[offset].ToString(buffer);

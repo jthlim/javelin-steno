@@ -175,8 +175,8 @@ const StenoDictionary *StenoFullMapDictionary::GetDictionaryForOutline(
 
 void StenoFullMapDictionary::ReverseLookup(
     StenoReverseDictionaryLookup &result) const {
-  for (size_t i = 0; i < result.mapDataLookupCount; ++i) {
-    ReverseLookup(result, result.mapDataLookup[i]);
+  for (const void *data : result.mapDataLookups) {
+    ReverseLookup(result, data);
   }
 }
 

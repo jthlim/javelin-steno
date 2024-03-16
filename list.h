@@ -34,11 +34,6 @@ protected:
 
   void Add(const void *data, size_t elementSize);
 
-  void Sort(int (*comparator)(const void *a, const void *b),
-            size_t elementSize) {
-    qsort(buffer, count, elementSize, comparator);
-  }
-
   size_t count;
   uint8_t *buffer;
 
@@ -58,10 +53,9 @@ public:
 
   void Add(const T &v) { _ListBase::Add(&v, sizeof(T)); }
 
-  // Wanted this to be const T *a, const T *b, but running into
-  // type conversion issues.
-  void Sort(int (*comparator)(const void *a, const void *b)) {
-    _ListBase::Sort(comparator, sizeof(T));
+  void Sort(int (*comparator)(const T *, const T *)) {
+    qsort(buffer, count, sizeof(T),
+          (int (*)(const void *, const void *))comparator);
   }
 
   void Pop() { --count; }

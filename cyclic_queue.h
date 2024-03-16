@@ -20,6 +20,7 @@ public:
   bool IsFull() const { return end - start == N; }
   bool IsNotFull() const { return end - start != N; }
   size_t GetCount() const { return end - start; }
+  size_t GetCapacity() const { return N; }
   size_t GetAvailable() const { return N - GetCount(); }
 
   T &Add() { return data[end++ & (N - 1)]; }

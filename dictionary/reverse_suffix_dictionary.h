@@ -5,32 +5,37 @@
 
 //---------------------------------------------------------------------------
 
-class StenoReversePrefixDictionary final : public StenoWrappedDictionary {
+class StenoCompiledOrthography;
+
+//---------------------------------------------------------------------------
+
+class StenoReverseSuffixDictionary final : public StenoWrappedDictionary {
 public:
-  StenoReversePrefixDictionary(StenoDictionary *dictionary,
+  StenoReverseSuffixDictionary(StenoDictionary *dictionary,
                                const uint8_t *baseAddress,
-                               const uint8_t *textBlock,
-                               size_t textBlockLength);
+                               const uint8_t *textBlock, size_t textBlockLength,
+                               const StenoCompiledOrthography &orthography,
+                               const StenoDictionary *prefixDictionary);
 
   virtual void ReverseLookup(StenoReverseDictionaryLookup &result) const;
   virtual const char *GetName() const;
 
-  struct Prefix;
+  struct Suffix;
   class TextBlockHandler;
   class CountTextBlockHandler;
   class PopulateTextBlockHandler;
 
 private:
-  static const size_t MAXIMUM_REVERSE_PREFIX_DEPTH = 2;
-
   const uint8_t *baseAddress;
 
-  size_t prefixCount;
-  const Prefix *prefixes;
+  size_t suffixCount;
+  const Suffix *suffixes;
+  const StenoCompiledOrthography &orthography;
+  const StenoDictionary *prefixDictionary;
 
   struct ReverseLookupContext;
 
-  void AddPrefixReverseLookup(ReverseLookupContext &context,
+  void AddSuffixReverseLookup(ReverseLookupContext &context,
                               StenoReverseDictionaryLookup &result) const;
 
   static void ProcessTextBlock(const uint8_t *textBlock, size_t textBlockLength,

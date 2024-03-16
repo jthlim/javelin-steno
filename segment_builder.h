@@ -33,10 +33,27 @@ class StenoSegmentBuilder {
 public:
   bool IsNotEmpty() const { return count != 0; }
 
+  void Reset() {
+    hasRawStroke = false;
+    count = 0;
+  }
+
   void Add(StenoStroke stroke, StenoState state) {
     strokes[count] = stroke;
     states[count] = state;
     ++count;
+  }
+
+  void Add(const StenoStroke *strokes, size_t length) {
+    count = length;
+
+    memcpy(this->strokes, strokes, length * sizeof(StenoStroke));
+
+    StenoState emptyState;
+    emptyState.Reset();
+    for (size_t i = 0; i < length; ++i) {
+      states[i] = emptyState;
+    }
   }
 
   void TransferStartFrom(const StenoSegmentBuilder &source, size_t count);
@@ -51,12 +68,16 @@ public:
     return &states[index];
   }
 
+  const StenoStroke *GetStrokes(size_t index) const { return &strokes[index]; }
+
   bool HasModifiedStrokeHistory() const { return hasModifiedStrokeHistory; }
+  bool HasRawStroke() const { return hasRawStroke; }
 
   static const size_t BUFFER_SIZE = 256;
 
 private:
   bool hasModifiedStrokeHistory;
+  bool hasRawStroke;
   size_t count = 0;
   StenoStroke strokes[BUFFER_SIZE];
   StenoState states[BUFFER_SIZE];

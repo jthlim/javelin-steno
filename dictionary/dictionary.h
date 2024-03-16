@@ -2,6 +2,7 @@
 
 #pragma once
 #include "../malloc_allocate.h"
+#include "../static_list.h"
 #include "../str.h"
 #include "../stroke.h"
 #include <stddef.h>
@@ -147,7 +148,7 @@ public:
       : strokeThreshold(strokeThreshold), lookup(lookup),
         lookupLength(strlen(lookup)) {}
 
-  bool HasResults() const { return resultCount != 0; }
+  bool HasResults() const { return results.IsNotEmpty(); }
 
   void AddResult(const StenoStroke *strokes, size_t length,
                  const StenoDictionary *lookupProvider);
@@ -160,7 +161,6 @@ public:
   const char *lookup;
   size_t lookupLength;
 
-  size_t resultCount = 0;
   size_t strokesCount = 0;
 
   // Used to prevent recursing prefixes too far.
@@ -169,19 +169,12 @@ public:
   // These are used as an optimization for map lookup.
   // Since the first step of all map lookups is the same, do it once and
   // pass it down
-  size_t mapDataLookupCount = 0;
-  const void *mapDataLookup[MAX_MAP_DATA_LOOKUP_COUNT];
+  StaticList<const void *, MAX_MAP_DATA_LOOKUP_COUNT> mapDataLookups;
 
-  void AddMapDataLookup(const void *lookup) {
-    mapDataLookup[mapDataLookupCount++] = lookup;
-  }
-  bool IsMapDataLookupFull() const {
-    return mapDataLookupCount >= MAX_MAP_DATA_LOOKUP_COUNT;
-  }
   void AddMapDataLookup(MapDataLookup mapDataLookup,
                         const uint8_t *baseAddress);
 
-  StenoReverseDictionaryResult results[24];
+  StaticList<StenoReverseDictionaryResult, 24> results;
 
   static const size_t STROKE_COUNT = 64;
   StenoStroke strokes[STROKE_COUNT];

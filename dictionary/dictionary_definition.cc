@@ -13,11 +13,6 @@
 //---------------------------------------------------------------------------
 
 StenoDictionary *StenoDictionaryDefinition::Create() const {
-#if defined(JAVELIN_PLATFORM_NRF5_SDK)
-  // Avoid XIP anomaly 216.
-  asm volatile("dsb");
-#endif
-
   switch (type) {
   case StenoDictionaryType::COMPACT_MAP:
     return new StenoCompactMapDictionary(*this);

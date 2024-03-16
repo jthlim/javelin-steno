@@ -221,9 +221,7 @@ char *StenoCompiledOrthography::AddSuffix(const char *word,
   AddCandidates(candidates, word, suffix);
 
   if (candidates.IsNotEmpty()) {
-    candidates.Sort([](const void *pa, const void *pb) -> int {
-      const SuffixEntry *a = (const SuffixEntry *)pa;
-      const SuffixEntry *b = (const SuffixEntry *)pb;
+    candidates.Sort([](const SuffixEntry *a, const SuffixEntry *b) -> int {
       if (a->score != b->score) {
         return a->score - b->score;
       }

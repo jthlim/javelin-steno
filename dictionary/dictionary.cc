@@ -90,12 +90,11 @@ void StenoReverseDictionaryLookup::AddResult(
   }
 
   // Ignore if it'll overflow.
-  if (resultCount + 1 >= sizeof(results) / sizeof(*results) ||
-      strokesCount + length > STROKE_COUNT) {
+  if (results.IsFull() || strokesCount + length > STROKE_COUNT) {
     return;
   }
 
-  StenoReverseDictionaryResult &result = results[resultCount++];
+  StenoReverseDictionaryResult &result = results.Add();
   result.length = length;
   result.strokes = strokes + strokesCount;
   result.lookupProvider = lookupProvider;
@@ -105,23 +104,22 @@ void StenoReverseDictionaryLookup::AddResult(
 }
 
 size_t StenoReverseDictionaryLookup::GetMinimumStrokeCount() const {
-  if (resultCount == 0) {
+  if (results.IsEmpty()) {
     return 0;
   }
-  size_t result = results[0].length;
-  for (size_t i = 0; i < resultCount; i++) {
-    if (results[i].length < result) {
-      result = results[i].length;
+  size_t minimumLength = results[0].length;
+  for (const StenoReverseDictionaryResult &result : results) {
+    if (result.length < minimumLength) {
+      minimumLength = result.length;
     }
   }
-  return result;
+  return minimumLength;
 }
 
 bool StenoReverseDictionaryLookup::HasResult(const StenoStroke *c,
                                              size_t length) const {
 
-  for (size_t i = 0; i < resultCount; ++i) {
-    const StenoReverseDictionaryResult &result = results[i];
+  for (const StenoReverseDictionaryResult &result : results) {
     if (result.length == length &&
         StenoStroke::Equals(result.strokes, c, length)) {
       return true;
@@ -134,8 +132,8 @@ bool StenoReverseDictionaryLookup::HasResult(const StenoStroke *c,
 void StenoReverseDictionaryLookup::AddMapDataLookup(
     MapDataLookup mapDataLookup, const uint8_t *baseAddress) {
   while (mapDataLookup.HasData()) {
-    AddMapDataLookup(mapDataLookup.GetData(baseAddress));
-    if (IsMapDataLookupFull()) {
+    mapDataLookups.Add(mapDataLookup.GetData(baseAddress));
+    if (mapDataLookups.IsFull()) {
       return;
     }
     ++mapDataLookup;
