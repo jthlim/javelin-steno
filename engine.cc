@@ -156,20 +156,7 @@ void StenoEngine::ReverseLookup(StenoReverseDictionaryLookup &result) const {
     return;
   }
 
-  result.results.Sort([](const StenoReverseDictionaryResult *pa,
-                         const StenoReverseDictionaryResult *pb) -> int {
-    if (pa->length != pb->length) {
-      return (int)pa->length - (int)pb->length;
-    }
-
-    uint32_t popCountA = StenoStroke::PopCount(pa->strokes, pa->length);
-    uint32_t popCountB = StenoStroke::PopCount(pb->strokes, pb->length);
-    if (popCountA != popCountB) {
-      return (int)popCountA - (int)popCountB;
-    }
-
-    return int(intptr_t(pa) - intptr_t(pb));
-  });
+  result.SortResults();
 }
 
 void StenoEngine::SendText(const uint8_t *p) {

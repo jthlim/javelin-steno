@@ -208,7 +208,7 @@ void StenoReversePrefixDictionary::ProcessTextBlock(const uint8_t *textBlock,
 void StenoReversePrefixDictionary::ReverseLookup(
     StenoReverseDictionaryLookup &result) const {
   dictionary->ReverseLookup(result);
-  if (result.strokeThreshold > 2 &&
+  if (result.lookupLength > 1 && result.strokeThreshold > 2 &&
       result.prefixLookupDepth < MAXIMUM_REVERSE_PREFIX_DEPTH &&
       !Str::Contains(result.lookup, ' ')) {
     ReverseLookupContext context;
@@ -276,10 +276,17 @@ void StenoReversePrefixDictionary::AddPrefixReverseLookup(
       dictionary->ReverseLookup(*prefixLookup);
 
       if (prefixLookup->HasResults()) {
-        for (const StenoReverseDictionaryResult &prefix :
-             prefixLookup->results) {
-          for (const StenoReverseDictionaryResult &suffix :
-               suffixLookup->results) {
+        // Prioritize shorter results if they can't all fit in.
+        if (suffixLookup->results.GetCount() *
+                prefixLookup->results.GetCount() >
+            result.results.GetRemainingCapacity()) {
+          suffixLookup->SortResults();
+        }
+
+        for (const StenoReverseDictionaryResult &suffix :
+             suffixLookup->results) {
+          for (const StenoReverseDictionaryResult &prefix :
+               prefixLookup->results) {
             size_t combinedLength = prefix.length + suffix.length;
             if (combinedLength >= result.strokeThreshold) {
               continue;

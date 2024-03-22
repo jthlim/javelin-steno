@@ -174,6 +174,8 @@ public:
   void AddMapDataLookup(MapDataLookup mapDataLookup,
                         const uint8_t *baseAddress);
 
+  void SortResults();
+
   StaticList<StenoReverseDictionaryResult, 24> results;
 
   static const size_t STROKE_COUNT = 64;

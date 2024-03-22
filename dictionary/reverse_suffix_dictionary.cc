@@ -145,10 +145,10 @@ StenoReverseSuffixDictionary::StenoReverseSuffixDictionary(
           const uint8_t *sa = ((const Suffix *)a)->suffix;
           const uint8_t *sb = ((const Suffix *)b)->suffix;
           for (;;) {
-            if (*sa == '^') {
+            if (*sa == '{') {
               return -1;
             }
-            if (*sb == '^') {
+            if (*sb == '{') {
               return 1;
             }
             int v = *sa - *sb;
@@ -225,7 +225,9 @@ void StenoReverseSuffixDictionary::ProcessTextBlock(const uint8_t *textBlock,
     if (!hasSpace && braceCounter == 2 && caretCounter == 1 &&
         wordStart[0] == '{' && wordStart[1] == '^' && p[-2] == '}' &&
         p - wordStart > 4) {
-      handler.AddSuffix(wordStart, p - 3);
+      if (!orthography.IsAutoSuffix((const char *)wordStart)) {
+        handler.AddSuffix(wordStart, p - 3);
+      }
     }
 
     // Search for end marker
@@ -240,7 +242,8 @@ void StenoReverseSuffixDictionary::ProcessTextBlock(const uint8_t *textBlock,
 void StenoReverseSuffixDictionary::ReverseLookup(
     StenoReverseDictionaryLookup &result) const {
   dictionary->ReverseLookup(result);
-  if (result.strokeThreshold > 2 && !Str::Contains(result.lookup, ' ')) {
+  if (result.lookupLength > 1 && result.strokeThreshold > 2 &&
+      !Str::Contains(result.lookup, ' ')) {
     ReverseLookupContext context;
     context.left = suffixes;
     context.right = suffixes + suffixCount;

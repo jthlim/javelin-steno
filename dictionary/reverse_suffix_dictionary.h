@@ -38,8 +38,8 @@ private:
   void AddSuffixReverseLookup(ReverseLookupContext &context,
                               StenoReverseDictionaryLookup &result) const;
 
-  static void ProcessTextBlock(const uint8_t *textBlock, size_t textBlockLength,
-                               TextBlockHandler &handler);
+  void ProcessTextBlock(const uint8_t *textBlock, size_t textBlockLength,
+                        TextBlockHandler &handler);
 
   bool IsStrokeDefined(const StenoStroke *strokes, size_t prefixStrokeCount,
                        size_t combinedStrokeCount) const;

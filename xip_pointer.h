@@ -11,11 +11,6 @@
 // the address was recently loaded from XIP:
 //   ldr  r0, [r1]      // r1 points to XIP
 //   ldr  r2, [r0]      // r0 points to XIP, issue occurs.
-//
-// It has also been observed to occur when a read occurs from XIP and the
-// address is updated, even when the pointer itself was not from XIP:
-//  ldr   r0, [r1], #4  // r1 points to XIP, and is advanced 4 bytes.
-//  ldr   r2, [r1]      // Issue occurs here.
 template <typename T> class XipPointer {
 public:
   XipPointer() = default;
@@ -29,7 +24,19 @@ public:
     return result;
   }
 
+  XipPointer operator+(size_t t) { return XipPointer(p + t); }
   void operator+=(size_t t) { p += t; }
+
+  XipPointer &operator++() {
+    ++p;
+    return *this;
+  }
+  XipPointer &operator--() {
+    --p;
+    return *this;
+  }
+  XipPointer operator++(int) { return XipPointer(p++); }
+  XipPointer operator--(int) { return XipPointer(p--); }
 
 private:
   const T *p;

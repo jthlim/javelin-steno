@@ -14,6 +14,7 @@ public:
   size_t GetCount() const { return count; }
   void SetCount(size_t value) { count = value; }
   size_t GetCapacity() const { return CAPACITY; }
+  size_t GetRemainingCapacity() const { return CAPACITY - count; }
   void Reset() { count = 0; }
 
   T &Add() {
