@@ -82,9 +82,9 @@ struct PhrasingParts {
 //---------------------------------------------------------------------------
 
 const JeffPhrasingVariant *JeffPhrasingMap::Lookup(uint32_t key) const {
-  for (size_t i = 0; i < entryCount; ++i) {
-    if (entries[i].key == key) {
-      return &entries[i].value;
+  for (const JeffPhrasingMapEntry &entry : entries) {
+    if (entry.key == key) {
+      return &entry.value;
     }
   }
   return nullptr;
@@ -108,8 +108,8 @@ JeffPhrasingVariant::LookupWithDefaultOrSelf(uint32_t key) const {
 }
 
 bool JeffPhrasingDictionaryData::IsValidPhraseStroke(StenoStroke stroke) const {
-  for (size_t i = 0; i < nonPhraseStrokeCount; ++i) {
-    if (nonPhraseStrokes[i] == stroke) {
+  for (const StenoStroke &nonPhraseStroke : nonPhraseStrokes) {
+    if (nonPhraseStroke == stroke) {
       return false;
     }
   }
@@ -118,9 +118,9 @@ bool JeffPhrasingDictionaryData::IsValidPhraseStroke(StenoStroke stroke) const {
 
 const JeffPhrasingMiddle *
 JeffPhrasingDictionaryData::LookupSimpleStarter(StenoStroke stroke) const {
-  for (size_t i = 0; i < simpleStarterCount; ++i) {
-    if (simpleStarters[i].stroke == stroke) {
-      return &simpleStarters[i].middle;
+  for (const JeffPhrasingSimpleStarter &simpleStarter : simpleStarters) {
+    if (simpleStarter.stroke == stroke) {
+      return &simpleStarter.middle;
     }
   }
   return nullptr;
@@ -128,9 +128,9 @@ JeffPhrasingDictionaryData::LookupSimpleStarter(StenoStroke stroke) const {
 
 const JeffPhrasingPronoun *
 JeffPhrasingDictionaryData::LookupFullStarter(StenoStroke stroke) const {
-  for (size_t i = 0; i < fullStarterCount; ++i) {
-    if (fullStarters[i].stroke == stroke) {
-      return &fullStarters[i].pronoun;
+  for (const JeffPhrasingFullStarter &fullStarter : fullStarters) {
+    if (fullStarter.stroke == stroke) {
+      return &fullStarter.pronoun;
     }
   }
   return nullptr;
@@ -163,9 +163,9 @@ JeffPhrasingDictionaryData::LookupEnder(StenoStroke stroke) const {
 
 const JeffPhrasingStructure *
 JeffPhrasingDictionaryData::LookupUniqueStarter(StenoStroke stroke) const {
-  for (size_t i = 0; i < uniqueStarterCount; ++i) {
-    if (uniqueStarters[i].stroke == stroke) {
-      return &uniqueStarters[i].structure;
+  for (const JeffPhrasingStructureException &uniqueStarter : uniqueStarters) {
+    if (uniqueStarter.stroke == stroke) {
+      return &uniqueStarter.structure;
     }
   }
   return nullptr;
@@ -173,9 +173,10 @@ JeffPhrasingDictionaryData::LookupUniqueStarter(StenoStroke stroke) const {
 
 const JeffPhrasingStructure *
 JeffPhrasingDictionaryData::LookupStructureException(StenoStroke stroke) const {
-  for (size_t i = 0; i < structureExceptionCount; ++i) {
-    if (structureExceptions[i].stroke == stroke) {
-      return &structureExceptions[i].structure;
+  for (const JeffPhrasingStructureException &structureException :
+       structureExceptions) {
+    if (structureException.stroke == stroke) {
+      return &structureException.structure;
     }
   }
   return nullptr;

@@ -69,14 +69,10 @@ void StenoCompiledOrthography::CacheBlock::AddEntry(CacheEntry *entry) {
 //---------------------------------------------------------------------------
 
 constexpr StenoOrthography StenoOrthography::emptyOrthography = {
-    .ruleCount = 0,
-    .rules = nullptr,
-    .aliasCount = 0,
-    .aliases = nullptr,
-    .autoSuffixCount = 0,
-    .autoSuffixes = nullptr,
-    .reverseAutoSuffixCount = 0,
-    .reverseAutoSuffixes = nullptr,
+    .rules = {0, nullptr},
+    .aliases = {0, nullptr},
+    .autoSuffixes = {0, nullptr},
+    .reverseAutoSuffixes = {0, nullptr},
 };
 
 //---------------------------------------------------------------------------
@@ -94,7 +90,7 @@ struct StenoCompiledOrthography::SuffixEntry {
 void StenoOrthography::Print() const {
   Console::Printf("{"
                   "\n\t\"rules\": [");
-  for (size_t i = 0; i < ruleCount; ++i) {
+  for (size_t i = 0; i < rules.GetCount(); ++i) {
     if (i != 0) {
       Console::Printf(",");
     }
@@ -106,7 +102,7 @@ void StenoOrthography::Print() const {
   }
   Console::Printf("\n\t],"
                   "\n\t\"aliases\": [");
-  for (size_t i = 0; i < aliasCount; ++i) {
+  for (size_t i = 0; i < aliases.GetCount(); ++i) {
     if (i != 0) {
       Console::Printf(",");
     }
@@ -118,7 +114,7 @@ void StenoOrthography::Print() const {
   }
   Console::Printf("\n\t],"
                   "\n\t\"auto-suffix\": [");
-  for (size_t i = 0; i < autoSuffixCount; ++i) {
+  for (size_t i = 0; i < autoSuffixes.GetCount(); ++i) {
     if (i != 0) {
       Console::Printf(",");
     }
@@ -130,7 +126,7 @@ void StenoOrthography::Print() const {
   }
   Console::Printf("\n\t],"
                   "\n\t\"reverse-auto-suffix\": [");
-  for (size_t i = 0; i < reverseAutoSuffixCount; ++i) {
+  for (size_t i = 0; i < reverseAutoSuffixes.GetCount(); ++i) {
     if (i != 0) {
       Console::Printf(",");
     }
@@ -161,8 +157,8 @@ StenoCompiledOrthography::StenoCompiledOrthography(
 const Pattern *
 StenoCompiledOrthography::CreatePatterns(const StenoOrthography &orthography) {
   Pattern *patterns =
-      (Pattern *)malloc(sizeof(Pattern) * orthography.ruleCount);
-  for (size_t i = 0; i < orthography.ruleCount; ++i) {
+      (Pattern *)malloc(sizeof(Pattern) * orthography.rules.GetCount());
+  for (size_t i = 0; i < orthography.rules.GetCount(); ++i) {
     patterns[i] = Pattern::Compile(orthography.rules[i].testPattern);
   }
   return patterns;
@@ -203,9 +199,9 @@ char *StenoCompiledOrthography::AddSuffix(const char *word,
 #endif
   List<SuffixEntry> candidates;
 
-  for (size_t i = 0; i < data.aliasCount; ++i) {
-    if (Str::Eq(word, data.aliases[i].text)) {
-      AddCandidates(candidates, word, data.aliases[i].alias);
+  for (const StenoOrthographyAlias &alias : data.aliases) {
+    if (Str::Eq(word, alias.text)) {
+      AddCandidates(candidates, word, alias.alias);
     }
   }
 
@@ -237,7 +233,7 @@ char *StenoCompiledOrthography::AddSuffix(const char *word,
   }
 
   char *text = Str::Join(word, " ^", suffix, nullptr);
-  for (size_t i = 0; i < data.ruleCount; ++i) {
+  for (size_t i = 0; i < data.rules.GetCount(); ++i) {
     const PatternMatch &match = patterns[i].Match(text);
     if (!match.match) {
       continue;
@@ -264,7 +260,7 @@ void StenoCompiledOrthography::AddCandidates(List<SuffixEntry> &candidates,
 
   PatternQuickReject inputQuickReject(text);
 
-  for (size_t i = 0; i < data.ruleCount; ++i) {
+  for (size_t i = 0; i < data.rules.GetCount(); ++i) {
     const Pattern &pattern = patterns[i];
     if (!pattern.IsPossibleMatch(inputQuickReject)) {
       continue;
@@ -294,8 +290,8 @@ void StenoCompiledOrthography::AddCandidates(List<SuffixEntry> &candidates,
 }
 
 bool StenoCompiledOrthography::IsAutoSuffix(const char *definition) const {
-  for (size_t i = 0; i < data.autoSuffixCount; ++i) {
-    if (Str::Eq(data.autoSuffixes[i].text + 1, definition)) {
+  for (const StenoOrthographyAutoSuffix &autoSuffix : data.autoSuffixes) {
+    if (Str::Eq(autoSuffix.text + 1, definition)) {
       return true;
     }
   }
@@ -306,11 +302,11 @@ bool StenoCompiledOrthography::IsAutoSuffix(const char *definition) const {
 
 void StenoCompiledOrthography::PrintInfo() const {
   Console::Printf("    Orthography\n");
-  Console::Printf("      Rules: %zu\n", data.ruleCount);
-  Console::Printf("      Aliases: %zu\n", data.aliasCount);
-  Console::Printf("      Auto-suffixes: %zu\n", data.autoSuffixCount);
+  Console::Printf("      Rules: %zu\n", data.rules.GetCount());
+  Console::Printf("      Aliases: %zu\n", data.aliases.GetCount());
+  Console::Printf("      Auto-suffixes: %zu\n", data.autoSuffixes.GetCount());
   Console::Printf("      Reverse auto-suffixes: %zu\n",
-                  data.reverseAutoSuffixCount);
+                  data.reverseAutoSuffixes.GetCount());
 #if RECORD_ORTHOGRAPHY_CACHE_STATS
   Console::Printf("      Cache hits: %zu/%zu\n", cacheHits,
                   cacheHits + cacheMisses);

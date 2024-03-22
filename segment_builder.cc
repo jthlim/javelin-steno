@@ -229,8 +229,8 @@ StenoSegment StenoSegmentBuilder::AutoSuffixTest(BuildSegmentContext &context,
   while (length >= minimumLength) {
     if ((strokes[offset + length - 1] & orthography.autoSuffixMask)
             .IsNotEmpty()) {
-      for (size_t i = 0; i < orthography.autoSuffixCount; ++i) {
-        const StenoOrthographyAutoSuffix &suffix = orthography.autoSuffixes[i];
+      for (const StenoOrthographyAutoSuffix &suffix :
+           orthography.autoSuffixes) {
         if ((strokes[offset + length - 1] & suffix.stroke).IsEmpty()) {
           continue;
         }

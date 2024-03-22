@@ -20,8 +20,32 @@ public:
 
   const uint8_t *GetPointer() const { return p; }
 
+  const uint8_t *FindNextWordStart() const {
+    MapDataLookup lookup(p);
+    while (lookup.HasData()) {
+      ++lookup;
+    }
+    return lookup.p + 1;
+  }
+
 private:
   const uint8_t *p;
+};
+
+//---------------------------------------------------------------------------
+
+struct StenoTextBlock {
+  static const uint8_t *FindWordStart(const uint8_t *p) {
+    while (p[-1] != 0xff) {
+      --p;
+    }
+    return p;
+  }
+  static const uint8_t *FindNextWordStart(const uint8_t *p) {
+    while (*p++ != 0xff) {
+    }
+    return p;
+  }
 };
 
 //---------------------------------------------------------------------------

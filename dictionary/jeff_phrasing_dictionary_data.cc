@@ -1934,31 +1934,43 @@ constexpr StenoStroke NON_PHRASE_STROKES[] = {
 #include "jeff_phrasing_dictionary_generated.h"
 
 const JeffPhrasingDictionaryData JeffPhrasingDictionaryData::instance = {
-    .simpleStarterCount = sizeof(SIMPLE_STARTERS) / sizeof(*SIMPLE_STARTERS),
-    .simpleStarters = SIMPLE_STARTERS,
+    .simpleStarters =
+        {
+            sizeof(SIMPLE_STARTERS) / sizeof(*SIMPLE_STARTERS),
+            SIMPLE_STARTERS,
+        },
 
     .simplePronouns = SIMPLE_PRONOUNS,
     .simpleStructures = SIMPLE_STRUCTURES,
 
-    .fullStarterCount = sizeof(FULL_STARTERS) / sizeof(*FULL_STARTERS),
-    .fullStarters = FULL_STARTERS,
+    .fullStarters =
+        {
+            sizeof(FULL_STARTERS) / sizeof(*FULL_STARTERS),
+            FULL_STARTERS,
+        },
 
     .fullMiddles = MIDDLES,
     .fullStructures = STRUCTURES,
 
-    .structureExceptionCount =
-        sizeof(STRUCTURE_EXCEPTIONS) / sizeof(*STRUCTURE_EXCEPTIONS),
-    .structureExceptions = STRUCTURE_EXCEPTIONS,
+    .structureExceptions =
+        {
+            sizeof(STRUCTURE_EXCEPTIONS) / sizeof(*STRUCTURE_EXCEPTIONS),
+            STRUCTURE_EXCEPTIONS,
+        },
 
-    .endersCount = sizeof(ENDERS) / sizeof(*ENDERS),
-    .enders = ENDERS,
+    .enders = {sizeof(ENDERS) / sizeof(*ENDERS), ENDERS},
 
-    .nonPhraseStrokeCount =
-        sizeof(NON_PHRASE_STROKES) / sizeof(*NON_PHRASE_STROKES),
-    .nonPhraseStrokes = NON_PHRASE_STROKES,
+    .nonPhraseStrokes =
+        {
+            sizeof(NON_PHRASE_STROKES) / sizeof(*NON_PHRASE_STROKES),
+            NON_PHRASE_STROKES,
+        },
 
-    .uniqueStarterCount = sizeof(UNIQUE_STARTERS) / sizeof(*UNIQUE_STARTERS),
-    .uniqueStarters = UNIQUE_STARTERS,
+    .uniqueStarters =
+        {
+            sizeof(UNIQUE_STARTERS) / sizeof(*UNIQUE_STARTERS),
+            UNIQUE_STARTERS,
+        },
 
     .enderHashMapSize = ENDER_HASH_MAP_SIZE,
     .enderHashMap = ENDER_HASH_MAP,
@@ -2015,14 +2027,13 @@ void GenerateLookupTable() {
     enderMap[i] = nullptr;
   }
 
-  for (size_t i = 0; i < phrasingData.endersCount; ++i) {
-    const JeffPhrasingEnder *ender = &phrasingData.enders[i];
-    size_t index = ender->stroke.Hash() & (HASH_SIZE - 1);
+  for (const JeffPhrasingEnder &ender : phrasingData.enders) {
+    size_t index = ender.stroke.Hash() & (HASH_SIZE - 1);
 
     while (enderMap[index] != nullptr) {
       index = (index + 1) & (HASH_SIZE - 1);
     }
-    enderMap[index] = ender;
+    enderMap[index] = &ender;
   }
 
   printf("const size_t ENDER_HASH_MAP_SIZE = %zu;\n", HASH_SIZE);
@@ -2031,7 +2042,7 @@ void GenerateLookupTable() {
     if (enderMap[i] == nullptr) {
       printf("  nullptr,\n");
     } else {
-      size_t offset = enderMap[i] - phrasingData.enders;
+      size_t offset = enderMap[i] - phrasingData.enders.data;
       printf("  ENDERS + %zu,\n", offset);
     }
   }
@@ -2065,9 +2076,8 @@ private:
 
 void ReverseBuilder::Generate() {
   uint32_t starterReplacement = Crc32("\\0", 2);
-  for (size_t i = 0; i < phrasingData.fullStarterCount; ++i) {
-    AddText(phrasingData.fullStarters[i].pronoun.word,
-            phrasingData.fullStarters[i].stroke, starterReplacement,
+  for (const JeffPhrasingFullStarter &fullStarter : phrasingData.fullStarters) {
+    AddText(fullStarter.pronoun.word, fullStarter.stroke, starterReplacement,
             ComponentMask::STARTER,
             ModeMask::FULL | ModeMask::PRESENT | ModeMask::PAST);
   }
@@ -2088,10 +2098,10 @@ void ReverseBuilder::Generate() {
                    nullptr);
   }
 
-  for (size_t i = 0; i < phrasingData.simpleStarterCount; ++i) {
-    RecurseVariant(phrasingData.simpleStarters[i].middle.word,
-                   phrasingData.simpleStarters[i].stroke, middleReplacement,
-                   ComponentMask::MIDDLE,
+  for (const JeffPhrasingSimpleStarter &simpleStarter :
+       phrasingData.simpleStarters) {
+    RecurseVariant(simpleStarter.middle.word, simpleStarter.stroke,
+                   middleReplacement, ComponentMask::MIDDLE,
                    ModeMask::SIMPLE | ModeMask::PRESENT | ModeMask::PAST,
                    nullptr);
   }
@@ -2112,19 +2122,17 @@ void ReverseBuilder::Generate() {
         ModeMask::SIMPLE | ModeMask::PRESENT | ModeMask::PAST, nullptr);
   }
 
-  for (size_t i = 0; i < phrasingData.structureExceptionCount; ++i) {
-    const JeffPhrasingStructureException &structure =
-        phrasingData.structureExceptions[i];
+  for (const JeffPhrasingStructureException &structure :
+       phrasingData.structureExceptions) {
     RecurseVariant(structure.structure.format, structure.stroke, 0,
                    ComponentMask::MIDDLE | ComponentMask::STRUCTURE,
                    ModeMask::FULL | ModeMask::PRESENT | ModeMask::PAST,
                    nullptr);
   }
 
-  for (size_t i = 0; i < phrasingData.uniqueStarterCount; ++i) {
-    const JeffPhrasingStructureException &structure =
-        phrasingData.uniqueStarters[i];
-    RecurseVariant(structure.structure.format, structure.stroke, 0,
+  for (const JeffPhrasingStructureException &uniqueStarter :
+       phrasingData.uniqueStarters) {
+    RecurseVariant(uniqueStarter.structure.format, uniqueStarter.stroke, 0,
                    ComponentMask::STARTER | ComponentMask::MIDDLE |
                        ComponentMask::STRUCTURE,
                    ModeMask::FULL | ModeMask::PRESENT | ModeMask::PAST,
@@ -2134,8 +2142,7 @@ void ReverseBuilder::Generate() {
   uint32_t verbReplacement = Crc32("\\2", 2);
   uint32_t suffixReplacement = Crc32("\\3", 2);
 
-  for (size_t i = 0; i < phrasingData.endersCount; ++i) {
-    const JeffPhrasingEnder &ender = phrasingData.enders[i];
+  for (const JeffPhrasingEnder &ender : phrasingData.enders) {
     uint8_t modeMask = ModeMask::FULL | ModeMask::SIMPLE;
     if (ender.tense == Tense::PAST) {
       modeMask |= ModeMask::PAST;
@@ -2230,15 +2237,15 @@ void ReverseBuilder::RecurseVariant(const JeffPhrasingVariant &variant,
   switch (variant.type) {
   case JeffPhrasingVariant::Type::MAP: {
     const JeffPhrasingMap *map = variant.map;
-    for (size_t i = 0; i < map->entryCount; ++i) {
+    for (const JeffPhrasingMapEntry &entry : map->entries) {
       uint8_t localModeMask = modeMask;
-      if (map->entries[i].key == (uint32_t)Tense::PRESENT) {
+      if (entry.key == (uint32_t)Tense::PRESENT) {
         localModeMask &= ~ModeMask::PAST;
       }
-      if (map->entries[i].key == (uint32_t)Tense::PAST) {
+      if (entry.key == (uint32_t)Tense::PAST) {
         localModeMask &= ~ModeMask::PRESENT;
       }
-      RecurseVariant(map->entries[i].value, stroke, replacement, componentMask,
+      RecurseVariant(entry.value, stroke, replacement, componentMask,
                      localModeMask, suffix);
     }
   } break;
@@ -2337,17 +2344,16 @@ void ReverseStructureBuilder::Generate() {
                    ModeMask::SIMPLE | ModeMask::PRESENT | ModeMask::PAST);
   }
 
-  for (size_t i = 0; i < phrasingData.structureExceptionCount; ++i) {
-    const JeffPhrasingStructureException &structure =
-        phrasingData.structureExceptions[i];
-    RecurseVariant(structure.structure.format, structure.stroke,
+  for (const JeffPhrasingStructureException &structureException :
+       phrasingData.structureExceptions) {
+    RecurseVariant(structureException.structure.format,
+                   structureException.stroke,
                    ModeMask::FULL | ModeMask::PRESENT | ModeMask::PAST);
   }
 
-  for (size_t i = 0; i < phrasingData.uniqueStarterCount; ++i) {
-    const JeffPhrasingStructureException &structure =
-        phrasingData.uniqueStarters[i];
-    RecurseVariant(structure.structure.format, structure.stroke,
+  for (const JeffPhrasingStructureException &uniqueStarter :
+       phrasingData.uniqueStarters) {
+    RecurseVariant(uniqueStarter.structure.format, uniqueStarter.stroke,
                    ModeMask::FULL | ModeMask::PRESENT | ModeMask::PAST);
   }
 
@@ -2423,15 +2429,15 @@ void ReverseStructureBuilder::RecurseVariant(const JeffPhrasingVariant &variant,
   switch (variant.type) {
   case JeffPhrasingVariant::Type::MAP: {
     const JeffPhrasingMap *map = variant.map;
-    for (size_t i = 0; i < map->entryCount; ++i) {
+    for (const JeffPhrasingMapEntry &entry : map->entries) {
       uint8_t localModeMask = modeMask;
-      if (map->entries[i].key == (uint32_t)Tense::PRESENT) {
+      if (entry.key == (uint32_t)Tense::PRESENT) {
         localModeMask &= ~ModeMask::PAST;
       }
-      if (map->entries[i].key == (uint32_t)Tense::PAST) {
+      if (entry.key == (uint32_t)Tense::PAST) {
         localModeMask &= ~ModeMask::PRESENT;
       }
-      RecurseVariant(map->entries[i].value, stroke, localModeMask);
+      RecurseVariant(entry.value, stroke, localModeMask);
     }
   } break;
 

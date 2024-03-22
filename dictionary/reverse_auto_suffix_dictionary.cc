@@ -9,9 +9,9 @@
 
 const Pattern *StenoReverseAutoSuffixDictionary::CreateReversePatterns(
     const StenoOrthography &orthography) {
-  Pattern *patterns =
-      (Pattern *)malloc(sizeof(Pattern) * orthography.reverseAutoSuffixCount);
-  for (size_t i = 0; i < orthography.reverseAutoSuffixCount; ++i) {
+  Pattern *patterns = (Pattern *)malloc(
+      sizeof(Pattern) * orthography.reverseAutoSuffixes.GetCount());
+  for (size_t i = 0; i < orthography.reverseAutoSuffixes.GetCount(); ++i) {
     patterns[i] =
         Pattern::Compile(orthography.reverseAutoSuffixes[i].testPattern);
   }
@@ -29,7 +29,7 @@ void StenoReverseAutoSuffixDictionary::ReverseLookup(
     StenoReverseDictionaryLookup &result) const {
   dictionary->ReverseLookup(result);
 
-  for (size_t i = 0; i < orthography.data.reverseAutoSuffixCount; ++i) {
+  for (size_t i = 0; i < orthography.data.reverseAutoSuffixes.GetCount(); ++i) {
     ProcessReverseAutoSuffix(result, orthography.data.reverseAutoSuffixes[i],
                              reversePatterns[i]);
   }
@@ -101,20 +101,19 @@ void StenoReverseAutoSuffixDictionary::ProcessReverseAutoSuffix(
       } else if (CanAutoSuffixLookup(strokes, length)) {
         // Even if it produced an invalid lookup, there's a chance that
         // another auto-suffix might take precedence. Check for that.
-        for (size_t i = 0; i < orthography.data.autoSuffixCount; ++i) {
-          const StenoOrthographyAutoSuffix *autoSuffix =
-              &orthography.data.autoSuffixes[i];
-          if (reverseAutoSuffix.autoSuffix == autoSuffix) {
+        for (const StenoOrthographyAutoSuffix &autoSuffix :
+             orthography.data.autoSuffixes) {
+          if (reverseAutoSuffix.autoSuffix == &autoSuffix) {
             result.AddResult(strokes, length, this);
             hasAdded = true;
           }
 
-          if ((strokes[length - 1] & autoSuffix->stroke).IsNotEmpty()) {
-            strokes[length - 1] &= ~autoSuffix->stroke;
+          if ((strokes[length - 1] & autoSuffix.stroke).IsNotEmpty()) {
+            strokes[length - 1] &= ~autoSuffix.stroke;
             if (dictionary->HasOutline(strokes, length)) {
               break;
             }
-            strokes[length - 1] |= autoSuffix->stroke;
+            strokes[length - 1] |= autoSuffix.stroke;
           }
         }
       }

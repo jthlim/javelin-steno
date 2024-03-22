@@ -50,10 +50,7 @@ void StenoReverseMapDictionary::AddMapDictionaryData(
     const uint8_t *mid = left + size_t(right - left) / 2;
 #endif
 
-    const uint8_t *wordStart = mid;
-    while (wordStart[-1] != 0xff) {
-      --wordStart;
-    }
+    const uint8_t *wordStart = StenoTextBlock::FindWordStart(mid);
 
     // Inline strcmp because the end of the match is useful.
     const uint8_t *p = wordStart;
@@ -80,11 +77,7 @@ void StenoReverseMapDictionary::AddMapDictionaryData(
     }
 
     if (compare > 0) {
-      MapDataLookup lookup(p);
-      while (lookup.HasData()) {
-        ++lookup;
-      }
-      left = lookup.GetPointer() + 1;
+      left = MapDataLookup(p).FindNextWordStart();
       continue;
     }
 
@@ -110,11 +103,7 @@ void StenoReverseMapDictionary::FilterResult(
 void StenoReverseMapDictionary::BuildIndex() {
   for (size_t i = 0; i < INDEX_SIZE; ++i) {
     size_t offset = 1 + i * textBlockLength / INDEX_SIZE;
-    const uint8_t *word = textBlock + offset;
-
-    while (word[-1] != 0xff) {
-      --word;
-    }
+    const uint8_t *word = StenoTextBlock::FindWordStart(textBlock + offset);
 
     if (indexSize > 0 && index[indexSize - 1] == word) {
       continue;

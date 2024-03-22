@@ -4,6 +4,7 @@
 #include "list.h"
 #include "malloc_allocate.h"
 #include "pattern.h"
+#include "sized_list.h"
 #include "stroke.h"
 #include <stddef.h>
 
@@ -38,18 +39,11 @@ struct StenoOrthographyReverseAutoSuffix {
 //---------------------------------------------------------------------------
 
 struct StenoOrthography {
-  size_t ruleCount;
-  const StenoOrthographyRule *rules;
-
-  size_t aliasCount;
-  const StenoOrthographyAlias *aliases;
-
+  SizedList<StenoOrthographyRule> rules;
+  SizedList<StenoOrthographyAlias> aliases;
   StenoStroke autoSuffixMask;
-  size_t autoSuffixCount;
-  const StenoOrthographyAutoSuffix *autoSuffixes;
-
-  size_t reverseAutoSuffixCount;
-  const StenoOrthographyReverseAutoSuffix *reverseAutoSuffixes;
+  SizedList<StenoOrthographyAutoSuffix> autoSuffixes;
+  SizedList<StenoOrthographyReverseAutoSuffix> reverseAutoSuffixes;
 
   static const StenoOrthography emptyOrthography;
 

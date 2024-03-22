@@ -1,6 +1,8 @@
 //---------------------------------------------------------------------------
 
 #pragma once
+#include "../sized_list.h"
+#include "../static_list.h"
 #include "../stroke.h"
 #include <assert.h>
 #include <stddef.h>
@@ -26,10 +28,7 @@ enum class Tense : uint16_t {
   PAST,
 };
 
-struct JeffPhrasingValidEnders {
-  size_t enderCount;
-  const StenoStroke *enders;
-};
+struct JeffPhrasingValidEnders : public StaticList<StenoStroke> {};
 
 struct JeffPhrasingPronoun {
   const char *word;
@@ -86,8 +85,7 @@ struct JeffPhrasingMapEntry {
 };
 
 struct JeffPhrasingMap {
-  size_t entryCount;
-  const JeffPhrasingMapEntry entries[];
+  StaticList<const JeffPhrasingMapEntry> entries;
 
   const JeffPhrasingVariant *Lookup(uint32_t key) const;
 };
@@ -160,29 +158,20 @@ struct JeffPhrasingReverseStructureEntry {
 };
 
 struct JeffPhrasingDictionaryData {
-  size_t simpleStarterCount;
-  const JeffPhrasingSimpleStarter *simpleStarters;
+  SizedList<JeffPhrasingSimpleStarter> simpleStarters;
 
   const JeffPhrasingPronoun *simplePronouns;
   const JeffPhrasingStructure *simpleStructures;
 
-  size_t fullStarterCount;
-  const JeffPhrasingFullStarter *fullStarters;
+  SizedList<JeffPhrasingFullStarter> fullStarters;
 
   const JeffPhrasingMiddle *fullMiddles;
   const JeffPhrasingStructure *fullStructures;
 
-  size_t structureExceptionCount;
-  const JeffPhrasingStructureException *structureExceptions;
-
-  size_t endersCount;
-  const JeffPhrasingEnder *enders;
-
-  size_t nonPhraseStrokeCount;
-  const StenoStroke *nonPhraseStrokes;
-
-  size_t uniqueStarterCount;
-  const JeffPhrasingStructureException *uniqueStarters;
+  SizedList<JeffPhrasingStructureException> structureExceptions;
+  SizedList<JeffPhrasingEnder> enders;
+  SizedList<StenoStroke> nonPhraseStrokes;
+  SizedList<JeffPhrasingStructureException> uniqueStarters;
 
   size_t enderHashMapSize;
   const JeffPhrasingEnder *const *enderHashMap;

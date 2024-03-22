@@ -6,7 +6,7 @@
 
 //---------------------------------------------------------------------------
 
-template <typename T, size_t CAPACITY> class StaticList {
+template <typename T, size_t CAPACITY = 0> class StaticList {
 public:
   bool IsEmpty() const { return count == 0; }
   bool IsNotEmpty() const { return count != 0; }

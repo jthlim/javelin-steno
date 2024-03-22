@@ -144,18 +144,12 @@ void StenoReversePrefixDictionary::ProcessTextBlock(const uint8_t *textBlock,
     const uint8_t *mid = left + size_t(right - left) / 2;
 #endif
 
-    const uint8_t *wordStart = mid;
-    while (wordStart[-1] != 0xff) {
-      --wordStart;
-    }
+    const uint8_t *wordStart = StenoTextBlock::FindWordStart(mid);
 
     if (*wordStart >= '{') {
       right = wordStart;
     } else {
-      while (*mid != 0xff) {
-        ++mid;
-      }
-      left = mid + 1;
+      left = StenoTextBlock::FindNextWordStart(mid);
     }
   }
 
@@ -196,12 +190,7 @@ void StenoReversePrefixDictionary::ProcessTextBlock(const uint8_t *textBlock,
       handler.AddPrefix(wordStart);
     }
 
-    // Search for end marker
-    MapDataLookup data(p);
-    while (data.HasData()) {
-      ++data;
-    }
-    p = data.GetPointer() + 1;
+    p = MapDataLookup(p).FindNextWordStart();
   }
 }
 
