@@ -10,44 +10,22 @@
 //---------------------------------------------------------------------------
 
 struct StenoReverseSuffixDictionary::Suffix {
-  const uint8_t *text;
   // suffix points to the last letter of the suffix.
+  //
+  // Suffixes have form "{^suffix}\0<MapData>"
   const uint8_t *suffix;
 
-  char *CreateOrthographySuffix() const {
+  const uint8_t *GetText(size_t suffixLength) const {
+    // -1 is for the preceding "{"
+    return suffix - suffixLength - 1;
+  }
+
+  char *CreateOrthographySuffix(size_t suffixLength) const {
+    const uint8_t *text = GetText(suffixLength);
     return Str::DupN(text + 2, suffix - text - 1);
   }
+
   const uint8_t *GetMapDataLookup() const { return suffix + 3; };
-};
-
-class StenoReverseSuffixDictionary::TextBlockHandler {
-public:
-  virtual void AddSuffix(const uint8_t *text, const uint8_t *suffix) = 0;
-};
-
-class StenoReverseSuffixDictionary::CountTextBlockHandler
-    : public TextBlockHandler {
-public:
-  virtual void AddSuffix(const uint8_t *text, const uint8_t *suffix) {
-    ++counter;
-  }
-
-  size_t counter = 0;
-};
-
-class StenoReverseSuffixDictionary::PopulateTextBlockHandler
-    : public TextBlockHandler {
-public:
-  PopulateTextBlockHandler(StenoReverseSuffixDictionary::Suffix *suffixes)
-      : suffixes(suffixes) {}
-
-  virtual void AddSuffix(const uint8_t *text, const uint8_t *suffix) {
-    suffixes->text = text;
-    suffixes->suffix = suffix;
-    ++suffixes;
-  }
-
-  StenoReverseSuffixDictionary::Suffix *suffixes;
 };
 
 //---------------------------------------------------------------------------
@@ -73,8 +51,7 @@ void StenoReverseSuffixDictionary::ReverseLookupContext::Narrow(uint8_t c) {
   const Suffix *r = right;
   while (l < r) {
     const Suffix *mid = l + ((r - l) >> 1);
-    uint8_t cm = mid->suffix[characterIndex];
-    if (cm < c) {
+    if (mid->suffix[characterIndex] < c) {
       l = mid + 1;
     } else {
       r = mid;
@@ -86,8 +63,7 @@ void StenoReverseSuffixDictionary::ReverseLookupContext::Narrow(uint8_t c) {
   r = right;
   while (l < r) {
     const Suffix *mid = l + ((r - l) >> 1);
-    uint8_t cm = mid->suffix[characterIndex];
-    if (cm <= c) {
+    if (mid->suffix[characterIndex] <= c) {
       l = mid + 1;
     } else {
       r = mid;
@@ -124,113 +100,28 @@ StenoReverseSuffixDictionary::ReverseLookupContext::FindSuffixLookup() const {
 
 StenoReverseSuffixDictionary::StenoReverseSuffixDictionary(
     StenoDictionary *dictionary, const uint8_t *baseAddress,
-    const uint8_t *textBlock, size_t textBlockLength,
     const StenoCompiledOrthography &orthography,
-    const StenoDictionary *prefixDictionary)
+    const StenoDictionary *prefixDictionary,
+    const SizedList<const uint8_t *> suffixes,
+    const List<const uint8_t *> &ignoreSuffixes)
     : StenoWrappedDictionary(dictionary), baseAddress(baseAddress),
-      orthography(orthography), prefixDictionary(prefixDictionary) {
+      suffixes(CreateSuffixList(suffixes, ignoreSuffixes)),
+      orthography(orthography), prefixDictionary(prefixDictionary) {}
 
-  CountTextBlockHandler counter;
-  ProcessTextBlock(textBlock, textBlockLength, counter);
+SizedList<StenoReverseSuffixDictionary::Suffix>
+StenoReverseSuffixDictionary::CreateSuffixList(
+    const SizedList<const uint8_t *> suffixes,
+    const List<const uint8_t *> &ignoreSuffixes) {
+  SizedList<Suffix> filteredList =
+      SizedList<Suffix>::CreateWithCapacity(suffixes.GetCount());
 
-  suffixCount = counter.counter;
-  Suffix *suffixes = (Suffix *)malloc(suffixCount * sizeof(Suffix));
-  this->suffixes = suffixes;
-
-  PopulateTextBlockHandler populate(suffixes);
-  ProcessTextBlock(textBlock, textBlockLength, populate);
-
-  qsort(suffixes, suffixCount, sizeof(Suffix),
-        [](const void *a, const void *b) -> int {
-          const uint8_t *sa = ((const Suffix *)a)->suffix;
-          const uint8_t *sb = ((const Suffix *)b)->suffix;
-          for (;;) {
-            if (*sa == '{') {
-              return -1;
-            }
-            if (*sb == '{') {
-              return 1;
-            }
-            int v = *sa - *sb;
-            if (v != 0) {
-              return v;
-            }
-            --sa;
-            --sb;
-          }
-        });
-}
-
-void StenoReverseSuffixDictionary::ProcessTextBlock(const uint8_t *textBlock,
-                                                    size_t textBlockLength,
-                                                    TextBlockHandler &handler) {
-  // Binary search to find the start of all commands.
-  const uint8_t *left = textBlock + 1;
-  const uint8_t *right = textBlock + textBlockLength;
-
-  while (left < right) {
-#if JAVELIN_PLATFORM_PICO_SDK || JAVELIN_PLATFORM_NRF5_SDK
-    // Optimization when top bit of pointer cannot be set.
-    const uint8_t *mid = (const uint8_t *)((size_t(left) + size_t(right)) / 2);
-#else
-    const uint8_t *mid = left + size_t(right - left) / 2;
-#endif
-
-    const uint8_t *wordStart = StenoTextBlock::FindWordStart(mid);
-
-    uint32_t value = (wordStart[0] << 8) | wordStart[1];
-
-    if (value >= ('{' * 256 | '^')) {
-      right = wordStart;
-    } else {
-      left = StenoTextBlock::FindNextWordStart(mid);
+  for (const uint8_t *suffix : suffixes) {
+    if (!ignoreSuffixes.Contains(suffix)) {
+      filteredList.Add(Suffix{.suffix = suffix});
     }
   }
 
-  // Iterate text block and find all suffixes.
-  const uint8_t *p = right;
-
-  while (p[0] == '{' && p[1] == '^') {
-    const uint8_t *wordStart = p;
-    int braceCounter = 0;
-    int caretCounter = 0;
-    bool hasSpace = false;
-
-    // Search for '\0'
-    while (*p) {
-      if (*p == '{' || *p == '}') {
-        ++braceCounter;
-      }
-      if (*p == '^') {
-        ++caretCounter;
-      }
-      if (*p == ' ') {
-        hasSpace = true;
-        while (*p) {
-          ++p;
-        }
-        break;
-      }
-      ++p;
-    }
-    ++p;
-
-    // Word end.
-    if (!hasSpace && braceCounter == 2 && caretCounter == 1 &&
-        wordStart[0] == '{' && wordStart[1] == '^' && p[-2] == '}' &&
-        p - wordStart > 4) {
-      if (!orthography.IsAutoSuffix((const char *)wordStart)) {
-        handler.AddSuffix(wordStart, p - 3);
-      }
-    }
-
-    // Search for end marker
-    MapDataLookup data(p);
-    while (data.HasData()) {
-      ++data;
-    }
-    p = data.GetPointer() + 1;
-  }
+  return filteredList;
 }
 
 void StenoReverseSuffixDictionary::ReverseLookup(
@@ -239,8 +130,8 @@ void StenoReverseSuffixDictionary::ReverseLookup(
   if (result.lookupLength > 1 && result.strokeThreshold > 2 &&
       !Str::Contains(result.lookup, ' ')) {
     ReverseLookupContext context;
-    context.left = suffixes;
-    context.right = suffixes + suffixCount;
+    context.left = begin(suffixes);
+    context.right = end(suffixes);
     AddSuffixReverseLookup(context, result);
   }
 }
@@ -251,7 +142,8 @@ void StenoReverseSuffixDictionary::AddSuffixReverseLookup(
   if (length <= 2) {
     return;
   }
-  const uint8_t *lookup = (const uint8_t *)result.lookup + length;
+  const uint8_t *lookupEnd = (const uint8_t *)result.lookup + length;
+  const uint8_t *lookup = lookupEnd;
   context.Narrow(*--lookup);
 
   // Build a list of suffixes to test.
@@ -281,7 +173,9 @@ void StenoReverseSuffixDictionary::AddSuffixReverseLookup(
     size_t prefixLength = test.prefixEnd - (const uint8_t *)result.lookup;
     char *withoutSuffix = Str::DupN(result.lookup, prefixLength);
 
-    char *orthographySuffix = test.suffix->CreateOrthographySuffix();
+    size_t suffixLength = lookupEnd - test.prefixEnd;
+    char *orthographySuffix =
+        test.suffix->CreateOrthographySuffix(suffixLength);
     char *withSuffix = orthography.AddSuffix(withoutSuffix, orthographySuffix);
     free(orthographySuffix);
 
@@ -305,7 +199,7 @@ void StenoReverseSuffixDictionary::AddSuffixReverseLookup(
       StenoReverseDictionaryLookup *suffixLookup =
           new StenoReverseDictionaryLookup(
               result.strokeThreshold - prefixLookup->GetMinimumStrokeCount(),
-              (const char *)test.suffix->text);
+              (const char *)test.suffix->GetText(suffixLength));
 
       // Add map lookup hints.
       suffixLookup->AddMapDataLookup(test.suffix->GetMapDataLookup(),

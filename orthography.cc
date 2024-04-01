@@ -289,15 +289,6 @@ void StenoCompiledOrthography::AddCandidates(List<SuffixEntry> &candidates,
   free(text);
 }
 
-bool StenoCompiledOrthography::IsAutoSuffix(const char *definition) const {
-  for (const StenoOrthographyAutoSuffix &autoSuffix : data.autoSuffixes) {
-    if (Str::Eq(autoSuffix.text + 1, definition)) {
-      return true;
-    }
-  }
-  return false;
-}
-
 //---------------------------------------------------------------------------
 
 void StenoCompiledOrthography::PrintInfo() const {

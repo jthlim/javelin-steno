@@ -23,15 +23,35 @@ const Pattern *StenoReverseAutoSuffixDictionary::CreateReversePatterns(
 StenoReverseAutoSuffixDictionary::StenoReverseAutoSuffixDictionary(
     StenoDictionary *dictionary, const StenoCompiledOrthography &orthography)
     : StenoWrappedDictionary(dictionary), orthography(orthography),
-      reversePatterns(CreateReversePatterns(orthography.data)) {}
+      reversePatterns(CreateReversePatterns(orthography.data)) {
+  for (size_t i = 0; i < orthography.data.reverseAutoSuffixes.GetCount(); ++i) {
+    mergedQuickReject.Merge(reversePatterns[i].GetQuickReject());
+  }
+}
 
 void StenoReverseAutoSuffixDictionary::ReverseLookup(
     StenoReverseDictionaryLookup &result) const {
   dictionary->ReverseLookup(result);
 
+  if (result.lookupLength < 2) {
+    return;
+  }
+
+  const char *quickRejectText = result.lookupLength > 8
+                                    ? result.lookup + result.lookupLength - 8
+                                    : result.lookup;
+  PatternQuickReject textReject(quickRejectText);
+
+  if (!mergedQuickReject.IsPossibleMergeMatch(textReject)) {
+    return;
+  }
+
   for (size_t i = 0; i < orthography.data.reverseAutoSuffixes.GetCount(); ++i) {
-    ProcessReverseAutoSuffix(result, orthography.data.reverseAutoSuffixes[i],
-                             reversePatterns[i]);
+    const Pattern &reversePattern = reversePatterns[i];
+    if (reversePattern.IsPossibleMatch(textReject)) {
+      ProcessReverseAutoSuffix(result, orthography.data.reverseAutoSuffixes[i],
+                               reversePattern);
+    }
   }
 }
 
@@ -53,7 +73,8 @@ void StenoReverseAutoSuffixDictionary::ProcessReverseAutoSuffix(
   // 1. To generate the word without suffix, run the regex on up to the last
   // 8 letters of the lookup.
   size_t lookupOffset = result.lookupLength > 8 ? result.lookupLength - 8 : 0;
-  const PatternMatch match = reversePattern.Match(result.lookup + lookupOffset);
+  const PatternMatch match =
+      reversePattern.MatchBypassingQuickReject(result.lookup + lookupOffset);
   if (!match.match) {
     return;
   }
@@ -120,7 +141,7 @@ void StenoReverseAutoSuffixDictionary::ProcessReverseAutoSuffix(
       strokes[length - 1] &= ~reverseAutoSuffix.autoSuffix->stroke;
     }
 
-    if (!hasAdded) {
+    if (!hasAdded && length + 1 < result.strokeThreshold) {
       StenoStroke strokesWithSuffixStroke[length + 1];
       memcpy(strokesWithSuffixStroke, strokes, length * sizeof(StenoStroke));
       strokesWithSuffixStroke[length] = reverseAutoSuffix.autoSuffix->stroke;

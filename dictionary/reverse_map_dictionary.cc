@@ -9,9 +9,9 @@
 
 StenoReverseMapDictionary::StenoReverseMapDictionary(
     StenoDictionary *dictionary, const uint8_t *baseAddress,
-    const uint8_t *textBlock, size_t textBlockLength)
+    const SizedList<uint8_t> &textBlock)
     : StenoWrappedDictionary(dictionary), baseAddress(baseAddress),
-      textBlock(textBlock), textBlockLength(textBlockLength) {
+      textBlock(textBlock) {
   BuildIndex();
 }
 
@@ -24,14 +24,13 @@ void StenoReverseMapDictionary::ReverseLookup(
   FilterResult(result);
 }
 
-void StenoReverseMapDictionary::AddMapDictionaryData(
-    StenoReverseDictionaryLookup &result) const {
-
+const uint8_t *
+StenoReverseMapDictionary::FindMapDataLookup(const char *text) const {
   size_t indexLeft = 0;
   size_t indexRight = indexSize;
   while (indexLeft + 1 < indexRight) {
     size_t mid = (indexLeft + indexRight) >> 1;
-    int compare = strcmp(result.lookup, (const char *)index[mid]);
+    int compare = strcmp(text, (const char *)index[mid]);
     if (compare < 0) {
       indexRight = mid;
     } else {
@@ -54,7 +53,7 @@ void StenoReverseMapDictionary::AddMapDictionaryData(
 
     // Inline strcmp because the end of the match is useful.
     const uint8_t *p = wordStart;
-    const uint8_t *l = (const uint8_t *)result.lookup;
+    const uint8_t *l = (const uint8_t *)text;
     int compare;
     int cp;
     for (;;) {
@@ -77,12 +76,21 @@ void StenoReverseMapDictionary::AddMapDictionaryData(
     }
 
     if (compare > 0) {
-      left = MapDataLookup(p).FindNextWordStart();
+      left = MapDataLookup::FindNextWordStart(p);
       continue;
     }
 
+    return p;
+  }
+  return nullptr;
+}
+
+void StenoReverseMapDictionary::AddMapDictionaryData(
+    StenoReverseDictionaryLookup &result) const {
+  const uint8_t *p = FindMapDataLookup(result.lookup);
+
+  if (p) {
     result.AddMapDataLookup(p, baseAddress);
-    return;
   }
 }
 
@@ -102,8 +110,9 @@ void StenoReverseMapDictionary::FilterResult(
 
 void StenoReverseMapDictionary::BuildIndex() {
   for (size_t i = 0; i < INDEX_SIZE; ++i) {
-    size_t offset = 1 + i * textBlockLength / INDEX_SIZE;
-    const uint8_t *word = StenoTextBlock::FindWordStart(textBlock + offset);
+    size_t offset = 1 + i * textBlock.count / INDEX_SIZE;
+    const uint8_t *word =
+        StenoTextBlock::FindWordStart(textBlock.data + offset);
 
     if (indexSize > 0 && index[indexSize - 1] == word) {
       continue;
@@ -112,8 +121,7 @@ void StenoReverseMapDictionary::BuildIndex() {
     index[indexSize++] = word;
   }
 
-  const uint8_t *end = textBlock + textBlockLength;
-  index[indexSize] = end;
+  index[indexSize] = end(textBlock);
 }
 
 const char *StenoReverseMapDictionary::GetName() const {

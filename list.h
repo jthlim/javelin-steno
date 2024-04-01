@@ -52,6 +52,11 @@ public:
   List(List &&other) : _ListBase((_ListBase &&) other) {}
 
   void Add(const T &v) { _ListBase::Add(&v, sizeof(T)); }
+  void AddIfUnique(const T &v) {
+    if (!Contains(v)) {
+      Add(v);
+    }
+  }
 
   void Sort(int (*comparator)(const T *, const T *)) {
     qsort(buffer, count, sizeof(T),

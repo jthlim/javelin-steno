@@ -20,12 +20,11 @@ public:
 
   const uint8_t *GetPointer() const { return p; }
 
-  const uint8_t *FindNextWordStart() const {
-    MapDataLookup lookup(p);
-    while (lookup.HasData()) {
-      ++lookup;
+  static const uint8_t *FindNextWordStart(const uint8_t *p) {
+    while (*p != 0xff) {
+      p += 4;
     }
-    return lookup.p + 1;
+    return p + 1;
   }
 
 private:

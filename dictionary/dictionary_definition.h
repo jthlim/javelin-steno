@@ -1,7 +1,7 @@
 //---------------------------------------------------------------------------
 
 #pragma once
-#include "../list.h"
+#include "../sized_list.h"
 #include "../stroke.h"
 #include "../xip_pointer.h"
 #include <stddef.h>
@@ -34,6 +34,7 @@
 //
 //---------------------------------------------------------------------------
 
+template <typename T> class List;
 class StenoDictionary;
 struct StenoDictionaryListEntry;
 
@@ -117,15 +118,16 @@ struct StenoDictionaryDefinition {
 
 //---------------------------------------------------------------------------
 
-constexpr uint32_t STENO_MAP_DICTIONARY_COLLECTION_MAGIC = 0x3243534a; // 'JSC2'
+constexpr uint32_t STENO_MAP_DICTIONARY_COLLECTION_MAGIC = 0x3343534a; // 'JSC3'
 
 struct StenoDictionaryCollection {
   uint32_t magic;
   uint16_t dictionaryCount;
   bool hasReverseLookup;
   bool _padding7;
-  const uint8_t *textBlock;
-  size_t textBlockLength;
+  SizedList<uint8_t> textBlock;
+  SizedList<const uint8_t *> prefixes;
+  SizedList<const uint8_t *> suffixes;
   const XipPointer<StenoDictionaryDefinition> dictionaries[];
 
   void AddDictionariesToList(List<StenoDictionaryListEntry> &list) const;

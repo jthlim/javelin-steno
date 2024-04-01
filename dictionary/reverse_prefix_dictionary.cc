@@ -9,36 +9,12 @@
 //---------------------------------------------------------------------------
 
 struct StenoReversePrefixDictionary::Prefix {
+  // Prefixes have form "{prefix^}\0<MapData>"
   const uint8_t *text;
-  MapDataLookup mapDataLookup;
-};
 
-class StenoReversePrefixDictionary::TextBlockHandler {
-public:
-  virtual void AddPrefix(const uint8_t *prefix) = 0;
-};
-
-class StenoReversePrefixDictionary::CountTextBlockHandler
-    : public TextBlockHandler {
-public:
-  virtual void AddPrefix(const uint8_t *prefix) { ++counter; }
-
-  size_t counter = 0;
-};
-
-class StenoReversePrefixDictionary::PopulateTextBlockHandler
-    : public TextBlockHandler {
-public:
-  PopulateTextBlockHandler(StenoReversePrefixDictionary::Prefix *prefixes)
-      : prefixes(prefixes) {}
-
-  virtual void AddPrefix(const uint8_t *prefix) {
-    prefixes->text = prefix;
-    prefixes->mapDataLookup = prefix + Str::Length(prefix) + 1;
-    ++prefixes;
+  const uint8_t *GetMapDataLookup(size_t prefixLength) const {
+    return text + prefixLength + 4;
   }
-
-  StenoReversePrefixDictionary::Prefix *prefixes;
 };
 
 //---------------------------------------------------------------------------
@@ -64,8 +40,7 @@ void StenoReversePrefixDictionary::ReverseLookupContext::Narrow(uint8_t c) {
   const Prefix *r = right;
   while (l < r) {
     const Prefix *mid = l + ((r - l) >> 1);
-    uint8_t cm = mid->text[characterIndex];
-    if (cm < c) {
+    if (mid->text[characterIndex] < c) {
       l = mid + 1;
     } else {
       r = mid;
@@ -77,8 +52,7 @@ void StenoReversePrefixDictionary::ReverseLookupContext::Narrow(uint8_t c) {
   r = right;
   while (l < r) {
     const Prefix *mid = l + ((r - l) >> 1);
-    uint8_t cm = mid->text[characterIndex];
-    if (cm <= c) {
+    if (mid->text[characterIndex] <= c) {
       l = mid + 1;
     } else {
       r = mid;
@@ -115,84 +89,9 @@ StenoReversePrefixDictionary::ReverseLookupContext::FindPrefixLookup() const {
 
 StenoReversePrefixDictionary::StenoReversePrefixDictionary(
     StenoDictionary *dictionary, const uint8_t *baseAddress,
-    const uint8_t *textBlock, size_t textBlockLength)
-    : StenoWrappedDictionary(dictionary), baseAddress(baseAddress) {
-
-  CountTextBlockHandler counter;
-  ProcessTextBlock(textBlock, textBlockLength, counter);
-
-  prefixCount = counter.counter;
-  Prefix *prefixes = (Prefix *)malloc(prefixCount * sizeof(Prefix));
-  this->prefixes = prefixes;
-
-  PopulateTextBlockHandler populate(prefixes);
-  ProcessTextBlock(textBlock, textBlockLength, populate);
-}
-
-void StenoReversePrefixDictionary::ProcessTextBlock(const uint8_t *textBlock,
-                                                    size_t textBlockLength,
-                                                    TextBlockHandler &handler) {
-  // Binary search to find the start of all commands.
-  const uint8_t *left = textBlock + 1;
-  const uint8_t *right = textBlock + textBlockLength;
-
-  while (left < right) {
-#if JAVELIN_PLATFORM_PICO_SDK || JAVELIN_PLATFORM_NRF5_SDK
-    // Optimization when top bit of pointer cannot be set.
-    const uint8_t *mid = (const uint8_t *)((size_t(left) + size_t(right)) / 2);
-#else
-    const uint8_t *mid = left + size_t(right - left) / 2;
-#endif
-
-    const uint8_t *wordStart = StenoTextBlock::FindWordStart(mid);
-
-    if (*wordStart >= '{') {
-      right = wordStart;
-    } else {
-      left = StenoTextBlock::FindNextWordStart(mid);
-    }
-  }
-
-  // Iterate text block and find all prefixes.
-  const uint8_t *p = right;
-
-  while (*p == '{') {
-    const uint8_t *wordStart = p;
-    int braceCounter = 0;
-    int caretCounter = 0;
-    bool hasSpace = false;
-
-    // Search for '\0'
-    while (*p) {
-      if (*p == '{' || *p == '}') {
-        ++braceCounter;
-      }
-      if (*p == '^') {
-        ++caretCounter;
-      }
-      if (*p == ' ') {
-        hasSpace = true;
-        while (*p) {
-          ++p;
-        }
-        break;
-      }
-      ++p;
-    }
-    ++p;
-
-    // Word end.
-    if (!hasSpace && braceCounter == 2 && caretCounter == 1 &&
-        *wordStart == '{' && p[-2] == '}' && p[-3] == '^' &&
-        p - wordStart > 4) {
-      // Since the textblock is already sorted, entries added here are
-      // sorted too.
-      handler.AddPrefix(wordStart);
-    }
-
-    p = MapDataLookup(p).FindNextWordStart();
-  }
-}
+    const SizedList<const uint8_t *> prefixes)
+    : StenoWrappedDictionary(dictionary), baseAddress(baseAddress),
+      prefixes(prefixes.Copy().Cast<Prefix>()) {}
 
 void StenoReversePrefixDictionary::ReverseLookup(
     StenoReverseDictionaryLookup &result) const {
@@ -201,8 +100,8 @@ void StenoReversePrefixDictionary::ReverseLookup(
       result.prefixLookupDepth < MAXIMUM_REVERSE_PREFIX_DEPTH &&
       !Str::Contains(result.lookup, ' ')) {
     ReverseLookupContext context;
-    context.left = prefixes;
-    context.right = prefixes + prefixCount;
+    context.left = begin(prefixes);
+    context.right = end(prefixes);
     AddPrefixReverseLookup(context, result);
   }
 }
@@ -220,7 +119,7 @@ void StenoReversePrefixDictionary::AddPrefixReverseLookup(
   // Build a list of suffixes to prefixes to use and suffixes to test
   struct Test {
     const Prefix *prefix;
-    const uint8_t *suffix;
+    const char *suffix;
   };
   List<Test> tests;
   while (*lookup) {
@@ -231,7 +130,7 @@ void StenoReversePrefixDictionary::AddPrefixReverseLookup(
     if (prefix) {
       tests.Add(Test{
           .prefix = prefix,
-          .suffix = lookup,
+          .suffix = (const char *)lookup,
       });
     }
     context.Narrow(*lookup++);
@@ -246,7 +145,7 @@ void StenoReversePrefixDictionary::AddPrefixReverseLookup(
     // Use "1" as an quick approximation.
     StenoReverseDictionaryLookup *suffixLookup =
         new StenoReverseDictionaryLookup(result.strokeThreshold - 1,
-                                         (const char *)test.suffix);
+                                         test.suffix);
 
     suffixLookup->prefixLookupDepth = result.prefixLookupDepth + 1;
     ReverseLookup(*suffixLookup);
@@ -260,7 +159,9 @@ void StenoReversePrefixDictionary::AddPrefixReverseLookup(
               (const char *)test.prefix);
 
       // Add map lookup hints.
-      prefixLookup->AddMapDataLookup(test.prefix->mapDataLookup, baseAddress);
+      size_t prefixLength = test.suffix - result.lookup;
+      prefixLookup->AddMapDataLookup(
+          test.prefix->GetMapDataLookup(prefixLength), baseAddress);
 
       dictionary->ReverseLookup(*prefixLookup);
 

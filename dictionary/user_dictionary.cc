@@ -19,7 +19,6 @@ constexpr size_t OFFSET_DATA = 1;
 
 static const uint32_t USER_DICTIONARY_MAGIC = 0x4455534a; // 'JSUD'
 
-static const uint32_t LEGACY_USER_DICTIONARY_VERSION = 1;
 static const uint32_t USER_DICTIONARY_WITH_REVERSE_LOOKUP_VERSION = 2;
 
 // Offset within the flash page where descriptors will be stored.
@@ -51,30 +50,13 @@ template <typename T> T *RoundToPage(T *p, size_t pageSize) {
 
 bool StenoUserDictionaryDescriptor::IsValid(
     const StenoUserDictionaryData &layout) const {
-  if (magic != USER_DICTIONARY_MAGIC || data.hashTable != layout.hashTable ||
-      data.hashTableSize != layout.hashTableSize) {
-    return false;
-  }
-
-  switch (version) {
-  case LEGACY_USER_DICTIONARY_VERSION:
-    return Crc32(&data, sizeof(data) - sizeof(data.reverseHashTable)) ==
-           (size_t)data.reverseHashTable;
-
-  case USER_DICTIONARY_WITH_REVERSE_LOOKUP_VERSION:
-    return Crc32(&data, sizeof(data)) == crc32;
-
-  default:
-    return false;
-  }
+  return magic == USER_DICTIONARY_MAGIC && data.hashTable == layout.hashTable &&
+         data.hashTableSize == layout.hashTableSize &&
+         version == USER_DICTIONARY_WITH_REVERSE_LOOKUP_VERSION &&
+         Crc32(&data, sizeof(data)) == crc32;
 }
 
 void StenoUserDictionaryDescriptor::UpdateCrc32() {
-  if (version == LEGACY_USER_DICTIONARY_VERSION) {
-    data.reverseHashTable = (uint32_t *)(size_t)Crc32(
-        &data, sizeof(data) - sizeof(data.reverseHashTable));
-    return;
-  }
   crc32 = Crc32(&data, sizeof(data));
 }
 
@@ -87,9 +69,6 @@ StenoUserDictionary::StenoUserDictionary(const StenoUserDictionaryData &layout)
   activeDescriptor = FindMostRecentDescriptor();
   if (activeDescriptor == nullptr) {
     Reset();
-  }
-  if (activeDescriptor->version == LEGACY_USER_DICTIONARY_VERSION) {
-    UpgradeToVersionWithReverseLookup();
   }
   maximumOutlineLength = activeDescriptor->data.maximumOutlineLength;
 }
@@ -209,85 +188,6 @@ void StenoUserDictionary::ReverseLookup(
 
     ++entryIndex;
   }
-}
-
-void StenoUserDictionary::UpgradeToVersionWithReverseLookup() {
-  // Don't upgrade if the data block exceeds what is available.
-  if (activeDescriptor->data.dataBlockSize > layout.dataBlockSize) {
-    return;
-  }
-
-  // 1. Create reverse hash table.
-  class ReverseHashTable {
-  public:
-    ReverseHashTable(size_t size) : size(size), data(new uint32_t[size]) {
-      memset(data, 0xff, sizeof(uint32_t) * size);
-    }
-    ~ReverseHashTable() { delete[] data; }
-
-    void Add(const char *word, uint32_t dataOffset) {
-      size_t entryIndex = Crc32(word, strlen(word));
-
-      for (int probeCount = 0; probeCount < 64; ++probeCount) {
-        entryIndex &= size - 1;
-
-        uint32_t offset = data[entryIndex];
-        switch (offset) {
-        case OFFSET_EMPTY:
-        case OFFSET_DELETED:
-          data[entryIndex] = dataOffset;
-          return;
-
-        default:
-          ++entryIndex;
-        }
-      }
-    }
-
-    void Write(const void *target) {
-      Flash::Write(target, data, sizeof(uint32_t) * size);
-    }
-
-  private:
-    size_t size;
-    uint32_t *data;
-  };
-
-  ReverseHashTable reverseHashTable(layout.hashTableSize);
-
-  for (size_t i = 0; i < activeDescriptor->data.hashTableSize; ++i) {
-    uint32_t offset = activeDescriptor->data.hashTable[i];
-    switch (offset) {
-    case OFFSET_EMPTY:
-    case OFFSET_DELETED:
-      break;
-
-    default:
-      const StenoUserDictionaryEntry *entry =
-          (const StenoUserDictionaryEntry *)(activeDescriptor->data.dataBlock +
-                                             offset - OFFSET_DATA);
-
-      reverseHashTable.Add(entry->GetText(), offset);
-    }
-  }
-
-  // 2. Write updated descriptor.
-  StenoUserDictionaryDescriptor *freshDescriptor =
-      (StenoUserDictionaryDescriptor *)malloc(Flash::BLOCK_SIZE);
-  memset(freshDescriptor, 0xff, Flash::BLOCK_SIZE);
-  memcpy(freshDescriptor, activeDescriptor,
-         sizeof(StenoUserDictionaryDescriptor));
-  freshDescriptor->version = USER_DICTIONARY_WITH_REVERSE_LOOKUP_VERSION;
-  freshDescriptor->data.reverseHashTable =
-      (uint32_t *)descriptorBase - freshDescriptor->data.hashTableSize;
-  freshDescriptor->UpdateCrc32();
-
-  reverseHashTable.Write(freshDescriptor->data.reverseHashTable);
-  Flash::Write(descriptorBase, freshDescriptor, Flash::BLOCK_SIZE);
-
-  free(freshDescriptor);
-
-  activeDescriptor = descriptorBase;
 }
 
 //---------------------------------------------------------------------------

@@ -1,6 +1,7 @@
 //---------------------------------------------------------------------------
 
 #pragma once
+#include "../pattern_quick_reject.h"
 #include "wrapped_dictionary.h"
 
 //---------------------------------------------------------------------------
@@ -24,6 +25,7 @@ public:
 private:
   const StenoCompiledOrthography &orthography;
   const Pattern *reversePatterns;
+  PatternQuickReject mergedQuickReject;
 
   void ProcessReverseAutoSuffix(
       StenoReverseDictionaryLookup &result,

@@ -3,6 +3,7 @@
 #pragma once
 #include <assert.h>
 #include <stdlib.h>
+#include <string.h>
 
 //---------------------------------------------------------------------------
 
@@ -23,8 +24,23 @@ public:
   friend const T *begin(const SizedList &list) { return list.data; }
   friend const T *end(const SizedList &list) { return list.data + list.count; }
 
-  const size_t count;
-  const T *const data;
+  SizedList Copy() const {
+    void *copy = malloc(sizeof(T) * count);
+    memcpy(copy, data, sizeof(T) * count);
+    return SizedList{.count = count, .data = (T *)copy};
+  }
+
+  template <typename S> SizedList<S> Cast() const {
+    return SizedList<S>{.count = count, .data = (S *)data};
+  }
+
+  static SizedList CreateWithCapacity(size_t n) {
+    return SizedList{.count = 0, .data = (T *)malloc(sizeof(T) * n)};
+  }
+  void Add(T v) { ((T *)data)[count++] = v; }
+
+  size_t count;
+  const T *data;
 };
 
 //---------------------------------------------------------------------------

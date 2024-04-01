@@ -50,6 +50,8 @@ public:
     return inputQuickReject.IsPossibleMatch(quickReject);
   }
 
+  const PatternQuickReject &GetQuickReject() const { return quickReject; }
+
 private:
   Pattern(PatternComponent *root, PatternQuickReject quickReject)
       : root(root), quickReject(quickReject) {}

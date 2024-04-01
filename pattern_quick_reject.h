@@ -1,5 +1,6 @@
 //---------------------------------------------------------------------------
 
+#pragma once
 #include <stdint.h>
 
 //---------------------------------------------------------------------------
@@ -27,8 +28,14 @@ public:
     }
   }
 
+  void Merge(const PatternQuickReject &merge) { mask |= merge.mask; }
+
   bool IsPossibleMatch(const PatternQuickReject patternQuickReject) const {
     return (patternQuickReject.mask & ~mask) == 0;
+  }
+
+  bool IsPossibleMergeMatch(const PatternQuickReject textReject) const {
+    return (mask & textReject.mask) != 0;
   }
 
 private:

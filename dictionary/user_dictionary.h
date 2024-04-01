@@ -28,8 +28,6 @@ struct StenoUserDictionaryData {
   const uint8_t *dataBlock;
   size_t dataBlockSize;
   uint32_t maximumOutlineLength;
-
-  // New field in reverseLookupVersion
   const uint32_t *reverseHashTable;
 
   const StenoUserDictionaryDescriptor *GetDescriptor() const {
@@ -113,8 +111,6 @@ private:
 
   const StenoUserDictionaryDescriptor *FindMostRecentDescriptor() const;
   size_t GetNextDescriptorToWriteOffset() const;
-
-  void UpgradeToVersionWithReverseLookup();
 };
 
 //---------------------------------------------------------------------------

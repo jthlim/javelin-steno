@@ -240,7 +240,6 @@ void StenoEngine::LookupStroke_Binding(void *context, const char *commandLine) {
     Console::Printf("{\"definition\":\"%J\",\"dictionary\":\"%J\"}\n\n",
                     result.GetText(), provider->GetName());
   } else {
-
     StenoSegmentList segmentList;
     ConversionBuffer &buffer = engine->previousConversionBuffer;
     engine->CreateSegments(segmentList, buffer.segmentBuilder, parser.strokes,
