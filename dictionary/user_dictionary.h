@@ -58,7 +58,7 @@ public:
   virtual const StenoDictionary *
   GetDictionaryForOutline(const StenoDictionaryLookup &lookup) const;
 
-  virtual void ReverseLookup(StenoReverseDictionaryLookup &result) const;
+  virtual void ReverseLookup(StenoReverseDictionaryLookup &lookup) const;
 
   virtual const char *GetName() const final;
   virtual void PrintInfo(int depth) const final;

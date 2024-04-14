@@ -166,31 +166,29 @@ void StenoEngine::DisableTextLog_Binding(void *context,
 }
 
 void StenoEngine::Lookup_Binding(void *context, const char *commandLine) {
-  const char *lookup = strchr(commandLine, ' ');
-  if (lookup == nullptr) {
+  const char *definition = strchr(commandLine, ' ');
+  if (definition == nullptr) {
     Console::Printf("ERR Unable to lookup empty word\n\n");
     return;
   }
 
   ExternalFlashSentry externalFlashSentry;
 
-  ++lookup;
-  StenoReverseDictionaryLookup result(
-      StenoReverseDictionaryLookup::MAX_STROKE_THRESHOLD, lookup);
+  ++definition;
+  StenoReverseDictionaryLookup lookup(
+      StenoReverseDictionaryLookup::MAX_STROKE_THRESHOLD, definition);
   StenoEngine *engine = (StenoEngine *)context;
-  engine->ReverseLookup(result);
+  engine->ReverseLookup(lookup);
 
   Console::Printf("[");
-  for (size_t i = 0; i < result.results.GetCount(); ++i) {
-    const StenoReverseDictionaryResult &lookup = result.results[i];
-
+  for (const StenoReverseDictionaryResult &entry : lookup.results) {
     StenoSegmentList segmentList;
     ConversionBuffer &buffer = engine->previousConversionBuffer;
-    engine->CreateSegments(segmentList, buffer.segmentBuilder, lookup.strokes,
-                           lookup.length);
+    engine->CreateSegments(segmentList, buffer.segmentBuilder, entry.strokes,
+                           entry.length);
 
-    Console::Printf(i == 0 ? "\n{" : ",\n{", nullptr);
-    Console::Printf("\"outline\":\"%T\",", lookup.strokes, lookup.length);
+    Console::Printf(&entry == begin(lookup.results) ? "\n{" : ",\n{", nullptr);
+    Console::Printf("\"outline\":\"%T\",", entry.strokes, entry.length);
     Console::Printf("\"definition\":\"");
 
     bool isFirst = true;
@@ -202,7 +200,7 @@ void StenoEngine::Lookup_Binding(void *context, const char *commandLine) {
     delete tokenizer;
     Console::Printf("\",");
 
-    const char *name = lookup.lookupProvider->GetName();
+    const char *name = entry.dictionary->GetName();
     if (*name == '#') {
       Console::Printf("\"dictionary\":\"#\"");
     } else {
@@ -234,11 +232,11 @@ void StenoEngine::LookupStroke_Binding(void *context, const char *commandLine) {
       engine->dictionary.Lookup(parser.strokes, parser.length);
 
   if (result.IsValid()) {
-    const StenoDictionary *provider =
+    const StenoDictionary *dictionary =
         engine->dictionary.GetDictionaryForOutline(parser.strokes,
                                                    parser.length);
     Console::Printf("{\"definition\":\"%J\",\"dictionary\":\"%J\"}\n\n",
-                    result.GetText(), provider->GetName());
+                    result.GetText(), dictionary->GetName());
   } else {
     StenoSegmentList segmentList;
     ConversionBuffer &buffer = engine->previousConversionBuffer;

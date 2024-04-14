@@ -267,36 +267,36 @@ static const EmilySymbolData *LookupDataStroke(StenoStroke stroke) {
 StenoDictionaryLookupResult
 StenoEmilySymbolsDictionary::Lookup(const StenoDictionaryLookup &lookup) const {
   assert(lookup.length == 1);
-  const StenoStroke c = lookup.strokes[0];
-  if ((c & ACTIVATION_MASK) != ACTIVATION_MATCH) {
+  const StenoStroke s = lookup.strokes[0];
+  if ((s & ACTIVATION_MASK) != ACTIVATION_MATCH) {
     return StenoDictionaryLookupResult::CreateInvalid();
   }
 
-  const EmilySymbolData *data = LookupDataStroke(c & DATA_MASK);
+  const EmilySymbolData *data = LookupDataStroke(s & DATA_MASK);
   if (data == nullptr) {
     return StenoDictionaryLookupResult::CreateInvalid();
   }
 
   int variant = 0;
-  if ((c & VARIANT_1).IsNotEmpty()) {
+  if ((s & VARIANT_1).IsNotEmpty()) {
     variant += 1;
   }
-  if ((c & VARIANT_2).IsNotEmpty()) {
+  if ((s & VARIANT_2).IsNotEmpty()) {
     variant += 2;
   }
   const char *text = data->text[variant];
 
-  const char *capitalize = (c & CAPITALIZE_MASK).IsNotEmpty() ? "{-|}" : "";
-  const char *leftSpace = (c & LEFT_SPACE_MASK).IsNotEmpty() ? "{}" : "{^}";
-  const char *rightSpace = (c & RIGHT_SPACE_MASK).IsNotEmpty() ? "{}" : "{^}";
+  const char *capitalize = (s & CAPITALIZE_MASK).IsNotEmpty() ? "{-|}" : "";
+  const char *leftSpace = (s & LEFT_SPACE_MASK).IsNotEmpty() ? "{}" : "{^}";
+  const char *rightSpace = (s & RIGHT_SPACE_MASK).IsNotEmpty() ? "{}" : "{^}";
 
   if (Str::Eq(text, "{*!}") || Str::Eq(text, "{*?}")) {
     leftSpace = "";
     rightSpace = "";
   }
 
-  const char *r1 = (c & REPEAT_EXTRA_1).IsNotEmpty() ? text : "";
-  const char *r2 = (c & REPEAT_EXTRA_2).IsNotEmpty() ? text : "";
+  const char *r1 = (s & REPEAT_EXTRA_1).IsNotEmpty() ? text : "";
+  const char *r2 = (s & REPEAT_EXTRA_2).IsNotEmpty() ? text : "";
 
   return StenoDictionaryLookupResult::CreateDynamicString(
       Str::Join(leftSpace, text, r1, r2, r2, rightSpace, capitalize, nullptr));
@@ -305,18 +305,18 @@ StenoEmilySymbolsDictionary::Lookup(const StenoDictionaryLookup &lookup) const {
 const StenoDictionary *StenoEmilySymbolsDictionary::GetDictionaryForOutline(
     const StenoDictionaryLookup &lookup) const {
   assert(lookup.length == 1);
-  const StenoStroke c = lookup.strokes[0];
-  if ((c & ACTIVATION_MASK) != ACTIVATION_MATCH) {
+  const StenoStroke stroke = lookup.strokes[0];
+  if ((stroke & ACTIVATION_MASK) != ACTIVATION_MATCH) {
     return nullptr;
   }
 
-  const EmilySymbolData *data = LookupDataStroke(c & DATA_MASK);
+  const EmilySymbolData *data = LookupDataStroke(stroke & DATA_MASK);
   return data != nullptr ? this : nullptr;
 }
 
 void StenoEmilySymbolsDictionary::ReverseLookup(
-    StenoReverseDictionaryLookup &result) const {
-  uint32_t hash = Crc32(result.lookup, result.lookupLength);
+    StenoReverseDictionaryLookup &lookup) const {
+  uint32_t hash = lookup.GetLookupCrc();
   uint32_t index = hash;
   hash >>= 8;
 
@@ -334,7 +334,7 @@ void StenoEmilySymbolsDictionary::ReverseLookup(
 
     const EmilySymbolData *symbolData = DATA + (data & 0xff);
     for (size_t i = 0; i < 4; ++i) {
-      if (Str::Eq(result.lookup, symbolData->text[i])) {
+      if (Str::Eq(lookup.definition, symbolData->text[i])) {
         // Have a match!
         static constexpr StenoStroke VARIANTS_STROKE[4] = {
             StenoStroke(0),
@@ -344,7 +344,7 @@ void StenoEmilySymbolsDictionary::ReverseLookup(
         };
         StenoStroke stroke =
             symbolData->trigger | ACTIVATION_MATCH | VARIANTS_STROKE[i];
-        result.AddResult(&stroke, 1, this);
+        lookup.AddResult(&stroke, 1, this);
         return;
       }
     }

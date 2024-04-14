@@ -62,12 +62,12 @@ const StenoDictionary *StenoDictionaryList::GetDictionaryForOutline(
 }
 
 void StenoDictionaryList::ReverseLookup(
-    StenoReverseDictionaryLookup &result) const {
+    StenoReverseDictionaryLookup &lookup) const {
   for (const StenoDictionaryListEntry &entry : dictionaries) {
     if (!entry.IsEnabled()) {
       continue;
     }
-    entry->ReverseLookup(result);
+    entry->ReverseLookup(lookup);
   }
 }
 

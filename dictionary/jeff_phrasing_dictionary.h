@@ -23,7 +23,7 @@ public:
   GetDictionaryForOutline(const StenoDictionaryLookup &lookup) const;
 
   virtual const char *GetName() const;
-  virtual void ReverseLookup(StenoReverseDictionaryLookup &result) const;
+  virtual void ReverseLookup(StenoReverseDictionaryLookup &lookup) const;
 
   static StenoJeffPhrasingDictionary instance;
 

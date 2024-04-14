@@ -47,7 +47,7 @@ public:
   void Add(const StenoStroke *strokes, size_t length) {
     count = length;
 
-    memcpy(this->strokes, strokes, length * sizeof(StenoStroke));
+    strokes->CopyTo(this->strokes, length);
 
     StenoState emptyState;
     emptyState.Reset();

@@ -12,7 +12,7 @@ public:
                             const uint8_t *baseAddress,
                             const SizedList<uint8_t> &textBlock);
 
-  virtual void ReverseLookup(StenoReverseDictionaryLookup &result) const;
+  virtual void ReverseLookup(StenoReverseDictionaryLookup &lookup) const;
 
   virtual const char *GetName() const;
 
@@ -26,8 +26,8 @@ private:
   const uint8_t *index[INDEX_SIZE + 1];
   size_t indexSize = 0;
 
-  void AddMapDictionaryData(StenoReverseDictionaryLookup &result) const;
-  void FilterResult(StenoReverseDictionaryLookup &result) const;
+  void AddMapDictionaryData(StenoReverseDictionaryLookup &lookup) const;
+  void FilterResult(StenoReverseDictionaryLookup &lookup) const;
 
   void BuildIndex();
 };

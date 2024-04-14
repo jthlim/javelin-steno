@@ -42,6 +42,12 @@ struct StenoState {
   bool operator==(const StenoState &a) const {
     return memcmp(this, &a, sizeof(*this)) == 0;
   }
+
+  void CopyTo(StenoState *destination, size_t length) const {
+    for (size_t i = 0; i < length; ++i) {
+      destination[i] = this[i];
+    }
+  }
 };
 
 //---------------------------------------------------------------------------

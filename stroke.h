@@ -128,6 +128,12 @@ public:
     return true;
   }
 
+  void CopyTo(StenoStroke *destination, size_t length) const {
+    for (size_t i = 0; i < length; ++i) {
+      destination[i] = this[i];
+    }
+  }
+
   static const size_t MAX_STRING_LENGTH = 32;
 
 private:

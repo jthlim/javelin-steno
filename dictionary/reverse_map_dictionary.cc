@@ -16,12 +16,12 @@ StenoReverseMapDictionary::StenoReverseMapDictionary(
 }
 
 void StenoReverseMapDictionary::ReverseLookup(
-    StenoReverseDictionaryLookup &result) const {
-  if (result.mapDataLookups.IsEmpty()) {
-    AddMapDictionaryData(result);
+    StenoReverseDictionaryLookup &lookup) const {
+  if (lookup.mapDataLookups.IsEmpty()) {
+    AddMapDictionaryData(lookup);
   }
-  dictionary->ReverseLookup(result);
-  FilterResult(result);
+  dictionary->ReverseLookup(lookup);
+  FilterResult(lookup);
 }
 
 const uint8_t *
@@ -86,26 +86,26 @@ StenoReverseMapDictionary::FindMapDataLookup(const char *text) const {
 }
 
 void StenoReverseMapDictionary::AddMapDictionaryData(
-    StenoReverseDictionaryLookup &result) const {
-  const uint8_t *p = FindMapDataLookup(result.lookup);
+    StenoReverseDictionaryLookup &lookup) const {
+  const uint8_t *p = FindMapDataLookup(lookup.definition);
 
   if (p) {
-    result.AddMapDataLookup(p, baseAddress);
+    lookup.AddMapDataLookup(p, baseAddress);
   }
 }
 
 // This ensures that the results are not conflicting with higher priority
 // dictionaries.
 void StenoReverseMapDictionary::FilterResult(
-    StenoReverseDictionaryLookup &result) const {
+    StenoReverseDictionaryLookup &lookup) const {
   size_t newCount = 0;
-  for (const StenoReverseDictionaryResult &r : result.results) {
+  for (const StenoReverseDictionaryResult &r : lookup.results) {
     if (dictionary->GetDictionaryForOutline(r.strokes, r.length) ==
-        r.lookupProvider) {
-      result.results[newCount++] = r;
+        r.dictionary) {
+      lookup.results[newCount++] = r;
     }
   }
-  result.results.SetCount(newCount);
+  lookup.results.SetCount(newCount);
 }
 
 void StenoReverseMapDictionary::BuildIndex() {

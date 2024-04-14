@@ -157,13 +157,13 @@ const StenoDictionary *StenoUserDictionary::GetDictionaryForOutline(
 }
 
 void StenoUserDictionary::ReverseLookup(
-    StenoReverseDictionaryLookup &result) const {
+    StenoReverseDictionaryLookup &lookup) const {
   if (activeDescriptor->version !=
       USER_DICTIONARY_WITH_REVERSE_LOOKUP_VERSION) {
     return;
   }
 
-  uint32_t entryIndex = Crc32(result.lookup, result.lookupLength);
+  uint32_t entryIndex = lookup.GetLookupCrc();
 
   for (;;) {
     entryIndex &= activeDescriptor->data.hashTableSize - 1;
@@ -181,8 +181,8 @@ void StenoUserDictionary::ReverseLookup(
           (const StenoUserDictionaryEntry *)(activeDescriptor->data.dataBlock +
                                              offset - OFFSET_DATA);
 
-      if (Str::Eq(entry->GetText(), result.lookup)) {
-        result.AddResult(entry->strokes, entry->strokeLength, this);
+      if (Str::Eq(entry->GetText(), lookup.definition)) {
+        lookup.AddResult(entry->strokes, entry->strokeLength, this);
       }
     }
 

@@ -199,14 +199,14 @@ const StenoDictionary *StenoCompactMapDictionary::GetDictionaryForOutline(
 }
 
 void StenoCompactMapDictionary::ReverseLookup(
-    StenoReverseDictionaryLookup &result) const {
-  for (const void *data : result.mapDataLookups) {
-    ReverseLookup(result, data);
+    StenoReverseDictionaryLookup &lookup) const {
+  for (const void *data : lookup.mapDataLookups) {
+    ReverseLookup(lookup, data);
   }
 }
 
 void StenoCompactMapDictionary::ReverseLookup(
-    StenoReverseDictionaryLookup &result, const void *data) const {
+    StenoReverseDictionaryLookup &lookup, const void *data) const {
   // Quick reject
   if (data < strokes[1].data) {
     return;
@@ -229,7 +229,7 @@ void StenoCompactMapDictionary::ReverseLookup(
     StenoStroke strokes[i];
     size_t strokeLength = i;
     entry->ExpandTo(strokes, strokeLength);
-    result.AddResult(strokes, strokeLength, this);
+    lookup.AddResult(strokes, strokeLength, this);
     return;
   }
 }

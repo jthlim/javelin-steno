@@ -23,8 +23,8 @@ BuildSegmentContext::BuildSegmentContext(
 
 void StenoSegmentBuilder::TransferStartFrom(const StenoSegmentBuilder &source,
                                             size_t count) {
-  memcpy(strokes, source.strokes, count * sizeof(StenoStroke));
-  memcpy(states, source.states, count * sizeof(StenoState));
+  source.strokes->CopyTo(strokes, count);
+  source.states->CopyTo(states, count);
   hasModifiedStrokeHistory = false;
 }
 
@@ -221,7 +221,7 @@ StenoSegment StenoSegmentBuilder::AutoSuffixTest(BuildSegmentContext &context,
                                                  size_t startLength,
                                                  size_t minimumLength) {
   StenoStroke localStrokes[startLength];
-  memcpy(localStrokes, strokes + offset, sizeof(StenoStroke) * startLength);
+  (strokes + offset)->CopyTo(localStrokes, startLength);
 
   const StenoOrthography &orthography = context.orthography.data;
 

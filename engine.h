@@ -43,7 +43,7 @@ public:
   bool EnableDictionary(const char *name);
   bool DisableDictionary(const char *name);
   bool ToggleDictionary(const char *name);
-  void ReverseLookup(StenoReverseDictionaryLookup &result) const;
+  void ReverseLookup(StenoReverseDictionaryLookup &lookup) const;
 
   bool IsPaperTapeEnabled() const { return paperTapeEnabled; }
   void EnablePaperTape() { paperTapeEnabled = true; }

@@ -128,8 +128,13 @@ struct StenoDictionaryCollection {
   SizedList<uint8_t> textBlock;
   SizedList<const uint8_t *> prefixes;
   SizedList<const uint8_t *> suffixes;
+  uint32_t timestamp;
   const XipPointer<StenoDictionaryDefinition> dictionaries[];
 
+  // Returns whether the timestamp at the start of the dictionary matches
+  // the timestamp at the end of the text block.
+  // This is used to detect partial dictionary uploads.
+  bool HasMatchingTimestamp() const;
   void AddDictionariesToList(List<StenoDictionaryListEntry> &list) const;
 };
 

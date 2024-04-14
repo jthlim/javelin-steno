@@ -6,7 +6,8 @@
 
 //---------------------------------------------------------------------------
 
-class StenoFullMapDictionary final : public StenoDictionary, public JavelinMallocAllocate {
+class StenoFullMapDictionary final : public StenoDictionary,
+                                     public JavelinMallocAllocate {
 public:
   StenoFullMapDictionary(const StenoDictionaryDefinition &definition)
       : StenoDictionary(definition.maximumOutlineLength),
@@ -20,7 +21,7 @@ public:
   virtual const StenoDictionary *
   GetDictionaryForOutline(const StenoDictionaryLookup &lookup) const;
 
-  virtual void ReverseLookup(StenoReverseDictionaryLookup &result) const;
+  virtual void ReverseLookup(StenoReverseDictionaryLookup &lookup) const;
 
   virtual const char *GetName() const;
   virtual void PrintInfo(int depth) const;
@@ -36,7 +37,7 @@ private:
   static const StenoMapDictionaryStrokesDefinition *
   CreateStrokeCache(const StenoDictionaryDefinition &definition);
 
-  void ReverseLookup(StenoReverseDictionaryLookup &result,
+  void ReverseLookup(StenoReverseDictionaryLookup &lookup,
                      const void *data) const;
 };
 

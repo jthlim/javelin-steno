@@ -27,7 +27,7 @@ public:
     return GetDictionaryForOutline(StenoDictionaryLookup(strokes, length));
   }
 
-  virtual void ReverseLookup(StenoReverseDictionaryLookup &result) const;
+  virtual void ReverseLookup(StenoReverseDictionaryLookup &lookup) const;
 
   virtual void SetParentRecursively(StenoDictionary *parent) final;
 

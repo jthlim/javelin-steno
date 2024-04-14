@@ -436,9 +436,9 @@ void StenoEngine::PrintSuggestions(const StenoSegmentList &previousSegmentList,
 
 void StenoEngine::PrintSuggestion(const char *p, size_t arrowPrefixCount,
                                   size_t strokeThreshold) const {
-  StenoReverseDictionaryLookup result(strokeThreshold, p);
-  ReverseLookup(result);
-  if (result.results.IsEmpty()) {
+  StenoReverseDictionaryLookup lookup(strokeThreshold, p);
+  ReverseLookup(lookup);
+  if (lookup.results.IsEmpty()) {
     return;
   }
 
@@ -448,12 +448,19 @@ void StenoEngine::PrintSuggestion(const char *p, size_t arrowPrefixCount,
                   "\"text\":\"%J\","
                   "\"outlines\":[",
                   arrowPrefixCount, p);
-  for (size_t i = 0; i < result.results.GetCount(); ++i) {
-    const StenoReverseDictionaryResult &lookup = result.results[i];
-    Console::Printf(i == 0 ? "\"%T\"" : ",\"%T\"", lookup.strokes,
-                    lookup.length);
+  for (size_t i = 0; i < lookup.results.GetCount(); ++i) {
+    const StenoReverseDictionaryResult &entry = lookup.results[i];
+    Console::Printf(i == 0 ? "\"%T\"" : ",\"%T\"", entry.strokes, entry.length);
   }
-  Console::Printf("]}\n\n");
+  Console::Printf("]");
+  if (lookup.AreAllFromSameDictionary()) {
+    const StenoDictionary *dictionary = lookup.results[0].dictionary;
+    const char *name = dictionary->GetName();
+    if (name[0] != '#') {
+      Console::Printf(",\"dictionary\":\"%J\"", name);
+    }
+  }
+  Console::Printf("}\n\n");
 }
 
 static bool ShouldShowSuggestions(const StenoSegmentList &segmentList) {

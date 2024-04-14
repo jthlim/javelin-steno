@@ -29,10 +29,10 @@ StenoJeffPhrasingDictionary StenoJeffPhrasingDictionary::instance;
 //---------------------------------------------------------------------------
 
 struct StenoJeffPhrasingDictionary::ReverseLookupContext {
-  ReverseLookupContext(StenoReverseDictionaryLookup &result) : result(result) {}
+  ReverseLookupContext(StenoReverseDictionaryLookup &lookup) : lookup(lookup) {}
 
   bool hasPresentTenseResult = false;
-  StenoReverseDictionaryLookup &result;
+  StenoReverseDictionaryLookup &lookup;
   List<StenoStroke> testedStrokes;
 
   bool HasTestedStroke(const StenoStroke &stroke) const {
@@ -41,7 +41,7 @@ struct StenoJeffPhrasingDictionary::ReverseLookupContext {
   void AddTestedStroke(const StenoStroke &stroke) { testedStrokes.Add(stroke); }
 
   void AddResult(const StenoStroke &stroke, const StenoDictionary *provider) {
-    result.AddResult(&stroke, 1, provider);
+    lookup.AddResult(&stroke, 1, provider);
   }
 };
 
@@ -345,18 +345,18 @@ const char *StenoJeffPhrasingDictionary::GetName() const {
 }
 
 void StenoJeffPhrasingDictionary::ReverseLookup(
-    StenoReverseDictionaryLookup &result) const {
+    StenoReverseDictionaryLookup &lookup) const {
   // Maximum phrase is 7 words (6 spaces).
-  if (CountNumberOfSpaces(result.lookup) > 6) {
+  if (CountNumberOfSpaces(lookup.definition) > 6) {
     return;
   }
 
-  if (ContainsNonPhraseCharacter(result.lookup)) {
+  if (ContainsNonPhraseCharacter(lookup.definition)) {
     return;
   }
 
-  ReverseLookupContext context(result);
-  RecurseCheckReverseLookup(context, result.lookup, StenoStroke(), 0, 0,
+  ReverseLookupContext context(lookup);
+  RecurseCheckReverseLookup(context, lookup.definition, StenoStroke(), 0, 0,
                             ModeMask::FULL | ModeMask::SIMPLE |
                                 ModeMask::PRESENT | ModeMask::PAST);
 }
@@ -435,7 +435,7 @@ void StenoJeffPhrasingDictionary::RecurseCheckReverseLookup(
           if (*lookupText == ' ') {
             ++lookupText;
           }
-          if (Str::Eq(lookupText, context.result.lookup)) {
+          if (Str::Eq(lookupText, context.lookup.definition)) {
             context.AddResult(lookupStroke, this);
             if (modeMask & ModeMask::PRESENT) {
               context.hasPresentTenseResult = true;

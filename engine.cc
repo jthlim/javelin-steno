@@ -148,15 +148,15 @@ bool StenoEngine::ToggleDictionary(const char *name) {
   return dictionary.ToggleDictionary(name);
 }
 
-void StenoEngine::ReverseLookup(StenoReverseDictionaryLookup &result) const {
+void StenoEngine::ReverseLookup(StenoReverseDictionaryLookup &lookup) const {
   ExternalFlashSentry externalFlashSentry;
 
-  dictionary.ReverseLookup(result);
-  if (result.results.IsEmpty()) {
+  dictionary.ReverseLookup(lookup);
+  if (lookup.results.IsEmpty()) {
     return;
   }
 
-  result.SortResults();
+  lookup.SortResults();
 }
 
 void StenoEngine::SendText(const uint8_t *p) {

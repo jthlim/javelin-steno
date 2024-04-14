@@ -2,10 +2,10 @@
 
 #include "dictionary_definition.h"
 #include "compact_map_dictionary.h"
-#include "corrupted_dictionary.h"
 #include "dictionary_list.h"
 #include "emily_symbols_dictionary.h"
 #include "full_map_dictionary.h"
+#include "invalid_dictionary.h"
 #include "jeff_numbers_dictionary.h"
 #include "jeff_phrasing_dictionary.h"
 #include "jeff_show_stroke_dictionary.h"
@@ -45,8 +45,14 @@ StenoDictionary *StenoDictionaryDefinition::Create() const {
 void StenoDictionaryCollection::AddDictionariesToList(
     List<StenoDictionaryListEntry> &list) const {
   if (magic != STENO_MAP_DICTIONARY_COLLECTION_MAGIC) {
-    list.Add(
-        StenoDictionaryListEntry(&StenoCorruptedDictionary::instance, true));
+    list.Add(StenoDictionaryListEntry(
+        &StenoInvalidDictionary::corruptedInstance, true));
+    return;
+  }
+
+  if (!HasMatchingTimestamp()) {
+    list.Add(StenoDictionaryListEntry(
+        &StenoInvalidDictionary::incompleteUploadInstance, true));
     return;
   }
 
@@ -59,6 +65,14 @@ void StenoDictionaryCollection::AddDictionariesToList(
           StenoDictionaryListEntry(dictionary, definition->defaultEnabled));
     }
   }
+}
+
+bool StenoDictionaryCollection::HasMatchingTimestamp() const {
+  const uint8_t *textBlockEnd = end(textBlock);
+  uint32_t endOfTextBlockTimestamp = textBlockEnd[0] | (textBlockEnd[1] << 8) |
+                                     (textBlockEnd[2] << 16) |
+                                     (textBlockEnd[3] << 24);
+  return timestamp == endOfTextBlockTimestamp;
 }
 
 //---------------------------------------------------------------------------

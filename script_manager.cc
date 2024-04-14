@@ -3,6 +3,7 @@
 #include "script_manager.h"
 #include "clock.h"
 #include "console.h"
+#include "flash.h"
 #include "script_byte_code.h"
 #include "timer_manager.h"
 
@@ -58,10 +59,15 @@ void ScriptManager::Update(const ButtonState &newButtonState,
 }
 
 void ScriptManager::ExecuteScript(ScriptId scriptId) {
-  ScriptManager &instance = GetInstance();
-  if (instance.isScriptValid) {
-    instance.script.ExecuteScriptId(scriptId, Clock::GetMilliseconds());
+  if (Flash::IsUpdating()) {
+    return;
   }
+  ScriptManager &instance = GetInstance();
+  if (!instance.isScriptValid) {
+    return;
+  }
+
+  instance.script.ExecuteScriptId(scriptId, Clock::GetMilliseconds());
 }
 
 void ScriptManager::PressButton(size_t index, uint32_t scriptTime) {
@@ -83,7 +89,11 @@ void ScriptManager::ReleaseButton(size_t index, uint32_t scriptTime) {
 //---------------------------------------------------------------------------
 
 void ScriptManager::Tick(uint32_t scriptTime) {
-  if (!isScriptValid) {
+  if (Flash::IsUpdating()) {
+    return;
+  }
+  ScriptManager &instance = GetInstance();
+  if (!instance.isScriptValid) {
     return;
   }
   script.ExecuteTickScript(scriptTime);

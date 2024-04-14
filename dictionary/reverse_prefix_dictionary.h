@@ -12,7 +12,7 @@ public:
                                const uint8_t *baseAddress,
                                const SizedList<const uint8_t *> prefixes);
 
-  virtual void ReverseLookup(StenoReverseDictionaryLookup &result) const;
+  virtual void ReverseLookup(StenoReverseDictionaryLookup &lookup) const;
   virtual const char *GetName() const;
 
 private:
@@ -26,7 +26,7 @@ private:
   const SizedList<Prefix> prefixes;
 
   void AddPrefixReverseLookup(ReverseLookupContext &context,
-                              StenoReverseDictionaryLookup &result) const;
+                              StenoReverseDictionaryLookup &lookup) const;
 
   bool IsStrokeDefined(const StenoStroke *strokes, size_t prefixStrokeCount,
                        size_t combinedStrokeCount) const;

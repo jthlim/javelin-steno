@@ -1,6 +1,7 @@
 //---------------------------------------------------------------------------
 
 #pragma once
+#include "../crc.h"
 #include "../malloc_allocate.h"
 #include "../static_list.h"
 #include "../str.h"
@@ -136,7 +137,7 @@ struct StenoDictionaryLookup {
 struct StenoReverseDictionaryResult {
   size_t length;
   StenoStroke *strokes;
-  const StenoDictionary *lookupProvider;
+  const StenoDictionary *dictionary;
 };
 
 class StenoReverseDictionaryLookup : public JavelinMallocAllocate {
@@ -144,22 +145,23 @@ private:
   static const size_t MAX_MAP_DATA_LOOKUP_COUNT = 24;
 
 public:
-  StenoReverseDictionaryLookup(size_t strokeThreshold, const char *lookup)
-      : strokeThreshold(strokeThreshold), lookup(lookup),
-        lookupLength(strlen(lookup)) {}
+  StenoReverseDictionaryLookup(size_t strokeThreshold, const char *definition)
+      : strokeThreshold(strokeThreshold), definition(definition),
+        definitionLength(strlen(definition)) {}
 
   bool HasResults() const { return results.IsNotEmpty(); }
 
   void AddResult(const StenoStroke *strokes, size_t length,
-                 const StenoDictionary *lookupProvider);
+                 const StenoDictionary *dictionary);
   bool HasResult(const StenoStroke *strokes, size_t length) const;
 
   size_t GetMinimumStrokeCount() const;
 
   // Results equal to, or above this will not be captured.
+  // i.e. Only stroke count less than this will be returned.
   size_t strokeThreshold;
-  const char *lookup;
-  size_t lookupLength;
+  const char *definition;
+  size_t definitionLength;
 
   size_t strokesCount = 0;
 
@@ -182,6 +184,20 @@ public:
   StenoStroke strokes[STROKE_COUNT];
 
   static const size_t MAX_STROKE_THRESHOLD = 31;
+
+  uint32_t GetLookupCrc() {
+    if (!hasLookupCrc) {
+      hasLookupCrc = true;
+      lookupCrc = Crc32(definition, definitionLength);
+    }
+    return lookupCrc;
+  }
+
+  bool AreAllFromSameDictionary() const;
+
+private:
+  bool hasLookupCrc = false;
+  uint32_t lookupCrc;
 };
 
 //---------------------------------------------------------------------------
@@ -207,7 +223,7 @@ public:
     return GetDictionaryForOutline(strokes, length) != nullptr;
   }
 
-  virtual void ReverseLookup(StenoReverseDictionaryLookup &result) const;
+  virtual void ReverseLookup(StenoReverseDictionaryLookup &lookup) const;
 
   size_t GetMaximumOutlineLength() const { return maximumOutlineLength; }
   virtual void UpdateMaximumOutlineLength() {

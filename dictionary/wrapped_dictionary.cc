@@ -15,8 +15,8 @@ const StenoDictionary *StenoWrappedDictionary::GetDictionaryForOutline(
 }
 
 void StenoWrappedDictionary::ReverseLookup(
-    StenoReverseDictionaryLookup &result) const {
-  return dictionary->ReverseLookup(result);
+    StenoReverseDictionaryLookup &lookup) const {
+  return dictionary->ReverseLookup(lookup);
 }
 
 void StenoWrappedDictionary::SetParentRecursively(StenoDictionary *parent) {

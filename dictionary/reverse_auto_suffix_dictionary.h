@@ -18,7 +18,7 @@ public:
   StenoReverseAutoSuffixDictionary(StenoDictionary *dictionary,
                                    const StenoCompiledOrthography &orthography);
 
-  virtual void ReverseLookup(StenoReverseDictionaryLookup &result) const;
+  virtual void ReverseLookup(StenoReverseDictionaryLookup &lookup) const;
 
   virtual const char *GetName() const;
 
@@ -28,13 +28,14 @@ private:
   PatternQuickReject mergedQuickReject;
 
   void ProcessReverseAutoSuffix(
-      StenoReverseDictionaryLookup &result,
+      StenoReverseDictionaryLookup &lookup,
       const StenoOrthographyReverseAutoSuffix &reverseAutoSuffix,
       const Pattern &reversePattern) const;
 
   bool CanAutoSuffixLookup(const StenoStroke *strokes, size_t length) const;
   bool HasPrefixLookup(const StenoStroke *strokes, size_t length) const;
   bool HasSuffixLookup(const StenoStroke *strokes, size_t length) const;
+  bool HasValidLookup(const StenoStroke *strokes, size_t length) const;
 
   static const Pattern *
   CreateReversePatterns(const StenoOrthography &orthography);

@@ -30,16 +30,17 @@ StenoReverseAutoSuffixDictionary::StenoReverseAutoSuffixDictionary(
 }
 
 void StenoReverseAutoSuffixDictionary::ReverseLookup(
-    StenoReverseDictionaryLookup &result) const {
-  dictionary->ReverseLookup(result);
+    StenoReverseDictionaryLookup &lookup) const {
+  dictionary->ReverseLookup(lookup);
 
-  if (result.lookupLength < 2) {
+  if (lookup.definitionLength < 2) {
     return;
   }
 
-  const char *quickRejectText = result.lookupLength > 8
-                                    ? result.lookup + result.lookupLength - 8
-                                    : result.lookup;
+  const char *quickRejectText =
+      lookup.definitionLength > 8
+          ? lookup.definition + lookup.definitionLength - 8
+          : lookup.definition;
   PatternQuickReject textReject(quickRejectText);
 
   if (!mergedQuickReject.IsPossibleMergeMatch(textReject)) {
@@ -49,7 +50,7 @@ void StenoReverseAutoSuffixDictionary::ReverseLookup(
   for (size_t i = 0; i < orthography.data.reverseAutoSuffixes.GetCount(); ++i) {
     const Pattern &reversePattern = reversePatterns[i];
     if (reversePattern.IsPossibleMatch(textReject)) {
-      ProcessReverseAutoSuffix(result, orthography.data.reverseAutoSuffixes[i],
+      ProcessReverseAutoSuffix(lookup, orthography.data.reverseAutoSuffixes[i],
                                reversePattern);
     }
   }
@@ -62,7 +63,7 @@ const char *StenoReverseAutoSuffixDictionary::GetName() const {
 //---------------------------------------------------------------------------
 
 void StenoReverseAutoSuffixDictionary::ProcessReverseAutoSuffix(
-    StenoReverseDictionaryLookup &result,
+    StenoReverseDictionaryLookup &lookup,
     const StenoOrthographyReverseAutoSuffix &reverseAutoSuffix,
     const Pattern &reversePattern) const {
   // 1. Generate word without suffix
@@ -71,10 +72,11 @@ void StenoReverseAutoSuffixDictionary::ProcessReverseAutoSuffix(
   // 4. Add in the auto suffix, and verify that it produces invalid lookup.
 
   // 1. To generate the word without suffix, run the regex on up to the last
-  // 8 letters of the lookup.
-  size_t lookupOffset = result.lookupLength > 8 ? result.lookupLength - 8 : 0;
-  const PatternMatch match =
-      reversePattern.MatchBypassingQuickReject(result.lookup + lookupOffset);
+  // 8 letters of the definition.
+  size_t definitionOffset =
+      lookup.definitionLength > 8 ? lookup.definitionLength - 8 : 0;
+  const PatternMatch match = reversePattern.MatchBypassingQuickReject(
+      lookup.definition + definitionOffset);
   if (!match.match) {
     return;
   }
@@ -83,9 +85,9 @@ void StenoReverseAutoSuffixDictionary::ProcessReverseAutoSuffix(
   // matches.
   char *replacedSuffix = match.Replace(reverseAutoSuffix.replacement);
 
-  char *withoutSuffix = (char *)malloc(result.lookupLength + 8);
-  memcpy(withoutSuffix, result.lookup, lookupOffset);
-  strcpy(withoutSuffix + lookupOffset, replacedSuffix);
+  char *withoutSuffix = (char *)malloc(lookup.definitionLength + 8);
+  memcpy(withoutSuffix, lookup.definition, definitionOffset);
+  strcpy(withoutSuffix + definitionOffset, replacedSuffix);
   free(replacedSuffix);
 
   char *suffix = Str::DupN(reverseAutoSuffix.autoSuffix->text + 3,
@@ -93,7 +95,7 @@ void StenoReverseAutoSuffixDictionary::ProcessReverseAutoSuffix(
   char *withSuffix = orthography.AddSuffix(withoutSuffix, suffix);
   free(suffix);
 
-  bool isSuffixEqual = Str::Eq(withSuffix, result.lookup);
+  bool isSuffixEqual = Str::Eq(withSuffix, lookup.definition);
   free(withSuffix);
   if (!isSuffixEqual) {
     free(withoutSuffix);
@@ -101,53 +103,81 @@ void StenoReverseAutoSuffixDictionary::ProcessReverseAutoSuffix(
   }
 
   // 3. Lookup the un-suffixed word
-  StenoReverseDictionaryLookup resultWithoutSuffix(result.strokeThreshold,
+  StenoReverseDictionaryLookup lookupWithoutSuffix(lookup.strokeThreshold,
                                                    withoutSuffix);
-  dictionary->ReverseLookup(resultWithoutSuffix);
+  dictionary->ReverseLookup(lookupWithoutSuffix);
   free(withoutSuffix);
 
   // 4. Verify that lookup up with suffix produces an invalid lookup.
-  for (const StenoReverseDictionaryResult &lookup :
-       resultWithoutSuffix.results) {
-    size_t length = lookup.length;
-    StenoStroke *strokes = lookup.strokes;
+  for (const StenoReverseDictionaryResult &entry :
+       lookupWithoutSuffix.results) {
+    size_t length = entry.length;
+    StenoStroke *strokes = entry.strokes;
 
     bool hasAdded = false;
 
     if ((strokes[length - 1] & reverseAutoSuffix.suppressMask).IsEmpty()) {
       strokes[length - 1] |= reverseAutoSuffix.autoSuffix->stroke;
 
-      if (result.HasResult(strokes, length)) {
+      if (lookup.HasResult(strokes, length)) {
         hasAdded = true;
       } else if (CanAutoSuffixLookup(strokes, length)) {
         // Even if it produced an invalid lookup, there's a chance that
         // another auto-suffix might take precedence. Check for that.
+        StenoStroke testedStrokes(0);
         for (const StenoOrthographyAutoSuffix &autoSuffix :
              orthography.data.autoSuffixes) {
           if (reverseAutoSuffix.autoSuffix == &autoSuffix) {
-            result.AddResult(strokes, length, this);
+            lookup.AddResult(strokes, length, this);
             hasAdded = true;
           }
 
-          if ((strokes[length - 1] & autoSuffix.stroke).IsNotEmpty()) {
-            strokes[length - 1] &= ~autoSuffix.stroke;
-            if (dictionary->HasOutline(strokes, length)) {
-              break;
-            }
-            strokes[length - 1] |= autoSuffix.stroke;
+          if ((autoSuffix.stroke & ~testedStrokes).IsEmpty()) {
+            continue;
+          }
+          testedStrokes |= autoSuffix.stroke;
+
+          if ((strokes[length - 1] & autoSuffix.stroke).IsEmpty()) {
+            continue;
+          }
+
+          strokes[length - 1] &= ~autoSuffix.stroke;
+          bool hasValidLookup = HasValidLookup(strokes, length);
+          strokes[length - 1] |= autoSuffix.stroke;
+          if (hasValidLookup) {
+            break;
           }
         }
       }
       strokes[length - 1] &= ~reverseAutoSuffix.autoSuffix->stroke;
     }
 
-    if (!hasAdded && length + 1 < result.strokeThreshold) {
+    if (!hasAdded && length + 1 < lookup.strokeThreshold) {
       StenoStroke strokesWithSuffixStroke[length + 1];
-      memcpy(strokesWithSuffixStroke, strokes, length * sizeof(StenoStroke));
+      strokes->CopyTo(strokesWithSuffixStroke, length);
       strokesWithSuffixStroke[length] = reverseAutoSuffix.autoSuffix->stroke;
 
       if (!dictionary->HasOutline(strokesWithSuffixStroke, length + 1)) {
-        result.AddResult(strokesWithSuffixStroke, length + 1, this);
+        lookup.AddResult(strokesWithSuffixStroke, length + 1, this);
+      }
+    }
+  }
+}
+
+bool StenoReverseAutoSuffixDictionary::HasValidLookup(
+    const StenoStroke *strokes, size_t length) const {
+  for (;;) {
+    size_t i = length;
+    for (;;) {
+      if (dictionary->HasOutline(strokes, i)) {
+        length -= i;
+        if (length == 0) {
+          return true;
+        }
+        strokes += i;
+        break;
+      } else if (--i == 0) {
+        return false;
       }
     }
   }

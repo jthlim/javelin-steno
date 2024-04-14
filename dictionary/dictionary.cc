@@ -78,14 +78,14 @@ StenoDictionaryLookupResult StenoDictionaryLookupResult::Clone() const {
 #endif
 
 void StenoReverseDictionaryLookup::AddResult(
-    const StenoStroke *c, size_t length,
-    const StenoDictionary *lookupProvider) {
+    const StenoStroke *result, size_t length,
+    const StenoDictionary *dictionary) {
   // Ignore if above or equal to the threshold
   if (length >= strokeThreshold) {
     return;
   }
 
-  if (HasResult(c, length)) {
+  if (HasResult(result, length)) {
     return;
   }
 
@@ -94,12 +94,12 @@ void StenoReverseDictionaryLookup::AddResult(
     return;
   }
 
-  StenoReverseDictionaryResult &result = results.Add();
-  result.length = length;
-  result.strokes = strokes + strokesCount;
-  result.lookupProvider = lookupProvider;
+  StenoReverseDictionaryResult &entry = results.Add();
+  entry.length = length;
+  entry.strokes = strokes + strokesCount;
+  entry.dictionary = dictionary;
 
-  memcpy(&strokes[strokesCount], c, sizeof(StenoStroke) * length);
+  result->CopyTo(strokes + strokesCount, length);
   strokesCount += length;
 }
 
@@ -157,6 +157,23 @@ void StenoReverseDictionaryLookup::SortResults() {
   });
 }
 
+bool StenoReverseDictionaryLookup::AreAllFromSameDictionary() const {
+  if (results.IsEmpty()) {
+    return false;
+  }
+
+  const StenoDictionary *firstDictionary = results[0].dictionary;
+
+  for (const StenoReverseDictionaryResult *it = begin(results) + 1;
+       it != end(results); ++it) {
+    if (it->dictionary != firstDictionary) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
 //---------------------------------------------------------------------------
 
 const StenoDictionary *StenoDictionary::GetDictionaryForOutline(
@@ -168,7 +185,7 @@ const StenoDictionary *StenoDictionary::GetDictionaryForOutline(
 }
 
 void StenoDictionary::ReverseLookup(
-    StenoReverseDictionaryLookup &result) const {}
+    StenoReverseDictionaryLookup &lookup) const {}
 
 void StenoDictionary::PrintInfo(int depth) const {
   Console::Printf("%s%s\n", Spaces(depth), GetName());

@@ -230,20 +230,38 @@ bool StenoEngine::HandleAddTranslationModeScanCode(
 //---------------------------------------------------------------------------
 
 bool StenoEngine::IsNewline(StenoStroke stroke) const {
+  // Special case R-R from plover theory.
   if (stroke == StenoStroke(StrokeMask::LR | StrokeMask::RR)) {
     return true;
   }
+
+  // Handle 'enter' in qwerty mode press.
   if (stroke == StenoStroke(StrokeMask::UNICODE | '\n')) {
     return true;
   }
 
+  // Standalone newlines are treated as delimiters.
   StenoDictionaryLookupResult lookup = dictionary.Lookup(&stroke, 1);
   if (!lookup.IsValid()) {
     return false;
   }
 
-  bool result = (strchr(lookup.GetText(), '\n') != nullptr ||
-                 Str::Eq(lookup.GetText(), "{#Return}"));
+  static const char *const VALID_NEWLINES[] = {
+      "{#Return}",
+      "{#Return}{^}",
+      "{^\n^}",
+      "{^~|\n^}",
+  };
+
+  const char *text = lookup.GetText();
+  bool result = false;
+  for (const char *validNewline : VALID_NEWLINES) {
+    if (Str::Eq(text, validNewline)) {
+      result = true;
+      break;
+    }
+  }
+
   lookup.Destroy();
   return result;
 }

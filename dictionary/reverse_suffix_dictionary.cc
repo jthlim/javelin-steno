@@ -125,26 +125,26 @@ StenoReverseSuffixDictionary::CreateSuffixList(
 }
 
 void StenoReverseSuffixDictionary::ReverseLookup(
-    StenoReverseDictionaryLookup &result) const {
-  dictionary->ReverseLookup(result);
-  if (result.lookupLength > 1 && result.strokeThreshold > 2 &&
-      !Str::Contains(result.lookup, ' ')) {
+    StenoReverseDictionaryLookup &lookup) const {
+  dictionary->ReverseLookup(lookup);
+  if (lookup.definitionLength > 1 && lookup.strokeThreshold > 2 &&
+      !Str::Contains(lookup.definition, ' ')) {
     ReverseLookupContext context;
     context.left = begin(suffixes);
     context.right = end(suffixes);
-    AddSuffixReverseLookup(context, result);
+    AddSuffixReverseLookup(context, lookup);
   }
 }
 
 void StenoReverseSuffixDictionary::AddSuffixReverseLookup(
-    ReverseLookupContext &context, StenoReverseDictionaryLookup &result) const {
-  size_t length = Str::Length(result.lookup);
+    ReverseLookupContext &context, StenoReverseDictionaryLookup &lookup) const {
+  size_t length = Str::Length(lookup.definition);
   if (length <= 2) {
     return;
   }
-  const uint8_t *lookupEnd = (const uint8_t *)result.lookup + length;
-  const uint8_t *lookup = lookupEnd;
-  context.Narrow(*--lookup);
+  const uint8_t *definitionEnd = (const uint8_t *)lookup.definition + length;
+  const uint8_t *definition = definitionEnd;
+  context.Narrow(*--definition);
 
   // Build a list of suffixes to test.
   struct Test {
@@ -152,34 +152,34 @@ void StenoReverseSuffixDictionary::AddSuffixReverseLookup(
     const Suffix *suffix;
   };
   List<Test> tests;
-  while (lookup > (const uint8_t *)result.lookup + 2) {
+  while (definition > (const uint8_t *)lookup.definition + 1) {
     if (!context.IsValid()) {
       break;
     }
     const Suffix *suffix = context.FindSuffixLookup();
     if (suffix) {
       tests.Add(Test{
-          .prefixEnd = lookup,
+          .prefixEnd = definition,
           .suffix = suffix,
       });
     }
-    context.Narrow(*--lookup);
+    context.Narrow(*--definition);
   }
 
   for (size_t i = 0; i < tests.GetCount(); ++i) {
     const Test &test = tests[i];
 
     // Create the without suffix version, add the suffix, and verify it matches.
-    size_t prefixLength = test.prefixEnd - (const uint8_t *)result.lookup;
-    char *withoutSuffix = Str::DupN(result.lookup, prefixLength);
+    size_t prefixLength = test.prefixEnd - (const uint8_t *)lookup.definition;
+    char *withoutSuffix = Str::DupN(lookup.definition, prefixLength);
 
-    size_t suffixLength = lookupEnd - test.prefixEnd;
+    size_t suffixLength = definitionEnd - test.prefixEnd;
     char *orthographySuffix =
         test.suffix->CreateOrthographySuffix(suffixLength);
     char *withSuffix = orthography.AddSuffix(withoutSuffix, orthographySuffix);
     free(orthographySuffix);
 
-    bool isSuffixEqual = Str::Eq(withSuffix, result.lookup);
+    bool isSuffixEqual = Str::Eq(withSuffix, lookup.definition);
     free(withSuffix);
     if (!isSuffixEqual) {
       free(withoutSuffix);
@@ -187,7 +187,7 @@ void StenoReverseSuffixDictionary::AddSuffixReverseLookup(
     }
 
     StenoReverseDictionaryLookup *prefixLookup =
-        new StenoReverseDictionaryLookup(result.strokeThreshold - 1,
+        new StenoReverseDictionaryLookup(lookup.strokeThreshold - 1,
                                          withoutSuffix);
 
     prefixDictionary->ReverseLookup(*prefixLookup);
@@ -196,39 +196,40 @@ void StenoReverseSuffixDictionary::AddSuffixReverseLookup(
     bool hasResult = false;
     if (prefixLookup->HasResults()) {
       // Prefix lookup succeeded, get the suffixes.
-      StenoReverseDictionaryLookup *suffixLookup =
-          new StenoReverseDictionaryLookup(
-              result.strokeThreshold - prefixLookup->GetMinimumStrokeCount(),
-              (const char *)test.suffix->GetText(suffixLength));
+      size_t minimumPrefixStrokeCount = prefixLookup->GetMinimumStrokeCount();
+      if (lookup.strokeThreshold > minimumPrefixStrokeCount + 1) {
+        StenoReverseDictionaryLookup *suffixLookup =
+            new StenoReverseDictionaryLookup(
+                lookup.strokeThreshold - minimumPrefixStrokeCount,
+                (const char *)test.suffix->GetText(suffixLength));
 
-      // Add map lookup hints.
-      suffixLookup->AddMapDataLookup(test.suffix->GetMapDataLookup(),
-                                     baseAddress);
+        // Add map lookup hints.
+        suffixLookup->AddMapDataLookup(test.suffix->GetMapDataLookup(),
+                                       baseAddress);
 
-      dictionary->ReverseLookup(*suffixLookup);
+        dictionary->ReverseLookup(*suffixLookup);
 
-      if (suffixLookup->HasResults()) {
-        for (const StenoReverseDictionaryResult &prefix :
-             prefixLookup->results) {
-          for (const StenoReverseDictionaryResult &suffix :
-               suffixLookup->results) {
-            size_t combinedLength = prefix.length + suffix.length;
-            if (combinedLength >= result.strokeThreshold) {
-              continue;
-            }
-            StenoStroke strokes[combinedLength];
-            memcpy(strokes, prefix.strokes,
-                   prefix.length * sizeof(StenoStroke));
-            memcpy(strokes + prefix.length, suffix.strokes,
-                   suffix.length * sizeof(StenoStroke));
+        if (suffixLookup->HasResults()) {
+          for (const StenoReverseDictionaryResult &prefix :
+               prefixLookup->results) {
+            for (const StenoReverseDictionaryResult &suffix :
+                 suffixLookup->results) {
+              size_t combinedLength = prefix.length + suffix.length;
+              if (combinedLength >= lookup.strokeThreshold) {
+                continue;
+              }
+              StenoStroke strokes[combinedLength];
+              prefix.strokes->CopyTo(strokes, prefix.length);
+              suffix.strokes->CopyTo(strokes + prefix.length, suffix.length);
 
-            if (!IsStrokeDefined(strokes, prefix.length, combinedLength)) {
-              result.AddResult(strokes, combinedLength, this);
+              if (!IsStrokeDefined(strokes, prefix.length, combinedLength)) {
+                lookup.AddResult(strokes, combinedLength, this);
+              }
             }
           }
         }
+        delete suffixLookup;
       }
-      delete suffixLookup;
     }
 
     delete prefixLookup;
