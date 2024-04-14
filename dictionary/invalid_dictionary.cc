@@ -5,7 +5,7 @@
 //---------------------------------------------------------------------------
 
 static const char MISMATCHED_MAGIC_ERROR[] =
-    "Dictionary Format Error. Please recreate a full firmware";
+    "Dictionary Format Error. Please recreate a full firmware.";
 static const char INCOMPLETE_UPLOAD_ERROR[] =
     "Incomplete dictionary upload detected. Please re-upload firmware.";
 

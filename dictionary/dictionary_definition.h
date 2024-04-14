@@ -118,7 +118,7 @@ struct StenoDictionaryDefinition {
 
 //---------------------------------------------------------------------------
 
-constexpr uint32_t STENO_MAP_DICTIONARY_COLLECTION_MAGIC = 0x3343534a; // 'JSC3'
+constexpr uint32_t STENO_MAP_DICTIONARY_COLLECTION_MAGIC = 0x3443534a; // 'JSC4'
 
 struct StenoDictionaryCollection {
   uint32_t magic;
