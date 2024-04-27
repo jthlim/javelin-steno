@@ -37,7 +37,7 @@ public:
   static void Pop();
 
   static void SetConnection(ConnectionId connectionId,
-                            uint16_t connnectionHandle);
+                            uint16_t connectionHandle);
 
   static ConsoleWriter instance;
 
@@ -95,6 +95,7 @@ public:
   static Console instance;
 
 private:
+  bool isTooLong = false;
   size_t lineBufferCount = 0;
   char lineBuffer[256];
 
@@ -102,7 +103,7 @@ private:
 
   static void PrintfInternal(const char *format, ...);
 
-  static const ConsoleCommand *GetCommand(const char *command);
+  static const ConsoleCommand *GetCommand(const char *buffer);
 };
 
 //---------------------------------------------------------------------------

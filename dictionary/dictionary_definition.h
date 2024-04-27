@@ -35,6 +35,7 @@
 //---------------------------------------------------------------------------
 
 template <typename T> class List;
+class PrintDictionaryContext;
 class StenoDictionary;
 struct StenoDictionaryListEntry;
 
@@ -56,33 +57,40 @@ struct StenoFullHashMapEntryBlock {
   size_t PopCount() const;
 };
 
-struct StenoMapDictionaryStrokesDefinition {
+struct StenoCompactMapDictionaryStrokesDefinition {
   size_t hashMapSize;
 
   // Stroke -> text information.
   const uint8_t *data;
 
-  // Hash table information -- either CompactStenoHashMapEntryBlock*
-  // or FullStenoHashMapEntryBlock*
-  union {
-    const void *offsets;
-    const StenoCompactHashMapEntryBlock *compactOffsets;
-    const StenoFullHashMapEntryBlock *fullOffsets;
-  };
+  // Hash map.
+  const StenoCompactHashMapEntryBlock *offsets;
 
   bool ContainsData(const void *p) const { return data <= p && p < offsets; }
 
-  size_t GetCompactOffset(size_t index) const;
-  bool HasCompactEntry(size_t index) const;
-  size_t GetCompactEntryCount() const;
-  bool PrintCompactDictionary(bool hasData, size_t strokeLength,
-                              const uint8_t *textBlock) const;
+  size_t GetOffset(size_t index) const;
+  bool HasEntry(size_t index) const;
+  size_t GetEntryCount() const;
+  void PrintDictionary(PrintDictionaryContext &context, size_t strokeLength,
+                       const uint8_t *textBlock) const;
+};
 
-  size_t GetFullOffset(size_t index) const;
-  bool HasFullEntry(size_t index) const;
-  size_t GetFullEntryCount() const;
-  bool PrintFullDictionary(bool hasData, size_t strokeLength,
-                           const uint8_t *textBlock) const;
+struct StenoFullMapDictionaryStrokesDefinition {
+  size_t hashMapSize;
+
+  // Stroke -> text information.
+  const uint8_t *data;
+
+  // Hash map.
+  const StenoFullHashMapEntryBlock *offsets;
+
+  bool ContainsData(const void *p) const { return data <= p && p < offsets; }
+
+  size_t GetOffset(size_t index) const;
+  bool HasEntry(size_t index) const;
+  size_t GetEntryCount() const;
+  void PrintDictionary(PrintDictionaryContext &context, size_t strokeLength,
+                       const uint8_t *textBlock) const;
 };
 
 //---------------------------------------------------------------------------
@@ -108,12 +116,20 @@ struct StenoDictionaryDefinition {
   StenoDictionaryType type;
   uint8_t _padding3;
 
-  // These fields are only valid for type being compact map or full map.
+  StenoDictionary *Create() const;
+};
+static_assert(sizeof(StenoDictionaryDefinition) == 4);
+
+struct StenoCompactMapDictionaryDefinition : public StenoDictionaryDefinition {
   const char *name;
   const uint8_t *textBlock;
-  const StenoMapDictionaryStrokesDefinition *strokes;
+  const StenoCompactMapDictionaryStrokesDefinition *strokes;
+};
 
-  StenoDictionary *Create() const;
+struct StenoFullMapDictionaryDefinition : public StenoDictionaryDefinition {
+  const char *name;
+  const uint8_t *textBlock;
+  const StenoFullMapDictionaryStrokesDefinition *strokes;
 };
 
 //---------------------------------------------------------------------------

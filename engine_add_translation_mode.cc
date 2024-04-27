@@ -94,7 +94,7 @@ void StenoEngine::ProcessAddTranslationModeUndo() {
 
   UpdateAddTranslationModeTextBuffer(previousConversionBuffer);
 
-  size_t undoCount =
+  const size_t undoCount =
       addTranslationHistory.GetUndoCount(StenoSegmentBuilder::BUFFER_SIZE);
   state = addTranslationHistory.Back(undoCount).state;
   state.shouldCombineUndo = false;
@@ -118,7 +118,7 @@ StenoEngine::UpdateAddTranslationModeTextBuffer(ConversionBuffer &buffer) {
     if (i >= addTranslationHistory.GetCount()) {
       return i;
     }
-    StenoStroke stroke = addTranslationHistory[i++].stroke;
+    const StenoStroke stroke = addTranslationHistory[i++].stroke;
     if (IsNewline(stroke)) {
       break;
     }
@@ -209,13 +209,13 @@ void StenoEngine::DeleteTranslation(size_t newlineIndex) {
 
 bool StenoEngine::HandleAddTranslationModeScanCode(
     uint32_t scanCodeAndModifiers, ScanCodeAction action) {
-  KeyCode keyCode = KeyCode::Value(scanCodeAndModifiers & 0xff);
+  const KeyCode keyCode = KeyCode::Value(scanCodeAndModifiers & 0xff);
   if (keyCode.IsModifier()) {
     return false;
   }
 
   if (action == ScanCodeAction::PRESS || action == ScanCodeAction::TAP) {
-    uint32_t unicode = KeyCode::ConvertToUnicode(scanCodeAndModifiers);
+    const uint32_t unicode = KeyCode::ConvertToUnicode(scanCodeAndModifiers);
     if (unicode == '\b') {
       ProcessAddTranslationModeUndo();
     } else if (unicode != 0) {

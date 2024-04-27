@@ -498,7 +498,7 @@ void StenoJeffModifiers::Process(const StenoKeyState &value,
     if (wasModifier || isModifier) {
       StenoStroke previousStroke = lastModifiers;
       UpdateModifiers(stroke);
-      bool result = TriggerSendKey(stroke);
+      const bool result = TriggerSendKey(stroke);
       UpdateModifiers(previousStroke);
       if (result) {
         return;
@@ -516,7 +516,7 @@ void StenoJeffModifiers::PrintInfo() const {
 
 void StenoJeffModifiers::UpdateModifiers(StenoStroke stroke) {
   lastModifiers = stroke;
-  bool isControl = (stroke & CONTROL_MASK).IsNotEmpty();
+  const bool isControl = (stroke & CONTROL_MASK).IsNotEmpty();
   if (isControl != wasControl) {
     wasControl = isControl;
     if (isControl) {
@@ -526,7 +526,7 @@ void StenoJeffModifiers::UpdateModifiers(StenoStroke stroke) {
     }
   }
 
-  bool isShift = (stroke & SHIFT_MASK).IsNotEmpty();
+  const bool isShift = (stroke & SHIFT_MASK).IsNotEmpty();
   if (isShift != wasShift) {
     wasShift = isShift;
     if (isShift) {
@@ -536,7 +536,7 @@ void StenoJeffModifiers::UpdateModifiers(StenoStroke stroke) {
     }
   }
 
-  bool isSuper = (stroke & SUPER_MASK).IsNotEmpty();
+  const bool isSuper = (stroke & SUPER_MASK).IsNotEmpty();
   if (isSuper != wasSuper) {
     wasSuper = isSuper;
     if (isSuper) {
@@ -546,7 +546,7 @@ void StenoJeffModifiers::UpdateModifiers(StenoStroke stroke) {
     }
   }
 
-  bool isAlt = (stroke & ALT_MASK).IsNotEmpty();
+  const bool isAlt = (stroke & ALT_MASK).IsNotEmpty();
   if (isAlt != wasAlt) {
     wasAlt = isAlt;
     if (isAlt) {

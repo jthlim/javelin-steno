@@ -24,6 +24,7 @@ public:
 
   virtual const char *GetName() const;
   virtual void ReverseLookup(StenoReverseDictionaryLookup &lookup) const;
+  virtual void PrintDictionary(PrintDictionaryContext &context) const;
 
   static StenoJeffPhrasingDictionary instance;
 

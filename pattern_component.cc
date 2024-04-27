@@ -85,12 +85,12 @@ bool BackReferencePatternComponent::Match(const char *p,
 
 bool CharacterSetComponent::Match(const char *p,
                                   PatternContext &context) const {
-  uint8_t c = *(uint8_t *)p;
+  const uint8_t c = *(uint8_t *)p;
   if (c >= 128) {
     return false;
   }
-  unsigned int index = c / 8;
-  unsigned int bit = 1 << (c & 7);
+  const unsigned int index = c / 8;
+  const unsigned int bit = 1 << (c & 7);
   if ((mask[index] & bit) == 0) {
     return false;
   }
@@ -103,7 +103,7 @@ bool CapturePatternComponent::Match(const char *p,
 
   const char *previous = context.captureList[index];
   context.captureList[index] = p;
-  bool result = CallNext(p, context);
+  const bool result = CallNext(p, context);
   if (!result) {
     context.captureList[index] = previous;
   }
@@ -190,7 +190,7 @@ ContainerPatternComponent::ContainerPatternComponent(
 }
 
 void ContainerPatternComponent::Add(PatternComponent *component) {
-  size_t capacity = (componentCount + 3) & -4;
+  const size_t capacity = (componentCount + 3) & -4;
   if (componentCount == capacity) {
     PatternComponent **newComponents = (PatternComponent **)malloc(
         (capacity + 4) * sizeof(PatternComponent *));

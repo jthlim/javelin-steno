@@ -34,7 +34,7 @@ public:
   virtual const char *GetName() const = 0;
 
   virtual void PrintInfo(int depth) const;
-  virtual bool PrintDictionary(const char *name, bool hasData) const;
+  virtual void PrintDictionary(PrintDictionaryContext &context) const;
 
   virtual void ListDictionaries() const;
   virtual bool EnableDictionary(const char *name);

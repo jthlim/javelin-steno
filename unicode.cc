@@ -10,8 +10,8 @@ static uint32_t Lookup(uint32_t c, const UnicodePair *data, size_t length) {
   size_t left = 0;
   size_t right = length;
   while (left < right) {
-    size_t mid = (left + right) / 2;
-    uint32_t midKey = data[mid].key;
+    const size_t mid = (left + right) / 2;
+    const uint32_t midKey = data[mid].key;
 
     if (c < midKey) {
       right = mid;
@@ -28,7 +28,7 @@ static bool Lookup(uint32_t c, const UnicodeRange *data, size_t length) {
   size_t left = 0;
   size_t right = length;
   while (left < right) {
-    size_t mid = (left + right) / 2;
+    const size_t mid = (left + right) / 2;
     if (c < data[mid].begin) {
       right = mid;
     } else if (c > data[mid].end) {

@@ -35,7 +35,7 @@ int WordList::GetWordRank(const uint8_t *word) {
 #endif
     const uint8_t *wordStart = FindWordStart(mid);
 
-    int compare = Compare(word, wordStart);
+    const int compare = Compare(word, wordStart);
     if (compare < 0) {
       right = wordStart;
     } else {

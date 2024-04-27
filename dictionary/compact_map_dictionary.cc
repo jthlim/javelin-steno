@@ -51,13 +51,13 @@ void CompactStenoMapDictionaryDataEntry::ExpandTo(StenoStroke *strokes,
 //---------------------------------------------------------------------------
 
 size_t
-StenoMapDictionaryStrokesDefinition::GetCompactOffset(size_t index) const {
-  size_t blockIndex = index / 128;
-  size_t blockBitIndex = index % 128;
-  size_t maskIndex = blockBitIndex / 32;
-  size_t bitIndex = blockBitIndex % 32;
+StenoCompactMapDictionaryStrokesDefinition::GetOffset(size_t index) const {
+  const size_t blockIndex = index / 128;
+  const size_t blockBitIndex = index % 128;
+  const size_t maskIndex = blockBitIndex / 32;
+  const size_t bitIndex = blockBitIndex % 32;
 
-  const StenoCompactHashMapEntryBlock &block = compactOffsets[blockIndex];
+  const StenoCompactHashMapEntryBlock &block = offsets[blockIndex];
 
   // Take advantage of sign bit to test presence.
   uint32_t mask = block.masks[maskIndex];
@@ -75,51 +75,44 @@ StenoMapDictionaryStrokesDefinition::GetCompactOffset(size_t index) const {
   return result;
 }
 
-bool StenoMapDictionaryStrokesDefinition::HasCompactEntry(size_t index) const {
-  size_t blockIndex = index / 128;
-  size_t blockBitIndex = index % 128;
+bool StenoCompactMapDictionaryStrokesDefinition::HasEntry(size_t index) const {
+  const size_t blockIndex = index / 128;
+  const size_t blockBitIndex = index % 128;
 
-  return compactOffsets[blockIndex].IsBitSet(blockBitIndex);
+  return offsets[blockIndex].IsBitSet(blockBitIndex);
 }
 
-size_t StenoMapDictionaryStrokesDefinition::GetCompactEntryCount() const {
+size_t StenoCompactMapDictionaryStrokesDefinition::GetEntryCount() const {
   size_t entryCount = 0;
   for (size_t i = 0; i < hashMapSize / 128; ++i) {
-    entryCount += compactOffsets[i].PopCount();
+    entryCount += offsets[i].PopCount();
   }
   return entryCount;
 }
 
-bool StenoMapDictionaryStrokesDefinition::PrintCompactDictionary(
-    bool hasData, size_t strokeLength, const uint8_t *textBlock) const {
-  size_t entryCount = GetCompactEntryCount();
+void StenoCompactMapDictionaryStrokesDefinition::PrintDictionary(
+    PrintDictionaryContext &context, size_t strokeLength,
+    const uint8_t *textBlock) const {
+  const size_t entryCount = GetEntryCount();
   StenoStroke strokes[strokeLength];
   for (size_t i = 0; i < entryCount; ++i) {
-    if (!hasData) {
-      hasData = true;
-      Console::Printf("\n\t");
-    } else {
-      Console::Printf(",\n\t");
-    }
-
-    size_t dataIndex = 3 * i * (1 + strokeLength);
+    const size_t dataIndex = 3 * i * (1 + strokeLength);
     const CompactStenoMapDictionaryDataEntry &entry =
         (const CompactStenoMapDictionaryDataEntry &)data[dataIndex];
 
     for (size_t j = 0; j < strokeLength; ++j) {
       strokes[j] = entry.strokes[j].ToUint32();
     }
-    Console::Printf("\"%T\": \"%J\"", strokes, strokeLength,
-                    (char *)textBlock + entry.textOffset.ToUint32());
+    context.Print(strokes, strokeLength,
+                  (char *)textBlock + entry.textOffset.ToUint32());
   }
-  return hasData;
 }
 
 //---------------------------------------------------------------------------
 
 StenoDictionaryLookupResult
 StenoCompactMapDictionary::Lookup(const StenoDictionaryLookup &lookup) const {
-  const StenoMapDictionaryStrokesDefinition &strokesDefinition =
+  const StenoCompactMapDictionaryStrokesDefinition &strokesDefinition =
       strokes[lookup.length];
 
   if (strokesDefinition.hashMapSize == 0) {
@@ -127,7 +120,7 @@ StenoCompactMapDictionary::Lookup(const StenoDictionaryLookup &lookup) const {
   }
 
   size_t entryIndex = lookup.hash & (strokesDefinition.hashMapSize - 1);
-  const size_t offset = strokesDefinition.GetCompactOffset(entryIndex);
+  const size_t offset = strokesDefinition.GetOffset(entryIndex);
   if (offset == (size_t)-1) {
     return StenoDictionaryLookupResult::CreateInvalid();
   }
@@ -152,7 +145,7 @@ StenoCompactMapDictionary::Lookup(const StenoDictionaryLookup &lookup) const {
       dataIndex = 0;
     }
 
-    if (!strokesDefinition.HasCompactEntry(entryIndex)) {
+    if (!strokesDefinition.HasEntry(entryIndex)) {
       return StenoDictionaryLookupResult::CreateInvalid();
     }
   }
@@ -161,7 +154,7 @@ StenoCompactMapDictionary::Lookup(const StenoDictionaryLookup &lookup) const {
 const StenoDictionary *StenoCompactMapDictionary::GetDictionaryForOutline(
     const StenoDictionaryLookup &lookup) const {
 
-  const StenoMapDictionaryStrokesDefinition &strokesDefinition =
+  const StenoCompactMapDictionaryStrokesDefinition &strokesDefinition =
       strokes[lookup.length];
 
   if (strokesDefinition.hashMapSize == 0) {
@@ -169,7 +162,7 @@ const StenoDictionary *StenoCompactMapDictionary::GetDictionaryForOutline(
   }
 
   size_t entryIndex = lookup.hash & (strokesDefinition.hashMapSize - 1);
-  const size_t offset = strokesDefinition.GetCompactOffset(entryIndex);
+  const size_t offset = strokesDefinition.GetOffset(entryIndex);
   if (offset == (size_t)-1) {
     return nullptr;
   }
@@ -192,7 +185,7 @@ const StenoDictionary *StenoCompactMapDictionary::GetDictionaryForOutline(
       dataIndex = 0;
     }
 
-    if (!strokesDefinition.HasCompactEntry(entryIndex)) {
+    if (!strokesDefinition.HasEntry(entryIndex)) {
       return nullptr;
     }
   }
@@ -216,7 +209,8 @@ void StenoCompactMapDictionary::ReverseLookup(
   }
 
   for (size_t i = 1; i <= maximumOutlineLength; ++i) {
-    const StenoMapDictionaryStrokesDefinition &strokeDefinition = strokes[i];
+    const StenoCompactMapDictionaryStrokesDefinition &strokeDefinition =
+        strokes[i];
 
     if (!strokeDefinition.ContainsData(data)) {
       continue;
@@ -227,7 +221,7 @@ void StenoCompactMapDictionary::ReverseLookup(
         (const CompactStenoMapDictionaryDataEntry *)data;
 
     StenoStroke strokes[i];
-    size_t strokeLength = i;
+    const size_t strokeLength = i;
     entry->ExpandTo(strokes, strokeLength);
     lookup.AddResult(strokes, strokeLength, this);
     return;
@@ -239,34 +233,31 @@ const char *StenoCompactMapDictionary::GetName() const {
 }
 
 void StenoCompactMapDictionary::PrintInfo(int depth) const {
-  const StenoMapDictionaryStrokesDefinition &lastStrokeDefinition =
+  const StenoCompactMapDictionaryStrokesDefinition &lastStrokeDefinition =
       strokes[maximumOutlineLength];
 
   const uint8_t *start = (const uint8_t *)&definition;
   const uint8_t *end =
-      (const uint8_t *)(lastStrokeDefinition.compactOffsets +
+      (const uint8_t *)(lastStrokeDefinition.offsets +
                         lastStrokeDefinition.hashMapSize / 128);
 
   Console::Printf("%s%s: %zu bytes\n", Spaces(depth), GetName(), end - start);
 }
 
-bool StenoCompactMapDictionary::PrintDictionary(const char *name,
-                                                bool hasData) const {
+void StenoCompactMapDictionary::PrintDictionary(
+    PrintDictionaryContext &context) const {
   for (size_t i = 1; i <= maximumOutlineLength; ++i) {
-    if (strokes[i].PrintCompactDictionary(hasData, i, textBlock)) {
-      hasData = true;
-    }
+    strokes[i].PrintDictionary(context, i, textBlock);
   }
-  return hasData;
 }
 
-const StenoMapDictionaryStrokesDefinition *
+const StenoCompactMapDictionaryStrokesDefinition *
 StenoCompactMapDictionary::CreateStrokeCache(
-    const StenoDictionaryDefinition &definition) {
-  size_t byteSize = sizeof(StenoMapDictionaryStrokesDefinition) *
-                    definition.maximumOutlineLength;
-  StenoMapDictionaryStrokesDefinition *strokes =
-      (StenoMapDictionaryStrokesDefinition *)malloc(byteSize);
+    const StenoCompactMapDictionaryDefinition &definition) {
+  const size_t byteSize = sizeof(StenoCompactMapDictionaryStrokesDefinition) *
+                          definition.maximumOutlineLength;
+  StenoCompactMapDictionaryStrokesDefinition *strokes =
+      (StenoCompactMapDictionaryStrokesDefinition *)malloc(byteSize);
   memcpy(strokes, definition.strokes, byteSize);
   return strokes - 1;
 }

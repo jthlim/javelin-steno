@@ -42,7 +42,7 @@ void StenoEngine::Process(const StenoKeyState &value, StenoAction action) {
   }
 
   ++strokeCount;
-  StenoStroke stroke = value.ToStroke();
+  const StenoStroke stroke = value.ToStroke();
   if (stroke == UNDO_STROKE) {
     ProcessUndo();
   } else {
@@ -51,7 +51,7 @@ void StenoEngine::Process(const StenoKeyState &value, StenoAction action) {
 }
 
 void StenoEngine::ProcessStroke(StenoStroke stroke) {
-  ExternalFlashSentry externalFlashSentry;
+  const ExternalFlashSentry externalFlashSentry;
 
   switch (mode) {
   case StenoEngineMode::NORMAL:
@@ -65,7 +65,7 @@ void StenoEngine::ProcessStroke(StenoStroke stroke) {
 }
 
 void StenoEngine::ProcessUndo() {
-  ExternalFlashSentry externalFlashSentry;
+  const ExternalFlashSentry externalFlashSentry;
 
   switch (mode) {
   case StenoEngineMode::NORMAL:
@@ -80,7 +80,7 @@ void StenoEngine::ProcessUndo() {
 
 bool StenoEngine::ProcessScanCode(uint32_t scanCodeAndModifiers,
                                   ScanCodeAction action) {
-  ExternalFlashSentry externalFlashSentry;
+  const ExternalFlashSentry externalFlashSentry;
 
   switch (mode) {
   case StenoEngineMode::NORMAL:
@@ -114,42 +114,43 @@ void StenoEngine::PrintInfo() const {
 
   orthography.PrintInfo();
 
-  ExternalFlashSentry externalFlashSentry;
+  const ExternalFlashSentry externalFlashSentry;
 
   Console::Printf("    Dictionaries\n");
   dictionary.PrintInfo(4);
 }
 
 void StenoEngine::PrintDictionary(const char *name) const {
-  ExternalFlashSentry externalFlashSentry;
+  const ExternalFlashSentry externalFlashSentry;
 
   Console::Printf("{");
-  dictionary.PrintDictionary(name, false);
+  PrintDictionaryContext context(name);
+  dictionary.PrintDictionary(context);
   Console::Printf("\n}\n\n");
 }
 
 void StenoEngine::ListDictionaries() const {
-  ExternalFlashSentry externalFlashSentry;
+  const ExternalFlashSentry externalFlashSentry;
   dictionary.ListDictionaries();
 }
 
 bool StenoEngine::EnableDictionary(const char *name) {
-  ExternalFlashSentry externalFlashSentry;
+  const ExternalFlashSentry externalFlashSentry;
   return dictionary.EnableDictionary(name);
 }
 
 bool StenoEngine::DisableDictionary(const char *name) {
-  ExternalFlashSentry externalFlashSentry;
+  const ExternalFlashSentry externalFlashSentry;
   return dictionary.DisableDictionary(name);
 }
 
 bool StenoEngine::ToggleDictionary(const char *name) {
-  ExternalFlashSentry externalFlashSentry;
+  const ExternalFlashSentry externalFlashSentry;
   return dictionary.ToggleDictionary(name);
 }
 
 void StenoEngine::ReverseLookup(StenoReverseDictionaryLookup &lookup) const {
-  ExternalFlashSentry externalFlashSentry;
+  const ExternalFlashSentry externalFlashSentry;
 
   dictionary.ReverseLookup(lookup);
   if (lookup.results.IsEmpty()) {
@@ -189,10 +190,12 @@ __attribute__((weak)) void StenoEngine::Pump() {}
 #include "dictionary/unicode_dictionary.h"
 
 extern StenoOrthography testOrthography;
-extern StenoDictionaryDefinition testDictionaryDefinition;
-// constexpr StenoMapDictionary testDictionary(testDictionaryDefinition);
 
+// extern StenoCompactMapDictionaryDefinition testDictionaryDefinition;
+// static StenoCompactMapDictionary mainDictionary(testDictionaryDefinition);
 static StenoCompactMapDictionary mainDictionary(TestDictionary::definition);
+
+static StenoCompactMapDictionary testDictionary(TestDictionary::definition);
 
 StenoDictionary *const DICTIONARIES[] = {
     &StenoEmilySymbolsDictionary::instance,
@@ -238,7 +241,8 @@ void StenoEngineTester::TestSymbols(StenoEngine &engine) {
 TEST_BEGIN("Engine: Test symbols") {
   StenoDictionaryList dictionary(DICTIONARIES, 2);
 
-  StenoCompiledOrthography orthography(StenoOrthography::emptyOrthography);
+  const StenoCompiledOrthography orthography(
+      StenoOrthography::emptyOrthography);
   StenoEngine engine(dictionary, orthography);
   StenoEngineTester::TestSymbols(engine);
 }
@@ -311,13 +315,14 @@ TEST_BEGIN("Engine: Random spam") {
       &StenoJeffNumbersDictionary::instance,
       &StenoEmilySymbolsDictionary::instance,
       &mainDictionary,
-      // &testDictionary,
+      &testDictionary,
   };
 
   StenoDictionaryList dictionaryList(
       DICTIONARIES, sizeof(DICTIONARIES) / sizeof(*DICTIONARIES)); // NOLINT
 
-  StenoCompiledOrthography orthography(StenoOrthography::emptyOrthography);
+  const StenoCompiledOrthography orthography(
+      StenoOrthography::emptyOrthography);
   // StenoCompiledOrthography orthography(testOrthography);
   StenoEngine engine(dictionaryList, orthography);
 
@@ -325,7 +330,7 @@ TEST_BEGIN("Engine: Random spam") {
 
   srand(0x1234);
   for (size_t i = 0; i < 10000; ++i) {
-    StenoStroke stroke(rand() & StrokeMask::ALL);
+    const StenoStroke stroke(rand() & StrokeMask::ALL);
     engine.ProcessStroke(stroke);
   }
 
@@ -334,19 +339,20 @@ TEST_BEGIN("Engine: Random spam") {
 TEST_END
 
 TEST_BEGIN("Engine: Add Translation Test") {
-  StenoEngineTester tester;
+  const StenoEngineTester tester;
   uint8_t *buffer = new uint8_t[512 * 1024];
-  StenoUserDictionaryData layout(buffer, 512 * 1024);
+  const StenoUserDictionaryData layout(buffer, 512 * 1024);
   StenoUserDictionary *userDictionary = new StenoUserDictionary(layout);
 
   static StenoDictionary *dictionaries[] = {
       userDictionary,
-      &mainDictionary,
+      &testDictionary,
   };
 
   StenoDictionaryList dictionaryList(
       dictionaries, sizeof(dictionaries) / sizeof(*dictionaries)); // NOLINT
-  StenoCompiledOrthography orthography(StenoOrthography::emptyOrthography);
+  const StenoCompiledOrthography orthography(
+      StenoOrthography::emptyOrthography);
   StenoEngine engine(dictionaryList, orthography, userDictionary);
   tester.TestAddTranslation(engine);
 
@@ -356,20 +362,21 @@ TEST_BEGIN("Engine: Add Translation Test") {
 TEST_END
 
 TEST_BEGIN("Engine: Scancode Add Translation Test") {
-  StenoEngineTester tester;
+  const StenoEngineTester tester;
   uint8_t *buffer = new uint8_t[512 * 1024];
-  StenoUserDictionaryData layout(buffer, 512 * 1024);
+  const StenoUserDictionaryData layout(buffer, 512 * 1024);
   StenoUserDictionary *userDictionary = new StenoUserDictionary(layout);
 
   static StenoDictionary *dictionaries[] = {
       userDictionary,
-      &mainDictionary,
+      &testDictionary,
       &StenoUnicodeDictionary::instance,
   };
 
   StenoDictionaryList dictionaryList(
       dictionaries, sizeof(dictionaries) / sizeof(*dictionaries)); // NOLINT
-  StenoCompiledOrthography orthography(StenoOrthography::emptyOrthography);
+  const StenoCompiledOrthography orthography(
+      StenoOrthography::emptyOrthography);
   StenoEngine engine(dictionaryList, orthography, userDictionary);
   tester.TestScancodeAddTranslation(engine);
 

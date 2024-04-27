@@ -30,7 +30,7 @@ size_t Base64::Decode(uint8_t *destination, const uint8_t *source) {
   int dummyBytes = 0;
 
   while (*source) {
-    int d = BASE64_DECODE_TABLE[*source++];
+    const int d = BASE64_DECODE_TABLE[*source++];
     if (d == -2) {
       continue;
     }

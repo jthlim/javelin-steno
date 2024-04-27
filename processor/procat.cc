@@ -22,10 +22,10 @@ void StenoProcat::Process(const StenoKeyState &value, StenoAction action) {
   };
 
   while (localKeyState) {
-    uint32_t index = __builtin_ctzl(localKeyState) + 1;
+    const uint32_t index = __builtin_ctzl(localKeyState) + 1;
 
-    uint32_t byte = index / 8;
-    uint32_t bit = (~index) & 7;
+    const uint32_t byte = index / 8;
+    const uint32_t bit = (~index) & 7;
     data[byte] |= 1 << bit;
 
     localKeyState &= localKeyState - 1;

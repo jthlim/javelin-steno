@@ -28,7 +28,7 @@ bool StrokeListParser::Parse(const char *p) {
       return false;
     }
     ++length;
-    int last = *p;
+    const int last = *p;
     if (last != '\0') {
       ++p;
     }

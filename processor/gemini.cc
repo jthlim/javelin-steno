@@ -12,7 +12,7 @@ void StenoGemini::Process(const StenoKeyState &value, StenoAction action) {
   }
 
   ++counter;
-  StenoGeminiPacket packet = value.ToGeminiPacket();
+  const StenoGeminiPacket packet = value.ToGeminiPacket();
   SerialPort::SendData(packet.data, sizeof(packet.data));
 }
 

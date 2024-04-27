@@ -1,7 +1,6 @@
 //---------------------------------------------------------------------------
 
 #include "emily_symbols_dictionary.h"
-#include "../console.h"
 #include "../crc.h"
 #include "../str.h"
 #include "../stroke.h"
@@ -322,7 +321,7 @@ void StenoEmilySymbolsDictionary::ReverseLookup(
 
   for (;;) {
     index &= (REVERSE_LOOKUP_SIZE - 1);
-    uint32_t data = REVERSE_LOOKUP[index];
+    const uint32_t data = REVERSE_LOOKUP[index];
     if (data == 0) {
       return;
     }
@@ -342,7 +341,7 @@ void StenoEmilySymbolsDictionary::ReverseLookup(
             StenoStroke(StrokeMask::U),
             StenoStroke(StrokeMask::E | StrokeMask::U),
         };
-        StenoStroke stroke =
+        const StenoStroke stroke =
             symbolData->trigger | ACTIVATION_MATCH | VARIANTS_STROKE[i];
         lookup.AddResult(&stroke, 1, this);
         return;
@@ -356,31 +355,34 @@ const char *StenoEmilySymbolsDictionary::GetName() const {
   return "emily-symbols";
 }
 
-bool StenoEmilySymbolsDictionary::PrintDictionary(const char *name,
-                                                  bool hasData) const {
+void StenoEmilySymbolsDictionary::PrintDictionary(
+    PrintDictionaryContext &context) const {
+  if (!context.HasName()) {
+    return;
+  }
+
   for (size_t i = 0; i < sizeof(DATA) / sizeof(*DATA); ++i) {
-    StenoStroke stroke = ACTIVATION_MATCH | DATA[i].trigger;
+    const StenoStroke stroke = ACTIVATION_MATCH | DATA[i].trigger;
 
-    for (int j = 0; j < 4; ++j) {
-      StenoStroke localStroke = stroke;
-      if (j & 1) {
-        localStroke |= VARIANT_1;
-      }
-      if (j & 2) {
-        localStroke |= VARIANT_2;
-      }
+    for (int v = 0; v < 4; v++) {
+      const StenoStroke variant = StenoStroke(v << StrokeBitIndex::E);
 
-      if (!hasData) {
-        hasData = true;
-        Console::Printf("\n\t");
-      } else {
-        Console::Printf(",\n\t");
-      }
+      for (int s = 0; s < 4; s++) {
+        const StenoStroke space = StenoStroke(s << StrokeBitIndex::A);
 
-      Console::Printf("\"%t\": \"%J\"", &localStroke, DATA[i].text[j]);
+        for (int c = 0; c < 2; c++) {
+          const StenoStroke capitalize = StenoStroke(c << StrokeBitIndex::STAR);
+
+          const StenoStroke localStroke = stroke | capitalize | space | variant;
+
+          StenoDictionaryLookupResult lookup =
+              Lookup(StenoDictionaryLookup(&localStroke, 1));
+          context.Print(localStroke, lookup.GetText());
+          lookup.Destroy();
+        }
+      }
     }
   }
-  return true;
 }
 
 //---------------------------------------------------------------------------

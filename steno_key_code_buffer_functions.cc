@@ -380,7 +380,7 @@ void StenoKeyCodeBuffer::RetroactiveFormatCurrency(const char *pStart,
     size_t i = numberBufferLength;
     int remainingIntegralDigits = integralDigits;
     while (i != 0) {
-      char c = numberBuffer[--i];
+      const char c = numberBuffer[--i];
       *p++ = StenoKeyCode(c, StenoCaseMode::NORMAL);
       --remainingIntegralDigits;
       if (remainingIntegralDigits == 0) {

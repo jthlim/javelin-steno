@@ -73,7 +73,7 @@ StenoReversePrefixDictionary::ReverseLookupContext::FindPrefixLookup() const {
   while (l < r) {
     const Prefix *mid = l + ((r - l) >> 1);
     const uint8_t *midString = mid->text + characterIndex;
-    uint8_t c = midString[0];
+    const uint8_t c = midString[0];
     if (c < '^') {
       l = mid + 1;
     } else if (c > '^') {
@@ -155,7 +155,8 @@ void StenoReversePrefixDictionary::AddPrefixReverseLookup(
     bool hasResult = false;
     if (suffixLookup->HasResults()) {
       // Suffix lookup succeeded.
-      size_t minimumSuffixStrokeCount = suffixLookup->GetMinimumStrokeCount();
+      const size_t minimumSuffixStrokeCount =
+          suffixLookup->GetMinimumStrokeCount();
       if (lookup.strokeThreshold > minimumSuffixStrokeCount + 1) {
         StenoReverseDictionaryLookup *prefixLookup =
             new StenoReverseDictionaryLookup(lookup.strokeThreshold -
@@ -163,7 +164,7 @@ void StenoReversePrefixDictionary::AddPrefixReverseLookup(
                                              test.prefix->GetText());
 
         // Add map lookup hints.
-        size_t prefixLength = test.suffix - lookup.definition;
+        const size_t prefixLength = test.suffix - lookup.definition;
         prefixLookup->AddMapDataLookup(
             test.prefix->GetMapDataLookup(prefixLength), baseAddress);
 
@@ -181,7 +182,7 @@ void StenoReversePrefixDictionary::AddPrefixReverseLookup(
                suffixLookup->results) {
             for (const StenoReverseDictionaryResult &prefix :
                  prefixLookup->results) {
-              size_t combinedLength = prefix.length + suffix.length;
+              const size_t combinedLength = prefix.length + suffix.length;
               if (combinedLength >= lookup.strokeThreshold) {
                 continue;
               }

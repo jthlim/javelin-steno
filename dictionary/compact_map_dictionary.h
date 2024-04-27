@@ -9,7 +9,8 @@
 class StenoCompactMapDictionary final : public StenoDictionary,
                                         public JavelinMallocAllocate {
 public:
-  StenoCompactMapDictionary(const StenoDictionaryDefinition &definition)
+  StenoCompactMapDictionary(
+      const StenoCompactMapDictionaryDefinition &definition)
       : StenoDictionary(definition.maximumOutlineLength),
         textBlock(definition.textBlock), definition(definition),
         strokes(CreateStrokeCache(definition)) {}
@@ -25,17 +26,17 @@ public:
 
   virtual const char *GetName() const;
   virtual void PrintInfo(int depth) const;
-  virtual bool PrintDictionary(const char *name, bool hasData) const;
+  virtual void PrintDictionary(PrintDictionaryContext &context) const;
 
 private:
   const uint8_t *textBlock;
-  const StenoDictionaryDefinition &definition;
+  const StenoCompactMapDictionaryDefinition &definition;
 
   // This is offset by 1 to simplify lookup code marginally.
-  const StenoMapDictionaryStrokesDefinition *strokes;
+  const StenoCompactMapDictionaryStrokesDefinition *strokes;
 
-  static const StenoMapDictionaryStrokesDefinition *
-  CreateStrokeCache(const StenoDictionaryDefinition &definition);
+  static const StenoCompactMapDictionaryStrokesDefinition *
+  CreateStrokeCache(const StenoCompactMapDictionaryDefinition &definition);
 
   void ReverseLookup(StenoReverseDictionaryLookup &lookup,
                      const void *data) const;

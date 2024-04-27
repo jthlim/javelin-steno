@@ -108,13 +108,13 @@ private:
   void OnStenoStateCancelled();
   bool ProcessScanCode(int scanCode, ScanCodeAction action);
 
-  void SendText(const uint8_t *text) const;
+  void SendText(const uint8_t *text);
   bool CheckButtonState(const uint8_t *text) const;
 
   void RunConsoleCommand(const char *command);
   void RunGetParameterCommand(const char *parameter);
 
-  void SetInputHint(int hint);
+  static void SetInputHint(int hint);
   void SetScript(ScriptId scriptId, size_t scriptOffset) {
     if (scriptId < ScriptId::COUNT) {
       scriptOffsets[(size_t)scriptId] = scriptOffset;

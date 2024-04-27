@@ -31,7 +31,7 @@ __attribute__((noinline)) StenoDictionaryLookupResult
 StenoJeffShowStrokeDictionary::LookupInternal(
     const StenoDictionaryLookup &lookup) const {
   const StenoStroke *strokes = lookup.strokes;
-  size_t length = lookup.length;
+  const size_t length = lookup.length;
   if (length == 1) {
     return StenoDictionaryLookupResult::CreateStaticString("`");
   }
@@ -41,8 +41,8 @@ StenoJeffShowStrokeDictionary::LookupInternal(
     }
   }
 
-  bool closed = (strokes[length - 1] == trigger);
-  size_t end = closed ? length - 1 : length;
+  const bool closed = (strokes[length - 1] == trigger);
+  const size_t end = closed ? length - 1 : length;
   char *text = Str::Asprintf(closed ? "`%T`" : "`%T", strokes + 1, end - 1);
 
   return StenoDictionaryLookupResult::CreateDynamicString(text);
@@ -55,7 +55,7 @@ const StenoDictionary *StenoJeffShowStrokeDictionary::GetDictionaryForOutline(
     return nullptr;
   }
 
-  size_t length = lookup.length;
+  const size_t length = lookup.length;
   if (length == 1) {
     return this;
   }

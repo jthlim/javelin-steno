@@ -29,8 +29,8 @@ StenoReverseMapDictionary::FindMapDataLookup(const char *text) const {
   size_t indexLeft = 0;
   size_t indexRight = indexSize;
   while (indexLeft + 1 < indexRight) {
-    size_t mid = (indexLeft + indexRight) >> 1;
-    int compare = strcmp(text, (const char *)index[mid]);
+    const size_t mid = (indexLeft + indexRight) >> 1;
+    const int compare = strcmp(text, (const char *)index[mid]);
     if (compare < 0) {
       indexRight = mid;
     } else {
@@ -57,7 +57,7 @@ StenoReverseMapDictionary::FindMapDataLookup(const char *text) const {
     int compare;
     int cp;
     for (;;) {
-      int cl = *l++;
+      const int cl = *l++;
       cp = *p++;
 
       compare = cl - cp;
@@ -110,7 +110,7 @@ void StenoReverseMapDictionary::FilterResult(
 
 void StenoReverseMapDictionary::BuildIndex() {
   for (size_t i = 0; i < INDEX_SIZE; ++i) {
-    size_t offset = 1 + i * textBlock.count / INDEX_SIZE;
+    const size_t offset = 1 + i * textBlock.count / INDEX_SIZE;
     const uint8_t *word =
         StenoTextBlock::FindWordStart(textBlock.data + offset);
 

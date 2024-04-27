@@ -32,7 +32,7 @@ bool Connection::IsConnected(ConnectionId connectionId) {
 }
 
 ConnectionId Connection::GetActiveConnection() {
-  for (ConnectionId connectionId : preferredConnections) {
+  for (const ConnectionId connectionId : preferredConnections) {
     switch (connectionId) {
     case ConnectionId::ACTIVE:
       continue;
@@ -104,7 +104,7 @@ __attribute__((weak)) PairConnectionId Connection::GetActivePairConnection() {
 }
 
 __attribute__((weak)) bool Connection::IsHostSleeping() {
-  ConnectionId activeConnectionId = GetActiveConnection();
+  const ConnectionId activeConnectionId = GetActiveConnection();
   switch (activeConnectionId) {
   case ConnectionId::ACTIVE:
     return false;

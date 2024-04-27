@@ -17,7 +17,7 @@ StenoJeffNumbersDictionary StenoJeffNumbersDictionary::instance;
 // Buffer must have at least 16 bytes
 // Value is max 3999.
 static void ToRoman(char *outBuffer, int value, bool useLower);
-char *ToWords(char *p);
+static char *ToWords(char *digits);
 
 const StenoStroke ACTIVATION_MASK(StrokeMask::NUM | StrokeMask::UNICODE);
 const StenoStroke ACTIVATION_MATCH(StrokeMask::NUM);
@@ -84,7 +84,7 @@ StenoJeffNumbersDictionary::LookupInternal(
   char scratch[32];
 
   const StenoStroke *strokes = lookup.strokes;
-  size_t length = lookup.length;
+  const size_t length = lookup.length;
 
   for (size_t i = 0; i < length; ++i) {
     if ((strokes[i] & ACTIVATION_MASK) != ACTIVATION_MATCH) {
@@ -217,7 +217,7 @@ StenoJeffNumbersDictionary::LookupInternal(
       result = ToWords(result);
       if ((control & StrokeMask::WL).IsNotEmpty()) {
         // Ordinal words
-        size_t length = strlen(result);
+        const size_t length = strlen(result);
         if (EndsWith(result, length, "ty")) {
           // cSpell: disable-next-line
           result = ReplaceSuffix(result, length, 1, "ieth");
@@ -323,8 +323,9 @@ const char *StenoJeffNumbersDictionary::GetName() const {
   return "jeff-numbers";
 }
 
-StenoStroke StenoJeffNumbersDictionary::GetDigits(char *p,
+StenoStroke StenoJeffNumbersDictionary::GetDigits(char *scratch,
                                                   StenoStroke stroke) const {
+  char *p = scratch;
 
   StenoStroke control = stroke & CONTROL_MASK;
   if ((stroke & ALL_DIGITS_MASK).IsNotEmpty()) {
@@ -360,7 +361,7 @@ StenoStroke StenoJeffNumbersDictionary::GetDigits(char *p,
 
     if ((control & StrokeMask::DR).IsNotEmpty() &&
         (stroke & ALL_DIGITS_MASK).IsNotEmpty()) {
-      char previousDigit = p[-1];
+      const char previousDigit = p[-1];
       *p++ = previousDigit;
       control &= ~StrokeMask::DR;
     }
@@ -489,7 +490,7 @@ void CanonicalizeInPlaceAndReverse(char *digits) {
   char *left = digits;
   char *right = write - 1;
   while (left < right) {
-    char t = *left;
+    const char t = *left;
     *left = *right;
     *right = t;
     ++left;
@@ -511,7 +512,7 @@ char *ToWords(char *digits) {
   }
 
   char *result = Str::Dup("");
-  size_t length = strlen(p);
+  const size_t length = strlen(p);
   char *end = p + length;
   bool needsAnd = false;
   bool needsComma = false;
@@ -528,7 +529,7 @@ char *ToWords(char *digits) {
     int digitValues[3] = {0, 0, 0};
     int *pDigitValues = &digitValues[2];
     while (p < end && positionValue < 1000) {
-      int digitValue = *p++ - '0';
+      const int digitValue = *p++ - '0';
       *pDigitValues-- = digitValue;
       value += positionValue * digitValue;
       positionValue *= 10;
@@ -539,7 +540,7 @@ char *ToWords(char *digits) {
       continue;
     }
 
-    int twoDigitValue = digitValues[1] * 10 + digitValues[2];
+    const int twoDigitValue = digitValues[1] * 10 + digitValues[2];
     const char *twoDigitWord = "";
     bool freeTwoDigitWord = false;
     if (twoDigitValue != 0) {
@@ -847,7 +848,7 @@ TEST_BEGIN("JeffNumbers: Test words") {
 TEST_END
 
 TEST_BEGIN("JeffNumbers: #E, #EU, #U are not valid") {
-  StenoStroke testStrokes[] = {
+  const StenoStroke testStrokes[] = {
       StenoStroke("#E"),
       StenoStroke("#U"),
       StenoStroke("#EU"),

@@ -109,29 +109,29 @@ static constexpr uint32_t CRC32_TABLE[256] = {
 
 //---------------------------------------------------------------------------
 
-__attribute__((weak)) uint8_t Crc8(const void *v, size_t count) {
-  const uint8_t *p = (const uint8_t *)v;
+__attribute__((weak)) uint8_t Crc8(const void *p, size_t count) {
+  const uint8_t *v = (const uint8_t *)p;
   uint8_t hash = 0xff;
   for (size_t i = 0; i < count; i++) {
-    hash = CRC8_TABLE[hash ^ *p++];
+    hash = CRC8_TABLE[hash ^ *v++];
   }
   return hash;
 }
 
-__attribute__((weak)) uint32_t Crc16Ccitt(const void *v, size_t count) {
-  const uint8_t *p = (const uint8_t *)v;
+__attribute__((weak)) uint32_t Crc16Ccitt(const void *p, size_t count) {
+  const uint8_t *v = (const uint8_t *)p;
   uint32_t hash = 0xffff;
   for (size_t i = 0; i < count; i++) {
-    hash = ((hash << 24) >> 16) ^ CRC16_CCITT_TABLE[(hash >> 8) ^ *p++];
+    hash = ((hash << 24) >> 16) ^ CRC16_CCITT_TABLE[(hash >> 8) ^ *v++];
   }
   return hash;
 }
 
-__attribute__((weak)) uint32_t Crc32(const void *v, size_t count) {
-  const uint8_t *p = (const uint8_t *)v;
+__attribute__((weak)) uint32_t Crc32(const void *p, size_t count) {
+  const uint8_t *v = (const uint8_t *)p;
   uint32_t hash = 0xffffffff;
   for (size_t i = 0; i < count; i++) {
-    hash = CRC32_TABLE[(hash ^ *p++) & 0xff] ^ (hash >> 8);
+    hash = CRC32_TABLE[(hash ^ *v++) & 0xff] ^ (hash >> 8);
   }
   return ~hash;
 }

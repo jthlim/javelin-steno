@@ -18,7 +18,7 @@ void StenoProcessor::Process(StenoKey key, bool isPress) {
 }
 
 void StenoProcessor::Process(const StenoKeyState &newState) {
-  StenoKeyState pressed = newState & ~state;
+  const StenoKeyState pressed = newState & ~state;
   if (pressed.IsNotEmpty()) {
     next.Process(state | newState, StenoAction::PRESS);
   }

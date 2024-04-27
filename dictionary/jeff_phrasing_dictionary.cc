@@ -244,11 +244,13 @@ PhrasingParts DetermineParts(StenoStroke stroke) {
         phrasingData.LookupSimpleStarter(stroke & SIMPLE_STARTER_MASK);
 
     if (simpleStarter) {
-      size_t pronounIndex = (stroke.GetKeyState() >> StrokeBitIndex::STAR) & 7;
+      const size_t pronounIndex =
+          (stroke.GetKeyState() >> StrokeBitIndex::STAR) & 7;
       const JeffPhrasingPronoun *pronoun =
           phrasingData.simplePronouns + pronounIndex;
 
-      size_t structureIndex = (stroke.GetKeyState() >> StrokeBitIndex::FR) & 1;
+      const size_t structureIndex =
+          (stroke.GetKeyState() >> StrokeBitIndex::FR) & 1;
       const JeffPhrasingStructure *structure =
           phrasingData.simpleStructures + structureIndex;
 
@@ -260,7 +262,7 @@ PhrasingParts DetermineParts(StenoStroke stroke) {
       phrasingData.LookupFullStarter(stroke & FULL_STARTER_MASK);
 
   if (fullStarter != nullptr) {
-    size_t middleIndex = (stroke.GetKeyState() >> StrokeBitIndex::A) & 7;
+    const size_t middleIndex = (stroke.GetKeyState() >> StrokeBitIndex::A) & 7;
     const JeffPhrasingMiddle *middle = phrasingData.fullMiddles + middleIndex;
 
     const JeffPhrasingStructure *structure =
@@ -272,7 +274,7 @@ PhrasingParts DetermineParts(StenoStroke stroke) {
     }
 
     if (!structure) {
-      size_t structureIndex =
+      const size_t structureIndex =
           (stroke.GetKeyState() >> StrokeBitIndex::STAR) & 15;
       structure = phrasingData.fullStructures + structureIndex;
     }
@@ -286,7 +288,7 @@ StenoDictionaryLookupResult
 StenoJeffPhrasingDictionary::Lookup(const StenoDictionaryLookup &lookup) const {
   assert(lookup.length == 1);
 
-  PhrasingParts parts = DetermineParts(lookup.strokes[0]);
+  const PhrasingParts parts = DetermineParts(lookup.strokes[0]);
   if (!parts.IsValid()) {
     return StenoDictionaryLookupResult::CreateInvalid();
   }
@@ -298,7 +300,7 @@ const StenoDictionary *StenoJeffPhrasingDictionary::GetDictionaryForOutline(
     const StenoDictionaryLookup &lookup) const {
   assert(lookup.length == 1);
 
-  PhrasingParts parts = DetermineParts(lookup.strokes[0]);
+  const PhrasingParts parts = DetermineParts(lookup.strokes[0]);
   return parts.IsValid() ? this : nullptr;
 }
 
@@ -424,7 +426,7 @@ void StenoJeffPhrasingDictionary::RecurseCheckReverseLookup(
     for (; entry->hash == hash; ++entry) {
       // Try lookup.
       if (entry->modeMask & modeMask) {
-        StenoStroke lookupStroke = stroke | entry->stroke;
+        const StenoStroke lookupStroke = stroke | entry->stroke;
         if (context.HasTestedStroke(lookupStroke)) {
           continue;
         }
@@ -447,7 +449,7 @@ void StenoJeffPhrasingDictionary::RecurseCheckReverseLookup(
     }
   }
 
-  uint32_t wordHash = Crc32(p, pEnd - p);
+  const uint32_t wordHash = Crc32(p, pEnd - p);
   const JeffPhrasingReverseHashMapEntry *entry =
       phrasingData.LookupReverseWord(wordHash);
   if (!entry) {
@@ -464,7 +466,7 @@ void StenoJeffPhrasingDictionary::RecurseCheckReverseLookup(
       ++pEnd2;
     }
 
-    uint32_t wordHash2 = Crc32(p, pEnd2 - p);
+    const uint32_t wordHash2 = Crc32(p, pEnd2 - p);
     const JeffPhrasingReverseHashMapEntry *entry2 =
         phrasingData.LookupReverseWord(wordHash2);
     if (entry2) {
@@ -487,15 +489,15 @@ void StenoJeffPhrasingDictionary::ProcessEntries(
       continue;
     }
 
-    uint8_t updatedModeMask = entry->modeMask & modeMask;
+    const uint8_t updatedModeMask = entry->modeMask & modeMask;
 
-    uint8_t formModeMask =
+    const uint8_t formModeMask =
         updatedModeMask & (ModeMask::FULL | ModeMask::SIMPLE);
     if (formModeMask == 0) {
       continue;
     }
 
-    uint8_t tenseModeMask =
+    const uint8_t tenseModeMask =
         updatedModeMask & (ModeMask::PRESENT | ModeMask::PAST);
     if (tenseModeMask == 0) {
       continue;
@@ -527,7 +529,7 @@ inline bool IsValidPhraseCharacter(int c) {
 
 bool StenoJeffPhrasingDictionary::ContainsNonPhraseCharacter(const char *p) {
   while (*p) {
-    int c = *(uint8_t *)p++;
+    const int c = *(uint8_t *)p++;
     if (!IsValidPhraseCharacter(c)) {
       return true;
     }
@@ -544,6 +546,71 @@ size_t StenoJeffPhrasingDictionary::CountNumberOfSpaces(const char *p) {
     ++p;
   }
   return count;
+}
+
+void StenoJeffPhrasingDictionary::PrintDictionary(
+    PrintDictionaryContext &context) const {
+  // Only print jeff-phrasing if specifically requested to avoid huge output
+  // file bloat/time taken.
+  if (!context.HasName()) {
+    return;
+  }
+
+  // Full Form
+  for (const JeffPhrasingFullStarter &starter :
+       JeffPhrasingDictionaryData::instance.fullStarters) {
+    for (size_t m = 0; m < 8; ++m) {
+      const StenoStroke middle = StenoStroke(m << StrokeBitIndex::A);
+
+      for (size_t n = 0; n < 2; ++n) {
+        const StenoStroke negation = StenoStroke(n << StrokeBitIndex::STAR);
+
+        for (size_t s = 0; s < 16; ++s) {
+          const StenoStroke structure = StenoStroke(s << StrokeBitIndex::E);
+
+          for (const JeffPhrasingEnder &ender :
+               JeffPhrasingDictionaryData::instance.enders) {
+
+            const StenoStroke stroke =
+                starter.stroke | middle | negation | structure | ender.stroke;
+
+            StenoDictionaryLookupResult lookup =
+                Lookup(StenoDictionaryLookup(&stroke, 1));
+            if (lookup.IsValid()) {
+              context.Print(stroke, lookup.GetText());
+              lookup.Destroy();
+            }
+          }
+        }
+      }
+    }
+  }
+
+  // Simple Starters
+  for (const JeffPhrasingSimpleStarter &starter :
+       JeffPhrasingDictionaryData::instance.simpleStarters) {
+    for (size_t p = 1; p < 8; ++p) {
+      const StenoStroke pronoun = StenoStroke(p << StrokeBitIndex::STAR);
+
+      for (size_t s = 0; s < 2; ++s) {
+        const StenoStroke structure = StenoStroke(s << StrokeBitIndex::FR);
+
+        for (const JeffPhrasingEnder &ender :
+             JeffPhrasingDictionaryData::instance.enders) {
+
+          const StenoStroke stroke =
+              starter.stroke | pronoun | structure | ender.stroke;
+
+          StenoDictionaryLookupResult lookup =
+              Lookup(StenoDictionaryLookup(&stroke, 1));
+          if (lookup.IsValid()) {
+            context.Print(stroke, lookup.GetText());
+            lookup.Destroy();
+          }
+        }
+      }
+    }
+  }
 }
 
 //---------------------------------------------------------------------------
@@ -597,7 +664,7 @@ TEST_BEGIN("JeffPhrasing: \"There\" tests") {
   VerifyStroke("STPHRB", "there are");
 
   // There shouldn't be able to access all enders, eg. "ask"
-  StenoStroke stroke("STHR-RB");
+  const StenoStroke stroke("STHR-RB");
   auto lookup = StenoJeffPhrasingDictionary::instance.Lookup(&stroke, 1);
   assert(!lookup.IsValid());
 

@@ -74,14 +74,14 @@ void Flash::BeginWrite(const uint8_t *address) {
 
   const void *baseAddress =
       (const void *)(intptr_t(address) & -WRITE_DATA_BUFFER_SIZE);
-  size_t offsetIntoPage = size_t(address) & (WRITE_DATA_BUFFER_SIZE - 1);
+  const size_t offsetIntoPage = size_t(address) & (WRITE_DATA_BUFFER_SIZE - 1);
   memcpy(buffer, baseAddress, offsetIntoPage);
 }
 
 void Flash::AddData(const uint8_t *data, size_t length) {
   size_t offset = intptr_t(target) & (WRITE_DATA_BUFFER_SIZE - 1);
   if (offset + length >= WRITE_DATA_BUFFER_SIZE) {
-    size_t remainingBufferLength = WRITE_DATA_BUFFER_SIZE - offset;
+    const size_t remainingBufferLength = WRITE_DATA_BUFFER_SIZE - offset;
     memcpy(buffer + offset, data, remainingBufferLength);
 
     ExternalFlash::Begin();
@@ -100,11 +100,11 @@ void Flash::AddData(const uint8_t *data, size_t length) {
 }
 
 void Flash::WriteRemaining() {
-  size_t bytesToWrite = size_t(target) & (WRITE_DATA_BUFFER_SIZE - 1);
+  const size_t bytesToWrite = size_t(target) & (WRITE_DATA_BUFFER_SIZE - 1);
   if (bytesToWrite != 0) {
     ExternalFlash::Begin();
     // Copy the remainder
-    size_t bytesToCopy = WRITE_DATA_BUFFER_SIZE - bytesToWrite;
+    const size_t bytesToCopy = WRITE_DATA_BUFFER_SIZE - bytesToWrite;
     memcpy(buffer + bytesToWrite, target, bytesToCopy);
 
     const void *writeAddress =
@@ -131,7 +131,7 @@ void Flash::BeginWriteBinding(void *context, const char *commandLine) {
 
   size_t addressValue = 0;
   while (*p) {
-    int hexValue = Unicode::GetHexValue(*p++);
+    const int hexValue = Unicode::GetHexValue(*p++);
     if (hexValue == -1) {
       continue;
     }
@@ -153,7 +153,7 @@ void Flash::WriteBinding(void *context, const char *commandLine) {
   }
 
   uint8_t decodeBuffer[256];
-  size_t byteCount = Base64::Decode(decodeBuffer, (const uint8_t *)p);
+  const size_t byteCount = Base64::Decode(decodeBuffer, (const uint8_t *)p);
 
   if (byteCount == 0) {
     Console::Printf("ERR No data\n\n");

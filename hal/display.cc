@@ -9,7 +9,7 @@ __attribute__((weak)) void Display::SetAutoDraw(int displayId, int autoDrawId) {
 }
 
 __attribute__((weak)) void Display::SetScreenOn(int displayId, bool on) {}
-__attribute__((weak)) void Display::SetContrast(int displayId, int constrast) {}
+__attribute__((weak)) void Display::SetContrast(int displayId, int contrast) {}
 
 __attribute__((weak)) void Display::DrawPixel(int displayId, int x, int y) {}
 __attribute__((weak)) void Display::DrawLine(int displayId, int x1, int y1,

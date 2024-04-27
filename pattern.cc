@@ -30,7 +30,7 @@ Pattern Pattern::Compile(const char *p) {
   context.captureIndex = 2;
 
   PatternComponent *captureStart = new CapturePatternComponent(0);
-  BuildResult result = ParseAlternate(context);
+  const BuildResult result = ParseAlternate(context);
   captureStart->next = result.head;
   result.tail->next = new CapturePatternComponent(1);
 
@@ -46,7 +46,7 @@ Pattern Pattern::Compile(const char *p) {
 //---------------------------------------------------------------------------
 
 Pattern::BuildResult Pattern::ParseAlternate(BuildContext &c) {
-  BuildResult result = ParseSequence(c);
+  const BuildResult result = ParseSequence(c);
   assert(result.head != nullptr);
   assert(result.tail != nullptr);
   if (*c.p != '|') {
@@ -61,7 +61,7 @@ Pattern::BuildResult Pattern::ParseAlternate(BuildContext &c) {
 
   while (*c.p == '|') {
     c.p++;
-    BuildResult result = ParseSequence(c);
+    const BuildResult result = ParseSequence(c);
     assert(result.head != nullptr);
     assert(result.tail != nullptr);
     alternate->Add(result.head);
@@ -76,7 +76,7 @@ Pattern::BuildResult Pattern::ParseSequence(BuildContext &c) {
   BuildResult result = ParseQuantifiedAtom(c);
 
   for (;;) {
-    BuildResult nextElement = ParseQuantifiedAtom(c);
+    const BuildResult nextElement = ParseQuantifiedAtom(c);
     if (nextElement.head == nullptr) {
       return result;
     }
@@ -102,7 +102,7 @@ Pattern::BuildResult Pattern::ParseQuantifiedAtom(BuildContext &c) {
     }
   }
 
-  BuildResult atom = ParseAtom(c);
+  const BuildResult atom = ParseAtom(c);
   if (atom.head == nullptr) {
     return atom;
   }
@@ -234,7 +234,7 @@ const char *Pattern::FindLiteralEnd(const char *p) {
 }
 
 Pattern::BuildResult Pattern::ParseQuantifier(BuildContext &c,
-                                              BuildResult atom) {
+                                              const BuildResult &atom) {
   switch (*c.p) {
   case '*': {
     c.p++;
@@ -267,7 +267,7 @@ Pattern::BuildResult Pattern::ParseQuantifier(BuildContext &c,
 //---------------------------------------------------------------------------
 
 PatternMatch Pattern::Match(const char *text) const {
-  PatternQuickReject textReject(text);
+  const PatternQuickReject textReject(text);
   if (!textReject.IsPossibleMatch(quickReject)) {
     PatternMatch result;
     result.match = false;

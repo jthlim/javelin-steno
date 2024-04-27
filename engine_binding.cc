@@ -58,7 +58,7 @@ void StenoEngine::EnableDictionary_Binding(void *context,
   BufferWriter bufferWriter;
   ConsoleWriter::Push(&bufferWriter);
   StenoEngine *engine = (StenoEngine *)context;
-  bool result = engine->EnableDictionary(dictionary);
+  const bool result = engine->EnableDictionary(dictionary);
   ConsoleWriter::Pop();
   if (result) {
     Console::SendOk();
@@ -80,7 +80,7 @@ void StenoEngine::DisableDictionary_Binding(void *context,
   BufferWriter bufferWriter;
   ConsoleWriter::Push(&bufferWriter);
   StenoEngine *engine = (StenoEngine *)context;
-  bool result = engine->DisableDictionary(dictionary);
+  const bool result = engine->DisableDictionary(dictionary);
   ConsoleWriter::Pop();
   if (result) {
     Console::SendOk();
@@ -102,7 +102,7 @@ void StenoEngine::ToggleDictionary_Binding(void *context,
   BufferWriter bufferWriter;
   ConsoleWriter::Push(&bufferWriter);
   StenoEngine *engine = (StenoEngine *)context;
-  bool result = engine->ToggleDictionary(dictionary);
+  const bool result = engine->ToggleDictionary(dictionary);
   ConsoleWriter::Pop();
   if (result) {
     Console::SendOk();
@@ -172,7 +172,7 @@ void StenoEngine::Lookup_Binding(void *context, const char *commandLine) {
     return;
   }
 
-  ExternalFlashSentry externalFlashSentry;
+  const ExternalFlashSentry externalFlashSentry;
 
   ++definition;
   StenoReverseDictionaryLookup lookup(
@@ -226,9 +226,9 @@ void StenoEngine::LookupStroke_Binding(void *context, const char *commandLine) {
     return;
   }
 
-  ExternalFlashSentry externalFlashSentry;
+  const ExternalFlashSentry externalFlashSentry;
   StenoEngine *engine = (StenoEngine *)context;
-  StenoDictionaryLookupResult result =
+  const StenoDictionaryLookupResult result =
       engine->dictionary.Lookup(parser.strokes, parser.length);
 
   if (result.IsValid()) {

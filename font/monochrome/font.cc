@@ -17,7 +17,7 @@ uint32_t Font::GetCharacterWidth(uint32_t c) const {
     return width;
   }
 
-  size_t dataOffset = glyphOffsets[c - startUnicode];
+  const size_t dataOffset = glyphOffsets[c - startUnicode];
   if (dataOffset == 0) {
     return 0;
   }
@@ -45,7 +45,7 @@ uint32_t Font::GetStringWidth(const char *p) const {
   uint32_t width = 0;
 
   for (;;) {
-    uint32_t c = *utf8p;
+    const uint32_t c = *utf8p;
     ++utf8p;
 
     if (c == 0) {

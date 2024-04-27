@@ -78,14 +78,14 @@ StenoDictionaryLookupResult StenoDictionaryLookupResult::Clone() const {
 #endif
 
 void StenoReverseDictionaryLookup::AddResult(
-    const StenoStroke *result, size_t length,
+    const StenoStroke *strokes, size_t length,
     const StenoDictionary *dictionary) {
   // Ignore if above or equal to the threshold
   if (length >= strokeThreshold) {
     return;
   }
 
-  if (HasResult(result, length)) {
+  if (HasResult(strokes, length)) {
     return;
   }
 
@@ -96,10 +96,10 @@ void StenoReverseDictionaryLookup::AddResult(
 
   StenoReverseDictionaryResult &entry = results.Add();
   entry.length = length;
-  entry.strokes = strokes + strokesCount;
+  entry.strokes = this->strokes + strokesCount;
   entry.dictionary = dictionary;
 
-  result->CopyTo(strokes + strokesCount, length);
+  strokes->CopyTo(this->strokes + strokesCount, length);
   strokesCount += length;
 }
 
@@ -147,8 +147,8 @@ void StenoReverseDictionaryLookup::SortResults() {
       return (int)pa->length - (int)pb->length;
     }
 
-    uint32_t popCountA = StenoStroke::PopCount(pa->strokes, pa->length);
-    uint32_t popCountB = StenoStroke::PopCount(pb->strokes, pb->length);
+    const uint32_t popCountA = StenoStroke::PopCount(pa->strokes, pa->length);
+    const uint32_t popCountB = StenoStroke::PopCount(pb->strokes, pb->length);
     if (popCountA != popCountB) {
       return (int)popCountA - (int)popCountB;
     }
@@ -176,10 +176,25 @@ bool StenoReverseDictionaryLookup::AreAllFromSameDictionary() const {
 
 //---------------------------------------------------------------------------
 
+__attribute__((noinline)) void
+PrintDictionaryContext::Print(const StenoStroke *strokes, size_t length,
+                              const char *definition) {
+  if (!hasData) {
+    hasData = true;
+    Console::Printf("\n\t");
+  } else {
+    Console::Printf(",\n\t");
+  }
+
+  Console::Printf("\"%T\": \"%J\"", strokes, length, definition);
+}
+
+//---------------------------------------------------------------------------
+
 const StenoDictionary *StenoDictionary::GetDictionaryForOutline(
     const StenoDictionaryLookup &lookup) const {
   StenoDictionaryLookupResult lookupResult = Lookup(lookup);
-  bool result = lookupResult.IsValid();
+  const bool result = lookupResult.IsValid();
   lookupResult.Destroy();
   return result ? this : nullptr;
 }

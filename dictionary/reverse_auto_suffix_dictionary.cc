@@ -41,7 +41,7 @@ void StenoReverseAutoSuffixDictionary::ReverseLookup(
       lookup.definitionLength > 8
           ? lookup.definition + lookup.definitionLength - 8
           : lookup.definition;
-  PatternQuickReject textReject(quickRejectText);
+  const PatternQuickReject textReject(quickRejectText);
 
   if (!mergedQuickReject.IsPossibleMergeMatch(textReject)) {
     return;
@@ -73,7 +73,7 @@ void StenoReverseAutoSuffixDictionary::ProcessReverseAutoSuffix(
 
   // 1. To generate the word without suffix, run the regex on up to the last
   // 8 letters of the definition.
-  size_t definitionOffset =
+  const size_t definitionOffset =
       lookup.definitionLength > 8 ? lookup.definitionLength - 8 : 0;
   const PatternMatch match = reversePattern.MatchBypassingQuickReject(
       lookup.definition + definitionOffset);
@@ -95,7 +95,7 @@ void StenoReverseAutoSuffixDictionary::ProcessReverseAutoSuffix(
   char *withSuffix = orthography.AddSuffix(withoutSuffix, suffix);
   free(suffix);
 
-  bool isSuffixEqual = Str::Eq(withSuffix, lookup.definition);
+  const bool isSuffixEqual = Str::Eq(withSuffix, lookup.definition);
   free(withSuffix);
   if (!isSuffixEqual) {
     free(withoutSuffix);
@@ -111,7 +111,7 @@ void StenoReverseAutoSuffixDictionary::ProcessReverseAutoSuffix(
   // 4. Verify that lookup up with suffix produces an invalid lookup.
   for (const StenoReverseDictionaryResult &entry :
        lookupWithoutSuffix.results) {
-    size_t length = entry.length;
+    const size_t length = entry.length;
     StenoStroke *strokes = entry.strokes;
 
     bool hasAdded = false;
@@ -142,7 +142,7 @@ void StenoReverseAutoSuffixDictionary::ProcessReverseAutoSuffix(
           }
 
           strokes[length - 1] &= ~autoSuffix.stroke;
-          bool hasValidLookup = HasValidLookup(strokes, length);
+          const bool hasValidLookup = HasValidLookup(strokes, length);
           strokes[length - 1] |= autoSuffix.stroke;
           if (hasValidLookup) {
             break;

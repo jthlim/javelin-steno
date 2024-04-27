@@ -75,8 +75,9 @@ uint32_t KeyCode::ConvertToUnicode(uint32_t keyCodeAndModifiers) {
     // If there's a non-shift modifier held, don't try and convert to unicode.
     return 0;
   }
-  uint32_t caseIndex = (keyCodeAndModifiers & MODIFIER_SHIFT_FLAG) ? 1 : 0;
-  uint32_t keyCodeIndex = keyCodeAndModifiers & 0xff;
+  const uint32_t caseIndex =
+      (keyCodeAndModifiers & MODIFIER_SHIFT_FLAG) ? 1 : 0;
+  const uint32_t keyCodeIndex = keyCodeAndModifiers & 0xff;
 
   return KEY_CODE_TO_UNICODE[keyCodeIndex][caseIndex];
 }

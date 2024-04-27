@@ -45,17 +45,19 @@ struct StenoEngine::UpdateNormalModeTextBufferThreadData {
 void StenoEngine::ProcessNormalModeStroke(StenoStroke stroke) {
   history.PruneIfFull();
 
-  size_t previousSourceStrokeCount = history.GetCount();
+  const size_t previousSourceStrokeCount = history.GetCount();
   history.Add(stroke, state);
 
 #if ENABLE_PROFILE
   uint32_t t0 = Clock::GetMicroseconds();
 #endif
 
-  size_t maximumConversionStrokes = dictionary.GetMaximumOutlineLength() +
-                                    SEGMENT_CONVERSION_PREFIX_SUFFIX_LIMIT;
-  size_t startingStroke = history.GetStartingStroke(maximumConversionStrokes);
-  size_t conversionCount = history.GetCount() - startingStroke;
+  const size_t maximumConversionStrokes =
+      dictionary.GetMaximumOutlineLength() +
+      SEGMENT_CONVERSION_PREFIX_SUFFIX_LIMIT;
+  const size_t startingStroke =
+      history.GetStartingStroke(maximumConversionStrokes);
+  const size_t conversionCount = history.GetCount() - startingStroke;
 
   StenoSegmentList nextSegmentList;
   CreateSegments(history.GetCount(), nextConversionBuffer, conversionCount,
@@ -140,7 +142,7 @@ void StenoEngine::ProcessNormalModeStroke(StenoStroke stroke) {
           state.overrideCaseMode != StenoCaseMode::NORMAL) {
         printSuggestions = false;
       } else if (history.GetCount() >= 2) {
-        StenoState previousState = history.Back(2).state;
+        const StenoState previousState = history.Back(2).state;
         if (previousState.isManualStateChange) {
           printSuggestions = false;
         }
@@ -174,10 +176,11 @@ void StenoEngine::ProcessNormalModeStroke(StenoStroke stroke) {
 }
 
 void StenoEngine::ProcessNormalModeUndo() {
-  size_t maximumConversionStrokes = dictionary.GetMaximumOutlineLength() +
-                                    SEGMENT_CONVERSION_PREFIX_SUFFIX_LIMIT;
+  const size_t maximumConversionStrokes =
+      dictionary.GetMaximumOutlineLength() +
+      SEGMENT_CONVERSION_PREFIX_SUFFIX_LIMIT;
 
-  size_t undoCount = history.GetUndoCount(maximumConversionStrokes);
+  const size_t undoCount = history.GetUndoCount(maximumConversionStrokes);
   if (undoCount == 0) {
     Key::Press(KeyCode::BACKSPACE);
     Key::Release(KeyCode::BACKSPACE);
@@ -185,8 +188,9 @@ void StenoEngine::ProcessNormalModeUndo() {
     return;
   }
 
-  size_t startingStroke = history.GetStartingStroke(maximumConversionStrokes);
-  size_t conversionCount = history.GetCount() - startingStroke;
+  const size_t startingStroke =
+      history.GetStartingStroke(maximumConversionStrokes);
+  const size_t conversionCount = history.GetCount() - startingStroke;
 
   StenoSegmentList previousSegmentList;
   CreateSegments(history.GetCount(), previousConversionBuffer, conversionCount,
@@ -197,7 +201,7 @@ void StenoEngine::ProcessNormalModeUndo() {
   state.isManualStateChange = false;
   history.RemoveBack(undoCount);
 
-  size_t nextConversionCount =
+  const size_t nextConversionCount =
       undoCount >= conversionCount ? 0 : conversionCount - undoCount;
 
   StenoSegmentList nextSegmentList;
@@ -335,19 +339,19 @@ void StenoEngine::PrintPaperTape(
     ++commonIndex;
   }
 
-  size_t undoCount = previousSegmentList.GetCount() - commonIndex;
+  const size_t undoCount = previousSegmentList.GetCount() - commonIndex;
   if (undoCount > 0) {
     Console::Printf(",\"undo\":%zu", undoCount);
   }
 
   if (commonIndex + 1 == nextSegmentList.GetCount()) {
     const StenoSegment &segment = nextSegmentList[commonIndex];
-    size_t strokeStartIndex =
+    const size_t strokeStartIndex =
         nextConversionBuffer.segmentBuilder.GetStateIndex(segment.state);
 
     const StenoStroke *strokes =
         nextConversionBuffer.segmentBuilder.GetStrokes(strokeStartIndex);
-    size_t length = segment.strokeLength;
+    const size_t length = segment.strokeLength;
     const StenoDictionary *provider =
         dictionary.GetDictionaryForOutline(strokes, length);
     if (provider != nullptr) {
@@ -405,8 +409,8 @@ void StenoEngine::PrintSuggestions(const StenoSegmentList &previousSegmentList,
     size_t keyCodeCount = 0;
     while (skc >= nextConversionBuffer.keyCodeBuffer.buffer &&
            !skc->IsWhitespace() && !skc->IsRawKeyCode()) {
-      uint32_t unicode = skc->GetUnicode();
-      size_t length = Utf8Pointer::BytesForCharacterCode(unicode);
+      const uint32_t unicode = skc->GetUnicode();
+      const size_t length = Utf8Pointer::BytesForCharacterCode(unicode);
       p -= length;
       Utf8Pointer(p).Set(unicode);
       ++keyCodeCount;
@@ -557,7 +561,7 @@ char *StenoEngine::PrintSegmentSuggestion(size_t wordCount,
       // If the previous state is the same, and the new state ends in a space,
       // truncate the space and treat it as a non-space lookup.
       if (*segmentList.Back().state == state) {
-        size_t length = Str::Length(spaceRemoved);
+        const size_t length = Str::Length(spaceRemoved);
         if (length != 0 && spaceRemoved[length - 1] == ' ') {
           spaceRemoved = Str::DupN(spaceRemoved, length - 1);
           free(lookup);
@@ -599,9 +603,9 @@ void StenoEngine::PrintTextLog(
   }
 
   const StenoKeyCode *previousData = previousKeyCodeBuffer.buffer;
-  size_t previousLength = previousKeyCodeBuffer.count;
+  const size_t previousLength = previousKeyCodeBuffer.count;
   const StenoKeyCode *nextData = nextKeyCodeBuffer.buffer;
-  size_t nextLength = nextKeyCodeBuffer.count;
+  const size_t nextLength = nextKeyCodeBuffer.count;
   size_t i = 0;
   while (i < previousLength && i < nextLength &&
          previousData[i].HasSameOutput(nextData[i])) {
@@ -620,7 +624,7 @@ void StenoEngine::PrintTextLog(
       "\\b\\b\\b\\b\\b\\b\\b\\b\\b\\b\\b\\b\\b\\b\\b\\b";
 
   while (backspaceCount > 0) {
-    size_t writeCount = backspaceCount > 16 ? 16 : backspaceCount;
+    const size_t writeCount = backspaceCount > 16 ? 16 : backspaceCount;
     Console::Write(BACKSPACES, 2 * writeCount);
     backspaceCount -= writeCount;
   }

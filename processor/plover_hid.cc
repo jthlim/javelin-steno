@@ -13,7 +13,7 @@ void StenoPloverHid::Process(const StenoKeyState &value, StenoAction action) {
 
   case StenoAction::PRESS:
   case StenoAction::RELEASE:
-    StenoPloverHidPacket packet = value.ToPloverHidPacket();
+    const StenoPloverHidPacket packet = value.ToPloverHidPacket();
     ++counter;
     SendPacket(packet);
   }

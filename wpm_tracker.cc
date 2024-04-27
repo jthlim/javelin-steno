@@ -11,14 +11,14 @@ WpmTracker WpmTracker::instance;
 //---------------------------------------------------------------------------
 
 void WpmTracker::Tally(int count) {
-  uint32_t now = Clock::GetMilliseconds() / 1000;
+  const uint32_t now = Clock::GetMilliseconds() / 1000;
   UpdateToNow(now);
 
   charactersTyped[now % NUMBER_OF_SECONDS] += count;
 }
 
 int WpmTracker::GetWpm(int seconds) {
-  uint32_t now = Clock::GetMilliseconds() / 1000;
+  const uint32_t now = Clock::GetMilliseconds() / 1000;
   UpdateToNow(now);
 
   int tally = 0;
@@ -36,7 +36,7 @@ int WpmTracker::GetWpm(int seconds) {
 }
 
 void WpmTracker::UpdateToNow(uint32_t now) {
-  int delta = now - lastTime;
+  const int delta = now - lastTime;
   if (delta >= 0) {
     if (delta >= NUMBER_OF_SECONDS) {
       memset(charactersTyped, 0, sizeof(charactersTyped));

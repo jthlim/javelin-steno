@@ -106,23 +106,22 @@ void StenoDictionaryList::PrintInfo(int depth) const {
   }
 }
 
-bool StenoDictionaryList::PrintDictionary(const char *name,
-                                          bool hasData) const {
+void StenoDictionaryList::PrintDictionary(
+    PrintDictionaryContext &context) const {
   // Written in reverse order, so that if there are any conflicts,
   // higher priority items will occur later in the JSON.
   for (size_t i = dictionaries.GetCount(); i != 0;) {
     --i;
-    if (name) {
-      if (!Str::Eq(dictionaries[i]->GetName(), name)) {
+    if (context.HasName()) {
+      if (!Str::Eq(dictionaries[i]->GetName(), context.GetName())) {
         continue;
       }
     } else if (!dictionaries[i].IsEnabled()) {
       continue;
     }
 
-    hasData = dictionaries[i]->PrintDictionary(name, hasData);
+    dictionaries[i]->PrintDictionary(context);
   }
-  return hasData;
 }
 
 //---------------------------------------------------------------------------

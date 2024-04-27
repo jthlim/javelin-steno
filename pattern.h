@@ -66,7 +66,7 @@ private:
   static BuildResult ParseSequence(BuildContext &c);
   static BuildResult ParseQuantifiedAtom(BuildContext &c);
   static BuildResult ParseAtom(BuildContext &c);
-  static BuildResult ParseQuantifier(BuildContext &c, BuildResult atom);
+  static BuildResult ParseQuantifier(BuildContext &c, const BuildResult &atom);
 
   static const char *FindLiteralEnd(const char *p);
 };

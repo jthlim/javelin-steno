@@ -19,7 +19,7 @@ StenoUnicodeDictionary::Lookup(const StenoDictionaryLookup &lookup) const {
     return StenoDictionaryLookupResult::CreateInvalid();
   }
 
-  int unicode = (stroke & ~StrokeMask::UNICODE).GetKeyState();
+  const int unicode = (stroke & ~StrokeMask::UNICODE).GetKeyState();
   switch (unicode) {
   case '\b':
     return StenoDictionaryLookupResult::CreateStaticString("{^}\b");

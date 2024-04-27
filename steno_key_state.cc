@@ -146,9 +146,9 @@ constexpr uint8_t PLOVER_HID_LOOKUP[] = {
     17, // NUM11
     17, // NUM12
     16, // FUNCTION
-    15, // POWER
-    14, // RES1
-    13, // RES2
+    31, // POWER
+    30, // RES1
+    29, // RES2
 };
 
 static_assert(sizeof(PLOVER_HID_LOOKUP) == (int)StenoKey::COUNT,
@@ -170,8 +170,8 @@ StenoStroke StenoKeyState::ToStroke() const {
 #if USE_CTZLL
   uint64_t localKeyState = keyState;
   while (localKeyState) {
-    int index = __builtin_ctzll(localKeyState);
-    int shift = STROKE_BIT_INDEX_LOOKUP[index];
+    const int index = __builtin_ctzll(localKeyState);
+    const int shift = STROKE_BIT_INDEX_LOOKUP[index];
     if (shift != -1) {
       strokeKeyState |= 1UL << shift;
     }
@@ -197,11 +197,11 @@ StenoGeminiPacket StenoKeyState::ToGeminiPacket() const {
   StenoGeminiPacket result = {.data = {0x80, 0, 0, 0, 0, 0}};
   uint64_t localKeyState = keyState;
   while (localKeyState) {
-    int index = __builtin_ctzll(localKeyState);
-    uint8_t geminiIndex = GEMINI_LOOKUP[index];
+    const int index = __builtin_ctzll(localKeyState);
+    const uint8_t geminiIndex = GEMINI_LOOKUP[index];
 
-    int byte = geminiIndex / 8;
-    int offset = geminiIndex % 8;
+    const int byte = geminiIndex / 8;
+    const int offset = geminiIndex % 8;
     result.data[byte] |= 1 << offset;
 
     localKeyState &= localKeyState - 1;
@@ -213,11 +213,11 @@ StenoPloverHidPacket StenoKeyState::ToPloverHidPacket() const {
   StenoPloverHidPacket result = {};
   uint64_t localKeyState = keyState;
   while (localKeyState) {
-    int index = __builtin_ctzll(localKeyState);
-    uint8_t ploverHidIndex = PLOVER_HID_LOOKUP[index];
+    const int index = __builtin_ctzll(localKeyState);
+    const uint8_t ploverHidIndex = PLOVER_HID_LOOKUP[index];
 
-    int byte = ploverHidIndex / 8;
-    int offset = ploverHidIndex % 8;
+    const int byte = ploverHidIndex / 8;
+    const int offset = ploverHidIndex % 8;
     result.data[byte] |= 1 << offset;
 
     localKeyState &= localKeyState - 1;

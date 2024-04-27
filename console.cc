@@ -105,7 +105,7 @@ void Console::WriteAsJson(const char *data, char *buffer) {
 }
 
 void Console::WriteAsJson(const char *data) {
-  size_t length = strlen(data);
+  const size_t length = strlen(data);
   char *buffer = (char *)malloc(2 * length);
   WriteAsJson(data, buffer);
   free(buffer);
@@ -128,7 +128,7 @@ void Console::Dump(const void *data, size_t length) {
   line[79] = '\n';
 
   for (size_t i = 0; i < length; ++i) {
-    size_t pos = i & 15;
+    const size_t pos = i & 15;
     if (pos == 0) {
       if (i != 0) {
         Console::Write(line, 80);
@@ -138,8 +138,8 @@ void Console::Dump(const void *data, size_t length) {
       Str::Sprintf(line, "%08x: ", p + i);
       line[10] = ' ';
     }
-    size_t offset = 11 + 3 * pos + (pos >= 8);
-    uint8_t c = p[i];
+    const size_t offset = 11 + 3 * pos + (pos >= 8);
+    const uint8_t c = p[i];
     line[offset] = "0123456789ABCDEF"[c >> 4];
     line[offset + 1] = "0123456789ABCDEF"[c & 0xf];
     line[62 + pos] = c < 32 || c >= 128 ? '.' : c;
@@ -156,12 +156,18 @@ void Console::HandleInput(const char *data, size_t length) {
   for (size_t i = 0; i < length; ++i) {
     if (data[i] == 0) {
       continue;
-    } else if (data[i] == '\n') {
+    }
+
+    if (data[i] == '\n') {
       ProcessLineBuffer();
       continue;
-    } else if (lineBufferCount == sizeof(lineBuffer) - 1) {
-      ProcessLineBuffer();
     }
+
+    if (lineBufferCount == sizeof(lineBuffer) - 1) {
+      isTooLong = true;
+      continue;
+    }
+
     lineBuffer[lineBufferCount++] = data[i];
   }
 }
@@ -184,6 +190,12 @@ void Console::ProcessLineBuffer() {
     Write(lineBuffer, commandOffset);
   } else {
     commandOffset = 0;
+  }
+
+  if (isTooLong) {
+    isTooLong = false;
+    Printf("ERR Command too long.\n\n");
+    return;
   }
 
   char *lineBufferWithoutId = lineBuffer + commandOffset;

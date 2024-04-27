@@ -26,7 +26,7 @@ size_t Str::Sprintf(char *target, const char *p, ...) {
 
   MemoryWriter memoryWriter(target);
   memoryWriter.Vprintf(p, args);
-  size_t result = (char *)memoryWriter.GetTarget() - target;
+  const size_t result = (char *)memoryWriter.GetTarget() - target;
   memoryWriter.WriteByte('\0');
 
   va_end(args);
@@ -89,8 +89,8 @@ char *Str::Join(const char *p, ...) {
       *d++ = *p++;
       if (d == guard) {
         // Expand the buffer.
-        size_t length = guard - result;
-        size_t newLength = length * 2;
+        const size_t length = guard - result;
+        const size_t newLength = length * 2;
         char *newResult = (char *)malloc(newLength);
         memcpy(newResult, result, length);
         free(result);

@@ -15,11 +15,13 @@
 StenoDictionary *StenoDictionaryDefinition::Create() const {
   switch (type) {
   case StenoDictionaryType::COMPACT_MAP:
-    return new StenoCompactMapDictionary(*this);
+    return new StenoCompactMapDictionary(
+        *(StenoCompactMapDictionaryDefinition *)this);
 
   case StenoDictionaryType::FULL_MAP:
 #if defined(JAVELIN_PLATFORM_NRF5_SDK)
-    return new StenoFullMapDictionary(*this);
+    return new StenoFullMapDictionary(
+        *(StenoFullMapDictionaryDefinition *)this);
 #else
     return nullptr;
 #endif
@@ -68,10 +70,10 @@ void StenoDictionaryCollection::AddDictionariesToList(
 }
 
 bool StenoDictionaryCollection::HasMatchingTimestamp() const {
-  const uint8_t *textBlockEnd = end(textBlock);
-  uint32_t endOfTextBlockTimestamp = textBlockEnd[0] | (textBlockEnd[1] << 8) |
-                                     (textBlockEnd[2] << 16) |
-                                     (textBlockEnd[3] << 24);
+  const XipPointer<uint8_t> textBlockEnd = end(textBlock);
+  const uint32_t endOfTextBlockTimestamp =
+      textBlockEnd[0] | (textBlockEnd[1] << 8) | (textBlockEnd[2] << 16) |
+      (textBlockEnd[3] << 24);
   return timestamp == endOfTextBlockTimestamp;
 }
 

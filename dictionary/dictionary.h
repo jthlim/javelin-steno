@@ -202,6 +202,26 @@ private:
 
 //---------------------------------------------------------------------------
 
+class PrintDictionaryContext {
+public:
+  PrintDictionaryContext(const char *name) : name(name) {}
+
+  bool HasName() const { return name != nullptr; }
+  const char *GetName() const { return name; }
+
+  void Print(const StenoStroke *strokes, size_t length, const char *definition);
+
+  void Print(const StenoStroke &stroke, const char *definition) {
+    Print(&stroke, 1, definition);
+  }
+
+private:
+  bool hasData = false;
+  const char *name;
+};
+
+//---------------------------------------------------------------------------
+
 class StenoDictionary {
 public:
   virtual StenoDictionaryLookupResult
@@ -239,9 +259,7 @@ public:
   virtual const char *GetName() const = 0;
 
   virtual void PrintInfo(int depth) const;
-  virtual bool PrintDictionary(const char *name, bool hasData) const {
-    return hasData;
-  }
+  virtual void PrintDictionary(PrintDictionaryContext &context) const {}
 
   virtual void ListDictionaries() const {}
   virtual bool EnableDictionary(const char *name) { return false; }

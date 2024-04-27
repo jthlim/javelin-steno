@@ -37,7 +37,7 @@ void Rgb::SetHsv(size_t id, int h, int s, int v) {
     X = C * (0x10000 - (h & 0xffff)) >> 16;
     m = v - C;
 
-    int temp = C;
+    const int temp = C;
     C = X;
     X = temp;
   } else {

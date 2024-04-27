@@ -62,7 +62,7 @@ public:
 
   virtual const char *GetName() const final;
   virtual void PrintInfo(int depth) const final;
-  virtual bool PrintDictionary(const char *name, bool hasData) const final;
+  virtual void PrintDictionary(PrintDictionaryContext &context) const final;
 
   void PrintJsonDictionary() const;
   void Reset();

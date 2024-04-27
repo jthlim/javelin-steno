@@ -6,9 +6,9 @@
 //---------------------------------------------------------------------------
 
 void _ListBase::Add(const void *data, size_t elementSize) {
-  size_t capacity = GetCapacity(count);
+  const size_t capacity = GetCapacity(count);
   if (count == capacity) {
-    size_t newCapacity = GetCapacity(count + 1);
+    const size_t newCapacity = GetCapacity(count + 1);
     uint8_t *newBuffer = (uint8_t *)malloc(newCapacity * elementSize);
     memcpy(newBuffer, buffer, elementSize * count);
 

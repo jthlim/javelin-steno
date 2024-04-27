@@ -82,7 +82,7 @@ StenoReverseSuffixDictionary::ReverseLookupContext::FindSuffixLookup() const {
   while (l < r) {
     const Suffix *mid = l + ((r - l) >> 1);
     const uint8_t *midString = mid->suffix + characterIndex;
-    uint8_t c = midString[0];
+    const uint8_t c = midString[0];
     if (c < '^') {
       l = mid + 1;
     } else if (c > '^') {
@@ -138,7 +138,7 @@ void StenoReverseSuffixDictionary::ReverseLookup(
 
 void StenoReverseSuffixDictionary::AddSuffixReverseLookup(
     ReverseLookupContext &context, StenoReverseDictionaryLookup &lookup) const {
-  size_t length = Str::Length(lookup.definition);
+  const size_t length = Str::Length(lookup.definition);
   if (length <= 2) {
     return;
   }
@@ -170,16 +170,17 @@ void StenoReverseSuffixDictionary::AddSuffixReverseLookup(
     const Test &test = tests[i];
 
     // Create the without suffix version, add the suffix, and verify it matches.
-    size_t prefixLength = test.prefixEnd - (const uint8_t *)lookup.definition;
+    const size_t prefixLength =
+        test.prefixEnd - (const uint8_t *)lookup.definition;
     char *withoutSuffix = Str::DupN(lookup.definition, prefixLength);
 
-    size_t suffixLength = definitionEnd - test.prefixEnd;
+    const size_t suffixLength = definitionEnd - test.prefixEnd;
     char *orthographySuffix =
         test.suffix->CreateOrthographySuffix(suffixLength);
     char *withSuffix = orthography.AddSuffix(withoutSuffix, orthographySuffix);
     free(orthographySuffix);
 
-    bool isSuffixEqual = Str::Eq(withSuffix, lookup.definition);
+    const bool isSuffixEqual = Str::Eq(withSuffix, lookup.definition);
     free(withSuffix);
     if (!isSuffixEqual) {
       free(withoutSuffix);
@@ -193,10 +194,10 @@ void StenoReverseSuffixDictionary::AddSuffixReverseLookup(
     prefixDictionary->ReverseLookup(*prefixLookup);
     free(withoutSuffix);
 
-    bool hasResult = false;
     if (prefixLookup->HasResults()) {
       // Prefix lookup succeeded, get the suffixes.
-      size_t minimumPrefixStrokeCount = prefixLookup->GetMinimumStrokeCount();
+      const size_t minimumPrefixStrokeCount =
+          prefixLookup->GetMinimumStrokeCount();
       if (lookup.strokeThreshold > minimumPrefixStrokeCount + 1) {
         StenoReverseDictionaryLookup *suffixLookup =
             new StenoReverseDictionaryLookup(
@@ -214,7 +215,7 @@ void StenoReverseSuffixDictionary::AddSuffixReverseLookup(
                prefixLookup->results) {
             for (const StenoReverseDictionaryResult &suffix :
                  suffixLookup->results) {
-              size_t combinedLength = prefix.length + suffix.length;
+              const size_t combinedLength = prefix.length + suffix.length;
               if (combinedLength >= lookup.strokeThreshold) {
                 continue;
               }

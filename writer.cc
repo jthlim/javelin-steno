@@ -15,7 +15,7 @@ const int FLAG_LENGTH_64_BIT = 2;
 
 static void Reverse(char *start, char *end) {
   for (--end; start < end; ++start, --end) {
-    char t = *start;
+    const char t = *start;
     *start = *end;
     *end = t;
   }
@@ -138,10 +138,10 @@ void IWriter::Vprintf(const char *p, va_list args) {
 
     case 'u':
       if (flags & FLAG_LENGTH_64_BIT) {
-        uint64_t v = va_arg(args, uint64_t);
+        const uint64_t v = va_arg(args, uint64_t);
         end = WriteReversedUint64(start, v);
       } else {
-        uint32_t v = va_arg(args, uint32_t);
+        const uint32_t v = va_arg(args, uint32_t);
         end = WriteReversedUint32(start, v);
       }
       Reverse(start, end);
@@ -149,10 +149,10 @@ void IWriter::Vprintf(const char *p, va_list args) {
 
     case 'x':
       if (flags & FLAG_LENGTH_64_BIT) {
-        uint64_t v = va_arg(args, uint64_t);
+        const uint64_t v = va_arg(args, uint64_t);
         end = WriteReversedHex64(start, v, "0123456789abcdef");
       } else {
-        uint32_t v = va_arg(args, uint32_t);
+        const uint32_t v = va_arg(args, uint32_t);
         end = WriteReversedHex32(start, v, "0123456789abcdef");
       }
       Reverse(start, end);
@@ -160,10 +160,10 @@ void IWriter::Vprintf(const char *p, va_list args) {
 
     case 'X':
       if (flags & FLAG_LENGTH_64_BIT) {
-        uint64_t v = va_arg(args, uint64_t);
+        const uint64_t v = va_arg(args, uint64_t);
         end = WriteReversedHex64(start, v, "0123456789ABCDEF");
       } else {
-        uint32_t v = va_arg(args, uint32_t);
+        const uint32_t v = va_arg(args, uint32_t);
         end = WriteReversedHex32(start, v, "0123456789ABCDEF");
       }
       Reverse(start, end);
@@ -171,10 +171,10 @@ void IWriter::Vprintf(const char *p, va_list args) {
 
     case 'p':
       if (sizeof(void *) == sizeof(uint64_t)) {
-        uint64_t v = va_arg(args, uint64_t);
+        const uint64_t v = va_arg(args, uint64_t);
         end = WriteReversedHex64(start, v, "0123456789abcdef");
       } else {
-        uint32_t v = va_arg(args, uint32_t);
+        const uint32_t v = va_arg(args, uint32_t);
         end = WriteReversedHex32(start, v, "0123456789abcdef");
       }
       Reverse(start, end);
@@ -197,7 +197,7 @@ void IWriter::Vprintf(const char *p, va_list args) {
 
     case 'B': {
       // Write the string true or false based on a bool.
-      int value = va_arg(args, int);
+      const int value = va_arg(args, int);
       if (value) {
         Write("true", 4);
       } else {
@@ -217,7 +217,7 @@ void IWriter::Vprintf(const char *p, va_list args) {
     case 'T': {
       // Write multiple strokes.
       const StenoStroke *strokes = va_arg(args, const StenoStroke *);
-      size_t strokeCount = va_arg(args, size_t);
+      const size_t strokeCount = va_arg(args, size_t);
       for (size_t j = 0; j < strokeCount; ++j) {
         char *p = scratch;
         if (j != 0) {
@@ -231,7 +231,7 @@ void IWriter::Vprintf(const char *p, va_list args) {
     case 'J': {
       // Write as JSON
       const char *p = va_arg(args, char *);
-      size_t length = Str::Length(p);
+      const size_t length = Str::Length(p);
       char *jsonBuffer =
           length <= sizeof(scratch) / 2 ? scratch : (char *)malloc(2 * length);
       char *end = Str::WriteJson(jsonBuffer, p);
@@ -259,11 +259,11 @@ static const char SPACES[] = "                ";
 static const char ZEROS[] = "0000000000000000";
 
 void IWriter::WriteSegment(int flags, char *start, char *end, int width) {
-  size_t length = end - start;
+  const size_t length = end - start;
   if (length < width) {
     size_t fillCount = width - length;
     while (fillCount) {
-      size_t fillSegmentCount = fillCount > 16 ? 16 : fillCount;
+      const size_t fillSegmentCount = fillCount > 16 ? 16 : fillCount;
 
       const char *fill = (flags & FLAG_FILL_ZERO) ? ZEROS : SPACES;
       Write(fill, fillSegmentCount);
@@ -299,7 +299,7 @@ BufferWriter::BufferWriter()
     : bufferUsedCount(0), bufferSize(128), buffer((char *)malloc(128)) {}
 
 void BufferWriter::Write(const char *data, size_t length) {
-  size_t newUsedCount = bufferUsedCount + length;
+  const size_t newUsedCount = bufferUsedCount + length;
   if (newUsedCount > bufferSize) {
     do {
       bufferSize *= 2;

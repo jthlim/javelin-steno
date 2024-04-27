@@ -22,7 +22,7 @@ public:
   virtual void ReverseLookup(StenoReverseDictionaryLookup &lookup) const;
 
   virtual const char *GetName() const;
-  virtual bool PrintDictionary(const char *name, bool hasData) const;
+  virtual void PrintDictionary(PrintDictionaryContext &context) const;
 
   static StenoEmilySymbolsDictionary instance;
 };

@@ -223,8 +223,8 @@ static const KeyCodeName *GetKeyCodeName(const char *name) {
   size_t right = sizeof(KEYS) / sizeof(*KEYS);
 
   while (left < right) {
-    size_t mid = (left + right) / 2;
-    int comparison = strcmp(name, KEYS[mid].name);
+    const size_t mid = (left + right) / 2;
+    const int comparison = strcmp(name, KEYS[mid].name);
     if (comparison < 0) {
       right = mid;
     } else if (comparison > 0) {
