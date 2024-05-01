@@ -37,6 +37,21 @@ size_t _ListBase::GetCapacity(size_t count) {
     powerOf2 <<= 1;
   }
   return powerOf2;
+
+  // Alternative, but since most lists used are small, this isn't so
+  // beneficial.
+
+  // size_t x = (count - 1) >> 2;
+
+  // // Round up to power of 2.
+  // x |= (x >> 1);
+  // x |= (x >> 2);
+  // x |= (x >> 4);
+  // x |= (x >> 8);
+  // // Lists will never have > 256k elements.
+  // // x |= (x >> 16);
+
+  // return (x + 1) << 2;
 }
 
 //---------------------------------------------------------------------------

@@ -131,11 +131,13 @@ bool StenoReverseDictionaryLookup::HasResult(const StenoStroke *strokes,
 
 void StenoReverseDictionaryLookup::AddMapDataLookup(
     MapDataLookup mapDataLookup, const uint8_t *baseAddress) {
-  while (mapDataLookup.HasData()) {
-    mapDataLookups.Add(mapDataLookup.GetData(baseAddress));
+  while ((mapDataLookup.HasData())) {
+    // This should never happen if the converter limits work.
     if (mapDataLookups.IsFull()) {
       return;
     }
+
+    mapDataLookups.Add(mapDataLookup.GetData(baseAddress));
     ++mapDataLookup;
   }
 }

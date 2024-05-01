@@ -135,6 +135,8 @@ enum class StenoScriptFunction : uint8_t {
   READ_GPIO_PIN,
   DRAW_GRAYSCALE_RANGE,
   SET_GPIO_PIN_DUTY_CYCLE,
+  CANCEL_ALL_STENO_KEYS,
+  CANCEL_STENO_KEY,
 };
 
 enum class StenoScriptOperator : uint8_t {

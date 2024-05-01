@@ -559,13 +559,13 @@ void StenoJeffPhrasingDictionary::PrintDictionary(
   // Full Form
   for (const JeffPhrasingFullStarter &starter :
        JeffPhrasingDictionaryData::instance.fullStarters) {
-    for (size_t m = 0; m < 8; ++m) {
+    for (uint32_t m = 0; m < 8; ++m) {
       const StenoStroke middle = StenoStroke(m << StrokeBitIndex::A);
 
-      for (size_t n = 0; n < 2; ++n) {
+      for (uint32_t n = 0; n < 2; ++n) {
         const StenoStroke negation = StenoStroke(n << StrokeBitIndex::STAR);
 
-        for (size_t s = 0; s < 16; ++s) {
+        for (uint32_t s = 0; s < 16; ++s) {
           const StenoStroke structure = StenoStroke(s << StrokeBitIndex::E);
 
           for (const JeffPhrasingEnder &ender :
@@ -589,10 +589,10 @@ void StenoJeffPhrasingDictionary::PrintDictionary(
   // Simple Starters
   for (const JeffPhrasingSimpleStarter &starter :
        JeffPhrasingDictionaryData::instance.simpleStarters) {
-    for (size_t p = 1; p < 8; ++p) {
+    for (uint32_t p = 1; p < 8; ++p) {
       const StenoStroke pronoun = StenoStroke(p << StrokeBitIndex::STAR);
 
-      for (size_t s = 0; s < 2; ++s) {
+      for (uint32_t s = 0; s < 2; ++s) {
         const StenoStroke structure = StenoStroke(s << StrokeBitIndex::FR);
 
         for (const JeffPhrasingEnder &ender :

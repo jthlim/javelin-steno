@@ -92,7 +92,7 @@ void StenoReverseAutoSuffixDictionary::ProcessReverseAutoSuffix(
 
   char *suffix = Str::DupN(reverseAutoSuffix.autoSuffix->text + 3,
                            strlen(reverseAutoSuffix.autoSuffix->text) - 4);
-  char *withSuffix = orthography.AddSuffix(withoutSuffix, suffix);
+  char *withSuffix = orthography.AddSuffixToPhrase(withoutSuffix, suffix);
   free(suffix);
 
   const bool isSuffixEqual = Str::Eq(withSuffix, lookup.definition);

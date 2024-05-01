@@ -105,7 +105,8 @@ private:
 
   void OnStenoKeyPressed();
   void OnStenoKeyReleased();
-  void OnStenoStateCancelled();
+  void CancelStenoKeys(StenoKeyState state);
+  void CancelAllStenoKeys();
   bool ProcessScanCode(int scanCode, ScanCodeAction action);
 
   void SendText(const uint8_t *text);

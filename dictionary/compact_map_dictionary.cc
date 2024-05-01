@@ -110,6 +110,15 @@ void StenoCompactMapDictionaryStrokesDefinition::PrintDictionary(
 
 //---------------------------------------------------------------------------
 
+StenoCompactMapDictionary::StenoCompactMapDictionary(
+    const StenoCompactMapDictionaryDefinition &definition)
+    : StenoDictionary(definition.maximumOutlineLength),
+      textBlock(definition.textBlock), definition(definition),
+      strokes(CreateStrokeCache(definition)) {
+  dataRange.min = strokes[1].data;
+  dataRange.max = strokes[maximumOutlineLength].offsets;
+}
+
 StenoDictionaryLookupResult
 StenoCompactMapDictionary::Lookup(const StenoDictionaryLookup &lookup) const {
   const StenoCompactMapDictionaryStrokesDefinition &strokesDefinition =
@@ -193,6 +202,18 @@ const StenoDictionary *StenoCompactMapDictionary::GetDictionaryForOutline(
 
 void StenoCompactMapDictionary::ReverseLookup(
     StenoReverseDictionaryLookup &lookup) const {
+  if (lookup.mapDataLookups.IsEmpty()) {
+    return;
+  }
+
+  if (lookup.mapDataLookups.Front() >= dataRange.max) {
+    return;
+  }
+
+  if (lookup.mapDataLookups.Back() < dataRange.min) {
+    return;
+  }
+
   for (const void *data : lookup.mapDataLookups) {
     ReverseLookup(lookup, data);
   }
@@ -201,10 +222,7 @@ void StenoCompactMapDictionary::ReverseLookup(
 void StenoCompactMapDictionary::ReverseLookup(
     StenoReverseDictionaryLookup &lookup, const void *data) const {
   // Quick reject
-  if (data < strokes[1].data) {
-    return;
-  }
-  if (data >= strokes[maximumOutlineLength].offsets) {
+  if (!dataRange.Contains(data)) {
     return;
   }
 

@@ -14,15 +14,16 @@ Flash Flash::instance;
 
 //---------------------------------------------------------------------------
 
-__attribute((weak)) void Flash::Erase(const void *target, size_t size) {
+#if RUN_TESTS
+__attribute((weak)) void Flash::EraseBlock(const void *target, size_t size) {
   assert((size & (BLOCK_SIZE - 1)) == 0);
 
   instance.erasedBytes += size;
   memset((void *)target, 0xff, size);
 }
 
-__attribute((weak)) void Flash::Write(const void *target, const void *data,
-                                      size_t size) {
+__attribute((weak)) void Flash::WriteBlock(const void *target, const void *data,
+                                           size_t size) {
   assert(target != data);
   assert((size & (BLOCK_SIZE - 1)) == 0);
 
@@ -30,6 +31,7 @@ __attribute((weak)) void Flash::Write(const void *target, const void *data,
   instance.programmedBytes += size;
   memcpy((void *)target, data, size);
 }
+#endif
 
 //---------------------------------------------------------------------------
 
@@ -87,7 +89,7 @@ void Flash::AddData(const uint8_t *data, size_t length) {
     ExternalFlash::Begin();
     const void *writeAddress =
         (const void *)(size_t(target) & -WRITE_DATA_BUFFER_SIZE);
-    Flash::Write(writeAddress, buffer, WRITE_DATA_BUFFER_SIZE);
+    Flash::WriteBlock(writeAddress, buffer, WRITE_DATA_BUFFER_SIZE);
     ExternalFlash::End();
 
     target += remainingBufferLength;
@@ -110,10 +112,19 @@ void Flash::WriteRemaining() {
     const void *writeAddress =
         (const void *)(size_t(target) & -WRITE_DATA_BUFFER_SIZE);
 
-    Flash::Write(writeAddress, buffer, WRITE_DATA_BUFFER_SIZE);
+    Flash::WriteBlock(writeAddress, buffer, WRITE_DATA_BUFFER_SIZE);
     ExternalFlash::End();
   }
   target = nullptr;
+}
+
+__attribute__((noinline)) void Flash::Write(const void *target,
+                                            const void *data, size_t size) {
+  ExternalFlash::Begin();
+  instance.BeginWrite((const uint8_t *)target);
+  instance.AddData((const uint8_t *)data, size);
+  instance.WriteRemaining();
+  ExternalFlash::End();
 }
 
 //---------------------------------------------------------------------------

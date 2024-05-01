@@ -10,7 +10,8 @@ enum class StenoAction {
   PRESS,
   RELEASE,
   TRIGGER,
-  CANCEL, // Used to signal that any presses so far should be ignored.
+  CANCEL_ALL, // Used to signal that any presses so far should be ignored.
+  CANCEL_KEY, // Used to ignore a key that was pressed.
 };
 
 //---------------------------------------------------------------------------
@@ -39,7 +40,6 @@ public:
 
   void Process(StenoKey key, bool isPress);
   void Process(const StenoKeyState &newState);
-  void ProcessCancel();
   void Tick() { next.Tick(); }
   void PrintInfo() const;
 

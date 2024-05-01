@@ -4,6 +4,7 @@
 #include "console.h"
 #include "crc.h"
 #include "str.h"
+#include "unicode.h"
 #include "word_list.h"
 
 //---------------------------------------------------------------------------
@@ -188,6 +189,30 @@ char *StenoCompiledOrthography::AddSuffix(const char *word,
   char *result = AddSuffixInternal(word, suffix);
   CacheEntry *entry = new CacheEntry(word, suffix, result);
   cache[blockIndex].AddEntry(entry);
+  return result;
+}
+
+char *StenoCompiledOrthography::AddSuffixToPhrase(const char *phrase,
+                                                  const char *suffix) const {
+  const char *lastWord = phrase;
+  const char *p = phrase;
+  while (*p) {
+    if (Unicode::IsWhitespace(*p++)) {
+      lastWord = p;
+    }
+  }
+
+  if (lastWord == phrase) {
+    return AddSuffix(phrase, suffix);
+  }
+
+  char *suffixedLastWord = AddSuffix(lastWord, suffix);
+  const size_t suffixedLastWordLength = Str::Length(suffixedLastWord);
+  const size_t prefixLength = lastWord - phrase;
+  char *result = (char *)malloc(prefixLength + suffixedLastWordLength + 1);
+  memcpy(result, phrase, prefixLength);
+  memcpy(result + prefixLength, suffixedLastWord, suffixedLastWordLength + 1);
+  free(suffixedLastWord);
   return result;
 }
 

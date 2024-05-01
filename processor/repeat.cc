@@ -35,7 +35,8 @@ void StenoRepeat::Process(const StenoKeyState &value, StenoAction action) {
     }
     break;
 
-  case StenoAction::CANCEL:
+  case StenoAction::CANCEL_KEY:
+  case StenoAction::CANCEL_ALL:
     isRepeating = false;
     wasLastEventAPress = false;
     releasedKeyState.Reset();

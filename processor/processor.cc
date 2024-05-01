@@ -30,10 +30,6 @@ void StenoProcessor::Process(const StenoKeyState &newState) {
   state = newState;
 }
 
-void StenoProcessor::ProcessCancel() {
-  next.Process(StenoKeyState(0), StenoAction::CANCEL);
-}
-
 void StenoProcessor::PrintInfo() const { next.PrintInfo(); }
 
 //---------------------------------------------------------------------------

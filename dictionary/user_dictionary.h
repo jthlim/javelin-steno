@@ -12,7 +12,7 @@ struct StenoUserDictionaryDescriptor;
 struct StenoUserDictionaryEntry;
 
 struct StenoUserDictionaryData {
-  StenoUserDictionaryData();
+  StenoUserDictionaryData() = default;
   StenoUserDictionaryData(const uint8_t *mem, size_t size) {
     assert((size & (size - 1)) == 0);
     hashTable = (uint32_t *)mem;
@@ -101,8 +101,8 @@ private:
   void AddToDescriptor(size_t strokeLength, size_t dataLength);
   bool AddToHashTable(const StenoStroke *strokes, size_t length, size_t offset);
   bool AddToReverseHashTable(const char *word, size_t offset);
-  void WriteEntryIndex(size_t entryIndex, size_t offset);
-  void WriteReverseEntryIndex(size_t entryIndex, size_t offset);
+  void WriteEntryIndex(size_t entryIndex, uint32_t offset);
+  void WriteReverseEntryIndex(size_t entryIndex, uint32_t offset);
 
   const StenoUserDictionaryEntry *
   RemoveFromHashTable(const StenoStroke *strokes, size_t length);

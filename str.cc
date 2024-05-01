@@ -91,10 +91,7 @@ char *Str::Join(const char *p, ...) {
         // Expand the buffer.
         const size_t length = guard - result;
         const size_t newLength = length * 2;
-        char *newResult = (char *)malloc(newLength);
-        memcpy(newResult, result, length);
-        free(result);
-        result = newResult;
+        result = (char *)realloc(result, newLength);
         guard = result + newLength;
         d = result + length;
       }

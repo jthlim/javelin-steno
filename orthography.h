@@ -57,6 +57,7 @@ public:
   explicit StenoCompiledOrthography(const StenoOrthography &orthography);
 
   char *AddSuffix(const char *word, const char *suffix) const;
+  char *AddSuffixToPhrase(const char *phrase, const char *suffix) const;
 
   void PrintInfo() const;
 

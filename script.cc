@@ -199,14 +199,17 @@ void Script::StartTimer(intptr_t timerId, uint32_t interval, bool isRepeating,
 
 //---------------------------------------------------------------------------
 
+#if RUN_TESTS
 __attribute__((weak)) void Script::OnStenoKeyPressed() {}
 __attribute__((weak)) void Script::OnStenoKeyReleased() {}
-__attribute__((weak)) void Script::OnStenoStateCancelled() {}
+__attribute__((weak)) void Script::CancelStenoKeys(StenoKeyState state) {}
+__attribute__((weak)) void Script::CancelAllStenoKeys() {}
 __attribute__((weak)) bool Script::ProcessScanCode(int scanCode,
                                                    ScanCodeAction action) {
   return false;
 }
 __attribute__((weak)) void Script::SendText(const uint8_t *text) {}
+#endif
 
 //---------------------------------------------------------------------------
 
@@ -484,7 +487,7 @@ void Script::ExecutionContext::Run(Script &script, size_t offset) {
         }
         script.keyState.ClearAll();
         script.stenoState = 0;
-        script.OnStenoStateCancelled();
+        script.CancelAllStenoKeys();
         continue;
       case SF::IS_BUTTON_PRESSED: {
         const uint32_t buttonIndex = (uint32_t)script.Pop();
@@ -792,11 +795,25 @@ void Script::ExecutionContext::Run(Script &script, size_t offset) {
         const int height = *data++;
         Display::DrawGrayscaleRange(displayId, x, y, width, height, data, min,
                                     max);
+        continue;
       }
       case SF::SET_GPIO_PIN_DUTY_CYCLE: {
         const int dutyCycle = (int)script.Pop();
         const int pin = (int)script.Pop();
         Gpio::SetPinDutyCycle(pin, dutyCycle);
+        continue;
+      }
+      case SF::CANCEL_ALL_STENO_KEYS:
+        script.stenoState = 0;
+        script.CancelAllStenoKeys();
+        continue;
+      case SF::CANCEL_STENO_KEY: {
+        const uint32_t stenoKey = (uint32_t)script.Pop();
+        if (stenoKey < (uint32_t)StenoKey::COUNT) {
+          StenoKeyState state = StenoKeyState(1ULL << stenoKey);
+          script.stenoState &= ~state;
+          script.CancelStenoKeys(state);
+        }
         continue;
       }
       }

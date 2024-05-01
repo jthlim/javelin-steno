@@ -469,7 +469,7 @@ void StenoJeffModifiers::Process(const StenoKeyState &value,
     if (isModifier) {
       if (!wasModifier) {
         wasModifier = true;
-        next->Process(value, StenoAction::CANCEL);
+        next->Process(value, StenoAction::CANCEL_ALL);
       }
       UpdateModifiers(stroke);
       return;
@@ -489,7 +489,8 @@ void StenoJeffModifiers::Process(const StenoKeyState &value,
     }
     break;
 
-  case StenoAction::CANCEL:
+  case StenoAction::CANCEL_ALL:
+  case StenoAction::CANCEL_KEY:
     wasModifier = false;
     UpdateModifiers(StenoStroke());
     break;

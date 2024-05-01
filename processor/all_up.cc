@@ -20,8 +20,12 @@ void StenoAllUp::Process(const StenoKeyState &value, StenoAction action) {
     }
     break;
 
-  case StenoAction::CANCEL:
+  case StenoAction::CANCEL_ALL:
     pressedKeyState.Reset();
+    break;
+
+  case StenoAction::CANCEL_KEY:
+    pressedKeyState &= ~value;
     break;
 
   case StenoAction::TRIGGER:

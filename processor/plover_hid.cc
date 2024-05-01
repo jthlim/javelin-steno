@@ -7,7 +7,8 @@
 
 void StenoPloverHid::Process(const StenoKeyState &value, StenoAction action) {
   switch (action) {
-  case StenoAction::CANCEL:
+  case StenoAction::CANCEL_KEY:
+  case StenoAction::CANCEL_ALL:
   case StenoAction::TRIGGER:
     break;
 

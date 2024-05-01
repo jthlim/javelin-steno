@@ -1,6 +1,7 @@
 //---------------------------------------------------------------------------
 
 #pragma once
+#include "../interval.h"
 #include "dictionary.h"
 #include "dictionary_definition.h"
 
@@ -9,10 +10,7 @@
 class StenoFullMapDictionary final : public StenoDictionary,
                                      public JavelinMallocAllocate {
 public:
-  StenoFullMapDictionary(const StenoFullMapDictionaryDefinition &definition)
-      : StenoDictionary(definition.maximumOutlineLength),
-        textBlock(definition.textBlock), definition(definition),
-        strokes(CreateStrokeCache(definition)) {}
+  StenoFullMapDictionary(const StenoFullMapDictionaryDefinition &definition);
 
   virtual StenoDictionaryLookupResult
   Lookup(const StenoDictionaryLookup &lookup) const;
@@ -30,6 +28,7 @@ public:
 private:
   const uint8_t *textBlock;
   const StenoFullMapDictionaryDefinition &definition;
+  Interval<const void *> dataRange;
 
   // This is offset by 1 to simplify lookup code marginally.
   const StenoFullMapDictionaryStrokesDefinition *strokes;

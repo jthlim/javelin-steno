@@ -192,14 +192,8 @@ ContainerPatternComponent::ContainerPatternComponent(
 void ContainerPatternComponent::Add(PatternComponent *component) {
   const size_t capacity = (componentCount + 3) & -4;
   if (componentCount == capacity) {
-    PatternComponent **newComponents = (PatternComponent **)malloc(
-        (capacity + 4) * sizeof(PatternComponent *));
-
-    memcpy(newComponents, components,
-           capacity * sizeof(PatternComponent *)); // NOLINT
-
-    free(components);
-    components = newComponents;
+    components = (PatternComponent **)realloc(
+        components, (capacity + 4) * sizeof(PatternComponent *));
   }
   components[componentCount++] = component;
 }
