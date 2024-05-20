@@ -635,6 +635,11 @@ bool StenoKeyCodeBuffer::KeyboardLayoutFunction(
 }
 
 bool StenoKeyCodeBuffer::ConsoleFunction(const List<char *> &parameters) {
+  if (parameters.GetCount() == 1) {
+    consoleCount++;
+    return true;
+  }
+
   if (parameters.GetCount() != 2) {
     return false;
   }

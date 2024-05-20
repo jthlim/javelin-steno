@@ -45,6 +45,16 @@ Example usage:
   {:add_translation}
 ```
 
+## `{:console:}`
+
+Starts interactive console mode.
+
+Example usage:
+
+```
+  Console>{^ ^}{:console}
+```
+
 ## `{:console:<cmd>}`
 
 Runs a console command. The list of commands can be found using `help` in the

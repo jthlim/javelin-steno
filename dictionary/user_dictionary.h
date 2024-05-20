@@ -70,8 +70,14 @@ public:
   // Returns true if successful.
   virtual bool Add(const StenoStroke *strokes, size_t length, const char *word);
 
+  virtual bool CanRemove() const { return true; }
+  virtual bool Remove(const char *name, const StenoStroke *strokes,
+                      size_t length) {
+    return Remove(strokes, length);
+  }
+
   // Returns true if successful.
-  virtual bool Remove(const StenoStroke *strokes, size_t length);
+  bool Remove(const StenoStroke *strokes, size_t length);
 
   static void PrintJsonDictionary_Binding(void *context,
                                           const char *commandLine);

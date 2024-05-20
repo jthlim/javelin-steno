@@ -18,11 +18,15 @@ static const char TRANSLATION_PROMPT[] = "; Translation: ";
 //---------------------------------------------------------------------------
 
 void StenoEngine::InitiateAddTranslationMode() {
+  if (!userDictionary) {
+    return;
+  }
+
   mode = StenoEngineMode::ADD_TRANSLATION;
 
-  addTranslationHistory.Reset();
-  addTranslationState = state;
-  addTranslationState.joinNext = true;
+  altTranslationHistory.Reset();
+  altTranslationState = state;
+  altTranslationState.joinNext = true;
 
   previousConversionBuffer.keyCodeBuffer.Reset();
   UpdateAddTranslationModeTextBuffer(nextConversionBuffer);
@@ -32,8 +36,8 @@ void StenoEngine::InitiateAddTranslationMode() {
 
 void StenoEngine::ProcessAddTranslationModeStroke(StenoStroke stroke) {
   size_t newlineIndex = 0;
-  for (size_t i = 0; i < addTranslationHistory.GetCount(); ++i) {
-    if (IsNewline(addTranslationHistory[i].stroke)) {
+  for (size_t i = 0; i < altTranslationHistory.GetCount(); ++i) {
+    if (IsNewline(altTranslationHistory[i].stroke)) {
       newlineIndex = i;
       break;
     }
@@ -43,12 +47,12 @@ void StenoEngine::ProcessAddTranslationModeStroke(StenoStroke stroke) {
 
   if (IsNewline(stroke)) {
     // Don't do anything with an empty stroke.
-    if (addTranslationHistory.IsEmpty()) {
+    if (altTranslationHistory.IsEmpty()) {
       return;
     }
     if (newlineIndex != 0) {
       // Already one enter -- this is the second
-      if (newlineIndex + 1 == addTranslationHistory.GetCount()) {
+      if (newlineIndex + 1 == altTranslationHistory.GetCount()) {
         DeleteTranslation(newlineIndex);
       } else {
         AddTranslation(newlineIndex);
@@ -58,7 +62,7 @@ void StenoEngine::ProcessAddTranslationModeStroke(StenoStroke stroke) {
     }
   } else if (newlineIndex == 0) {
     // No newline yet -- record stroke input.
-    if (addTranslationHistory.GetCount() >
+    if (altTranslationHistory.GetCount() >
         StenoUserDictionary::MAX_STROKE_COUNT) {
       return;
     }
@@ -66,28 +70,28 @@ void StenoEngine::ProcessAddTranslationModeStroke(StenoStroke stroke) {
       // Don't allow unicode when defining the stroke.
       return;
     }
-  } else if (newlineIndex + 1 == addTranslationHistory.GetCount()) {
-    addTranslationState.isGlue = true;
-    addTranslationState.joinNext = true;
+  } else if (newlineIndex + 1 == altTranslationHistory.GetCount()) {
+    altTranslationState.isGlue = true;
+    altTranslationState.joinNext = true;
   }
 
-  if (addTranslationHistory.IsFull()) {
+  if (altTranslationHistory.IsFull()) {
     return;
   }
 
-  addTranslationHistory.Add(stroke, addTranslationState);
+  altTranslationHistory.Add(stroke, altTranslationState);
 
   UpdateAddTranslationModeTextBuffer(nextConversionBuffer);
-  addTranslationState = nextConversionBuffer.keyCodeBuffer.state;
+  altTranslationState = nextConversionBuffer.keyCodeBuffer.state;
 
   if (emitter.Process(previousConversionBuffer.keyCodeBuffer,
                       nextConversionBuffer.keyCodeBuffer)) {
-    addTranslationHistory.SetBackCombineUndo();
+    altTranslationHistory.SetBackCombineUndo();
   }
 }
 
 void StenoEngine::ProcessAddTranslationModeUndo() {
-  if (addTranslationHistory.IsEmpty()) {
+  if (altTranslationHistory.IsEmpty()) {
     EndAddTranslationMode();
     return;
   }
@@ -95,10 +99,10 @@ void StenoEngine::ProcessAddTranslationModeUndo() {
   UpdateAddTranslationModeTextBuffer(previousConversionBuffer);
 
   const size_t undoCount =
-      addTranslationHistory.GetUndoCount(StenoSegmentBuilder::BUFFER_SIZE);
-  state = addTranslationHistory.Back(undoCount).state;
-  state.shouldCombineUndo = false;
-  addTranslationHistory.RemoveBack(undoCount);
+      altTranslationHistory.GetUndoCount(StenoSegmentBuilder::BUFFER_SIZE);
+  altTranslationState = altTranslationHistory.Back(undoCount).state;
+  altTranslationState.shouldCombineUndo = false;
+  altTranslationHistory.RemoveBack(undoCount);
 
   UpdateAddTranslationModeTextBuffer(nextConversionBuffer);
 
@@ -106,8 +110,7 @@ void StenoEngine::ProcessAddTranslationModeUndo() {
                   nextConversionBuffer.keyCodeBuffer);
 }
 
-size_t
-StenoEngine::UpdateAddTranslationModeTextBuffer(ConversionBuffer &buffer) {
+void StenoEngine::UpdateAddTranslationModeTextBuffer(ConversionBuffer &buffer) {
   buffer.keyCodeBuffer.Reset();
   buffer.keyCodeBuffer.AppendText(ADD_TRANSLATION_PROMPT,
                                   Str::Length<>(ADD_TRANSLATION_PROMPT),
@@ -115,10 +118,10 @@ StenoEngine::UpdateAddTranslationModeTextBuffer(ConversionBuffer &buffer) {
 
   size_t i = 0;
   for (;;) {
-    if (i >= addTranslationHistory.GetCount()) {
-      return i;
+    if (i >= altTranslationHistory.GetCount()) {
+      return;
     }
-    const StenoStroke stroke = addTranslationHistory[i++].stroke;
+    const StenoStroke stroke = altTranslationHistory[i++].stroke;
     if (IsNewline(stroke)) {
       break;
     }
@@ -140,11 +143,11 @@ StenoEngine::UpdateAddTranslationModeTextBuffer(ConversionBuffer &buffer) {
   StenoSegmentList segmentList;
   BuildSegmentContext context(segmentList, dictionary, orthography);
 
-  buffer.segmentBuilder.TransferFrom(addTranslationHistory,
-                                     addTranslationHistory.GetCount(),
+  buffer.segmentBuilder.TransferFrom(altTranslationHistory,
+                                     altTranslationHistory.GetCount(),
                                      StenoSegmentBuilder::BUFFER_SIZE);
   buffer.segmentBuilder.CreateSegments(context, i);
-  addTranslationHistory.UpdateDefinitionBoundaries(i, segmentList);
+  altTranslationHistory.UpdateDefinitionBoundaries(i, segmentList);
 
   StenoTokenizer *tokenizer = segmentList.CreateTokenizer();
   buffer.keyCodeBuffer.Append(tokenizer);
@@ -153,7 +156,6 @@ StenoEngine::UpdateAddTranslationModeTextBuffer(ConversionBuffer &buffer) {
       buffer.segmentBuilder.IsNotEmpty()) {
     buffer.keyCodeBuffer.AppendSpace();
   }
-  return i + segmentList.GetCount();
 }
 
 void StenoEngine::EndAddTranslationMode() {
@@ -163,6 +165,7 @@ void StenoEngine::EndAddTranslationMode() {
                   nextConversionBuffer.keyCodeBuffer);
 
   mode = StenoEngineMode::NORMAL;
+  ProcessNormalModeUndo();
 }
 
 void StenoEngine::AddTranslation(size_t newlineIndex) {
@@ -176,7 +179,7 @@ void StenoEngine::AddTranslation(size_t newlineIndex) {
   BuildSegmentContext context(segmentList, dictionary, orthography);
 
   nextConversionBuffer.segmentBuilder.TransferFrom(
-      addTranslationHistory, addTranslationHistory.GetCount(),
+      altTranslationHistory, altTranslationHistory.GetCount(),
       StenoSegmentBuilder::BUFFER_SIZE);
   nextConversionBuffer.segmentBuilder.CreateSegments(context, newlineIndex + 1);
 
@@ -187,7 +190,7 @@ void StenoEngine::AddTranslation(size_t newlineIndex) {
   char *word = nextConversionBuffer.keyCodeBuffer.ToString();
   StenoStroke strokes[newlineIndex];
   for (size_t i = 0; i < newlineIndex; ++i) {
-    strokes[i] = addTranslationHistory[i].stroke;
+    strokes[i] = altTranslationHistory[i].stroke;
   }
   userDictionary->Add(strokes, newlineIndex, word);
   free(word);
@@ -200,7 +203,7 @@ void StenoEngine::DeleteTranslation(size_t newlineIndex) {
 
   StenoStroke strokes[newlineIndex];
   for (size_t i = 0; i < newlineIndex; ++i) {
-    strokes[i] = addTranslationHistory[i].stroke;
+    strokes[i] = altTranslationHistory[i].stroke;
   }
   userDictionary->Remove(strokes, newlineIndex);
 }

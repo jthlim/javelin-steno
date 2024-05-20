@@ -24,6 +24,8 @@ const char *UnicodeModeName(UnicodeMode mode);
 
 class StenoKeyCodeEmitter {
 public:
+  struct EmitterContext;
+
   bool Process(const StenoKeyCode *previous, size_t previousLength,
                const StenoKeyCode *value, size_t valueLength) const;
 
@@ -44,8 +46,6 @@ public:
 
 private:
   static UnicodeMode emitterMode;
-
-  struct EmitterContext;
 };
 
 //---------------------------------------------------------------------------

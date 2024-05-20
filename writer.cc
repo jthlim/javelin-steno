@@ -313,6 +313,47 @@ void BufferWriter::Write(const char *data, size_t length) {
 
 //---------------------------------------------------------------------------
 
+void BlockWriterBase::WriteByte(char c) {
+  buffer[used++] = c;
+  if (used == size) {
+    next->Write(buffer, used);
+    used = 0;
+  }
+}
+
+void BlockWriterBase::Write(const char *data, size_t length) {
+  if (used) {
+    const size_t remaining = size - used;
+    if (length < remaining) {
+      memcpy(buffer + used, data, length);
+      used += length;
+      return;
+    }
+    memcpy(buffer + used, data, remaining);
+    data += remaining;
+    length -= remaining;
+    next->Write(buffer, size);
+  }
+
+  while (length >= size) {
+    next->Write(data, size);
+    data += size;
+    length -= size;
+  }
+
+  used = length;
+  memcpy(buffer, data, length);
+}
+
+void BlockWriterBase::Flush() {
+  if (used) {
+    next->Write(buffer, used);
+    used = 0;
+  }
+}
+
+//---------------------------------------------------------------------------
+
 void LimitedBufferWriter::Write(const char *data, size_t length) {
   if (bufferUsedCount + length > BUFFER_SIZE) {
     length = BUFFER_SIZE - bufferUsedCount;

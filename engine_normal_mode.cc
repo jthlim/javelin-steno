@@ -117,15 +117,6 @@ void StenoEngine::ProcessNormalModeStroke(StenoStroke stroke) {
   state.shouldCombineUndo = false;
   state.isManualStateChange = false;
 
-  if (nextConversionBuffer.keyCodeBuffer.addTranslationCount >
-      previousConversionBuffer.keyCodeBuffer.addTranslationCount) {
-    PrintPaperTape(stroke, previousSegmentList, nextSegmentList);
-
-    history.RemoveBack();
-    InitiateAddTranslationMode();
-    return;
-  }
-
 #if ENABLE_PROFILE
   uint32_t t5 = Clock::GetMicroseconds();
 #endif
@@ -157,14 +148,30 @@ void StenoEngine::ProcessNormalModeStroke(StenoStroke stroke) {
   PrintTextLog(previousConversionBuffer.keyCodeBuffer,
                nextConversionBuffer.keyCodeBuffer);
   PrintPaperTape(stroke, previousSegmentList, nextSegmentList);
-  if (printSuggestions) {
-    PrintSuggestions(previousSegmentList, nextSegmentList);
+
+  if (nextConversionBuffer.keyCodeBuffer.addTranslationCount >
+      previousConversionBuffer.keyCodeBuffer.addTranslationCount) {
+    history.SetBackNoCombineUndo();
+    InitiateAddTranslationMode();
+    return;
+  }
+
+  if (nextConversionBuffer.keyCodeBuffer.consoleCount >
+      previousConversionBuffer.keyCodeBuffer.consoleCount) {
+    history.SetBackNoCombineUndo();
+    InitiateConsoleMode();
+    return;
   }
 
   if (nextConversionBuffer.keyCodeBuffer.resetStateCount >
       previousConversionBuffer.keyCodeBuffer.resetStateCount) {
     ResetState();
     return;
+  }
+
+  if (printSuggestions) {
+    // PrintSuggestions will overwrite the previousConversionBuffer
+    PrintSuggestions(previousSegmentList, nextSegmentList);
   }
 
 #if ENABLE_PROFILE

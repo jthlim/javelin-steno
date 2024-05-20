@@ -128,8 +128,9 @@ StenoJeffNumbersDictionary::LookupInternal(
       if (!result) {
         return StenoDictionaryLookupResult::CreateInvalid();
       }
-    } else if (const StenoStroke RB = StrokeMask::RR | StrokeMask::BR;
-               (control & RB) == RB) {
+    }
+    if (const StenoStroke RB = StrokeMask::RR | StrokeMask::BR;
+        (control & RB) == RB) {
       // Dollars
       control &= ~RB;
 
@@ -291,6 +292,9 @@ StenoJeffNumbersDictionary::LookupInternal(
       while (*p) {
         if ('0' <= *p && *p <= '9') {
           value = value * 10 + *p - '0';
+        } else if (p[0] == '{' && p[1] == '}' && p[2] == '\0') {
+          // This allows years to be converted to numbers
+          break;
         } else {
           free(result);
           return StenoDictionaryLookupResult::CreateInvalid();
@@ -512,7 +516,7 @@ char *ToWords(char *digits) {
   }
 
   char *result = Str::Dup("");
-  const size_t length = strlen(p);
+  const size_t length = Str::Length(p);
   char *end = p + length;
   bool needsAnd = false;
   bool needsComma = false;
@@ -769,6 +773,11 @@ TEST_BEGIN("JeffNumbers: Test roman numerals") {
       StenoStroke("#AEURT"),
   };
   TestLookup(strokes, 2, "MCMXCV");
+
+  const StenoStroke romanYears[] = {
+      StenoStroke("#HR-RBGT"),
+  };
+  TestLookup(romanYears, 1, "MMXLIX");
 
   // spellchecker: enable
 }

@@ -38,6 +38,7 @@ public:
   StenoDictionary *rootDictionary;
 
   size_t count = 0;
+  size_t consoleCount = 0;
   size_t addTranslationCount = 0;
   size_t resetStateCount = 0;
   StenoState state;

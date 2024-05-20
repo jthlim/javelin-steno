@@ -3,6 +3,7 @@
 #include "compact_map_dictionary.h"
 #include "../bit.h"
 #include "../console.h"
+#include "../flash.h"
 #include "../str.h"
 #include "../uint24.h"
 
@@ -103,8 +104,11 @@ void StenoCompactMapDictionaryStrokesDefinition::PrintDictionary(
     for (size_t j = 0; j < strokeLength; ++j) {
       strokes[j] = entry.strokes[j].ToUint32();
     }
-    context.Print(strokes, strokeLength,
-                  (char *)textBlock + entry.textOffset.ToUint32());
+
+    if (!strokes[0].IsEmpty()) {
+      context.Print(strokes, strokeLength,
+                    (char *)textBlock + entry.textOffset.ToUint32());
+    }
   }
 }
 
@@ -226,9 +230,10 @@ void StenoCompactMapDictionary::ReverseLookup(
     return;
   }
 
-  for (size_t i = 1; i <= maximumOutlineLength; ++i) {
+  for (size_t strokeLength = 1; strokeLength <= maximumOutlineLength;
+       ++strokeLength) {
     const StenoCompactMapDictionaryStrokesDefinition &strokeDefinition =
-        strokes[i];
+        strokes[strokeLength];
 
     if (!strokeDefinition.ContainsData(data)) {
       continue;
@@ -238,12 +243,61 @@ void StenoCompactMapDictionary::ReverseLookup(
     const CompactStenoMapDictionaryDataEntry *entry =
         (const CompactStenoMapDictionaryDataEntry *)data;
 
-    StenoStroke strokes[i];
-    const size_t strokeLength = i;
+    StenoStroke strokes[strokeLength];
     entry->ExpandTo(strokes, strokeLength);
+
+    // Check for deletion
+    if (strokes[0].IsEmpty()) {
+      return;
+    }
+
     lookup.AddResult(strokes, strokeLength, this);
     return;
   }
+}
+
+bool StenoCompactMapDictionary::Remove(const char *name,
+                                       const StenoStroke *strokes,
+                                       size_t length) {
+  const StenoCompactMapDictionaryStrokesDefinition &strokesDefinition =
+      this->strokes[length];
+
+  if (strokesDefinition.hashMapSize == 0) {
+    return false;
+  }
+
+  uint32_t hash = StenoStroke::Hash(strokes, length);
+  size_t entryIndex = hash & (strokesDefinition.hashMapSize - 1);
+  const size_t offset = strokesDefinition.GetOffset(entryIndex);
+  if (offset == (size_t)-1) {
+    return false;
+  }
+
+  const size_t entrySize = 3 + 3 * length;
+  size_t dataIndex = offset * entrySize;
+
+  for (;;) {
+    const CompactStenoMapDictionaryDataEntry &entry =
+        (const CompactStenoMapDictionaryDataEntry &)
+            strokesDefinition.data[dataIndex];
+
+    if (entry.Equals(strokes, length)) {
+      Uint24 emptyStroke = Uint24::Create(0);
+      Flash::Write(&entry.strokes, &emptyStroke, sizeof(Uint24));
+      return true;
+    }
+
+    dataIndex += entrySize;
+    if (++entryIndex >= strokesDefinition.hashMapSize) {
+      entryIndex = 0;
+      dataIndex = 0;
+    }
+
+    if (!strokesDefinition.HasEntry(entryIndex)) {
+      return false;
+    }
+  }
+  return false;
 }
 
 const char *StenoCompactMapDictionary::GetName() const {

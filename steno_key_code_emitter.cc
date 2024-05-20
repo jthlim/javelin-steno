@@ -6,6 +6,7 @@
 #include "keyboard_led_status.h"
 #include "macos_us_unicode_data.h"
 #include "steno_key_code.h"
+#include "steno_key_code_emitter_context.h"
 #include "str.h"
 #include "windows_alt_unicode_data.h"
 
@@ -17,52 +18,13 @@ UnicodeMode StenoKeyCodeEmitter::emitterMode = UnicodeMode::MACOS_US;
 
 //---------------------------------------------------------------------------
 
-struct StenoKeyCodeEmitter::EmitterContext {
-  uint32_t modifiers = 0;
-  bool shouldCombineUndo = true;
-  bool hasDeterminedNumLockState = false;
-  bool isNumLockOn;
-
-  static const KeyCode::Value MASK_KEY_CODES[];
-  static const KeyCode::Value HEX_KEY_CODES[];
-  static const uint16_t ALT_HEX_KEY_CODES[];
-  static const uint16_t KP_ALT_HEX_KEY_CODES[];
-  static const uint16_t ASCII_KEY_CODES[];
-
-  bool GetIsNumLockOn() {
-    if (!hasDeterminedNumLockState) {
-      hasDeterminedNumLockState = true;
-      isNumLockOn = Connection::GetActiveKeyboardLedStatus().IsNumLockOn();
-    }
-    return isNumLockOn;
+bool StenoKeyCodeEmitter::EmitterContext::GetIsNumLockOn() {
+  if (!hasDeterminedNumLockState) {
+    hasDeterminedNumLockState = true;
+    isNumLockOn = Connection::GetActiveKeyboardLedStatus().IsNumLockOn();
   }
-
-  void ProcessStenoKeyCode(StenoKeyCode stenoKeyCode);
-
-  static void PressKey(KeyCode keyCode) { Key::Press(keyCode); }
-  static void ReleaseKey(KeyCode keyCode) { Key::Release(keyCode); };
-
-  static void TapKey(KeyCode keyCode) {
-    PressKey(keyCode);
-    ReleaseKey(keyCode);
-  }
-
-  void EmitKeyCode(uint32_t keyCode);
-
-  static void PressModifiers(uint32_t modifiers);
-  static void ReleaseModifiers(uint32_t modifiers);
-
-  void EmitNonAscii(uint32_t unicode);
-  void EmitMacOsUs(uint32_t unicode);
-  void EmitMacOsUnicodeHex(uint32_t unicode);
-  void EmitWindowsAlt(uint32_t unicode);
-  void RecurseEmitWindowsAlt(uint32_t alt);
-  void EmitIBus(uint32_t unicode);
-  void RecurseEmitIBus(uint32_t unicode);
-  static void EmitIBusDelay();
-  void EmitWindowsHex(uint32_t unicode);
-  void EmitUCS2AltHex(uint32_t unicode);
-};
+  return isNumLockOn;
+}
 
 const char *const StenoKeyCodeEmitter::UNICODE_EMITTER_NAMES[] = {
     "none", "macos_us", "macos_hex", "windows_alt", "windows_hex", "linux_ibus",

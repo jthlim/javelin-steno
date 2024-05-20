@@ -4,6 +4,7 @@
 #include "hal/connection.h"
 #include "writer.h"
 #include <stddef.h>
+
 #if RUN_TESTS
 #include <vector>
 #endif

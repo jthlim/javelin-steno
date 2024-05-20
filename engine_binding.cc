@@ -188,8 +188,8 @@ void StenoEngine::Lookup_Binding(void *context, const char *commandLine) {
                            entry.length);
 
     Console::Printf(&entry == begin(lookup.results) ? "\n{" : ",\n{", nullptr);
-    Console::Printf("\"outline\":\"%T\",", entry.strokes, entry.length);
-    Console::Printf("\"definition\":\"");
+    Console::Printf("\"outline\":\"%T\"", entry.strokes, entry.length);
+    Console::Printf(",\"definition\":\"");
 
     bool isFirst = true;
     StenoTokenizer *tokenizer = segmentList.CreateTokenizer();
@@ -198,13 +198,16 @@ void StenoEngine::Lookup_Binding(void *context, const char *commandLine) {
       isFirst = false;
     }
     delete tokenizer;
-    Console::Printf("\",");
+    Console::Printf("\"");
 
     const char *name = entry.dictionary->GetName();
     if (*name == '#') {
-      Console::Printf("\"dictionary\":\"#\"");
+      Console::Printf(",\"dictionary\":\"#\"");
     } else {
-      Console::Printf("\"dictionary\":\"%J\"", name);
+      Console::Printf(",\"dictionary\":\"%J\"", name);
+      if (entry.dictionary->CanRemove()) {
+        Console::Printf(",\"can_remove\":true");
+      }
     }
 
     Console::Printf("}");
@@ -235,8 +238,14 @@ void StenoEngine::LookupStroke_Binding(void *context, const char *commandLine) {
     const StenoDictionary *dictionary =
         engine->dictionary.GetDictionaryForOutline(parser.strokes,
                                                    parser.length);
-    Console::Printf("{\"definition\":\"%J\",\"dictionary\":\"%J\"}\n\n",
+    Console::Printf("{\"definition\":\"%J\",\"dictionary\":\"%J\"",
                     result.GetText(), dictionary->GetName());
+
+    if (dictionary->CanRemove()) {
+      Console::Printf(",\"can_remove\":true");
+    }
+
+    Console::Printf("}\n\n");
   } else {
     StenoSegmentList segmentList;
     ConversionBuffer &buffer = engine->previousConversionBuffer;
@@ -258,6 +267,37 @@ void StenoEngine::LookupStroke_Binding(void *context, const char *commandLine) {
       Console::Printf("null\n\n");
     }
   }
+}
+
+void StenoEngine::RemoveStroke_Binding(void *context, const char *commandLine) {
+  const char *dictionaryStart = strchr(commandLine, ' ');
+  const char *strokeStart = strrchr(commandLine, ' ');
+  if (!dictionaryStart || dictionaryStart == strokeStart) {
+    Console::Printf("ERR No dictionary specified\n\n");
+    return;
+  }
+
+  StrokeListParser parser;
+  if (!parser.Parse(strokeStart + 1)) {
+    Console::Printf("ERR Cannot parse stroke near %s\n\n", parser.failureOrEnd);
+    return;
+  }
+
+  char *dictionaryName =
+      Str::DupN(dictionaryStart + 1, strokeStart - dictionaryStart - 1);
+
+  const ExternalFlashSentry externalFlashSentry;
+  StenoEngine *engine = (StenoEngine *)context;
+  bool result =
+      engine->dictionary.Remove(dictionaryName, parser.strokes, parser.length);
+
+  if (!result) {
+    Console::Printf("ERR Unable to delete stroke %s from dictionary %s\n\n",
+                    strokeStart + 1, dictionaryName);
+  } else {
+    Console::SendOk();
+  }
+  free(dictionaryName);
 }
 
 void StenoEngine::ProcessStrokes_Binding(void *context,

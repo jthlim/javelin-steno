@@ -45,3 +45,23 @@ protected:
 };
 
 //---------------------------------------------------------------------------
+
+template <typename T> class CountedQueue : public Queue<T> {
+public:
+  void AddEntry(QueueEntry<T> *entry) {
+    ++count;
+    Queue<T>::AddEntry(entry);
+  }
+
+  void RemoveHead() {
+    --count;
+    Queue<T>::RemoveHead();
+  }
+
+  size_t GetCount() const { return count; }
+
+private:
+  size_t count;
+};
+
+//---------------------------------------------------------------------------

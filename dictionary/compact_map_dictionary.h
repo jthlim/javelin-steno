@@ -22,6 +22,10 @@ public:
 
   virtual void ReverseLookup(StenoReverseDictionaryLookup &lookup) const;
 
+  virtual bool CanRemove() const { return true; }
+  virtual bool Remove(const char *name, const StenoStroke *strokes,
+                      size_t length);
+
   virtual const char *GetName() const;
   virtual void PrintInfo(int depth) const;
   virtual void PrintDictionary(PrintDictionaryContext &context) const;

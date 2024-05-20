@@ -7,7 +7,7 @@
 
 class StenoJeffShowStrokeDictionary final : public StenoDictionary {
 private:
-  static const size_t MAXIMUM_OUTLINE_LENGTH = 6;
+  static const size_t MAXIMUM_OUTLINE_LENGTH = 10;
 
 public:
   StenoJeffShowStrokeDictionary() : StenoDictionary(MAXIMUM_OUTLINE_LENGTH) {}

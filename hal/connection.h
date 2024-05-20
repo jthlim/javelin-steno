@@ -25,11 +25,12 @@ enum class PairConnectionId : uint8_t {
 
 class Connection {
 public:
-  static bool IsConnected(ConnectionId connectionId);
+  static bool IsConnected(ConnectionId connectionId = ConnectionId::ACTIVE);
   static ConnectionId GetActiveConnection();
   static void SetPreferredConnection(ConnectionId first, ConnectionId second,
                                      ConnectionId third);
-  static bool IsPairConnected(PairConnectionId pairConnectionId);
+  static bool
+  IsPairConnected(PairConnectionId pairConnectionId = PairConnectionId::ACTIVE);
   static PairConnectionId GetActivePairConnection();
 
   static KeyboardLedStatus GetActiveKeyboardLedStatus();

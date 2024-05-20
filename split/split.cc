@@ -47,15 +47,26 @@ bool TxBuffer::Add(SplitHandlerId id, const void *data, size_t length) {
   return true;
 }
 
+// Reserves buffer space to write to.
+// To commit the packet, a subsequent Add(id, length) is required immediately
+// after.
+uint8_t *TxBuffer::Reserve(size_t length) {
+  const uint32_t wordLength = (length + 3) >> 2;
+  if (header.wordCount + 1 + wordLength > JAVELIN_SPLIT_TX_RX_BUFFER_SIZE) {
+    return nullptr;
+  }
+  return (uint8_t *)&buffer[header.wordCount + 1];
+}
+
 uint8_t *TxBuffer::Add(SplitHandlerId id, size_t length) {
-  uint32_t wordLength = (length + 3) >> 2;
+  const uint32_t wordLength = (length + 3) >> 2;
   if (header.wordCount + 1 + wordLength > JAVELIN_SPLIT_TX_RX_BUFFER_SIZE) {
     return nullptr;
   }
 
   txPacketTypeCounts[(size_t)id]++;
 
-  uint32_t blockHeader = ((size_t)id << 16) | length;
+  const uint32_t blockHeader = ((size_t)id << 16) | length;
   buffer[header.wordCount++] = blockHeader;
 
   uint8_t *result = (uint8_t *)&buffer[header.wordCount];
@@ -94,7 +105,7 @@ RxBufferValidateResult RxBuffer::Validate(size_t totalWordsReceived,
     return RxBufferValidateResult::ERROR;
   }
 
-  size_t bufferCount =
+  const size_t bufferCount =
       totalWordsReceived - sizeof(TxRxHeader) / sizeof(uint32_t);
   if (bufferCount < header.wordCount) {
     // Data has not been fully received.
@@ -107,7 +118,7 @@ RxBufferValidateResult RxBuffer::Validate(size_t totalWordsReceived,
     metrics[SplitMetricId::EXCESS_DATA_COUNT]++;
   }
 
-  uint16_t expectedCrc =
+  const uint16_t expectedCrc =
       (uint16_t)Crc32(buffer, sizeof(uint32_t) * header.wordCount);
   if (header.crc16 != expectedCrc) {
     // Crc failure.
@@ -129,10 +140,10 @@ void RxBuffer::Process() const {
 
   size_t offset = 0;
   while (offset < header.wordCount) {
-    uint32_t blockHeader = buffer[offset++];
-    uint32_t type = blockHeader >> 16;
+    const uint32_t blockHeader = buffer[offset++];
+    const uint32_t type = blockHeader >> 16;
     rxPacketTypeCounts[type]++;
-    size_t length = blockHeader & 0xffff;
+    const size_t length = blockHeader & 0xffff;
 
     if (type < (size_t)SplitHandlerId::COUNT) {
       SplitRxHandler *handler = handlers[type];
@@ -141,7 +152,7 @@ void RxBuffer::Process() const {
       }
     }
 
-    uint32_t wordLength = (length + 3) >> 2;
+    const uint32_t wordLength = (length + 3) >> 2;
     offset += wordLength;
   }
 }

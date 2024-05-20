@@ -61,6 +61,10 @@ void StenoEngine::ProcessStroke(StenoStroke stroke) {
   case StenoEngineMode::ADD_TRANSLATION:
     ProcessAddTranslationModeStroke(stroke);
     return;
+
+  case StenoEngineMode::CONSOLE:
+    ProcessConsoleModeStroke(stroke);
+    return;
   }
 }
 
@@ -75,6 +79,10 @@ void StenoEngine::ProcessUndo() {
   case StenoEngineMode::ADD_TRANSLATION:
     ProcessAddTranslationModeUndo();
     return;
+
+  case StenoEngineMode::CONSOLE:
+    ProcessConsoleModeUndo();
+    return;
   }
 }
 
@@ -88,6 +96,9 @@ bool StenoEngine::ProcessScanCode(uint32_t scanCodeAndModifiers,
 
   case StenoEngineMode::ADD_TRANSLATION:
     return HandleAddTranslationModeScanCode(scanCodeAndModifiers, action);
+
+  case StenoEngineMode::CONSOLE:
+    return HandleConsoleModeScanCode(scanCodeAndModifiers, action);
   }
   return false;
 }
@@ -96,7 +107,7 @@ bool StenoEngine::ProcessScanCode(uint32_t scanCodeAndModifiers,
 
 void StenoEngine::ResetState() {
   history.Reset();
-  addTranslationHistory.Reset();
+  altTranslationHistory.Reset();
   state.Reset();
   state.joinNext = true;
 }

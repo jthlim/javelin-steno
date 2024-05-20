@@ -243,6 +243,12 @@ public:
     return GetDictionaryForOutline(strokes, length) != nullptr;
   }
 
+  virtual bool CanRemove() const { return false; }
+  virtual bool Remove(const char *name, const StenoStroke *strokes,
+                      size_t length) {
+    return false;
+  }
+
   virtual void ReverseLookup(StenoReverseDictionaryLookup &lookup) const;
 
   size_t GetMaximumOutlineLength() const { return maximumOutlineLength; }

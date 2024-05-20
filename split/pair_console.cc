@@ -6,6 +6,8 @@
 
 //---------------------------------------------------------------------------
 
+#if JAVELIN_SPLIT
+
 PairConsole PairConsole::instance;
 
 //---------------------------------------------------------------------------
@@ -27,7 +29,7 @@ void PairConsole::AddInternal(const char *data, size_t length) {
 }
 
 void PairConsole::ProcessInternal() {
-#if JAVELIN_SPLIT && !JAVELIN_SPLIT_IS_MASTER
+#if !JAVELIN_SPLIT_IS_MASTER
   while (head) {
     Console::RunCommand(head->data.data, NullWriter::instance);
     RemoveHead();
@@ -35,7 +37,6 @@ void PairConsole::ProcessInternal() {
 #endif
 }
 
-#if JAVELIN_SPLIT
 void PairConsole::UpdateBuffer(TxBuffer &buffer) {
 #if JAVELIN_SPLIT_IS_MASTER
   while (head) {
@@ -62,6 +63,11 @@ void PairConsole::PairBinding(void *context, const char *commandLine) {
     return;
   }
 
+  if (!Connection::IsPairConnected()) {
+    Console::Printf("ERR pair not connected\n\n");
+    return;
+  }
+
   ++p;
   size_t length = Str::Length(p) + 1;
   Add(p, length);
@@ -69,6 +75,13 @@ void PairConsole::PairBinding(void *context, const char *commandLine) {
   Console::SendOk();
 }
 
-#endif
+void PairConsole::AddConsoleCommands(Console &console) {
+  console.RegisterCommand("pair", "Runs a command on the pair's console",
+                          &PairConsole::PairBinding, nullptr);
+}
+
+//---------------------------------------------------------------------------
+
+#endif // JAVELIN_SPLIT
 
 //---------------------------------------------------------------------------

@@ -82,6 +82,31 @@ private:
   char *buffer;
 };
 
+class BlockWriterBase : public IWriter {
+public:
+  virtual void WriteByte(char c);
+  virtual void Write(const char *data, size_t length);
+
+  void Flush();
+
+protected:
+  BlockWriterBase(size_t size, IWriter *next) : size(size), next(next) {}
+
+private:
+  size_t used = 0;
+  size_t size;
+  IWriter *next;
+  char buffer[0];
+};
+
+template <size_t N> class BlockWriter : public BlockWriterBase {
+public:
+  BlockWriter(IWriter *next) : BlockWriterBase(N, next) {}
+
+private:
+  char buffer[N];
+};
+
 class LimitedBufferWriter final : public IWriter {
 public:
   void Reset() { bufferUsedCount = 0; }

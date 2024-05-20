@@ -3,6 +3,7 @@
 #include "full_map_dictionary.h"
 #include "../bit.h"
 #include "../console.h"
+#include "../flash.h"
 #include "../str.h"
 
 //---------------------------------------------------------------------------
@@ -77,8 +78,10 @@ void StenoFullMapDictionaryStrokesDefinition::PrintDictionary(
     const FullStenoMapDictionaryDataEntry &entry =
         (const FullStenoMapDictionaryDataEntry &)data[dataIndex];
 
-    context.Print(entry.strokes, strokeLength,
-                  (char *)textBlock + entry.textOffset);
+    if (!entry.strokes[0].IsEmpty()) {
+      context.Print(entry.strokes, strokeLength,
+                    (char *)textBlock + entry.textOffset);
+    }
   }
 }
 
@@ -200,9 +203,10 @@ void StenoFullMapDictionary::ReverseLookup(StenoReverseDictionaryLookup &lookup,
     return;
   }
 
-  for (size_t i = 1; i <= maximumOutlineLength; ++i) {
+  for (size_t strokeLength = 1; strokeLength <= maximumOutlineLength;
+       ++strokeLength) {
     const StenoFullMapDictionaryStrokesDefinition &strokeDefinition =
-        strokes[i];
+        strokes[strokeLength];
 
     if (!strokeDefinition.ContainsData(data)) {
       continue;
@@ -211,10 +215,59 @@ void StenoFullMapDictionary::ReverseLookup(StenoReverseDictionaryLookup &lookup,
     // There is a match! Convert it to StenoStrokes.
     const FullStenoMapDictionaryDataEntry *entry =
         (const FullStenoMapDictionaryDataEntry *)data;
-    const size_t strokeLength = i;
+
+    // Check for deletion
+    if (entry->strokes[0].IsEmpty()) {
+      return;
+    }
+
     lookup.AddResult(entry->strokes, strokeLength, this);
     return;
   }
+}
+
+bool StenoFullMapDictionary::Remove(const char *name,
+                                    const StenoStroke *strokes, size_t length) {
+  const StenoFullMapDictionaryStrokesDefinition &strokesDefinition =
+      this->strokes[length];
+
+  if (strokesDefinition.hashMapSize == 0) {
+    return false;
+  }
+
+  uint32_t hash = StenoStroke::Hash(strokes, length);
+  size_t entryIndex = hash & (strokesDefinition.hashMapSize - 1);
+  const size_t offset = strokesDefinition.GetOffset(entryIndex);
+  if (offset == (size_t)-1) {
+    return false;
+  }
+
+  const size_t entrySize = 4 + 4 * length;
+  size_t dataIndex = offset * entrySize;
+
+  for (;;) {
+    const FullStenoMapDictionaryDataEntry &entry =
+        (const FullStenoMapDictionaryDataEntry &)
+            strokesDefinition.data[dataIndex];
+
+    if (entry.Equals(strokes, length)) {
+      // Found it! Delete it.
+      constexpr StenoStroke emptyStroke(0);
+      Flash::Write(&entry.strokes, &emptyStroke, sizeof(StenoStroke));
+      return true;
+    }
+
+    dataIndex += entrySize;
+    if (++entryIndex >= strokesDefinition.hashMapSize) {
+      entryIndex = 0;
+      dataIndex = 0;
+    }
+
+    if (!strokesDefinition.HasEntry(entryIndex)) {
+      return false;
+    }
+  }
+  return false;
 }
 
 const char *StenoFullMapDictionary::GetName() const { return definition.name; }

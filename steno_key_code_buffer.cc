@@ -13,6 +13,7 @@
 
 void StenoKeyCodeBuffer::Reset() {
   count = 0;
+  consoleCount = 0;
   addTranslationCount = 0;
   resetStateCount = 0;
   state.Reset();

@@ -18,7 +18,7 @@ class StenoUserDictionary;
 
 //---------------------------------------------------------------------------
 
-enum StenoEngineMode { NORMAL, ADD_TRANSLATION };
+enum StenoEngineMode { NORMAL, ADD_TRANSLATION, CONSOLE };
 
 //---------------------------------------------------------------------------
 
@@ -75,6 +75,7 @@ public:
   static void DisableTextLog_Binding(void *context, const char *commandLine);
   static void Lookup_Binding(void *context, const char *commandLine);
   static void LookupStroke_Binding(void *context, const char *commandLine);
+  static void RemoveStroke_Binding(void *context, const char *commandLine);
   static void ProcessStrokes_Binding(void *context, const char *commandLine);
 
 private:
@@ -94,12 +95,12 @@ private:
   StenoUserDictionary *userDictionary;
 
   StenoState state;
-  StenoState addTranslationState;
+  StenoState altTranslationState;
 
   StenoKeyCodeEmitter emitter;
 
   StenoStrokeHistory history;
-  StenoStrokeHistory addTranslationHistory;
+  StenoStrokeHistory altTranslationHistory;
 
   struct ConversionBuffer {
     StenoSegmentBuilder segmentBuilder;
@@ -118,13 +119,25 @@ private:
 
   void ProcessNormalModeUndo();
   void ProcessNormalModeStroke(StenoStroke stroke);
+
   void InitiateAddTranslationMode();
   void ProcessAddTranslationModeUndo();
   void ProcessAddTranslationModeStroke(StenoStroke stroke);
   bool HandleAddTranslationModeScanCode(uint32_t scanCodeAndModifiers,
                                         ScanCodeAction action);
-  bool IsNewline(StenoStroke stroke) const;
+  void UpdateAddTranslationModeTextBuffer(ConversionBuffer &buffer);
   void EndAddTranslationMode();
+
+  void InitiateConsoleMode();
+  void ProcessConsoleModeUndo();
+  void ProcessConsoleModeStroke(StenoStroke stroke);
+  bool HandleConsoleModeScanCode(uint32_t scanCodeAndModifiers,
+                                 ScanCodeAction action);
+  void UpdateConsoleModeTextBuffer(ConversionBuffer &buffer);
+  void ConsoleModeExecute();
+  void EndConsoleMode();
+
+  bool IsNewline(StenoStroke stroke) const;
   void AddTranslation(size_t newlineIndex);
   void DeleteTranslation(size_t newlineIndex);
   void ResetState();
@@ -157,8 +170,6 @@ private:
                                char *lastLookup);
   void PrintTextLog(const StenoKeyCodeBuffer &previousKeyCodeBuffer,
                     const StenoKeyCodeBuffer &nextKeyCodeBuffer) const;
-
-  size_t UpdateAddTranslationModeTextBuffer(ConversionBuffer &buffer);
 
   friend class StenoEngineTester;
 };

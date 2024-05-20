@@ -49,6 +49,7 @@ public:
   size_t GetStartingStroke(size_t maximumCount) const;
 
   void SetBackCombineUndo() { Back().state.shouldCombineUndo = true; }
+  void SetBackNoCombineUndo() { Back().state.shouldCombineUndo = false; }
   void SetBackHasManualStateChange() {
     Back().state.isManualStateChange = true;
   }

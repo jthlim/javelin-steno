@@ -71,6 +71,16 @@ void StenoDictionaryList::ReverseLookup(
   }
 }
 
+bool StenoDictionaryList::Remove(const char *name, const StenoStroke *strokes,
+                                 size_t length) {
+  for (const StenoDictionaryListEntry &entry : dictionaries) {
+    if (Str::Eq(name, entry->GetName())) {
+      return entry->Remove(name, strokes, length);
+    }
+  }
+  return false;
+}
+
 void StenoDictionaryList::SetParentRecursively(StenoDictionary *parent) {
   StenoDictionary::SetParentRecursively(parent);
   for (StenoDictionaryListEntry &entry : dictionaries) {
