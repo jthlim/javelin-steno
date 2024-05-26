@@ -2,7 +2,7 @@
 
 #include "wpm_tracker.h"
 #include "clock.h"
-#include <string.h>
+#include "mem.h"
 
 //---------------------------------------------------------------------------
 
@@ -39,7 +39,7 @@ void WpmTracker::UpdateToNow(uint32_t now) {
   const int delta = now - lastTime;
   if (delta >= 0) {
     if (delta >= NUMBER_OF_SECONDS) {
-      memset(charactersTyped, 0, sizeof(charactersTyped));
+      Mem::Clear(charactersTyped);
     } else {
       uint32_t bucket = now;
       for (int i = 0; i < delta; ++i) {

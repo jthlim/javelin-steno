@@ -4,6 +4,7 @@
 #include "../bit.h"
 #include "../console.h"
 #include "../flash.h"
+#include "../mem.h"
 #include "../str.h"
 #include "../uint24.h"
 
@@ -330,7 +331,7 @@ StenoCompactMapDictionary::CreateStrokeCache(
                           definition.maximumOutlineLength;
   StenoCompactMapDictionaryStrokesDefinition *strokes =
       (StenoCompactMapDictionaryStrokesDefinition *)malloc(byteSize);
-  memcpy(strokes, definition.strokes, byteSize);
+  Mem::Copy(strokes, definition.strokes, byteSize);
   return strokes - 1;
 }
 

@@ -3,6 +3,7 @@
 #include "console.h"
 #include "engine.h"
 #include "key.h"
+#include "mem.h"
 #include "str.h"
 #include "utf8_pointer.h"
 
@@ -575,39 +576,12 @@ bool StenoKeyCodeBuffer::SetCaseFunction(const List<char *> &parameters) {
 }
 
 bool StenoKeyCodeBuffer::SetSpaceFunction(const List<char *> &parameters) {
-  static int spaceOffset = 0;
-  static char spaceBuffer[16];
-
   if (parameters.GetCount() != 2) {
     return false;
   }
 
-  if (Str::Eq(parameters[1], " ")) {
-    state.spaceCharacter = " ";
-    state.spaceCharacterLength = 1;
-    return true;
-  }
-
-  // Find if it exists in the buffer.
-  size_t length = strlen(parameters[1]);
-  for (size_t i = 0; i + length <= spaceOffset; ++i) {
-    if (memcmp(spaceBuffer + i, parameters[1], length) == 0) {
-      state.spaceCharacter = spaceBuffer + i;
-      state.spaceCharacterLength = length;
-      return true;
-    }
-  }
-
-  // Can it fit?
-  if (spaceOffset + length < sizeof(spaceBuffer)) {
-    state.spaceCharacter = spaceBuffer + spaceOffset;
-    state.spaceCharacterLength = length;
-    memcpy(spaceBuffer + spaceOffset, parameters[1], length);
-    spaceOffset += length;
-    return true;
-  }
-
-  return false;
+  state.SetSpace(parameters[1]);
+  return true;
 }
 
 bool StenoKeyCodeBuffer::ResetStateFunction(const List<char *> &) {

@@ -61,7 +61,9 @@ public:
                     size_t maxCount);
 
   void CreateSegments(BuildSegmentContext &context,
-                      size_t minimumStartOffset = 0);
+                      size_t minimumStartOffset = 0) {
+    AddSegments(context, minimumStartOffset);
+  }
 
   size_t GetStateIndex(const StenoState *v) const { return v - states; }
   const StenoState *GetStatePointer(size_t index) const {

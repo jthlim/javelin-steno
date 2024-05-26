@@ -2,6 +2,7 @@
 
 #include "jeff_numbers_dictionary.h"
 #include "../console.h"
+#include "../mem.h"
 #include "../steno_key_code.h"
 #include "../str.h"
 #include "../stroke.h"
@@ -49,7 +50,7 @@ static bool _EndsWith(char *p, size_t length, const char *suffix,
   if (length < suffixLength) {
     return false;
   }
-  return memcmp(p + length - suffixLength, suffix, suffixLength) == 0;
+  return Mem::Eq(p + length - suffixLength, suffix, suffixLength);
 }
 
 static char *ReplaceSuffix(char *original, size_t length, size_t offset,

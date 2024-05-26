@@ -82,7 +82,7 @@ void SplitUsbStatus::OnDataReceived(const void *data, size_t length) {
 
 void SplitUsbStatus::OnConnectionReset() {
   dirty = true;
-  memset(&GetRemoteUsbStatus(), 0, sizeof(UsbStatus));
+  Mem::Clear(GetRemoteUsbStatus());
 
   ScriptManager::ExecuteScript(ScriptId::CONNECTION_UPDATE);
 }

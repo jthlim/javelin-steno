@@ -10,12 +10,14 @@
 
 // A steno segment is a mapping of List<Stroke> -> Translation.
 struct StenoSegment {
-  StenoSegment(size_t strokeLength, const StenoState *state,
-               StenoDictionaryLookupResult lookup)
-      : strokeLength(strokeLength), state(state), lookup(lookup) {}
+  StenoSegment(size_t strokeLength, SegmentLookupType lookupType,
+               const StenoState *state, StenoDictionaryLookupResult lookup)
+      : strokeLength(strokeLength), lookupType(lookupType), state(state),
+        lookup(lookup) {}
 
   bool ContainsKeyCode() const;
 
+  SegmentLookupType lookupType;
   size_t strokeLength;
   const StenoState *state;
   union {
@@ -23,14 +25,14 @@ struct StenoSegment {
     StenoDictionaryLookupResult lookup;
   };
 
-  bool IsValid() const { return strokeLength != 0; }
+  bool IsValid() const { return lookupType != SegmentLookupType::INVALID; }
   bool HasCommand() const;
   const StenoState *GetEndStenoState() const { return state + strokeLength; }
 
   static StenoSegment CreateInvalid() { return StenoSegment(); }
 
 private:
-  StenoSegment() : strokeLength(0) {}
+  StenoSegment() : lookupType(SegmentLookupType::INVALID) {}
 };
 
 //---------------------------------------------------------------------------

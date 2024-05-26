@@ -44,8 +44,10 @@ void StenoStrokeHistory::UpdateDefinitionBoundaries(
   }
   const StenoState *firstState = segments[0].state;
   for (const StenoSegment &segment : segments) {
-    (*this)[startingOffset + (segment.state - firstState)]
-        .state.isDefinitionStart = true;
+    StenoState &state =
+        (*this)[startingOffset + (segment.state - firstState)].state;
+    state.isDefinitionStart = true;
+    state.lookupType = segment.lookupType;
   }
 }
 

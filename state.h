@@ -1,8 +1,8 @@
 //---------------------------------------------------------------------------
 
 #pragma once
+#include "mem.h"
 #include <stdint.h>
-#include <string.h>
 
 //---------------------------------------------------------------------------
 
@@ -17,18 +17,26 @@ enum class StenoCaseMode : uint8_t {
   UNSPECIFIED,
 };
 
+enum class SegmentLookupType : uint8_t {
+  INVALID,
+  DIRECT,
+  AUTO_SUFFIX,
+  STROKE,
+};
+
 //---------------------------------------------------------------------------
 
 struct StenoState {
   StenoCaseMode caseMode;
   StenoCaseMode overrideCaseMode;
+  bool isDefinitionStart : 1;
   bool joinNext : 1;
   bool isGlue : 1;
   bool isManualStateChange : 1;
   bool shouldCombineUndo : 1;
-  bool isDefinitionStart : 1;
-  uint8_t spaceCharacterLength;
-  const char *spaceCharacter;
+  SegmentLookupType lookupType : 2;
+  uint8_t spaceLength : 3;
+  uint8_t spaceOffset : 5;
 
   static const StenoCaseMode NEXT_WORD_CASE_MODE[];
   static const StenoCaseMode NEXT_LETTER_CASE_MODE[];
@@ -43,12 +51,27 @@ struct StenoState {
     return memcmp(this, &a, sizeof(*this)) == 0;
   }
 
+  void SetSpace(const char *space);
+
   void CopyTo(StenoState *destination, size_t length) const {
     for (size_t i = 0; i < length; ++i) {
       destination[i] = this[i];
     }
   }
+
+  struct SpaceBuffer {
+    static SpaceBuffer instance;
+
+    uint8_t count;
+    char data[32];
+  };
+
+  const char *GetSpace() const {
+    return SpaceBuffer::instance.data + spaceOffset;
+  }
 };
+
+static_assert(sizeof(StenoState) == 4, "Expect StenoState to fit in 4 bytes");
 
 //---------------------------------------------------------------------------
 

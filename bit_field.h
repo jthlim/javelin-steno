@@ -2,7 +2,7 @@
 
 #pragma once
 #include "bit.h"
-#include <string.h>
+#include "mem.h"
 
 //---------------------------------------------------------------------------
 
@@ -133,10 +133,10 @@ public:
   }
 
   bool operator==(const BitField &other) const {
-    return memcmp(data, other.data, sizeof(data)) == 0;
+    return Mem::Eq(data, other.data, sizeof(data));
   }
   bool operator!=(const BitField &other) const {
-    return memcmp(data, other.data, sizeof(data)) != 0;
+    return !Mem::Eq(data, other.data, sizeof(data));
   }
 
   friend BitFieldIterator begin(const BitField &b) {

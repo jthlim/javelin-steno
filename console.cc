@@ -1,6 +1,7 @@
 //---------------------------------------------------------------------------
 
 #include "console.h"
+#include "mem.h"
 #include "str.h"
 #include "unicode.h"
 #include <assert.h>
@@ -235,9 +236,9 @@ void Console::SendOk() { Write("OK\n\n", 4); }
 
 // Used to flush the output buffer and ensure a stable connection.
 void Console::HelloCommand(void *context, const char *line) {
-  char buffer[256];
-  memset(buffer, 0, 256);
-  Write(buffer, 256);
+  uint32_t buffer[256 / 4];
+  Mem::Clear(buffer);
+  Write((const char *)buffer, 256);
   Write("ID Hello\n\n", 10);
 }
 

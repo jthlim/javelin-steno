@@ -43,8 +43,7 @@ void StenoKeyCodeBuffer::Append(StenoTokenizer *tokenizer) {
 void StenoKeyCodeBuffer::ProcessText(const char *text) {
   bool isAutoGlue = IsGlue(text);
   if (!state.joinNext && !(isAutoGlue && state.isGlue)) {
-    AppendText(state.spaceCharacter, state.spaceCharacterLength,
-               StenoCaseMode::NORMAL);
+    AppendText(state.GetSpace(), state.spaceLength, StenoCaseMode::NORMAL);
   }
 
   AppendText(text, strlen(text), state.caseMode);
@@ -193,8 +192,7 @@ void StenoKeyCodeBuffer::ProcessCommand(const char *p) {
     }
 
     if (!state.joinNext) {
-      AppendText(state.spaceCharacter, state.spaceCharacterLength,
-                 StenoCaseMode::NORMAL);
+      AppendText(state.GetSpace(), state.spaceLength, StenoCaseMode::NORMAL);
     }
     AppendText(p, end - 1 - p, state.caseMode);
     state.caseMode = caseMode != StenoCaseMode::UNSPECIFIED
@@ -286,8 +284,7 @@ void StenoKeyCodeBuffer::ProcessCommand(const char *p) {
     p += 2;
     // Glue!
     if (!state.joinNext && !state.isGlue) {
-      AppendText(state.spaceCharacter, state.spaceCharacterLength,
-                 StenoCaseMode::NORMAL);
+      AppendText(state.GetSpace(), state.spaceLength, StenoCaseMode::NORMAL);
     }
     AppendText(p, end - p, state.caseMode);
     state.caseMode = state.GetNextWordCaseMode();

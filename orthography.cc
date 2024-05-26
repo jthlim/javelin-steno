@@ -3,6 +3,7 @@
 #include "orthography.h"
 #include "console.h"
 #include "crc.h"
+#include "mem.h"
 #include "str.h"
 #include "unicode.h"
 #include "word_list.h"
@@ -151,7 +152,7 @@ StenoCompiledOrthography::StenoCompiledOrthography(
     const StenoOrthography &orthography)
     : data(orthography), patterns(CreatePatterns(orthography)) {
 #if USE_ORTHOGRAPHY_CACHE
-  memset(&cache, 0, sizeof(cache));
+  Mem::Clear(cache);
 #endif
 }
 

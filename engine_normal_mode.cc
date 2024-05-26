@@ -117,10 +117,6 @@ void StenoEngine::ProcessNormalModeStroke(StenoStroke stroke) {
   state.shouldCombineUndo = false;
   state.isManualStateChange = false;
 
-#if ENABLE_PROFILE
-  uint32_t t5 = Clock::GetMicroseconds();
-#endif
-
   bool printSuggestions = true;
   if (emitter.Process(previousConversionBuffer.keyCodeBuffer,
                       nextConversionBuffer.keyCodeBuffer)) {
@@ -140,10 +136,6 @@ void StenoEngine::ProcessNormalModeStroke(StenoStroke stroke) {
       }
     }
   }
-
-#if ENABLE_PROFILE
-  uint32_t t6 = Clock::GetMicroseconds();
-#endif
 
   PrintTextLog(previousConversionBuffer.keyCodeBuffer,
                nextConversionBuffer.keyCodeBuffer);
@@ -169,16 +161,24 @@ void StenoEngine::ProcessNormalModeStroke(StenoStroke stroke) {
     return;
   }
 
+#if ENABLE_PROFILE
+  uint32_t t5 = Clock::GetMicroseconds();
+#endif
+
   if (printSuggestions) {
     // PrintSuggestions will overwrite the previousConversionBuffer
     PrintSuggestions(previousSegmentList, nextSegmentList);
   }
 
 #if ENABLE_PROFILE
-  uint32_t t7 = Clock::GetMicroseconds();
+  uint32_t t6 = Clock::GetMicroseconds();
 
-  Console::Printf("Timings: %u %u %u %u %u %u %u\n\n", t1 - t0, t2 - t1,
-                  t3 - t2, t4 - t3, t5 - t5, t6 - t5, t7 - t6);
+  Console::Printf("Next Segments: %u\n", t1 - t0);
+  Console::Printf("Previous Segments: %u\n", t2 - t1);
+  Console::Printf("Common Check: %u\n", t3 - t2);
+  Console::Printf("Text Conversion: %u\n", t4 - t3);
+  Console::Printf("Suggestions: %u\n", t6 - t5);
+  Console::Printf("\n");
 #endif
 }
 
@@ -285,7 +285,7 @@ void StenoEngine::CreateSegmentsUsingLongerResult(
     }
     startingOffset += segment.strokeLength;
     segmentList.Add(StenoSegment(
-        segment.strokeLength,
+        segment.strokeLength, segment.lookupType,
         buffer.segmentBuilder.GetStatePointer(
             longerBuffer.segmentBuilder.GetStateIndex(segment.state)),
         segment.lookup.Clone()));

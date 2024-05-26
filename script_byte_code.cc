@@ -2,6 +2,7 @@
 
 #include "script_byte_code.h"
 #include "crc.h"
+#include "mem.h"
 #include "str.h"
 
 //---------------------------------------------------------------------------
@@ -28,7 +29,7 @@ const uint8_t *StenoScriptByteCodeData::FindStringOrReturnOriginal(
       return string;
     }
     const uint8_t *candidate = base + textOffset;
-    if (memcmp(string, candidate, length + 1) == 0) {
+    if (Mem::Eq(string, candidate, length + 1)) {
       return candidate;
     }
 

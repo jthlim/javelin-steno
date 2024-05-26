@@ -1,9 +1,9 @@
 //---------------------------------------------------------------------------
 
 #pragma once
+#include "mem.h"
 #include <assert.h>
 #include <stdlib.h>
-#include <string.h>
 
 //---------------------------------------------------------------------------
 
@@ -24,10 +24,14 @@ public:
   friend const T *begin(const SizedList &list) { return list.data; }
   friend const T *end(const SizedList &list) { return list.data + list.count; }
 
+  SizedList Skip(size_t n) const {
+    return SizedList{.count = count - n, .data = data + n};
+  }
+
   SizedList Copy() const {
-    void *copy = malloc(sizeof(T) * count);
-    memcpy(copy, data, sizeof(T) * count);
-    return SizedList{.count = count, .data = (T *)copy};
+    T *copy = (T *)malloc(sizeof(T) * count);
+    Mem::Copy(copy, data, sizeof(T) * count);
+    return SizedList{.count = count, .data = copy};
   }
 
   template <typename S> SizedList<S> Cast() const {

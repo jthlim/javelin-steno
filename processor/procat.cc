@@ -6,20 +6,16 @@
 
 //---------------------------------------------------------------------------
 
-void StenoProcat::Process(const StenoKeyState &value, StenoAction action) {
-  if (action != StenoAction::TRIGGER) {
-    return;
-  }
+struct StenoProcatPacket {
+public:
+  StenoProcatPacket(const StenoKeyState &state);
 
-  ++counter;
+  uint8_t data[4];
+};
 
-  uint32_t localKeyState = value.ToStroke().GetKeyState();
-  uint8_t data[4] = {
-      0,
-      0,
-      0,
-      0xff,
-  };
+StenoProcatPacket::StenoProcatPacket(const StenoKeyState &state)
+    : data{0, 0, 0, 0xff} {
+  uint32_t localKeyState = state.ToStroke().GetKeyState();
 
   while (localKeyState) {
     const uint32_t index = __builtin_ctzl(localKeyState) + 1;
@@ -30,8 +26,18 @@ void StenoProcat::Process(const StenoKeyState &value, StenoAction action) {
 
     localKeyState &= localKeyState - 1;
   }
+}
 
-  SerialPort::SendData(data, sizeof(data));
+//---------------------------------------------------------------------------
+
+void StenoProcat::Process(const StenoKeyState &value, StenoAction action) {
+  if (action != StenoAction::TRIGGER) {
+    return;
+  }
+
+  ++counter;
+  const StenoProcatPacket packet(value);
+  SerialPort::SendData(packet.data, sizeof(packet.data));
 }
 
 void StenoProcat::PrintInfo() const {

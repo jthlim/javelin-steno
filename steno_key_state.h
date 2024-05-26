@@ -5,16 +5,6 @@
 
 //---------------------------------------------------------------------------
 
-struct StenoGeminiPacket {
-  uint8_t data[6];
-};
-
-struct StenoPloverHidPacket {
-  uint8_t data[8];
-};
-
-//---------------------------------------------------------------------------
-
 enum class StenoKey : int8_t {
   S1,
   S2,
@@ -96,8 +86,7 @@ public:
   void operator|=(const StenoKeyState &other) { keyState |= other.keyState; }
 
   StenoStroke ToStroke() const;
-  StenoGeminiPacket ToGeminiPacket() const;
-  StenoPloverHidPacket ToPloverHidPacket() const;
+  uint64_t GetRawKeyState() const { return keyState; }
 
   // Public so that config can overwrite S1 -> NUM1.
   static int8_t STROKE_BIT_INDEX_LOOKUP[];

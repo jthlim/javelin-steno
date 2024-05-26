@@ -4,6 +4,14 @@
 
 //---------------------------------------------------------------------------
 
+struct StenoPloverHidPacket {
+  StenoPloverHidPacket(const StenoKeyState &state);
+
+  uint8_t data[8];
+};
+
+//---------------------------------------------------------------------------
+
 class StenoPloverHid final : public StenoProcessorElement {
 public:
   void Process(const StenoKeyState &value, StenoAction action);
@@ -12,7 +20,7 @@ public:
 private:
   size_t counter = 0;
 
-  void SendPacket(const StenoPloverHidPacket &packet);
+  static void SendPacket(const StenoPloverHidPacket &packet);
 };
 
 //---------------------------------------------------------------------------

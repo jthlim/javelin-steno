@@ -4,6 +4,7 @@
 #include "../console.h"
 #include "../crc.h"
 #include "../flash.h"
+#include "../mem.h"
 #include "../str.h"
 #include "../stroke.h"
 #include "../stroke_list_parser.h"
@@ -202,7 +203,7 @@ void StenoUserDictionary::Reset() {
       (StenoUserDictionaryDescriptor *)malloc(Flash::BLOCK_SIZE);
 
   // Use 0xff rather than 0 to reduce flash I/O.
-  memset(freshDescriptor, 0xff, Flash::BLOCK_SIZE);
+  Mem::Fill(freshDescriptor, Flash::BLOCK_SIZE);
 
   freshDescriptor->magic = USER_DICTIONARY_MAGIC;
   freshDescriptor->version = USER_DICTIONARY_WITH_REVERSE_LOOKUP_VERSION;
