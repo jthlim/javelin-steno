@@ -13,15 +13,15 @@ const char StenoDictionary::SPACES[SPACES_COUNT + 1] = "                ";
 
 //---------------------------------------------------------------------------
 
-#if JAVELIN_PLATFORM_PICO_SDK || JAVELIN_PLATFORM_NRF5_SDK
+#if JAVELIN_PLATFORM_NRF5_SDK || JAVELIN_PLATFORM_PICO_SDK
 
 #if JAVELIN_CPU_CORTEX_M0
 
-__attribute__((naked)) void StenoDictionaryLookupResult::Destroy() {
+__attribute__((naked)) void
+StenoDictionaryLookupResult::DestroyInternal(const char *text) {
   asm volatile(R"(
-    ldr r0, [r0]
-    lsr r0, #1
-    bcs 1f
+    lsl r1, r0, #2
+    bmi 1f
     bx  lr
   1:
     ldr r1, =free
@@ -31,32 +31,24 @@ __attribute__((naked)) void StenoDictionaryLookupResult::Destroy() {
 
 #elif JAVELIN_CPU_CORTEX_M4
 
-__attribute__((naked)) void StenoDictionaryLookupResult::Destroy() {
+__attribute__((naked)) void
+StenoDictionaryLookupResult::DestroyInternal(const char *text) {
   asm volatile(R"(
-    ldr r0, [r0]
-    lsrs r0, #1
-    bcs 1f
+    lsls r1, r0, #2
+    bmi 1f
     bx  lr
   1:
     b.w free
   )");
 }
 
-#else
-
-void StenoDictionaryLookupResult::Destroy() {
-  if (text & 1) {
-    free((void *)(text >> 1));
-  }
-}
-
 #endif
 
-StenoDictionaryLookupResult StenoDictionaryLookupResult::Clone() const {
-  if (text & 1) {
-    return CreateDynamicString(Str::Dup(GetText()));
+const char *StenoDictionaryLookupResult::CloneInternal(const char *text) {
+  if (IsStatic(text)) {
+    return text;
   } else {
-    return *this;
+    return Str::Dup(text);
   }
 }
 
@@ -164,11 +156,9 @@ bool StenoReverseDictionaryLookup::AreAllFromSameDictionary() const {
     return false;
   }
 
-  const StenoDictionary *firstDictionary = results[0].dictionary;
-
-  for (const StenoReverseDictionaryResult *it = begin(results) + 1;
-       it != end(results); ++it) {
-    if (it->dictionary != firstDictionary) {
+  const StenoDictionary *firstDictionary = results.Front().dictionary;
+  for (const StenoReverseDictionaryResult &result : results.Skip(1)) {
+    if (result.dictionary != firstDictionary) {
       return false;
     }
   }

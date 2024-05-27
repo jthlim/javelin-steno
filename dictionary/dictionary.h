@@ -19,30 +19,38 @@ class StenoDictionary;
 // A class to wrap dictionary lookups, avoiding memory allocations in most
 // situations.
 
-#if JAVELIN_PLATFORM_PICO_SDK || JAVELIN_PLATFORM_NRF5_SDK
-
-// An implementation that requires that the top bit of the address is never
-// used, and packs the entire result into a register.
+#if JAVELIN_PLATFORM_NRF5_SDK || JAVELIN_PLATFORM_PICO_SDK
+// An implementation that requires that the RAM region is identifiable
+// from the pointer value.
 //
 // Invalid results are represented with 0
-// Static strings are represented by (p << 1) -- lowest bit is zero
-// Dynamic strings are represented by (p << 1) +1 -- lowest bit is one.
+// Static strings are represented by a pointer to ROM region
+// Dynamic strings are represented by a pointer to RAM region
 class StenoDictionaryLookupResult {
 private:
-  StenoDictionaryLookupResult(size_t text) : text(text) {}
+  StenoDictionaryLookupResult(const char *text) : text(text) {}
 
-  size_t text;
+  const char *text;
+
+  static bool IsStatic(const void *p) {
+    return (intptr_t(p) & 0x20000000) == 0;
+  }
+
+  static void DestroyInternal(const char *text);
+  static const char *CloneInternal(const char *text);
 
 public:
-  bool IsValid() const { return text != 0; }
+  bool IsValid() const { return text != nullptr; }
 
-  const char *GetText() const { return (char *)(text >> 1); }
-  void Destroy();
+  const char *GetText() const { return text; }
+  void Destroy() { DestroyInternal(text); }
 
-  StenoDictionaryLookupResult Clone() const;
+  StenoDictionaryLookupResult Clone() const {
+    return StenoDictionaryLookupResult(CloneInternal(text));
+  }
 
   static StenoDictionaryLookupResult CreateInvalid() {
-    return StenoDictionaryLookupResult(0);
+    return StenoDictionaryLookupResult(nullptr);
   }
 
   static StenoDictionaryLookupResult CreateStaticString(const uint8_t *p) {
@@ -50,7 +58,7 @@ public:
   }
 
   static StenoDictionaryLookupResult CreateStaticString(const char *p) {
-    return StenoDictionaryLookupResult(intptr_t(p) << 1);
+    return StenoDictionaryLookupResult(p);
   }
 
   // string will be free() when the Lookup is destroyed.
@@ -58,14 +66,16 @@ public:
     return CreateDynamicString((const char *)p);
   }
   static StenoDictionaryLookupResult CreateDynamicString(const char *p) {
-    return StenoDictionaryLookupResult((intptr_t(p) << 1) + 1);
+    return StenoDictionaryLookupResult(p);
   }
 
   bool operator==(const StenoDictionaryLookupResult &other) const {
     return text == other.text;
   }
 };
+
 #else
+
 class StenoDictionaryLookupResult {
 private:
   const char *text;

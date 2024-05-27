@@ -465,7 +465,7 @@ void StenoEngine::PrintSuggestion(const char *p, size_t arrowPrefixCount,
   }
   Console::Printf("]");
   if (lookup.AreAllFromSameDictionary()) {
-    const StenoDictionary *dictionary = lookup.results[0].dictionary;
+    const StenoDictionary *dictionary = lookup.results.Front().dictionary;
     const char *name = dictionary->GetName();
     if (name[0] != '#') {
       Console::Printf(",\"dictionary\":\"%J\"", name);

@@ -1,6 +1,7 @@
 //---------------------------------------------------------------------------
 
 #pragma once
+#include "sized_list.h"
 #include <assert.h>
 #include <stdlib.h>
 
@@ -47,6 +48,13 @@ public:
   const T &Front() const { return data[0]; }
   T &Back() { return data[count - 1]; }
   const T &Back() const { return data[count - 1]; }
+
+  SizedList<T> Skip(size_t n) {
+    return SizedList<T>{.count = count - n, .data = data + n};
+  }
+  SizedList<const T> Skip(size_t n) const {
+    return SizedList<const T>{.count = count - n, .data = data + n};
+  }
 
   void Sort(int (*comparator)(const T *a, const T *b)) {
     qsort(data, count, sizeof(T),
