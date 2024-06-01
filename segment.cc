@@ -70,11 +70,7 @@ public:
       PrepareNextP();
     }
   }
-  virtual ~StenoSegmentListTokenizer() {
-    if (scratch) {
-      free(scratch);
-    }
-  }
+  virtual ~StenoSegmentListTokenizer() { free(scratch); }
 
   bool HasMore() const final { return p != nullptr; }
 
@@ -108,7 +104,7 @@ StenoToken StenoSegmentListTokenizer::GetNext() {
     if (*p == '\0') {
       // Unterminated command... drop it.
       PrepareNextP();
-      return StenoToken("{}", state);
+      return StenoToken("{}", 2, state);
     }
     ++p;
   } else {
@@ -122,10 +118,11 @@ StenoToken StenoSegmentListTokenizer::GetNext() {
       case '\\':
         if (p[1] == '\0') {
           free(scratch);
-          scratch = Str::DupN(start, p - start);
+          size_t length = p - start;
+          scratch = Str::DupN(start, length);
           ++p;
           PrepareNextP();
-          return StenoToken(scratch, state);
+          return StenoToken(scratch, length, state);
         }
         p += 2;
         break;
@@ -138,13 +135,14 @@ StenoToken StenoSegmentListTokenizer::GetNext() {
 
 ReturnSpan:
   const char *result = elementText;
+  size_t length = p - start;
   if (start != elementText || *p != '\0') {
     free(scratch);
-    result = scratch = Str::DupN(start, p - start);
+    result = scratch = Str::DupN(start, length);
   }
 
   PrepareNextP();
-  return StenoToken(result, state);
+  return StenoToken(result, length, state);
 }
 
 void StenoSegmentListTokenizer::PrepareNextP() {

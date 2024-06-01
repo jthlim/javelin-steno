@@ -336,6 +336,9 @@ TEST_BEGIN("Engine: Random spam") {
       StenoOrthography::emptyOrthography);
   // StenoCompiledOrthography orthography(testOrthography);
   StenoEngine engine(dictionaryList, orthography);
+  engine.EnablePaperTape();
+  engine.EnableTextLog();
+  engine.EnableSuggestions();
 
   Key::DisableHistory();
 

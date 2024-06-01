@@ -18,7 +18,7 @@ enum class StenoCaseMode : uint8_t {
 };
 
 enum class SegmentLookupType : uint8_t {
-  INVALID,
+  UNKNOWN,
   DIRECT,
   AUTO_SUFFIX,
   STROKE,
@@ -29,12 +29,12 @@ enum class SegmentLookupType : uint8_t {
 struct StenoState {
   StenoCaseMode caseMode;
   StenoCaseMode overrideCaseMode;
-  bool isDefinitionStart : 1;
+  SegmentLookupType lookupType : 2;
   bool joinNext : 1;
   bool isGlue : 1;
   bool isManualStateChange : 1;
   bool shouldCombineUndo : 1;
-  SegmentLookupType lookupType : 2;
+  uint8_t _reserved : 2;
   uint8_t spaceLength : 3;
   uint8_t spaceOffset : 5;
 
@@ -46,6 +46,10 @@ struct StenoState {
   }
 
   void Reset();
+
+  bool IsDefinitionStart() const {
+    return lookupType != SegmentLookupType::UNKNOWN;
+  }
 
   bool operator==(const StenoState &a) const {
     return memcmp(this, &a, sizeof(*this)) == 0;

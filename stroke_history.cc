@@ -7,7 +7,7 @@
 
 void StenoStrokeHistory::Prune() {
   RemoveFront();
-  while (IsNotEmpty() && !Front().state.isDefinitionStart) {
+  while (IsNotEmpty() && !Front().state.IsDefinitionStart()) {
     RemoveFront();
   }
 }
@@ -40,13 +40,12 @@ void StenoStrokeHistory::UpdateDefinitionBoundaries(
 
   size_t count = GetCount();
   for (size_t i = startingOffset; i < count; ++i) {
-    (*this)[i].state.isDefinitionStart = false;
+    (*this)[i].state.lookupType = SegmentLookupType::UNKNOWN;
   }
   const StenoState *firstState = segments[0].state;
   for (const StenoSegment &segment : segments) {
     StenoState &state =
         (*this)[startingOffset + (segment.state - firstState)].state;
-    state.isDefinitionStart = true;
     state.lookupType = segment.lookupType;
   }
 }
@@ -57,7 +56,7 @@ size_t StenoStrokeHistory::GetStartingStroke(size_t maximumCount) const {
     return 0;
   }
   for (size_t i = count - maximumCount; i < count; ++i) {
-    if ((*this)[i].state.isDefinitionStart) {
+    if ((*this)[i].state.IsDefinitionStart()) {
       return i;
     }
   }

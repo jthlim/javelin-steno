@@ -114,22 +114,29 @@ char *StenoStroke::ToString(char *buffer) const {
   // cspell: disable-next-line
   const char *keys = "#STKPWHRAO*EUFRPBLGTSDZ";
 
-  for (int i = 0; i < StrokeBitIndex::STAR; ++i) {
-    if (keyState & (1UL << i)) {
-      *buffer++ = keys[i];
+  constexpr uint32_t startMask =
+      StrokeMask::NUM | StrokeMask::SL | StrokeMask::TL | StrokeMask::KL |
+      StrokeMask::PL | StrokeMask::WL | StrokeMask::HL | StrokeMask::RL |
+      StrokeMask::A | StrokeMask::O;
+
+  if (keyState & startMask) {
+    for (int i = 0; i < StrokeBitIndex::STAR; ++i) {
+      if (keyState & (1UL << i)) {
+        *buffer++ = keys[i];
+      }
     }
   }
 
-  const uint32_t remainderMask =
-      StrokeMask::A | StrokeMask::O | StrokeMask::STAR | StrokeMask::E |
-      StrokeMask::U | StrokeMask::FR | StrokeMask::RR | StrokeMask::PR |
-      StrokeMask::BR | StrokeMask::LR | StrokeMask::GR | StrokeMask::TR |
-      StrokeMask::SR | StrokeMask::DR | StrokeMask::ZR;
+  constexpr uint32_t remainderMask =
+      StrokeMask::STAR | StrokeMask::E | StrokeMask::U | StrokeMask::FR |
+      StrokeMask::RR | StrokeMask::PR | StrokeMask::BR | StrokeMask::LR |
+      StrokeMask::GR | StrokeMask::TR | StrokeMask::SR | StrokeMask::DR |
+      StrokeMask::ZR;
 
   if (keyState & remainderMask) {
-    const uint32_t centralKeyMask = StrokeMask::A | StrokeMask::O |
-                                    StrokeMask::STAR | StrokeMask::E |
-                                    StrokeMask::U;
+    constexpr uint32_t centralKeyMask = StrokeMask::A | StrokeMask::O |
+                                        StrokeMask::STAR | StrokeMask::E |
+                                        StrokeMask::U;
 
     if ((keyState & centralKeyMask) == 0) {
       *buffer++ = '-';

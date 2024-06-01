@@ -25,23 +25,24 @@ struct StenoSegment {
     StenoDictionaryLookupResult lookup;
   };
 
-  bool IsValid() const { return lookupType != SegmentLookupType::INVALID; }
+  bool IsValid() const { return lookupType != SegmentLookupType::UNKNOWN; }
   bool HasCommand() const;
   const StenoState *GetEndStenoState() const { return state + strokeLength; }
 
   static StenoSegment CreateInvalid() { return StenoSegment(); }
 
 private:
-  StenoSegment() : lookupType(SegmentLookupType::INVALID) {}
+  StenoSegment() : lookupType(SegmentLookupType::UNKNOWN) {}
 };
 
 //---------------------------------------------------------------------------
 
 struct StenoToken {
-  StenoToken(const char *text, const StenoState *state)
-      : text(text), state(state) {}
+  StenoToken(const char *text, size_t length, const StenoState *state)
+      : text(text), length(length), state(state) {}
 
   const char *text;
+  size_t length;
 
   // This can be null -- meaning that the state should be inferred.
   const StenoState *state;

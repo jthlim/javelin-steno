@@ -198,7 +198,7 @@ char *StenoCompiledOrthography::AddSuffixToPhrase(const char *phrase,
   const char *lastWord = phrase;
   const char *p = phrase;
   while (*p) {
-    if (Unicode::IsWhitespace(*p++)) {
+    if (!Unicode::IsLetter(*p++)) {
       lastWord = p;
     }
   }

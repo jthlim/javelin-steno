@@ -39,11 +39,11 @@ StenoState::SpaceBuffer StenoState::SpaceBuffer::instance = {
 void StenoState::Reset() {
   caseMode = StenoCaseMode::NORMAL;
   overrideCaseMode = StenoCaseMode::NORMAL;
+  lookupType = SegmentLookupType::UNKNOWN;
   joinNext = false;
   isGlue = false;
   isManualStateChange = false;
-  isDefinitionStart = 1;
-  lookupType = SegmentLookupType::DIRECT;
+  _reserved = 0;
   spaceOffset = 0;
   spaceLength = 1;
 }

@@ -16,6 +16,7 @@ void StenoKeyCodeBuffer::Reset() {
   consoleCount = 0;
   addTranslationCount = 0;
   resetStateCount = 0;
+  lastTextOffset = 0;
   state.Reset();
 }
 
@@ -26,27 +27,28 @@ void StenoKeyCodeBuffer::Populate(StenoTokenizer *tokenizer) {
 
 void StenoKeyCodeBuffer::Append(StenoTokenizer *tokenizer) {
   while (tokenizer->HasMore()) {
-    StenoToken token = tokenizer->GetNext();
+    const StenoToken token = tokenizer->GetNext();
     if (token.state != nullptr) {
       state = *token.state;
     }
     if (token.text[0] == '{') {
-      ProcessCommand(token.text);
+      ProcessCommand(token.text, token.length);
     } else {
-      ProcessText(token.text);
+      lastTextOffset = count;
+      ProcessText(token.text, token.length);
     }
   }
 }
 
 //---------------------------------------------------------------------------
 
-void StenoKeyCodeBuffer::ProcessText(const char *text) {
+void StenoKeyCodeBuffer::ProcessText(const char *text, size_t length) {
   bool isAutoGlue = IsGlue(text);
   if (!state.joinNext && !(isAutoGlue && state.isGlue)) {
     AppendText(state.GetSpace(), state.spaceLength, StenoCaseMode::NORMAL);
   }
 
-  AppendText(text, strlen(text), state.caseMode);
+  AppendText(text, length, state.caseMode);
   state.joinNext = false;
   state.isGlue = isAutoGlue;
   state.isManualStateChange = false;
@@ -128,8 +130,8 @@ bool StenoKeyCodeBuffer::IsGlue(const char *p) {
 
 //---------------------------------------------------------------------------
 
-void StenoKeyCodeBuffer::ProcessCommand(const char *p) {
-  const char *end = p + strlen(p);
+void StenoKeyCodeBuffer::ProcessCommand(const char *p, size_t length) {
+  const char *end = p + length;
 
   assert(*p == '{');
   assert(end[-1] == '}');
@@ -173,7 +175,7 @@ void StenoKeyCodeBuffer::ProcessCommand(const char *p) {
       return;
     }
 
-    // Orthographic prefix.
+    // Orthographic suffix.
     ProcessOrthographicSuffix(p, end - p);
     if (caseMode != StenoCaseMode::UNSPECIFIED) {
       state.caseMode = caseMode;
@@ -348,7 +350,7 @@ void StenoKeyCodeBuffer::ProcessOrthographicSuffix(const char *text,
 
   size_t start = count;
   size_t byteCount = 1; // Need one byte for terminating null.
-  while (start != 0 && buffer[start - 1].IsLetter()) {
+  while (start != lastTextOffset && buffer[start - 1].IsLetter()) {
     size_t utf8Length =
         Utf8Pointer::BytesForCharacterCode(buffer[start - 1].GetUnicode());
     if (byteCount + utf8Length > sizeof(orthographicScratchPad)) {

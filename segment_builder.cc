@@ -62,11 +62,21 @@ size_t
 StenoSegmentBuilder::GetFirstDefinitionBoundaryLength(size_t offset,
                                                       size_t length) const {
   for (size_t i = 1; i < length; ++i) {
-    if (states[offset + i].isDefinitionStart) {
+    if (states[offset + i].IsDefinitionStart()) {
       return i;
     }
   }
   return 0;
+}
+
+size_t StenoSegmentBuilder::GetStartingDefinitionLength(
+    size_t offset, size_t maximumOutlineLength) const {
+  for (size_t i = 1; i < maximumOutlineLength; ++i) {
+    if (states[offset + i].IsDefinitionStart()) {
+      return i;
+    }
+  }
+  return maximumOutlineLength;
 }
 
 bool StenoSegmentBuilder::DirectLookup(BuildSegmentContext &context,
@@ -74,7 +84,7 @@ bool StenoSegmentBuilder::DirectLookup(BuildSegmentContext &context,
   size_t startLength = count - offset;
   if (startLength > context.maximumOutlineLength) {
     startLength =
-        GetFirstDefinitionBoundaryLength(offset, context.maximumOutlineLength);
+        GetStartingDefinitionLength(offset, context.maximumOutlineLength);
   }
 
   size_t length = startLength;
@@ -83,7 +93,7 @@ bool StenoSegmentBuilder::DirectLookup(BuildSegmentContext &context,
         context.dictionary.Lookup(strokes + offset, length);
 
     if (!lookup.IsValid()) {
-      if (!states[offset + length - 1].isDefinitionStart) {
+      if (!states[offset + length - 1].IsDefinitionStart()) {
         --length;
       } else if (states[offset].lookupType != SegmentLookupType::DIRECT) {
         return false;
@@ -194,7 +204,7 @@ bool StenoSegmentBuilder::AutoSuffixLookup(BuildSegmentContext &context,
       return false;
     }
     startLength =
-        GetFirstDefinitionBoundaryLength(offset, context.maximumOutlineLength);
+        GetStartingDefinitionLength(offset, context.maximumOutlineLength);
   }
   StenoSegment segment = AutoSuffixTest(context, offset, startLength, 1);
 
@@ -217,8 +227,8 @@ StenoSegment StenoSegmentBuilder::AutoSuffixTest(BuildSegmentContext &context,
     if (states[lastStrokeOffset].lookupType != SegmentLookupType::AUTO_SUFFIX) {
       return StenoSegment::CreateInvalid();
     }
-    startLength = GetFirstDefinitionBoundaryLength(
-        lastStrokeOffset, context.maximumOutlineLength);
+    startLength = GetStartingDefinitionLength(lastStrokeOffset,
+                                              context.maximumOutlineLength);
   }
 
   size_t minimumLength = offset - lastStrokeOffset + 1;
@@ -259,7 +269,7 @@ StenoSegment StenoSegmentBuilder::AutoSuffixTest(BuildSegmentContext &context,
         }
       }
     }
-    if (!states[offset + length - 1].isDefinitionStart) {
+    if (!states[offset + length - 1].IsDefinitionStart()) {
       --length;
     } else if (states[offset].lookupType != SegmentLookupType::AUTO_SUFFIX) {
       break;
@@ -530,9 +540,9 @@ TEST_BEGIN("StrokeHistory: Test two segments, with multi-stroke") {
 
   StenoSegmentBuilder history;
   // spellchecker: disable
-  history.Add(StenoStroke("TEFT"), StenoState{.isDefinitionStart = true});
-  history.Add(StenoStroke("TEFT"), StenoState{.isDefinitionStart = true});
-  history.Add(StenoStroke("-D"), StenoState{.isDefinitionStart = true});
+  history.Add(StenoStroke("TEFT"), StenoState{});
+  history.Add(StenoStroke("TEFT"), StenoState{});
+  history.Add(StenoStroke("-D"), StenoState{});
   // spellchecker: enable
 
   StenoSegmentList segmentList;
@@ -553,9 +563,9 @@ TEST_BEGIN("StrokeHistory: Test *? splits strokes") {
 
   StenoSegmentBuilder history;
   // spellchecker: disable
-  history.Add(StenoStroke("TEFT"), StenoState{.isDefinitionStart = true});
-  history.Add(StenoStroke("-D"), StenoState{.isDefinitionStart = true});
-  history.Add(StenoStroke("SKWHU"), StenoState{.isDefinitionStart = true});
+  history.Add(StenoStroke("TEFT"), StenoState{});
+  history.Add(StenoStroke("-D"), StenoState{});
+  history.Add(StenoStroke("SKWHU"), StenoState{});
   // spellchecker: enable
 
   StenoSegmentList segmentList;

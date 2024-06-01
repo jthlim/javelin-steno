@@ -41,13 +41,14 @@ public:
   size_t consoleCount = 0;
   size_t addTranslationCount = 0;
   size_t resetStateCount = 0;
+  size_t lastTextOffset = 0;
   StenoState state;
   StenoKeyCode buffer[BUFFER_SIZE];
 
   void Reset();
 
-  void ProcessText(const char *text);
-  void ProcessCommand(const char *command);
+  void ProcessText(const char *text, size_t length);
+  void ProcessCommand(const char *command, size_t length);
   void ProcessOrthographicSuffix(const char *text, size_t length);
 
   void AppendSpace() {

@@ -115,6 +115,8 @@ private:
                               const StenoSegment &segment, size_t offset);
 
   size_t GetFirstDefinitionBoundaryLength(size_t offset, size_t length) const;
+  size_t GetStartingDefinitionLength(size_t offset,
+                                     size_t maximumOutlineLength) const;
 };
 
 //---------------------------------------------------------------------------
