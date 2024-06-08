@@ -49,19 +49,18 @@ StenoReverseMapDictionary::FindMapDataLookup(const char *text) const {
     const uint8_t *mid = left + size_t(right - left) / 2;
 #endif
 
-    const uint8_t *wordStart = StenoTextBlock::FindWordStart(mid);
+    const uint8_t *wordStart = StenoTextBlock::FindPreviousWordStart(mid);
 
     // Inline strcmp because the end of the match is useful.
     const uint8_t *p = wordStart;
     const uint8_t *l = (const uint8_t *)text;
     int compare;
-    int cp;
     for (;;) {
       const int cl = *l++;
-      cp = *p++;
+      const int cp = *p++;
 
-      compare = cl - cp;
-      if (compare != 0 || cp == 0) {
+      if (cl != cp || cp == 0) {
+        compare = cl - cp;
         break;
       }
     }
@@ -71,12 +70,8 @@ StenoReverseMapDictionary::FindMapDataLookup(const char *text) const {
       continue;
     }
 
-    while (cp != 0) {
-      cp = *p++;
-    }
-
     if (compare > 0) {
-      left = MapDataLookup::FindNextWordStart(p);
+      left = StenoTextBlock::FindNextWordStart(p);
       continue;
     }
 
@@ -112,7 +107,7 @@ void StenoReverseMapDictionary::BuildIndex() {
   for (size_t i = 0; i < INDEX_SIZE; ++i) {
     const size_t offset = 1 + i * textBlock.count / INDEX_SIZE;
     const uint8_t *word =
-        StenoTextBlock::FindWordStart(textBlock.data + offset);
+        StenoTextBlock::FindPreviousWordStart(textBlock.data + offset);
 
     if (indexSize > 0 && index[indexSize - 1] == word) {
       continue;

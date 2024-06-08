@@ -43,6 +43,10 @@ struct StenoEngine::UpdateNormalModeTextBufferThreadData {
 #endif
 
 void StenoEngine::ProcessNormalModeStroke(StenoStroke stroke) {
+#if ENABLE_DICTIONARY_STATS
+  StenoDictionary::ResetStats();
+#endif
+
   history.PruneIfFull();
 
   const size_t previousSourceStrokeCount = history.GetCount();
@@ -172,12 +176,25 @@ void StenoEngine::ProcessNormalModeStroke(StenoStroke stroke) {
 
 #if ENABLE_PROFILE
   uint32_t t6 = Clock::GetMicroseconds();
+#endif
 
+#if ENABLE_PROFILE
   Console::Printf("Next Segments: %u\n", t1 - t0);
   Console::Printf("Previous Segments: %u\n", t2 - t1);
   Console::Printf("Common Check: %u\n", t3 - t2);
   Console::Printf("Text Conversion: %u\n", t4 - t3);
   Console::Printf("Suggestions: %u\n", t6 - t5);
+#endif
+
+#if ENABLE_DICTIONARY_STATS
+  Console::Printf("Lookups: %zu\n", StenoDictionary::GetLookupCount());
+  Console::Printf("ReverseLookups: %zu\n",
+                  StenoDictionary::GetReverseLookupCount());
+  Console::Printf("DictionaryForOutline: %zu\n",
+                  StenoDictionary::GetDictionaryForOutlineCount());
+#endif
+
+#if ENABLE_PROFILE || ENABLE_DICTIONARY_STATS
   Console::Printf("\n");
 #endif
 }
@@ -432,10 +449,10 @@ void StenoEngine::PrintSuggestions(const StenoSegmentList &previousSegmentList,
 
   // General suggestions. Search back up to 8 word segments.
   char *lastLookup = nullptr;
-  for (size_t wordCount = 1; wordCount < 8; ++wordCount) {
+  for (size_t segmentCount = 1; segmentCount < 8; ++segmentCount) {
     Pump();
     char *newLookup =
-        PrintSegmentSuggestion(wordCount, nextSegmentList, lastLookup);
+        PrintSegmentSuggestion(segmentCount, nextSegmentList, lastLookup);
     free(lastLookup);
     lastLookup = newLookup;
     if (!lastLookup) {
@@ -488,13 +505,13 @@ static bool ShouldShowSuggestions(const StenoSegmentList &segmentList) {
   return segmentList.GetCount() > 2 * joinPreviousCount;
 }
 
-char *StenoEngine::PrintSegmentSuggestion(size_t wordCount,
+char *StenoEngine::PrintSegmentSuggestion(size_t segmentCount,
                                           const StenoSegmentList &segmentList,
                                           char *lastLookup) {
 
   size_t startSegmentIndex = segmentList.GetCount();
   StenoState lastState = state;
-  for (size_t i = 0; i < wordCount; ++i) {
+  for (size_t i = 0; i < segmentCount; ++i) {
     if (startSegmentIndex == 0) {
       return nullptr;
     }
@@ -504,7 +521,7 @@ char *StenoEngine::PrintSegmentSuggestion(size_t wordCount,
         return nullptr;
       }
 
-      // Consider it a word start if it isn't a suffix stroke and it isn't
+      // Consider it a segment start if it isn't a suffix stroke and it isn't
       // a fingerspelling joined to a previous fingerspelling.
       // This will still give suggestions after prefixes, e.g.
       //   overwatching: AUFR/WAFP/-G will suggest to combine WAFPG

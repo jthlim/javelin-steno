@@ -34,16 +34,50 @@ private:
 //---------------------------------------------------------------------------
 
 struct StenoTextBlock {
-  static const uint8_t *FindWordStart(const uint8_t *p) {
+#if JAVELIN_CPU_CORTEX_M4
+  static uint32_t uqsub8(uint32_t a, uint32_t b) {
+    uint32_t result;
+    asm("uqsub8 %0, %1, %2" : "=r"(result) : "r"(a), "r"(b));
+    return result;
+  }
+
+  static uint32_t rev(uint32_t a) {
+    uint32_t result;
+    asm("rev %0, %1" : "=r"(result) : "r"(a));
+    return result;
+  }
+#endif
+
+  static const uint8_t *FindPreviousWordStart(const uint8_t *p) {
+#if JAVELIN_CPU_CORTEX_M4
+    uint32_t mask;
+    do {
+      p -= 4;
+      uint32_t v = *(const uint32_t *)p;
+      mask = uqsub8(v, 0xfefefefe);
+    } while (mask == 0);
+    return (p + 4) - (__builtin_clz(mask) >> 3);
+#else
     while (p[-1] != 0xff) {
       --p;
     }
     return p;
+#endif
   }
   static const uint8_t *FindNextWordStart(const uint8_t *p) {
+#if JAVELIN_CPU_CORTEX_M4
+    uint32_t mask;
+    do {
+      uint32_t v = *(const uint32_t *)p;
+      p += 4;
+      mask = uqsub8(v, 0xfefefefe);
+    } while (mask == 0);
+    return (p - 3) + (__builtin_clz(rev(mask)) >> 3);
+#else
     while (*p++ != 0xff) {
     }
     return p;
+#endif
   }
 };
 

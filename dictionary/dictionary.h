@@ -11,6 +11,10 @@
 
 //---------------------------------------------------------------------------
 
+#define ENABLE_DICTIONARY_STATS 0
+
+//---------------------------------------------------------------------------
+
 class MapDataLookup;
 class StenoDictionary;
 
@@ -151,9 +155,6 @@ struct StenoReverseDictionaryResult {
 };
 
 class StenoReverseDictionaryLookup : public JavelinMallocAllocate {
-private:
-  static const size_t MAX_MAP_DATA_LOOKUP_COUNT = 24;
-
 public:
   StenoReverseDictionaryLookup(size_t strokeThreshold, const char *definition)
       : strokeThreshold(strokeThreshold), definition(definition),
@@ -173,15 +174,13 @@ public:
   const char *definition;
   size_t definitionLength;
 
-  size_t strokesCount = 0;
-
   // Used to prevent recursing prefixes too far.
   size_t prefixLookupDepth = 0;
 
   // These are used as an optimization for map lookup.
   // Since the first step of all map lookups is the same, do it once and
   // pass it down
-  StaticList<const void *, MAX_MAP_DATA_LOOKUP_COUNT> mapDataLookups;
+  StaticList<const void *, 24> mapDataLookups;
 
   void AddMapDataLookup(MapDataLookup mapDataLookup,
                         const uint8_t *baseAddress);
@@ -189,9 +188,7 @@ public:
   void SortResults();
 
   StaticList<StenoReverseDictionaryResult, 24> results;
-
-  static const size_t STROKE_COUNT = 64;
-  StenoStroke strokes[STROKE_COUNT];
+  StaticList<StenoStroke, 64> strokes;
 
   static const size_t MAX_STROKE_THRESHOLD = 31;
 
@@ -281,6 +278,29 @@ public:
   virtual bool EnableDictionary(const char *name) { return false; }
   virtual bool DisableDictionary(const char *name) { return false; }
   virtual bool ToggleDictionary(const char *name) { return false; }
+
+#if ENABLE_DICTIONARY_STATS
+  struct Stats {
+    size_t lookupCount;
+    size_t reverseLookupCount;
+    size_t dictionaryForOutlineCount;
+
+    void Reset() {
+      lookupCount = 0;
+      reverseLookupCount = 0;
+      dictionaryForOutlineCount = 0;
+    }
+  };
+
+  static Stats stats;
+
+  static void ResetStats() { stats.Reset(); }
+  static size_t GetLookupCount() { return stats.lookupCount; }
+  static size_t GetReverseLookupCount() { return stats.reverseLookupCount; }
+  static size_t GetDictionaryForOutlineCount() {
+    return stats.dictionaryForOutlineCount;
+  }
+#endif
 
 protected:
   StenoDictionary(size_t maximumOutlineLength)

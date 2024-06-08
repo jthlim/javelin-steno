@@ -11,6 +11,10 @@
 
 const char StenoDictionary::SPACES[SPACES_COUNT + 1] = "                ";
 
+#if ENABLE_DICTIONARY_STATS
+StenoDictionary::Stats StenoDictionary::stats;
+#endif
+
 //---------------------------------------------------------------------------
 
 #if JAVELIN_PLATFORM_NRF5_SDK || JAVELIN_PLATFORM_PICO_SDK
@@ -31,15 +35,10 @@ StenoDictionaryLookupResult::DestroyInternal(const char *text) {
 
 #elif JAVELIN_CPU_CORTEX_M4
 
-__attribute__((naked)) void
-StenoDictionaryLookupResult::DestroyInternal(const char *text) {
-  asm volatile(R"(
-    lsls r1, r0, #2
-    bmi 1f
-    bx  lr
-  1:
-    b.w free
-  )");
+void StenoDictionaryLookupResult::DestroyInternal(const char *text) {
+  if (!IsStatic(text)) {
+    free((char *)text);
+  }
 }
 
 #endif
@@ -72,8 +71,13 @@ StenoDictionaryLookupResult StenoDictionaryLookupResult::Clone() const {
 void StenoReverseDictionaryLookup::AddResult(
     const StenoStroke *strokes, size_t length,
     const StenoDictionary *dictionary) {
-  // Ignore if above or equal to the threshold
+  // Ignore if above or equal to the threshold.
   if (length >= strokeThreshold) {
+    return;
+  }
+
+  // Ignore if it'll overflow.
+  if (results.IsFull() || !this->strokes.CanAddCount(length)) {
     return;
   }
 
@@ -81,26 +85,21 @@ void StenoReverseDictionaryLookup::AddResult(
     return;
   }
 
-  // Ignore if it'll overflow.
-  if (results.IsFull() || strokesCount + length > STROKE_COUNT) {
-    return;
-  }
-
   StenoReverseDictionaryResult &entry = results.Add();
   entry.length = length;
-  entry.strokes = this->strokes + strokesCount;
+  entry.strokes = end(this->strokes);
   entry.dictionary = dictionary;
 
-  strokes->CopyTo(this->strokes + strokesCount, length);
-  strokesCount += length;
+  strokes->CopyTo(end(this->strokes), length);
+  this->strokes.AddCount(length);
 }
 
 size_t StenoReverseDictionaryLookup::GetMinimumStrokeCount() const {
   if (results.IsEmpty()) {
     return 0;
   }
-  size_t minimumLength = results[0].length;
-  for (const StenoReverseDictionaryResult &result : results) {
+  size_t minimumLength = results.Front().length;
+  for (const StenoReverseDictionaryResult &result : results.Skip(1)) {
     if (result.length < minimumLength) {
       minimumLength = result.length;
     }

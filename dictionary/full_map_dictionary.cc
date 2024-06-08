@@ -193,17 +193,18 @@ void StenoFullMapDictionary::ReverseLookup(
   }
 
   for (const void *data : lookup.mapDataLookups) {
+    if (data < dataRange.min) {
+      continue;
+    }
+    if (data >= dataRange.max) {
+      return;
+    }
     ReverseLookup(lookup, data);
   }
 }
 
 void StenoFullMapDictionary::ReverseLookup(StenoReverseDictionaryLookup &lookup,
                                            const void *data) const {
-  // Quick reject
-  if (!dataRange.Contains(data)) {
-    return;
-  }
-
   for (size_t strokeLength = 1; strokeLength <= maximumOutlineLength;
        ++strokeLength) {
     const StenoFullMapDictionaryStrokesDefinition &strokeDefinition =
@@ -236,7 +237,7 @@ bool StenoFullMapDictionary::Remove(const char *name,
     return false;
   }
 
-  uint32_t hash = StenoStroke::Hash(strokes, length);
+  const uint32_t hash = StenoStroke::Hash(strokes, length);
   size_t entryIndex = hash & (strokesDefinition.hashMapSize - 1);
   const size_t offset = strokesDefinition.GetOffset(entryIndex);
   if (offset == (size_t)-1) {

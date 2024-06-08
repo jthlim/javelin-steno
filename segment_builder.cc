@@ -172,11 +172,24 @@ bool StenoSegmentBuilder::AutoSuffixLookup(BuildSegmentContext &context,
       offset < context.maximumOutlineLength
           ? states
           : states + offset + 1 - context.maximumOutlineLength;
-  for (StenoSegment &existingSegment : context.segmentList) {
-    if (existingSegment.state < oldestState) {
-      continue;
+
+  size_t startingSegment = context.segmentList.GetCount();
+  while (startingSegment > 0) {
+    if (context.segmentList[startingSegment - 1].state < oldestState) {
+      break;
     }
 
+    // If a previous segment is not direct, then it would have already attempted
+    // to autosuffix as long as possible, so doesn't need to be extended.
+    if (context.segmentList[startingSegment - 1].lookupType !=
+        SegmentLookupType::DIRECT) {
+      break;
+    }
+    --startingSegment;
+  }
+
+  for (StenoSegment &existingSegment :
+       context.segmentList.Skip(startingSegment)) {
     StenoSegment segment = AutoSuffixTest(context, existingSegment, offset);
     if (!segment.IsValid()) {
       continue;

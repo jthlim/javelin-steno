@@ -267,7 +267,7 @@ bool StenoCompactMapDictionary::Remove(const char *name,
     return false;
   }
 
-  uint32_t hash = StenoStroke::Hash(strokes, length);
+  const uint32_t hash = StenoStroke::Hash(strokes, length);
   size_t entryIndex = hash & (strokesDefinition.hashMapSize - 1);
   const size_t offset = strokesDefinition.GetOffset(entryIndex);
   if (offset == (size_t)-1) {
@@ -283,7 +283,7 @@ bool StenoCompactMapDictionary::Remove(const char *name,
             strokesDefinition.data[dataIndex];
 
     if (entry.Equals(strokes, length)) {
-      Uint24 emptyStroke = Uint24::Create(0);
+      const Uint24 emptyStroke = Uint24::Create(0);
       Flash::Write(&entry.strokes, &emptyStroke, sizeof(Uint24));
       return true;
     }

@@ -33,6 +33,9 @@ StenoDictionaryList::StenoDictionaryList(StenoDictionary *const *dictionaries,
 
 StenoDictionaryLookupResult
 StenoDictionaryList::Lookup(const StenoDictionaryLookup &lookup) const {
+#if ENABLE_DICTIONARY_STATS
+  stats.lookupCount++;
+#endif
   for (const StenoDictionaryListEntry &entry : dictionaries) {
     if (entry.combinedMaximumOutlineLength < lookup.length) {
       continue;
@@ -48,6 +51,9 @@ StenoDictionaryList::Lookup(const StenoDictionaryLookup &lookup) const {
 
 const StenoDictionary *StenoDictionaryList::GetDictionaryForOutline(
     const StenoDictionaryLookup &lookup) const {
+#if ENABLE_DICTIONARY_STATS
+  stats.dictionaryForOutlineCount++;
+#endif
   for (const StenoDictionaryListEntry &entry : dictionaries) {
     if (entry.combinedMaximumOutlineLength < lookup.length) {
       continue;
@@ -63,6 +69,9 @@ const StenoDictionary *StenoDictionaryList::GetDictionaryForOutline(
 
 void StenoDictionaryList::ReverseLookup(
     StenoReverseDictionaryLookup &lookup) const {
+#if ENABLE_DICTIONARY_STATS
+  stats.reverseLookupCount++;
+#endif
   for (const StenoDictionaryListEntry &entry : dictionaries) {
     if (!entry.IsEnabled()) {
       continue;

@@ -121,13 +121,13 @@ struct StenoDictionaryDefinition {
 static_assert(sizeof(StenoDictionaryDefinition) == 4);
 
 struct StenoCompactMapDictionaryDefinition : public StenoDictionaryDefinition {
-  const char *name;
+  XipPointer<char> name;
   const uint8_t *textBlock;
   const StenoCompactMapDictionaryStrokesDefinition *strokes;
 };
 
 struct StenoFullMapDictionaryDefinition : public StenoDictionaryDefinition {
-  const char *name;
+  XipPointer<char> name;
   const uint8_t *textBlock;
   const StenoFullMapDictionaryStrokesDefinition *strokes;
 };

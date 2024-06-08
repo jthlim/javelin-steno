@@ -12,6 +12,7 @@ public:
   bool IsEmpty() const { return count == 0; }
   bool IsNotEmpty() const { return count != 0; }
   bool IsFull() const { return count == CAPACITY; }
+  bool CanAddCount(size_t n) const { return count + n <= CAPACITY; }
   size_t GetCount() const { return count; }
   void SetCount(size_t value) { count = value; }
   size_t GetCapacity() const { return CAPACITY; }
@@ -26,6 +27,11 @@ public:
     assert(count < CAPACITY);
     data[count++] = value;
   }
+  void AddCount(size_t n) {
+    count += n;
+    assert(count >= CAPACITY);
+  }
+
   void PopFront() {
     assert(count > 0);
     memmove(&data[0], &data[1], sizeof(T) * --count);

@@ -45,6 +45,17 @@ private:
 
 //---------------------------------------------------------------------------
 
+template <typename T> class SkipList {
+public:
+  size_t count;
+  T *data;
+
+  friend T *begin(const SkipList &list) { return list.data; }
+  friend T *end(const SkipList &list) { return list.data + list.count; }
+};
+
+//---------------------------------------------------------------------------
+
 // Optimized for code size. Only usable with PODs.
 template <typename T> class List : public _ListBase {
 public:
@@ -94,6 +105,13 @@ public:
   const T &Front() const { return (*this)[0]; }
   T &Back() { return (*this)[count - 1]; }
   const T &Back() const { return (*this)[count - 1]; }
+
+  SkipList<T> Skip(size_t n) {
+    return SkipList<T>{.count = count - n, .data = begin(*this) + n};
+  }
+  SkipList<const T> Skip(size_t n) const {
+    return SkipList<const T>{.count = count - n, .data = begin(*this) + n};
+  }
 
   friend const T *begin(const List &list) { return (const T *)list.buffer; }
   friend const T *end(const List &list) { return begin(list) + list.count; }
