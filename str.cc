@@ -1,6 +1,7 @@
 //---------------------------------------------------------------------------
 
 #include "str.h"
+#include "hint.h"
 #include "writer.h"
 #include <stdarg.h>
 #include <stdio.h>
@@ -60,7 +61,7 @@ bool Str::IsFingerSpellingCommand(const char *p) {
 }
 
 bool Str::IsJoinPrevious(const char *p) {
-  return p[0] == '{' && p[1] == '^' && !strchr(p, '\n');
+  return p[0] == '{' && p[1] == '^' && !Str::Contains(p + 2, '\n');
 }
 
 bool Str::ContainsKeyCode(const char *p) {
@@ -76,15 +77,13 @@ bool Str::ContainsKeyCode(const char *p) {
   return false;
 }
 
-char *Str::Join(const char *p, ...) {
-  va_list v;
-  va_start(v, p);
-
+__attribute__((noinline)) char *Str::Join(const char *const *data, size_t n) {
   char *result = (char *)malloc(64);
   char *d = result;
   char *guard = result + 64;
 
   do {
+    const char *p = *data++;
     while (*p) {
       *d++ = *p++;
       if (d == guard) {
@@ -96,12 +95,8 @@ char *Str::Join(const char *p, ...) {
         d = result + length;
       }
     }
-
-    p = va_arg(v, const char *);
-  } while (p);
+  } while (--n);
   *d++ = '\0';
-
-  va_end(v);
 
   return result;
 }
@@ -134,40 +129,39 @@ bool Str::HasPrefix(const char *p, const char *prefix) {
 
 char *Str::WriteJson(char *p, const char *text) {
   while (*text) {
-    switch (int c = *text++; c) {
-    case '\f':
-      *p++ = '\\';
-      *p++ = 'f';
-      break;
+    int c = *text++;
+    if (JAVELIN_UNLIKELY(c < 32)) {
+      switch (c) {
+      case '\f':
+        *p++ = '\\';
+        *p++ = 'f';
+        continue;
 
-    case '\b':
-      *p++ = '\\';
-      *p++ = 'b';
-      break;
+      case '\b':
+        *p++ = '\\';
+        *p++ = 'b';
+        continue;
 
-    case '\r':
-      *p++ = '\\';
-      *p++ = 'r';
-      break;
+      case '\r':
+        *p++ = '\\';
+        *p++ = 'r';
+        continue;
 
-    case '\n':
-      *p++ = '\\';
-      *p++ = 'n';
-      break;
+      case '\n':
+        *p++ = '\\';
+        *p++ = 'n';
+        continue;
 
-    case '\t':
+      case '\t':
+        *p++ = '\\';
+        *p++ = 't';
+        continue;
+      }
+      continue;
+    } else if (JAVELIN_UNLIKELY(c == '\\' || c == '\"')) {
       *p++ = '\\';
-      *p++ = 't';
-      break;
-
-    case '\\':
-    case '\"':
-      *p++ = '\\';
-      [[fallthrough]];
-    default:
-      *p++ = c;
-      break;
     }
+    *p++ = c;
   }
   return p;
 }

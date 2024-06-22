@@ -18,14 +18,36 @@ void _ListBase::Add(const void *data, size_t elementSize) {
     //   list.add(list[3]);
     // ```
     memcpy(newBuffer + elementSize * count, data, elementSize);
-    ++count;
     free(buffer);
 
     buffer = newBuffer;
   } else {
     memcpy(buffer + elementSize * count, data, elementSize);
-    ++count;
   }
+  ++count;
+}
+
+void _ListBase::AddCount(const void *data, size_t n, size_t elementSize) {
+  const size_t capacity = GetCapacity(count);
+  const size_t newCount = count + n;
+  if (newCount > capacity) {
+    const size_t newCapacity = GetCapacity(newCount);
+    uint8_t *newBuffer = (uint8_t *)malloc(newCapacity * elementSize);
+    memcpy(newBuffer, buffer, elementSize * count);
+
+    // Do this copy before freeing to avoid problems when adding elements from
+    // the list, i.e.
+    // ```
+    //   list.add(list[3]);
+    // ```
+    memcpy(newBuffer + elementSize * count, data, n * elementSize);
+    free(buffer);
+
+    buffer = newBuffer;
+  } else {
+    memcpy(buffer + elementSize * count, data, n * elementSize);
+  }
+  count = newCount;
 }
 
 size_t _ListBase::GetCapacity(size_t count) {

@@ -19,8 +19,9 @@ StenoSegmentList::~StenoSegmentList() {
   }
 }
 
-size_t StenoSegmentList::GetCommonStartingSegmentsCount(StenoSegmentList &a,
-                                                        StenoSegmentList &b) {
+size_t
+StenoSegmentList::GetCommonStartingSegmentsCount(const List<StenoSegment> &a,
+                                                 const List<StenoSegment> &b) {
   size_t limit = a.GetCount() < b.GetCount() ? a.GetCount() : b.GetCount();
 
   size_t commonPrefixCount = 0;
@@ -49,19 +50,12 @@ size_t StenoSegmentList::GetCommonStartingSegmentsCount(StenoSegmentList &a,
   return commonPrefixCount;
 }
 
-bool StenoSegmentList::HasManualStateChange() const {
-  for (const StenoSegment &segment : *this) {
-    if (segment.state->isManualStateChange) {
-      return true;
-    }
-  }
-  return false;
-}
 //---------------------------------------------------------------------------
 
 class StenoSegmentListTokenizer final : public StenoTokenizer {
 public:
-  StenoSegmentListTokenizer(const StenoSegmentList &list, size_t startingOffset)
+  StenoSegmentListTokenizer(const List<StenoSegment> &list,
+                            size_t startingOffset)
       : list(list), elementIndex(startingOffset) {
     if (list.IsEmpty()) {
       p = elementText = nullptr;
@@ -77,7 +71,7 @@ public:
   StenoToken GetNext() final;
 
 private:
-  const StenoSegmentList &list;
+  const List<StenoSegment> &list;
   size_t elementIndex;
   const char *elementText;
   const char *p;
@@ -164,8 +158,9 @@ void StenoSegmentListTokenizer::PrepareNextP() {
   }
 }
 
-StenoTokenizer *StenoSegmentList::CreateTokenizer(size_t startingOffset) {
-  return new StenoSegmentListTokenizer(*this, startingOffset);
+StenoTokenizer *StenoTokenizer::Create(const List<StenoSegment> &segments,
+                                       size_t startingOffset) {
+  return new StenoSegmentListTokenizer(segments, startingOffset);
 }
 
 //---------------------------------------------------------------------------
@@ -194,7 +189,7 @@ TEST_BEGIN("Segment tests") {
 
   history.CreateSegments(context);
 
-  StenoTokenizer *tokenizer = segmentList.CreateTokenizer();
+  StenoTokenizer *tokenizer = StenoTokenizer::Create(segmentList);
 
   assert(tokenizer->HasMore());
   assert(Str::Eq(tokenizer->GetNext().text, "test"));

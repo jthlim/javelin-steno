@@ -321,7 +321,7 @@ char *Pattern::Replace(char *text, const char *format) const {
       Str::DupN(match.captures[1], text + strlen(text) - match.captures[1]);
   char *replacement = match.Replace(format);
 
-  char *result = Str::Join(prefix, replacement, suffix, nullptr);
+  char *result = Str::Join(prefix, replacement, suffix);
   free(prefix);
   free(suffix);
   free(replacement);

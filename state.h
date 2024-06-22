@@ -34,9 +34,8 @@ struct StenoState {
   bool isGlue : 1;
   bool isManualStateChange : 1;
   bool shouldCombineUndo : 1;
-  uint8_t _reserved : 2;
-  uint8_t spaceLength : 3;
-  uint8_t spaceOffset : 5;
+  uint32_t spaceLength : 4;
+  uint32_t spaceOffset : 6;
 
   static const StenoCaseMode NEXT_WORD_CASE_MODE[];
   static const StenoCaseMode NEXT_LETTER_CASE_MODE[];
@@ -67,7 +66,7 @@ struct StenoState {
     static SpaceBuffer instance;
 
     uint8_t count;
-    char data[32];
+    char data[64];
   };
 
   const char *GetSpace() const {

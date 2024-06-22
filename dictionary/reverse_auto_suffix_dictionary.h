@@ -1,14 +1,16 @@
 //---------------------------------------------------------------------------
 
 #pragma once
+#include "../list.h"
+#include "../pattern.h"
 #include "../pattern_quick_reject.h"
 #include "wrapped_dictionary.h"
 
 //---------------------------------------------------------------------------
 
-class Pattern;
 class StenoCompiledOrthography;
 struct StenoOrthography;
+struct StenoOrthographyAutoSuffix;
 struct StenoOrthographyReverseAutoSuffix;
 
 //---------------------------------------------------------------------------
@@ -24,21 +26,33 @@ public:
 
 private:
   const StenoCompiledOrthography &orthography;
-  const Pattern *reversePatterns;
   PatternQuickReject mergedQuickReject;
 
-  void ProcessReverseAutoSuffix(
-      StenoReverseDictionaryLookup &lookup,
-      const StenoOrthographyReverseAutoSuffix &reverseAutoSuffix,
-      const Pattern &reversePattern) const;
+  struct AutoSuffixTest {
+    AutoSuffixTest() {}
+
+    const char *testPattern;
+    const char *replacement;
+    const char *text;
+    size_t textLength;
+    union {
+      Pattern reversePattern;
+      size_t _suppressConstructorDummy;
+    };
+    StaticList<const StenoOrthographyReverseAutoSuffix *, 4> replacements;
+  };
+
+  List<AutoSuffixTest> tests;
+
+  void AddTest(const StenoOrthographyReverseAutoSuffix &reverseAutoSuffix);
+
+  void ProcessReverseAutoSuffix(StenoReverseDictionaryLookup &lookup,
+                                const AutoSuffixTest &test) const;
 
   bool CanAutoSuffixLookup(const StenoStroke *strokes, size_t length) const {
     return !HasValidLookup(strokes, length);
   }
   bool HasValidLookup(const StenoStroke *strokes, size_t length) const;
-
-  static const Pattern *
-  CreateReversePatterns(const StenoOrthography &orthography);
 };
 
 //---------------------------------------------------------------------------

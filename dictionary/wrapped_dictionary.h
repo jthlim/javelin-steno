@@ -22,9 +22,11 @@ public:
   virtual const StenoDictionary *
   GetDictionaryForOutline(const StenoDictionaryLookup &lookup) const;
 
-  inline const StenoDictionary *
-  GetDictionaryForOutline(const StenoStroke *strokes, size_t length) const {
-    return GetDictionaryForOutline(StenoDictionaryLookup(strokes, length));
+  inline const StenoDictionary *GetDictionaryForOutline(
+      const StenoStroke *strokes, size_t length,
+      const StenoDictionary *dictionaryHint = nullptr) const {
+    return GetDictionaryForOutline(
+        StenoDictionaryLookup(strokes, length, dictionaryHint));
   }
 
   virtual void ReverseLookup(StenoReverseDictionaryLookup &lookup) const;

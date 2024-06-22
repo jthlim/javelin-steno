@@ -916,7 +916,7 @@ void Script::RunConsoleCommand(const char *command) {
 }
 
 void Script::RunGetParameterCommand(const char *parameter) {
-  char *command = Str::Join("get_parameter ", parameter, nullptr);
+  char *command = Str::Join("get_parameter ", parameter);
   RunConsoleCommand(command);
   free(command);
 }

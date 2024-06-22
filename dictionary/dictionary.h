@@ -141,9 +141,16 @@ struct StenoDictionaryLookup {
       : strokes(strokes), length(length),
         hash(StenoStroke::Hash(strokes, length)) {}
 
+  StenoDictionaryLookup(const StenoStroke *strokes, size_t length,
+                        const StenoDictionary *dictionaryHint)
+      : strokes(strokes), length(length),
+        hash(StenoStroke::Hash(strokes, length)),
+        dictionaryHint(dictionaryHint) {}
+
   const StenoStroke *strokes;
   size_t length;
   uint32_t hash;
+  const StenoDictionary *dictionaryHint;
 };
 
 //---------------------------------------------------------------------------
@@ -242,9 +249,17 @@ public:
   virtual const StenoDictionary *
   GetDictionaryForOutline(const StenoDictionaryLookup &lookup) const;
 
-  inline const StenoDictionary *
-  GetDictionaryForOutline(const StenoStroke *strokes, size_t length) const {
-    return GetDictionaryForOutline(StenoDictionaryLookup(strokes, length));
+  // GetDictionaryForOutline is used to determine which dictionary, if any,
+  // can provide a definition for the specified outline.
+  //
+  // One use case is to determine if a higher priority dictionary would
+  // override a lookup. To shortcut some processing, dictionaryHint can be
+  // provided that is known to have a definition for the specified outline.
+  inline const StenoDictionary *GetDictionaryForOutline(
+      const StenoStroke *strokes, size_t length,
+      const StenoDictionary *dictionaryHint = nullptr) const {
+    return GetDictionaryForOutline(
+        StenoDictionaryLookup(strokes, length, dictionaryHint));
   }
   inline bool HasOutline(const StenoStroke *strokes, size_t length) const {
     return GetDictionaryForOutline(strokes, length) != nullptr;

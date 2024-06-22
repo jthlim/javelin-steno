@@ -231,7 +231,7 @@ char *StenoCompiledOrthography::AddSuffix(const char *word,
     }
   }
 
-  char *simple = Str::Join(word, suffix, nullptr);
+  char *simple = Str::Join(word, suffix);
 
   int score = WordList::GetWordRank(simple);
   if (score >= 0) {
@@ -258,7 +258,7 @@ char *StenoCompiledOrthography::AddSuffix(const char *word,
     free(entry.text);
   }
 
-  char *text = Str::Join(word, " ^", suffix, nullptr);
+  char *text = Str::Join(word, " ^", suffix);
   for (size_t i = 0; i < data.rules.GetCount(); ++i) {
     const PatternMatch &match = patterns[i].Match(text);
     if (!match.match) {
@@ -271,7 +271,7 @@ char *StenoCompiledOrthography::AddSuffix(const char *word,
   }
 
   free(text);
-  return Str::Join(word, suffix, nullptr);
+  return Str::Join(word, suffix);
 }
 
 void StenoCompiledOrthography::AddCandidates(List<SuffixEntry> &candidates,
@@ -282,7 +282,7 @@ void StenoCompiledOrthography::AddCandidates(List<SuffixEntry> &candidates,
   size_t offset = wordLength > MAXIMUM_PREFIX_LENGTH
                       ? wordLength - MAXIMUM_PREFIX_LENGTH
                       : 0;
-  char *text = Str::Join(word + offset, " ^", suffix, nullptr);
+  char *text = Str::Join(word + offset, " ^", suffix);
 
   PatternQuickReject inputQuickReject(text);
 

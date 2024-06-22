@@ -33,29 +33,27 @@ const uint8_t Utf8Pointer::DECODE_TABLE[] = {
     4, 4, 4, 4, 4, 4, 4, 4, 0, 0, 0, 0, 0, 0, 0, 0 //
 };
 
-size_t Utf8Pointer::Set(uint32_t c) {
+void Utf8Pointer::SetAndAdvance(uint32_t c) __restrict {
   if (c < 0x80) {
     p[0] = c;
-    return 1;
+    ++p;
   } else if (c < 0x800) {
     p[0] = 0xc0 | (c >> 6);
     p[1] = 0x80 | (c & 0x3f);
-    return 2;
+    p += 2;
   } else if (c < 0x10000) {
     p[0] = 0xe0 | (c >> 12);
     p[1] = 0x80 | ((c >> 6) & 0x3f);
     p[2] = 0x80 | (c & 0x3f);
-    return 3;
+    p += 3;
   } else {
     p[0] = 0xf0 | (c >> 18);
     p[1] = 0x80 | ((c >> 12) & 0x3f);
     p[2] = 0x80 | ((c >> 6) & 0x3f);
     p[3] = 0x80 | (c & 0x3f);
-    return 4;
+    p += 4;
   }
 }
-
-void Utf8Pointer::SetAndAdvance(uint32_t c) { p += Set(c); }
 
 uint32_t Utf8Pointer::BytesForCharacterCode(uint32_t c) {
   if (c < 0x80) {
@@ -69,12 +67,45 @@ uint32_t Utf8Pointer::BytesForCharacterCode(uint32_t c) {
   }
 }
 
+#if JAVELIN_CPU_CORTEX_M4
+
+inline uint32_t bfi(uint32_t previous, uint32_t v, int lsb, int width) {
+  __asm("bfi %0, %1, %2, %3" : "+r"(previous) : "r"(v), "i"(lsb), "i"(width) :);
+  return previous;
+}
+
 uint32_t Utf8Pointer::operator*() const {
   switch (DECODE_TABLE[*p]) {
   case 0:
     return 0;
+
   case 1:
     return p[0];
+
+  case 2:
+    return bfi(p[1], p[0], 6, 5);
+
+  case 3:
+    return bfi(bfi(p[2], p[1], 6, 6), p[0], 12, 4);
+
+  case 4:
+    return bfi(bfi(bfi(p[3], p[2], 6, 6), p[1], 12, 6), p[0], 18, 3);
+
+  default:
+    __builtin_unreachable();
+  }
+}
+
+#else
+
+uint32_t Utf8Pointer::operator*() const {
+  switch (DECODE_TABLE[*p]) {
+  case 0:
+    return 0;
+
+  case 1:
+    return p[0];
+
   case 2:
     return (p[0] << 6) ^ p[1] ^ 0x3080;
 
@@ -88,5 +119,6 @@ uint32_t Utf8Pointer::operator*() const {
     __builtin_unreachable();
   }
 }
+#endif
 
 //---------------------------------------------------------------------------

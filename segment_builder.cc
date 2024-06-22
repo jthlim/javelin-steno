@@ -274,7 +274,7 @@ StenoSegment StenoSegmentBuilder::AutoSuffixTest(BuildSegmentContext &context,
 
         if (lookup.IsValid()) {
           const char *text = lookup.GetText();
-          const char *result = Str::Join(text, suffix.text, nullptr);
+          const char *result = Str::Join(text, suffix.text);
           lookup.Destroy();
           return StenoSegment(
               length, SegmentLookupType::AUTO_SUFFIX, states + offset,

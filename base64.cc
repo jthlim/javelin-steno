@@ -43,24 +43,17 @@ size_t Base64::Decode(uint8_t *destination, const uint8_t *source) {
     }
 
     if (++bytes == 4) {
-      switch (dummyBytes) {
-      case 0:
-        *destination++ = value >> 16;
-        *destination++ = value >> 8;
-        *destination++ = value;
-        bytes = 0;
-        value = 0;
-        break;
-
-      case 1:
-        *destination++ = value >> 16;
-        *destination++ = value >> 8;
-        goto exit;
-
-      case 2:
-        *destination++ = value >> 16;
+      *destination++ = value >> 16;
+      if (dummyBytes > 1) {
         goto exit;
       }
+      *destination++ = value >> 8;
+      if (dummyBytes == 1) {
+        goto exit;
+      }
+      *destination++ = value;
+      bytes = 0;
+      value = 0;
     }
   }
 exit:

@@ -192,7 +192,7 @@ void StenoEngine::Lookup_Binding(void *context, const char *commandLine) {
     Console::Printf(",\"definition\":\"");
 
     bool isFirst = true;
-    StenoTokenizer *tokenizer = segmentList.CreateTokenizer();
+    StenoTokenizer *tokenizer = StenoTokenizer::Create(segmentList);
     while (tokenizer->HasMore()) {
       Console::Printf(isFirst ? "%J" : " %J", tokenizer->GetNext().text);
       isFirst = false;
@@ -256,7 +256,7 @@ void StenoEngine::LookupStroke_Binding(void *context, const char *commandLine) {
       Console::Printf("{\"definition\":\"");
 
       bool isFirst = true;
-      StenoTokenizer *tokenizer = segmentList.CreateTokenizer();
+      StenoTokenizer *tokenizer = StenoTokenizer::Create(segmentList);
       while (tokenizer->HasMore()) {
         Console::Printf(isFirst ? "%J" : " %J", tokenizer->GetNext().text);
         isFirst = false;

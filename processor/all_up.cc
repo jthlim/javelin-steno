@@ -44,6 +44,8 @@ void StenoAllUp::PrintInfo() const {
 #include "../unit_test.h"
 #include "fake_processor.h"
 
+#if RUN_TESTS
+
 TEST_BEGIN("AllUp tests") {
   FakeStenoProcessor fakeProcessor;
   StenoAllUp allUp(fakeProcessor);
@@ -70,5 +72,7 @@ TEST_BEGIN("AllUp tests") {
   assert(fakeProcessor.triggers[0] == katKeyState);
 }
 TEST_END
+
+#endif
 
 //---------------------------------------------------------------------------

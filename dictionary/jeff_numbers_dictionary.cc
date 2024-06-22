@@ -57,7 +57,7 @@ static char *ReplaceSuffix(char *original, size_t length, size_t offset,
                            const char *suffix) {
   assert(offset <= length);
   original[length - offset] = '\0';
-  char *updatedResult = Str::Join(original, suffix, nullptr);
+  char *updatedResult = Str::Join(original, suffix);
   free(original);
   return updatedResult;
 }
@@ -95,7 +95,7 @@ StenoJeffNumbersDictionary::LookupInternal(
 
     StenoStroke control = GetDigits(scratch, strokes[i]);
     if (result) {
-      char *updated = Str::Join(result, scratch, nullptr);
+      char *updated = Str::Join(result, scratch);
       free(result);
       result = updated;
     } else {
@@ -145,7 +145,7 @@ StenoJeffNumbersDictionary::LookupInternal(
         free(result);
         return StenoDictionaryLookupResult::CreateInvalid();
       }
-      char *updated = Str::Join(result, " {*($c)}", nullptr);
+      char *updated = Str::Join(result, " {*($c)}");
       free(result);
       result = updated;
     } else if (const StenoStroke KR = StrokeMask::KL | StrokeMask::RL;
@@ -161,7 +161,7 @@ StenoJeffNumbersDictionary::LookupInternal(
         free(result);
         return StenoDictionaryLookupResult::CreateInvalid();
       }
-      char *updated = Str::Join(result, "%", nullptr);
+      char *updated = Str::Join(result, "%");
       free(result);
       result = updated;
     } else if (const StenoStroke DZ = StrokeMask::DR | StrokeMask::ZR;
@@ -172,11 +172,9 @@ StenoJeffNumbersDictionary::LookupInternal(
         free(result);
         return StenoDictionaryLookupResult::CreateInvalid();
       }
-      char *updated =
-          Str::Join(result,
-                    (control & StrokeMask::STAR).IsNotEmpty() ? "000 {*($c)}"
-                                                              : "00 {*($c)}",
-                    nullptr);
+      char *updated = Str::Join(
+          result, (control & StrokeMask::STAR).IsNotEmpty() ? "000 {*($c)}"
+                                                            : "00 {*($c)}");
       free(result);
       result = updated;
     } else if (const StenoStroke BG = StrokeMask::BR | StrokeMask::GR;
@@ -205,7 +203,7 @@ StenoJeffNumbersDictionary::LookupInternal(
         suffix = (control & StrokeMask::STAR).IsNotEmpty() ? " p.m." : " a.m.";
       }
 
-      char *updated = Str::Join(result, minutes, suffix, nullptr);
+      char *updated = Str::Join(result, minutes, suffix);
       free(result);
       result = updated;
       control &=
@@ -276,7 +274,7 @@ StenoJeffNumbersDictionary::LookupInternal(
         }
       }
 
-      char *updated = Str::Join(result, suffix, nullptr);
+      char *updated = Str::Join(result, suffix);
       free(result);
       result = updated;
 
@@ -554,8 +552,8 @@ char *ToWords(char *digits) {
       } else if (digitValues[2] == 0) {
         twoDigitWord = TENS[digitValues[1]];
       } else {
-        twoDigitWord = Str::Join(TENS[digitValues[1]], "-",
-                                 NUMBER_WORDS[digitValues[2]], nullptr);
+        twoDigitWord =
+            Str::Join(TENS[digitValues[1]], "-", NUMBER_WORDS[digitValues[2]]);
         freeTwoDigitWord = true;
       }
     }
@@ -569,15 +567,14 @@ char *ToWords(char *digits) {
     if (digitValues[0] != 0) {
       if (twoDigitValue == 0) {
         updatedResult = Str::Join(NUMBER_WORDS[digitValues[0]], HUNDRED,
-                                  *largeSumWord, separator, result, nullptr);
+                                  *largeSumWord, separator, result);
       } else {
         updatedResult =
             Str::Join(NUMBER_WORDS[digitValues[0]], HUNDRED, " and ",
-                      twoDigitWord, *largeSumWord, separator, result, nullptr);
+                      twoDigitWord, *largeSumWord, separator, result);
       }
     } else {
-      updatedResult =
-          Str::Join(twoDigitWord, *largeSumWord, separator, result, nullptr);
+      updatedResult = Str::Join(twoDigitWord, *largeSumWord, separator, result);
     }
     free(result);
     result = updatedResult;

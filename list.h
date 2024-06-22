@@ -1,6 +1,7 @@
 //---------------------------------------------------------------------------
 
 #pragma once
+#include "iterable.h"
 #include "malloc_allocate.h"
 #include <assert.h>
 #include <stdint.h>
@@ -33,6 +34,7 @@ protected:
   _ListBase() : count(0), buffer(nullptr) {}
 
   void Add(const void *data, size_t elementSize);
+  void AddCount(const void *data, size_t n, size_t elementSize);
 
   size_t count;
   uint8_t *buffer;
@@ -45,17 +47,6 @@ private:
 
 //---------------------------------------------------------------------------
 
-template <typename T> class SkipList {
-public:
-  size_t count;
-  T *data;
-
-  friend T *begin(const SkipList &list) { return list.data; }
-  friend T *end(const SkipList &list) { return list.data + list.count; }
-};
-
-//---------------------------------------------------------------------------
-
 // Optimized for code size. Only usable with PODs.
 template <typename T> class List : public _ListBase {
 public:
@@ -63,6 +54,10 @@ public:
   List(List &&other) : _ListBase((_ListBase &&) other) {}
 
   void Add(const T &v) { _ListBase::Add(&v, sizeof(T)); }
+  void AddCount(const T *v, size_t n) { _ListBase::AddCount(v, n, sizeof(T)); }
+  template <typename D> void AddCount(const IterableData<D> &data) {
+    AddCount(data.data, data.count);
+  }
   void AddIfUnique(const T &v) {
     if (!Contains(v)) {
       Add(v);
@@ -85,8 +80,8 @@ public:
   }
 
   bool Contains(const T &v) const {
-    for (size_t i = 0; i < count; ++i) {
-      if ((*this)[i] == v) {
+    for (const T &x : *this) {
+      if (x == v) {
         return true;
       }
     }
@@ -106,11 +101,29 @@ public:
   T &Back() { return (*this)[count - 1]; }
   const T &Back() const { return (*this)[count - 1]; }
 
-  SkipList<T> Skip(size_t n) {
-    return SkipList<T>{.count = count - n, .data = begin(*this) + n};
+  IterableData<T> Skip(size_t n) {
+    return IterableData<T>{
+        .count = count - n,
+        .data = begin(*this) + n,
+    };
   }
-  SkipList<const T> Skip(size_t n) const {
-    return SkipList<const T>{.count = count - n, .data = begin(*this) + n};
+  IterableData<const T> Skip(size_t n) const {
+    return IterableData<const T>{
+        .count = count - n,
+        .data = begin(*this) + n,
+    };
+  }
+  ReverseIterableData<T> Reverse() {
+    return ReverseIterableData<T>{
+        .count = count,
+        .data = begin(*this),
+    };
+  }
+  ReverseIterableData<const T> Reverse() const {
+    return ReverseIterableData<const T>{
+        .count = count,
+        .data = begin(*this),
+    };
   }
 
   friend const T *begin(const List &list) { return (const T *)list.buffer; }

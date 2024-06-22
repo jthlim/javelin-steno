@@ -54,23 +54,22 @@ public:
 
   virtual bool HasMore() const = 0;
   virtual StenoToken GetNext() = 0;
+
+  static StenoTokenizer *Create(const List<StenoSegment> &segments,
+                                size_t startingOffset = 0);
 };
 
 //---------------------------------------------------------------------------
 
+// StenoSegmentList without automatic destruction of segments.
 class StenoSegmentList : public List<StenoSegment> {
 public:
   StenoSegmentList() = default;
-  StenoSegmentList(StenoSegmentList &&other)
-      : List((List<StenoSegment> &&) other) {}
+  StenoSegmentList(List &&other) : List((List &&) other) {}
   ~StenoSegmentList();
 
-  StenoTokenizer *CreateTokenizer(size_t startingOffset = 0);
-
-  static size_t GetCommonStartingSegmentsCount(StenoSegmentList &a,
-                                               StenoSegmentList &b);
-
-  bool HasManualStateChange() const;
+  static size_t GetCommonStartingSegmentsCount(const List<StenoSegment> &a,
+                                               const List<StenoSegment> &b);
 };
 
 //---------------------------------------------------------------------------

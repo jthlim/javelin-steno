@@ -163,6 +163,9 @@ private:
   void PrintPaperTapeUndo(size_t undoCount) const;
   void PrintSuggestions(const StenoSegmentList &previousSegmentList,
                         const StenoSegmentList &nextSegmentList);
+  void
+  PrintFingerSpellingSuggestions(const StenoSegmentList &previousSegmentList,
+                                 const StenoSegmentList &nextSegmentList);
   void PrintSuggestion(const char *p, size_t arrowPrefixCount,
                        size_t strokeThreshold) const;
   char *PrintSegmentSuggestion(size_t wordCount,

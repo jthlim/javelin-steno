@@ -15,8 +15,8 @@ public:
   uint32_t operator*() const;
   void operator++() { p += DECODE_TABLE[*p]; }
 
-  size_t Set(uint32_t c);
   void SetAndAdvance(uint32_t c);
+  void SetTerminatingNull() { *p = '\0'; }
   static uint32_t BytesForCharacterCode(uint32_t c);
 
   bool operator<(const char *other) const { return p < (const uint8_t *)other; }

@@ -364,7 +364,7 @@ void StenoKeyCodeBuffer::ProcessOrthographicSuffix(const char *text,
   for (size_t i = start; i < count; ++i) {
     utf8p.SetAndAdvance(buffer[i].GetUnicode());
   }
-  utf8p.Set(0);
+  utf8p.SetTerminatingNull();
 
   char *word = orthography->AddSuffix(orthographicScratchPad, suffix);
 
@@ -413,7 +413,7 @@ char *StenoKeyCodeBuffer::ToString(size_t startingOffset) const {
       utf8p.SetAndAdvance(buffer[i].ResolveOutputUnicode());
     }
   }
-  utf8p.Set(0);
+  utf8p.SetTerminatingNull();
 
   return result;
 }
@@ -433,7 +433,7 @@ char *StenoKeyCodeBuffer::ToUnresolvedString() const {
       utf8p.SetAndAdvance(buffer[i].ResolveSelectedUnicode());
     }
   }
-  utf8p.Set(0);
+  utf8p.SetTerminatingNull();
 
   return result;
 }

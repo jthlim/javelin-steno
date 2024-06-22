@@ -81,6 +81,7 @@ void StenoReverseDictionaryLookup::AddResult(
     return;
   }
 
+  // Ignore if it's already in the results.
   if (HasResult(strokes, length)) {
     return;
   }
@@ -90,7 +91,7 @@ void StenoReverseDictionaryLookup::AddResult(
   entry.strokes = end(this->strokes);
   entry.dictionary = dictionary;
 
-  strokes->CopyTo(end(this->strokes), length);
+  strokes->CopyTo(entry.strokes, length);
   this->strokes.AddCount(length);
 }
 
@@ -98,8 +99,8 @@ size_t StenoReverseDictionaryLookup::GetMinimumStrokeCount() const {
   if (results.IsEmpty()) {
     return 0;
   }
-  size_t minimumLength = results.Front().length;
-  for (const StenoReverseDictionaryResult &result : results.Skip(1)) {
+  size_t minimumLength = (size_t)-1;
+  for (const StenoReverseDictionaryResult &result : results) {
     if (result.length < minimumLength) {
       minimumLength = result.length;
     }

@@ -51,6 +51,7 @@ public:
 
     StenoState emptyState;
     emptyState.Reset();
+
     for (size_t i = 0; i < length; ++i) {
       states[i] = emptyState;
     }

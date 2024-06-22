@@ -123,11 +123,13 @@ void StenoReversePrefixDictionary::AddPrefixReverseLookup(
     const Prefix *prefix;
     const char *suffix;
   };
+
   List<Test> tests;
   while (*definition) {
     if (!context.IsValid()) {
       break;
     }
+
     const Prefix *prefix = context.FindPrefixLookup();
     if (prefix) {
       tests.Add(Test{
@@ -139,9 +141,7 @@ void StenoReversePrefixDictionary::AddPrefixReverseLookup(
   }
 
   // Do reverse ordering to find longest matches first.
-  for (size_t i = tests.GetCount(); i > 0; --i) {
-    const Test &test = tests[i - 1];
-
+  for (const Test &test : tests.Reverse()) {
     // In theory, this should use:
     //   result.strokeThreshold - minimumStrokesForPrefix
     // Use "1" as an quick approximation.

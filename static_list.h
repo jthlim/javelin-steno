@@ -12,6 +12,7 @@ public:
   bool IsEmpty() const { return count == 0; }
   bool IsNotEmpty() const { return count != 0; }
   bool IsFull() const { return count == CAPACITY; }
+  bool IsNotFull() const { return count < CAPACITY; }
   bool CanAddCount(size_t n) const { return count + n <= CAPACITY; }
   size_t GetCount() const { return count; }
   void SetCount(size_t value) { count = value; }
@@ -29,7 +30,7 @@ public:
   }
   void AddCount(size_t n) {
     count += n;
-    assert(count >= CAPACITY);
+    assert(count <= CAPACITY);
   }
 
   void PopFront() {

@@ -16,7 +16,12 @@ public:
     return strchr(p, c) != nullptr;
   }
 
-  static char *Join(const char *p, ...);
+  static char *Join(const char *const *p, size_t n);
+
+  template <typename... T> static inline char *Join(T... p) {
+    const char *const data[] = {p...};
+    return Join(data, sizeof...(p));
+  }
 
   // Returns an allocated string.
   static char *Asprintf(const char *p, ...);

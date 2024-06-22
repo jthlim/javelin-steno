@@ -59,6 +59,10 @@ const StenoDictionary *StenoDictionaryList::GetDictionaryForOutline(
       continue;
     }
 
+    if (entry.dictionary == lookup.dictionaryHint) {
+      return entry.dictionary;
+    }
+
     const StenoDictionary *result = entry->GetDictionaryForOutline(lookup);
     if (result) {
       return result;
@@ -129,17 +133,16 @@ void StenoDictionaryList::PrintDictionary(
     PrintDictionaryContext &context) const {
   // Written in reverse order, so that if there are any conflicts,
   // higher priority items will occur later in the JSON.
-  for (size_t i = dictionaries.GetCount(); i != 0;) {
-    --i;
+  for (const StenoDictionaryListEntry &dictionary : dictionaries.Reverse()) {
     if (context.HasName()) {
-      if (!Str::Eq(dictionaries[i]->GetName(), context.GetName())) {
+      if (!Str::Eq(dictionary->GetName(), context.GetName())) {
         continue;
       }
-    } else if (!dictionaries[i].IsEnabled()) {
+    } else if (dictionary.IsEnabled()) {
       continue;
     }
 
-    dictionaries[i]->PrintDictionary(context);
+    dictionary->PrintDictionary(context);
   }
 }
 

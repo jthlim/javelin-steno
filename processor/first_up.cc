@@ -46,6 +46,8 @@ void StenoFirstUp::PrintInfo() const {
 #include "../unit_test.h"
 #include "fake_processor.h"
 
+#if RUN_TESTS
+
 TEST_BEGIN("FirstUp tests") {
   FakeStenoProcessor fakeProcessor;
   StenoFirstUp firstUp(fakeProcessor);
@@ -70,5 +72,7 @@ TEST_BEGIN("FirstUp tests") {
   assert(fakeProcessor.triggers.size() == 2);
 }
 TEST_END
+
+#endif
 
 //---------------------------------------------------------------------------

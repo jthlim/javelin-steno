@@ -151,11 +151,13 @@ void StenoReverseSuffixDictionary::AddSuffixReverseLookup(
     const uint8_t *prefixEnd;
     const Suffix *suffix;
   };
+
   List<Test> tests;
   while (definition > (const uint8_t *)lookup.definition + 1) {
     if (!context.IsValid()) {
       break;
     }
+
     const Suffix *suffix = context.FindSuffixLookup();
     if (suffix) {
       tests.Add(Test{
@@ -166,9 +168,7 @@ void StenoReverseSuffixDictionary::AddSuffixReverseLookup(
     context.Narrow(*--definition);
   }
 
-  for (size_t i = 0; i < tests.GetCount(); ++i) {
-    const Test &test = tests[i];
-
+  for (const Test &test : tests) {
     // Create the without suffix version, add the suffix, and verify it matches.
     const size_t prefixLength =
         test.prefixEnd - (const uint8_t *)lookup.definition;

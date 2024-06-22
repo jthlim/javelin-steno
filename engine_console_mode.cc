@@ -23,14 +23,6 @@ void StenoEngine::InitiateConsoleMode() {
 }
 
 void StenoEngine::ProcessConsoleModeStroke(StenoStroke stroke) {
-  size_t newlineIndex = 0;
-  for (size_t i = 0; i < altTranslationHistory.GetCount(); ++i) {
-    if (IsNewline(altTranslationHistory[i].stroke)) {
-      newlineIndex = i;
-      break;
-    }
-  }
-
   UpdateConsoleModeTextBuffer(previousConversionBuffer);
 
   if (IsNewline(stroke)) {
@@ -87,7 +79,7 @@ void StenoEngine::UpdateConsoleModeTextBuffer(ConversionBuffer &buffer) {
   buffer.segmentBuilder.CreateSegments(context);
   altTranslationHistory.UpdateDefinitionBoundaries(0, segmentList);
 
-  StenoTokenizer *tokenizer = segmentList.CreateTokenizer();
+  StenoTokenizer *tokenizer = StenoTokenizer::Create(segmentList);
   buffer.keyCodeBuffer.Append(tokenizer);
   delete tokenizer;
   if (placeSpaceAfter && !buffer.keyCodeBuffer.state.joinNext &&

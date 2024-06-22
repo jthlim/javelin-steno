@@ -321,7 +321,8 @@ void StenoEngine::CreateSegmentsUsingLongerResult(
 void StenoEngine::ConvertText(ConversionBuffer &buffer,
                               StenoSegmentList &segmentList,
                               size_t startingOffset) {
-  StenoTokenizer *tokenizer = segmentList.CreateTokenizer(startingOffset);
+  StenoTokenizer *tokenizer =
+      StenoTokenizer::Create(segmentList, startingOffset);
   buffer.keyCodeBuffer.Populate(tokenizer);
   if (placeSpaceAfter && !buffer.keyCodeBuffer.state.joinNext &&
       segmentList.IsNotEmpty()) {
@@ -383,13 +384,10 @@ void StenoEngine::PrintPaperTape(
     }
   }
 
-  StenoSegmentList newSegments;
-  for (size_t i = commonIndex; i < nextSegmentList.GetCount(); ++i) {
-    newSegments.Add(nextSegmentList[i]);
-  }
-
+  List<StenoSegment> newSegments;
+  newSegments.AddCount(nextSegmentList.Skip(commonIndex));
   Console::Printf(",\"definition\":\"");
-  StenoTokenizer *tokenizer = newSegments.CreateTokenizer();
+  StenoTokenizer *tokenizer = StenoTokenizer::Create(newSegments);
   bool isFirstToken = true;
   while (tokenizer->HasMore()) {
     if (isFirstToken) {
@@ -401,7 +399,6 @@ void StenoEngine::PrintPaperTape(
   }
   delete tokenizer;
 
-  newSegments.Reset();
   Console::Printf("\"}\n\n");
 }
 
@@ -411,39 +408,13 @@ void StenoEngine::PrintSuggestions(const StenoSegmentList &previousSegmentList,
     return;
   }
 
-  char buffer[256];
-
   // Finger spelling suggestions.
   if (Str::IsFingerSpellingCommand(nextSegmentList.Back().lookup.GetText())) {
     if (state.isManualStateChange || state.joinNext) {
       return;
     }
 
-    // Get the last word out of the buffer and look that up.
-    char *p = buffer + sizeof(buffer) - 1;
-    *p = '\0';
-    const StenoKeyCode *skc =
-        &nextConversionBuffer.keyCodeBuffer
-             .buffer[nextConversionBuffer.keyCodeBuffer.count - 1];
-
-    if (placeSpaceAfter && skc > nextConversionBuffer.keyCodeBuffer.buffer) {
-      skc--;
-    }
-
-    size_t keyCodeCount = 0;
-    while (skc >= nextConversionBuffer.keyCodeBuffer.buffer &&
-           !skc->IsWhitespace() && !skc->IsRawKeyCode()) {
-      const uint32_t unicode = skc->GetUnicode();
-      const size_t length = Utf8Pointer::BytesForCharacterCode(unicode);
-      p -= length;
-      Utf8Pointer(p).Set(unicode);
-      ++keyCodeCount;
-      --skc;
-    }
-
-    if (keyCodeCount > 1) {
-      PrintSuggestion(p, 1, keyCodeCount);
-    }
+    PrintFingerSpellingSuggestions(previousSegmentList, nextSegmentList);
     return;
   }
 
@@ -460,6 +431,37 @@ void StenoEngine::PrintSuggestions(const StenoSegmentList &previousSegmentList,
     }
   }
   free(lastLookup);
+}
+
+void StenoEngine::PrintFingerSpellingSuggestions(
+    const StenoSegmentList &previousSegmentList,
+    const StenoSegmentList &nextSegmentList) {
+  // Get the last word out of the buffer and look that up.
+  char buffer[256];
+  char *p = buffer + sizeof(buffer) - 1;
+  *p = '\0';
+  const StenoKeyCode *skc =
+      &nextConversionBuffer.keyCodeBuffer
+           .buffer[nextConversionBuffer.keyCodeBuffer.count - 1];
+
+  if (placeSpaceAfter && skc > nextConversionBuffer.keyCodeBuffer.buffer) {
+    skc--;
+  }
+
+  size_t keyCodeCount = 0;
+  while (skc >= nextConversionBuffer.keyCodeBuffer.buffer &&
+         !skc->IsWhitespace() && !skc->IsRawKeyCode()) {
+    const uint32_t unicode = skc->GetUnicode();
+    const size_t length = Utf8Pointer::BytesForCharacterCode(unicode);
+    p -= length;
+    Utf8Pointer(p).SetAndAdvance(unicode);
+    ++keyCodeCount;
+    --skc;
+  }
+
+  if (keyCodeCount > 1) {
+    PrintSuggestion(p, 1, keyCodeCount);
+  }
 }
 
 void StenoEngine::PrintSuggestion(const char *p, size_t arrowPrefixCount,
@@ -491,18 +493,26 @@ void StenoEngine::PrintSuggestion(const char *p, size_t arrowPrefixCount,
   Console::Printf("}\n\n");
 }
 
-static bool ShouldShowSuggestions(const StenoSegmentList &segmentList) {
+static bool ShouldShowSuggestions(const List<StenoSegment> &segmentList) {
   // Count the number of suffix "{*!}" entries.
   // There must be more that number of entries before that.
   size_t joinPreviousCount = 0;
-  for (size_t i = segmentList.GetCount(); i != 0;) {
-    --i;
-    if (!Str::Eq(segmentList[i].lookup.GetText(), "{*!}")) {
+  for (const StenoSegment &segment : segmentList.Reverse()) {
+    if (!Str::Eq(segment.lookup.GetText(), "{*!}")) {
       break;
     }
     ++joinPreviousCount;
   }
   return segmentList.GetCount() > 2 * joinPreviousCount;
+}
+
+static bool HasManualStateChange(const List<StenoSegment> &segmentList) {
+  for (const StenoSegment &segment : segmentList) {
+    if (segment.state->isManualStateChange) {
+      return true;
+    }
+  }
+  return false;
 }
 
 char *StenoEngine::PrintSegmentSuggestion(size_t segmentCount,
@@ -543,25 +553,24 @@ char *StenoEngine::PrintSegmentSuggestion(size_t segmentCount,
     return nullptr;
   }
 
-  StenoSegmentList testSegments;
+  List<StenoSegment> testSegments;
+  testSegments.AddCount(segmentList.Skip(startSegmentIndex));
 
   size_t strokeThresholdCount = 0;
-  for (size_t i = startSegmentIndex; i < segmentList.GetCount(); ++i) {
-    testSegments.Add(segmentList[i]);
-    strokeThresholdCount += segmentList[i].strokeLength;
+  for (const StenoSegment &segment : segmentList.Skip(startSegmentIndex)) {
+    strokeThresholdCount += segment.strokeLength;
   }
 
-  StenoTokenizer *tokenizer = testSegments.CreateTokenizer();
+  StenoTokenizer *tokenizer = StenoTokenizer::Create(testSegments);
   previousConversionBuffer.keyCodeBuffer.Populate(tokenizer);
   delete tokenizer;
 
   if (!ShouldShowSuggestions(testSegments)) {
-    testSegments.Reset();
     return Str::Dup("");
   }
 
   char *lookup =
-      testSegments.HasManualStateChange() ||
+      HasManualStateChange(testSegments) ||
               Str::HasPrefix(testSegments.Back().lookup.GetText(), "{:")
           ? previousConversionBuffer.keyCodeBuffer.ToString()
           : previousConversionBuffer.keyCodeBuffer.ToUnresolvedString();
@@ -571,7 +580,6 @@ char *StenoEngine::PrintSegmentSuggestion(size_t segmentCount,
   // Special case {*!} and function calls at the start to avoid suggestions.
   if (Str::Eq(testSegments[0].lookup.GetText(), "{*!}") ||
       Str::HasPrefix(testSegments[0].lookup.GetText(), "{:")) {
-    testSegments.Reset();
     return lookup;
   }
 
@@ -602,8 +610,6 @@ char *StenoEngine::PrintSegmentSuggestion(size_t segmentCount,
       spaceRemoved = prefixLookup;
     }
   }
-
-  testSegments.Reset();
 
   if (!printSuggestion && lastLookup) {
     char *lastLookupSpaceRemoved =

@@ -37,20 +37,22 @@ StenoState::SpaceBuffer StenoState::SpaceBuffer::instance = {
 //---------------------------------------------------------------------------
 
 void StenoState::Reset() {
-  caseMode = StenoCaseMode::NORMAL;
-  overrideCaseMode = StenoCaseMode::NORMAL;
-  lookupType = SegmentLookupType::UNKNOWN;
-  joinNext = false;
-  isGlue = false;
-  isManualStateChange = false;
-  _reserved = 0;
-  spaceOffset = 0;
-  spaceLength = 1;
+  *this = StenoState{
+      .caseMode = StenoCaseMode::NORMAL,
+      .overrideCaseMode = StenoCaseMode::NORMAL,
+      .lookupType = SegmentLookupType::UNKNOWN,
+      .joinNext = false,
+      .isGlue = false,
+      .isManualStateChange = false,
+      .shouldCombineUndo = false,
+      .spaceLength = 1,
+      .spaceOffset = 0,
+  };
 }
 
 void StenoState::SetSpace(const char *space) {
-  size_t length = Str::Length(space);
-  if (length >= 8) {
+  const size_t length = Str::Length(space);
+  if (length >= 16) {
     spaceOffset = 0;
     spaceLength = 0;
     return;
@@ -60,8 +62,8 @@ void StenoState::SetSpace(const char *space) {
   SpaceBuffer &buffer = SpaceBuffer::instance;
   for (size_t i = 0; i + length <= buffer.count; ++i) {
     if (Mem::Eq(buffer.data + i, space, length)) {
-      spaceLength = length;
-      spaceOffset = i;
+      spaceLength = (uint32_t) length;
+      spaceOffset = (uint32_t) i;
       return;
     }
   }
@@ -75,7 +77,7 @@ void StenoState::SetSpace(const char *space) {
   }
 
   spaceOffset = buffer.count;
-  spaceLength = length;
+  spaceLength = (uint32_t) length;
   memcpy(buffer.data + buffer.count, space, length);
   buffer.count += length;
 }
