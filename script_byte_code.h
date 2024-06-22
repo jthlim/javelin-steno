@@ -137,6 +137,10 @@ enum class StenoScriptFunction : uint8_t {
   SET_GPIO_PIN_DUTY_CYCLE,
   CANCEL_ALL_STENO_KEYS,
   CANCEL_STENO_KEY,
+  STOP_SOUND,
+  PLAY_FREQUENCY,
+  PLAY_SEQUENCE,
+  PLAY_WAVEFORM,
 };
 
 enum class StenoScriptOperator : uint8_t {

@@ -4,18 +4,46 @@
 
 //---------------------------------------------------------------------------
 
+#if JAVELIN_CPU_CORTEX_M4
+static uint32_t uqsub8(uint32_t a, uint32_t b) {
+  uint32_t result;
+  asm("uqsub8 %0, %1, %2" : "=r"(result) : "r"(a), "r"(b));
+  return result;
+}
+#endif
+
 inline const uint8_t *WordList::FindWordStart(const uint8_t *p) {
+#if JAVELIN_CPU_CORTEX_M4
+  uint32_t mask;
+  do {
+    p -= 4;
+    const uint32_t v = *(const uint32_t *)p;
+    mask = uqsub8(v, 0xefefefef);
+  } while (mask == 0);
+  return (p + 4) - (__builtin_clz(mask) >> 3);
+#else
   while (!IsValueByte(p[-1])) {
     --p;
   }
   return p;
+#endif
 }
 
 inline const uint8_t *WordList::FindValueByteForward(const uint8_t *p) {
+#if JAVELIN_CPU_CORTEX_M4
+  uint32_t mask;
+  do {
+    const uint32_t v = *(const uint32_t *)p;
+    p += 4;
+    mask = uqsub8(v, 0xefefefef);
+  } while (mask == 0);
+  return (p - 4) + (__builtin_clz(__builtin_bswap32((mask))) >> 3);
+#else
   while (!IsValueByte(*p)) {
     ++p;
   }
   return p;
+#endif
 }
 
 int WordList::GetWordRank(const uint8_t *word) {

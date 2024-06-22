@@ -57,7 +57,7 @@ char *StenoCompiledOrthography::CacheBlock::Lookup(const char *word,
 void StenoCompiledOrthography::CacheBlock::AddEntry(CacheEntry *entry) {
   LockCache();
 
-  size_t entryIndex = index++ & (CACHE_ASSOCIATIVITY - 1);
+  const size_t entryIndex = index++ & (CACHE_ASSOCIATIVITY - 1);
   CacheEntry *oldEntry = entries[entryIndex];
   entries[entryIndex] = entry;
 
@@ -174,7 +174,10 @@ static size_t cacheMisses;
 #endif
 char *StenoCompiledOrthography::AddSuffix(const char *word,
                                           const char *suffix) const {
-  size_t blockIndex = Crc32(word, Str::Length(word)) & (CACHE_BLOCK_COUNT - 1);
+  const uint32_t crc =
+      Crc32(word, Str::Length(word)) ^ Crc32(suffix, Str::Length(suffix));
+
+  const size_t blockIndex = crc & (CACHE_BLOCK_COUNT - 1);
   char *cachedResult = cache[blockIndex].Lookup(word, suffix);
   if (cachedResult) {
 #if RECORD_ORTHOGRAPHY_CACHE_STATS
@@ -233,7 +236,7 @@ char *StenoCompiledOrthography::AddSuffix(const char *word,
 
   char *simple = Str::Join(word, suffix);
 
-  int score = WordList::GetWordRank(simple);
+  const int score = WordList::GetWordRank(simple);
   if (score >= 0) {
     candidates.Add(SuffixEntry(simple, score));
   } else {
@@ -249,13 +252,10 @@ char *StenoCompiledOrthography::AddSuffix(const char *word,
       }
       return (int)(a - b);
     });
-    for (size_t i = 1; i < candidates.GetCount(); ++i) {
-      free(candidates[i].text);
+    for (SuffixEntry &entry : candidates.Skip(1)) {
+      free(entry.text);
     }
-    return candidates[0].text;
-  }
-  for (SuffixEntry &entry : candidates) {
-    free(entry.text);
+    return candidates.Front().text;
   }
 
   char *text = Str::Join(word, " ^", suffix);
@@ -278,10 +278,10 @@ void StenoCompiledOrthography::AddCandidates(List<SuffixEntry> &candidates,
                                              const char *word,
                                              const char *suffix) const {
   const size_t MAXIMUM_PREFIX_LENGTH = 8;
-  size_t wordLength = strlen(word);
-  size_t offset = wordLength > MAXIMUM_PREFIX_LENGTH
-                      ? wordLength - MAXIMUM_PREFIX_LENGTH
-                      : 0;
+  const size_t wordLength = strlen(word);
+  const size_t offset = wordLength > MAXIMUM_PREFIX_LENGTH
+                            ? wordLength - MAXIMUM_PREFIX_LENGTH
+                            : 0;
   char *text = Str::Join(word + offset, " ^", suffix);
 
   PatternQuickReject inputQuickReject(text);
@@ -299,13 +299,13 @@ void StenoCompiledOrthography::AddCandidates(List<SuffixEntry> &candidates,
 
     char *candidate = match.Replace(data.rules[i].replacement);
     if (offset != 0) {
-      char *fullCandidate = (char *)malloc(wordLength + strlen(candidate));
+      char *fullCandidate = (char *)malloc(offset + strlen(candidate) + 1);
       memcpy(fullCandidate, word, offset);
       strcpy(fullCandidate + offset, candidate);
       free(candidate);
       candidate = fullCandidate;
     }
-    int score = WordList::GetWordRank(candidate);
+    const int score = WordList::GetWordRank(candidate);
     if (score < 0) {
       free(candidate);
       continue;

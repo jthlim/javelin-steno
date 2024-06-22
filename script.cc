@@ -9,6 +9,7 @@
 #include "hal/gpio.h"
 #include "hal/power.h"
 #include "hal/rgb.h"
+#include "hal/sound.h"
 #include "hal/usb_status.h"
 #include "key.h"
 #include "keyboard_led_status.h"
@@ -814,6 +815,28 @@ void Script::ExecutionContext::Run(Script &script, size_t offset) {
           script.stenoState &= ~state;
           script.CancelStenoKeys(state);
         }
+        continue;
+      }
+      case SF::STOP_SOUND:
+        Sound::Stop();
+        continue;
+
+      case SF::PLAY_FREQUENCY: {
+        const uint32_t frequency = (uint32_t)script.Pop();
+        Sound::PlayFrequency(frequency);
+        continue;
+      }
+      case SF::PLAY_SEQUENCE: {
+        const intptr_t offset = script.Pop();
+        const uint8_t *data = script.byteCode + offset;
+        Sound::PlaySequence(data);
+        continue;
+      }
+      case SF::PLAY_WAVEFORM: {
+        const uint32_t sampleRate = (uint32_t)script.Pop();
+        const uint32_t length = (uint32_t)script.Pop();
+        const uint8_t *data = (const uint8_t *)script.Pop();
+        Sound::PlayWaveform(data, length, sampleRate);
         continue;
       }
       }
