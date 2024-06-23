@@ -1,5 +1,6 @@
 //---------------------------------------------------------------------------
 
+#include "interval.h"
 #include <stddef.h>
 #include <stdint.h>
 
@@ -14,17 +15,15 @@ public:
   }
 
   static void SetData(const uint8_t *newData, size_t length) {
-    instance.data = newData + 1;
-    instance.dataEnd = newData + length;
+    instance.data.Set(newData + 1, newData + length);
   }
 
   static WordList instance;
 
 private:
-  WordList() : data(DATA + 1), dataEnd(DATA + 1) {}
+  WordList() : data{.min = DATA + 1, .max = DATA + 1} {}
 
-  const uint8_t *data;
-  const uint8_t *dataEnd;
+  Interval<const uint8_t *> data;
 
   static const uint8_t DATA[];
 

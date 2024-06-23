@@ -51,8 +51,8 @@ int WordList::GetWordRank(const uint8_t *word) {
     return -1;
   }
 
-  const uint8_t *left = instance.data;
-  const uint8_t *right = instance.dataEnd;
+  const uint8_t *left = instance.data.min;
+  const uint8_t *right = instance.data.max;
 
   while (left < right) {
 #if JAVELIN_PLATFORM_PICO_SDK || JAVELIN_PLATFORM_NRF5_SDK

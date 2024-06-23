@@ -229,7 +229,7 @@ char *StenoCompiledOrthography::AddSuffix(const char *word,
   List<SuffixEntry> candidates;
 
   for (const StenoOrthographyAlias &alias : data.aliases) {
-    if (Str::Eq(word, alias.text)) {
+    if (Str::Eq(suffix, alias.text)) {
       AddCandidates(candidates, word, alias.alias);
     }
   }
