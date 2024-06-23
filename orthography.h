@@ -102,7 +102,7 @@ private:
   char *AddSuffixInternal(const char *word, const char *suffix) const;
 
   void AddCandidates(List<SuffixEntry> &candidates, const char *word,
-                     const char *suffix) const;
+                     const char *suffix, bool includeFirstNonWordList) const;
 
   static const Pattern *CreatePatterns(const StenoOrthography &orthography);
 };

@@ -1,8 +1,13 @@
 //---------------------------------------------------------------------------
 
 #include "interval.h"
+#include "static_list.h"
 #include <stddef.h>
 #include <stdint.h>
+
+//---------------------------------------------------------------------------
+
+using WordListData = StaticList<uint8_t>;
 
 //---------------------------------------------------------------------------
 
@@ -14,11 +19,15 @@ public:
     return GetWordRank((const uint8_t *)word);
   }
 
-  static void SetData(const uint8_t *newData, size_t length) {
-    instance.data.Set(newData + 1, newData + length);
+  static void SetData(const WordListData &data) {
+    // The firmware builder inserts a dummy score before the first word, so
+    // offset by 1.
+    instance.data.Set(begin(data) + 1, end(data));
   }
 
   static WordList instance;
+
+  static const int MAX_SCORE = 0xf;
 
 private:
   WordList() : data{.min = DATA + 1, .max = DATA + 1} {}

@@ -16,6 +16,9 @@ inline const uint8_t *WordList::FindWordStart(const uint8_t *p) {
 #if JAVELIN_CPU_CORTEX_M4
   uint32_t mask;
   do {
+    // Note: The word list data is preceded by a length value, which is 4 bytes
+    // long. Reading 4 bytes behind will never cause an invalid memory access in
+    // practice.
     p -= 4;
     const uint32_t v = *(const uint32_t *)p;
     mask = uqsub8(v, 0xefefefef);

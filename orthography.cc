@@ -230,54 +230,39 @@ char *StenoCompiledOrthography::AddSuffix(const char *word,
 
   for (const StenoOrthographyAlias &alias : data.aliases) {
     if (Str::Eq(suffix, alias.text)) {
-      AddCandidates(candidates, word, alias.alias);
+      AddCandidates(candidates, word, alias.alias, false);
     }
   }
 
   char *simple = Str::Join(word, suffix);
-
   const int score = WordList::GetWordRank(simple);
   if (score >= 0) {
     candidates.Add(SuffixEntry(simple, score));
-  } else {
-    free(simple);
   }
 
-  AddCandidates(candidates, word, suffix);
+  AddCandidates(candidates, word, suffix, true);
 
-  if (candidates.IsNotEmpty()) {
-    candidates.Sort([](const SuffixEntry *a, const SuffixEntry *b) -> int {
-      if (a->score != b->score) {
-        return a->score - b->score;
-      }
-      return (int)(a - b);
-    });
-    for (SuffixEntry &entry : candidates.Skip(1)) {
-      free(entry.text);
+  if (candidates.IsEmpty()) {
+    return simple;
+  }
+
+  candidates.Sort([](const SuffixEntry *a, const SuffixEntry *b) -> int {
+    if (a->score != b->score) {
+      return a->score - b->score;
     }
-    return candidates.Front().text;
+    return (int)(a - b);
+  });
+  for (SuffixEntry &entry : candidates.Skip(1)) {
+    free(entry.text);
   }
-
-  char *text = Str::Join(word, " ^", suffix);
-  for (size_t i = 0; i < data.rules.GetCount(); ++i) {
-    const PatternMatch &match = patterns[i].Match(text);
-    if (!match.match) {
-      continue;
-    }
-
-    char *candidate = match.Replace(data.rules[i].replacement);
-    free(text);
-    return candidate;
-  }
-
-  free(text);
-  return Str::Join(word, suffix);
+  return candidates.Front().text;
 }
 
-void StenoCompiledOrthography::AddCandidates(List<SuffixEntry> &candidates,
-                                             const char *word,
-                                             const char *suffix) const {
+void StenoCompiledOrthography::AddCandidates(
+    List<SuffixEntry> &candidates, const char *word, const char *suffix,
+    bool includeFirstNonWordList) const {
   const size_t MAXIMUM_PREFIX_LENGTH = 8;
+
   const size_t wordLength = strlen(word);
   const size_t offset = wordLength > MAXIMUM_PREFIX_LENGTH
                             ? wordLength - MAXIMUM_PREFIX_LENGTH
@@ -305,10 +290,16 @@ void StenoCompiledOrthography::AddCandidates(List<SuffixEntry> &candidates,
       free(candidate);
       candidate = fullCandidate;
     }
-    const int score = WordList::GetWordRank(candidate);
+
+    int score = WordList::GetWordRank(candidate);
     if (score < 0) {
-      free(candidate);
-      continue;
+      if (includeFirstNonWordList) {
+        includeFirstNonWordList = false;
+        score = WordList::MAX_SCORE + 1;
+      } else {
+        free(candidate);
+        continue;
+      }
     }
     candidates.Add(SuffixEntry(candidate, score));
   }
