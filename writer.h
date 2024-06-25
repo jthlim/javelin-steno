@@ -60,6 +60,7 @@ public:
   ~BufferWriter() { free(buffer); }
 
   void Write(const char *data, size_t length) final;
+  void WriteByte(char c) final;
 
   void WriteBufferTo(IWriter *writer) const {
     writer->Write(buffer, bufferUsedCount);

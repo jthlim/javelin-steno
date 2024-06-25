@@ -137,8 +137,7 @@ void HidWriter::Write(const char *data, size_t length) {
   const char *end = data + length;
 
   while (utf8 < end) {
-    uint32_t unicode = *utf8;
-    ++utf8;
+    const uint32_t unicode = *utf8++;
 
     const StenoKeyCode stenoKeyCode(unicode, StenoCaseMode::NORMAL);
     context.ProcessStenoKeyCode(stenoKeyCode);

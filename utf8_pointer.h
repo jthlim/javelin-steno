@@ -14,6 +14,11 @@ public:
 
   uint32_t operator*() const;
   void operator++() { p += DECODE_TABLE[*p]; }
+  Utf8Pointer operator++(int) {
+    Utf8Pointer snapshot(p);
+    operator++();
+    return snapshot;
+  }
 
   void SetAndAdvance(uint32_t c);
   void SetTerminatingNull() { *p = '\0'; }

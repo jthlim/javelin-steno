@@ -45,8 +45,7 @@ uint32_t Font::GetStringWidth(const char *p) const {
   uint32_t width = 0;
 
   for (;;) {
-    const uint32_t c = *utf8p;
-    ++utf8p;
+    const uint32_t c = *utf8p++;
 
     if (c == 0) {
       return width;

@@ -10,7 +10,7 @@
 //---------------------------------------------------------------------------
 
 struct StenoSegment;
-class IWriter;
+class BufferWriter;
 class StenoCompiledOrthography;
 class StenoStrokeHistory;
 
@@ -102,7 +102,7 @@ private:
 
   void WriteRetroTransform(const StenoSegmentList &segments,
                            size_t startingSegmentIndex, const char *format,
-                           IWriter &output) const;
+                           BufferWriter &output) const;
 
   bool DirectLookup(BuildSegmentContext &context, size_t &offset);
 

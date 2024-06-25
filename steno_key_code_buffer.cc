@@ -74,13 +74,10 @@ void StenoKeyCodeBuffer::AppendTextNoCaseModeOverride(const char *p, size_t n,
   Utf8Pointer utf8p(p);
 
   while (utf8p < end) {
-    uint32_t c = *utf8p;
-    ++utf8p;
+    uint32_t c = *utf8p++;
 
     if (c == '\\' && utf8p < end) {
-      c = *utf8p;
-      ++utf8p;
-
+      c = *utf8p++;
       switch (c) {
       case '{':
       case '}':

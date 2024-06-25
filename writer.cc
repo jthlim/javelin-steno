@@ -311,6 +311,14 @@ void BufferWriter::Write(const char *data, size_t length) {
   bufferUsedCount += length;
 }
 
+void BufferWriter::WriteByte(char c) {
+  if (bufferUsedCount >= bufferSize) {
+    bufferSize *= 2;
+    buffer = (char *)realloc(buffer, bufferSize);
+  }
+  buffer[bufferUsedCount++] = c;
+}
+
 //---------------------------------------------------------------------------
 
 void BlockWriterBase::WriteByte(char c) {

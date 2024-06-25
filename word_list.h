@@ -13,10 +13,9 @@ using WordListData = StaticList<uint8_t>;
 
 class WordList {
 public:
-  // Returns -1 if not found,
-  static int GetWordRank(const uint8_t *word);
-  static int GetWordRank(const char *word) {
-    return GetWordRank((const uint8_t *)word);
+  static int GetWordRank(const uint8_t *word, int defaultScore = -1);
+  static int GetWordRank(const char *word, int defaultScore = -1) {
+    return GetWordRank((const uint8_t *)word, defaultScore);
   }
 
   static void SetData(const WordListData &data) {

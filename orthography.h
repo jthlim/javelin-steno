@@ -1,7 +1,6 @@
 //---------------------------------------------------------------------------
 
 #pragma once
-#include "list.h"
 #include "malloc_allocate.h"
 #include "pattern.h"
 #include "sized_list.h"
@@ -64,20 +63,22 @@ public:
   const StenoOrthography &data;
 
 private:
-  struct SuffixEntry;
-
   const Pattern *patterns;
 
 #if USE_ORTHOGRAPHY_CACHE
   struct CacheEntry : public JavelinMallocAllocate {
-    CacheEntry(const char *word, const char *suffix, const char *result);
-    ~CacheEntry();
-
-    char *const word;
-    char *const suffix;
-    char *const result;
+    void Set(const char *word, const char *suffix, const char *result);
 
     bool IsEqual(const char *word, const char *suffix) const;
+
+    const char *GetWord() const { return base; }
+    const char *GetSuffix() const { return base + suffixOffset; }
+    const char *GetResult() const { return base + resultOffset; }
+
+  private:
+    char *base;
+    uint8_t suffixOffset;
+    uint8_t resultOffset;
   };
 
   static void LockCache();
@@ -88,21 +89,26 @@ private:
   static const size_t CACHE_BLOCK_COUNT = CACHE_SIZE / CACHE_ASSOCIATIVITY;
 
   struct CacheBlock {
-    uint32_t index;
-    CacheEntry *entries[CACHE_ASSOCIATIVITY];
+    // Stored separately for better data packing.
+    // uint8_t index;
+
+    CacheEntry entries[CACHE_ASSOCIATIVITY];
 
     char *Lookup(const char *word, const char *suffix) const;
-    void AddEntry(CacheEntry *entry);
+    void AddEntry(size_t index, const char *word, const char *suffix,
+                  const char *result);
   };
 
   mutable CacheBlock cache[CACHE_BLOCK_COUNT];
+  mutable uint8_t blockIndexes[CACHE_BLOCK_COUNT];
 
 #endif
 
   char *AddSuffixInternal(const char *word, const char *suffix) const;
 
-  void AddCandidates(List<SuffixEntry> &candidates, const char *word,
-                     const char *suffix, bool includeFirstNonWordList) const;
+  class BestCandidate;
+  void AddCandidates(BestCandidate &bestCandidate, const char *word,
+                     const char *suffix, int defaultScore) const;
 
   static const Pattern *CreatePatterns(const StenoOrthography &orthography);
 };

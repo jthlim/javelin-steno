@@ -49,9 +49,9 @@ inline const uint8_t *WordList::FindValueByteForward(const uint8_t *p) {
 #endif
 }
 
-int WordList::GetWordRank(const uint8_t *word) {
+int WordList::GetWordRank(const uint8_t *word, int defaultRank) {
   if (ContainsEmoji(word)) {
-    return -1;
+    return defaultRank;
   }
 
   const uint8_t *left = instance.data.min;
@@ -80,7 +80,7 @@ int WordList::GetWordRank(const uint8_t *word) {
     }
   }
 
-  return -1;
+  return defaultRank;
 }
 
 bool WordList::ContainsEmoji(const uint8_t *word) {

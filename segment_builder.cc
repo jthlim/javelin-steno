@@ -375,7 +375,7 @@ void StenoSegmentBuilder::HandleRetroTransform(BuildSegmentContext &context,
 void StenoSegmentBuilder::WriteRetroTransform(const StenoSegmentList &segments,
                                               size_t startingSegmentIndex,
                                               const char *format,
-                                              IWriter &output) const {
+                                              BufferWriter &output) const {
 
   size_t strokeCount =
       segments.Back().GetEndStenoState() - segments[startingSegmentIndex].state;
