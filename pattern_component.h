@@ -25,6 +25,8 @@ struct PatternContext {
 class PatternComponent
     : public PoolAllocate<PatternComponent, PATTERN_COMPONENT_BLOCK_SIZE> {
 public:
+  constexpr PatternComponent();
+
   virtual bool Match(const char *p, PatternContext &context) const = 0;
   virtual bool IsEpsilon() const { return false; }
 
@@ -45,6 +47,20 @@ private:
   friend class BranchPatternComponent;
   friend class AlternatePatternComponent;
 };
+
+class SuccessPatternComponent final : public PatternComponent {
+public:
+  virtual bool Match(const char *p, PatternContext &context) const {
+    return true;
+  }
+  virtual void RemoveEpsilon() {}
+  virtual void UpdateQuickReject(PatternQuickReject &quickReject) const {}
+
+  static SuccessPatternComponent instance;
+};
+
+inline constexpr PatternComponent::PatternComponent()
+    : next(&SuccessPatternComponent::instance) {}
 
 class EpsilonPatternComponent : public PatternComponent {
 public:

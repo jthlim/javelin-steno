@@ -241,6 +241,32 @@ char *StenoCompiledOrthography::AddSuffix(const char *word,
   return result;
 }
 
+char *StenoCompiledOrthography::AddSuffixInternal(const char *word,
+                                                  const char *suffix) const {
+#else
+char *StenoCompiledOrthography::AddSuffix(const char *word,
+                                          const char *suffix) const {
+#endif
+  BestCandidate bestCandidate;
+
+  for (const StenoOrthographyAlias &alias : data.aliases) {
+    if (Str::Eq(suffix, alias.text)) {
+      AddCandidates(bestCandidate, word, alias.alias,
+                    BestCandidate::EXCLUDE_WORD_SCORE);
+    }
+  }
+
+  char *simple = Str::Join(word, suffix);
+  const int score =
+      WordList::GetWordRank(simple, BestCandidate::FALLBACK_SCORE);
+  bestCandidate.Add(simple, score);
+
+  AddCandidates(bestCandidate, word, suffix,
+                BestCandidate::NOT_IN_WORD_LIST_SCORE);
+
+  return bestCandidate.GetResult();
+}
+
 char *StenoCompiledOrthography::AddSuffixToPhrase(const char *phrase,
                                                   const char *suffix) const {
   const char *lastWord = phrase;
@@ -267,32 +293,6 @@ char *StenoCompiledOrthography::AddSuffixToPhrase(const char *phrase,
   memcpy(result + prefixLength, suffixedLastWord, suffixedLastWordLength + 1);
   free(suffixedLastWord);
   return result;
-}
-
-char *StenoCompiledOrthography::AddSuffixInternal(const char *word,
-                                                  const char *suffix) const {
-#else
-char *StenoCompiledOrthography::AddSuffix(const char *word,
-                                          const char *suffix) const {
-#endif
-  BestCandidate bestCandidate;
-
-  for (const StenoOrthographyAlias &alias : data.aliases) {
-    if (Str::Eq(suffix, alias.text)) {
-      AddCandidates(bestCandidate, word, alias.alias,
-                    BestCandidate::EXCLUDE_WORD_SCORE);
-    }
-  }
-
-  char *simple = Str::Join(word, suffix);
-  const int score =
-      WordList::GetWordRank(simple, BestCandidate::FALLBACK_SCORE);
-  bestCandidate.Add(simple, score);
-
-  AddCandidates(bestCandidate, word, suffix,
-                BestCandidate::NOT_IN_WORD_LIST_SCORE);
-
-  return bestCandidate.GetResult();
 }
 
 void StenoCompiledOrthography::AddCandidates(BestCandidate &bestCandidate,

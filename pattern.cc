@@ -74,6 +74,9 @@ Pattern::BuildResult Pattern::ParseAlternate(BuildContext &c) {
 
 Pattern::BuildResult Pattern::ParseSequence(BuildContext &c) {
   BuildResult result = ParseQuantifiedAtom(c);
+  if (result.head == nullptr) {
+    return BuildResult(&SuccessPatternComponent::instance);
+  }
 
   for (;;) {
     const BuildResult nextElement = ParseQuantifiedAtom(c);
@@ -407,11 +410,17 @@ TEST_BEGIN("Pattern: Replace tests") {
 }
 TEST_END
 
-TEST_BEGIN("Pattern: Backreference Test") {
+TEST_BEGIN("Pattern: BackReference Test") {
   const Pattern pattern = Pattern::Compile("(.+(.))\\2ed");
   char *t1 = pattern.Match("planned").Replace("\\1");
   assert(strcmp(t1, "plan") == 0);
   free(t1);
+}
+TEST_END
+
+TEST_BEGIN("Pattern: Empty alternate test") {
+  const Pattern pattern = Pattern::Compile("abc|");
+  assert(pattern.Match("").match);
 }
 TEST_END
 

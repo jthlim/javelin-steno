@@ -138,7 +138,7 @@ void StenoDictionaryList::PrintDictionary(
       if (!Str::Eq(dictionary->GetName(), context.GetName())) {
         continue;
       }
-    } else if (dictionary.IsEnabled()) {
+    } else if (!dictionary.IsEnabled()) {
       continue;
     }
 

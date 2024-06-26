@@ -7,6 +7,10 @@
 
 //---------------------------------------------------------------------------
 
+SuccessPatternComponent SuccessPatternComponent::instance;
+
+//---------------------------------------------------------------------------
+
 void *PatternComponent::operator new(size_t size) {
   return PoolAllocate::operator new(size);
 }
@@ -14,23 +18,18 @@ void *PatternComponent::operator new(size_t size) {
 //---------------------------------------------------------------------------
 
 bool PatternComponent::CallNext(const char *p, PatternContext &context) const {
-  return !next || next->Match(p, context);
+  return next->Match(p, context);
 }
 
 void PatternComponent::RemoveEpsilon() {
-  while (next && next->IsEpsilon()) {
+  while (next->IsEpsilon()) {
     next = next->next;
   }
-  if (next) {
-    next->RemoveEpsilon();
-  }
+  next->RemoveEpsilon();
 }
 
 void PatternComponent::UpdateQuickReject(
     PatternQuickReject &quickReject) const {
-  if (!next) {
-    return;
-  }
   next->UpdateQuickReject(quickReject);
 }
 
@@ -49,9 +48,6 @@ bool AnyPatternComponent::Match(const char *p, PatternContext &context) const {
 bool AnyStarPatternComponent::Match(const char *p,
                                     PatternContext &context) const {
   const PatternComponent *localNext = GetNext();
-  if (!localNext) {
-    return true;
-  }
 
   const char *start = p;
   while (*p) {
@@ -73,11 +69,9 @@ bool BackReferencePatternComponent::Match(const char *p,
   const char *comparedEnd = context.captureList[index * 2 + 1];
 
   while (compareP < comparedEnd) {
-    if (*p != *compareP) {
+    if (*p++ != *compareP++) {
       return false;
     }
-    ++p;
-    ++compareP;
   }
 
   return CallNext(p, context);
@@ -101,11 +95,12 @@ bool CharacterSetComponent::Match(const char *p,
 bool CapturePatternComponent::Match(const char *p,
                                     PatternContext &context) const {
 
-  const char *previous = context.captureList[index];
-  context.captureList[index] = p;
+  const char **const capture = &context.captureList[index];
+  const char *previous = *capture;
+  *capture = p;
   const bool result = CallNext(p, context);
   if (!result) {
-    context.captureList[index] = previous;
+    *capture = previous;
   }
   return result;
 }
@@ -121,12 +116,10 @@ void BranchPatternComponent::RemoveEpsilon() {
   }
   processed = true;
 
-  while (branch && branch->IsEpsilon()) {
+  while (branch->IsEpsilon()) {
     branch = branch->next;
   }
-  if (branch) {
-    branch->RemoveEpsilon();
-  }
+  branch->RemoveEpsilon();
 
   PatternComponent::RemoveEpsilon();
 }
