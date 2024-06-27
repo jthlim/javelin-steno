@@ -19,15 +19,18 @@ struct StenoDictionaryListEntry {
 
   StenoDictionary *operator->() const { return dictionary; }
 
+  bool IsEnabled() const { return enabled; }
+
   void Enable() {
     enabled = true;
     combinedMaximumOutlineLength = dictionary->GetMaximumOutlineLength();
   }
+
   void Disable() {
     enabled = false;
     combinedMaximumOutlineLength = 0;
   }
-  bool IsEnabled() const { return enabled; }
+
   void ToggleEnable() {
     if (IsEnabled()) {
       Disable();
@@ -35,10 +38,18 @@ struct StenoDictionaryListEntry {
       Enable();
     }
   }
+
   void UpdateMaximumOutlineLength() {
     if (enabled) {
       combinedMaximumOutlineLength = dictionary->GetMaximumOutlineLength();
     }
+  }
+
+  bool ShouldPrintDictionary(const char *name) const {
+    if (name) {
+      return Str::Eq(dictionary->GetName(), name);
+    }
+    return IsEnabled();
   }
 };
 

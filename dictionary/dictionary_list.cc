@@ -134,15 +134,9 @@ void StenoDictionaryList::PrintDictionary(
   // Written in reverse order, so that if there are any conflicts,
   // higher priority items will occur later in the JSON.
   for (const StenoDictionaryListEntry &dictionary : dictionaries.Reverse()) {
-    if (context.HasName()) {
-      if (!Str::Eq(dictionary->GetName(), context.GetName())) {
-        continue;
-      }
-    } else if (!dictionary.IsEnabled()) {
-      continue;
+    if (dictionary.ShouldPrintDictionary(context.GetName())) {
+      dictionary->PrintDictionary(context);
     }
-
-    dictionary->PrintDictionary(context);
   }
 }
 
