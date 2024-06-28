@@ -40,7 +40,16 @@ Pattern Pattern::Compile(const char *p) {
 
   PatternQuickReject quickReject;
   captureStart->UpdateQuickReject(quickReject);
+
+#if JAVELIN_USE_PATTERN_JIT
+  PatternJitContext jitContext;
+  captureStart->Compile(jitContext);
+  bool (*matchMethod)(const char *, PatternContext &) = jitContext.Build();
+  PatternComponent::ResetPoolAllocator();
+  return Pattern(matchMethod, quickReject);
+#else
   return Pattern(captureStart, quickReject);
+#endif
 }
 
 //---------------------------------------------------------------------------
@@ -169,7 +178,8 @@ Pattern::BuildResult Pattern::ParseAtom(BuildContext &c) {
     }
   }
   case '[': {
-    CharacterSetComponent *component = new CharacterSetComponent();
+    CharacterSetPatternComponent *component =
+        new CharacterSetPatternComponent();
     const char *p = c.p + 1;
     while (*p != ']') {
       assert(*p);
@@ -298,7 +308,11 @@ PatternMatch Pattern::MatchBypassingQuickReject(const char *text) const {
       .start = text,
       .captureList = result.captures,
   };
+#if JAVELIN_USE_PATTERN_JIT
+  result.match = matchMethod(text, context);
+#else
   result.match = root->Match(text, context);
+#endif
   return result;
 }
 
@@ -309,7 +323,11 @@ PatternMatch Pattern::Search(const char *text) const {
       .captureList = result.captures,
   };
   do {
+#if JAVELIN_USE_PATTERN_JIT
+    result.match = matchMethod(text, context);
+#else
     result.match = root->Match(text, context);
+#endif
   } while (!result.match && *text++ != '\0');
   return result;
 }

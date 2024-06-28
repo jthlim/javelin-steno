@@ -77,8 +77,8 @@ bool BackReferencePatternComponent::Match(const char *p,
   return CallNext(p, context);
 }
 
-bool CharacterSetComponent::Match(const char *p,
-                                  PatternContext &context) const {
+bool CharacterSetPatternComponent::Match(const char *p,
+                                         PatternContext &context) const {
   const uint8_t c = *(uint8_t *)p;
   if (c >= 128) {
     return false;

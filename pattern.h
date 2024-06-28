@@ -7,6 +7,7 @@
 //---------------------------------------------------------------------------
 
 class PatternComponent;
+struct PatternContext;
 
 //---------------------------------------------------------------------------
 
@@ -53,10 +54,20 @@ public:
   const PatternQuickReject &GetQuickReject() const { return quickReject; }
 
 private:
+#if JAVELIN_USE_PATTERN_JIT
+  Pattern(bool (*matchMethod)(const char *p, PatternContext &context),
+          PatternQuickReject quickReject)
+      : matchMethod(matchMethod), quickReject(quickReject) {}
+
+  bool (*matchMethod)(const char *p, PatternContext &context);
+
+#else
   Pattern(PatternComponent *root, PatternQuickReject quickReject)
       : root(root), quickReject(quickReject) {}
 
   PatternComponent *root;
+#endif
+
   PatternQuickReject quickReject;
 
   struct BuildContext;
