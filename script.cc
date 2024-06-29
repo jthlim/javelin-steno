@@ -86,7 +86,7 @@ void Script::ExecuteScript(size_t offset, uint32_t scriptTime) {
 }
 
 void Script::ExecuteScriptId(ScriptId scriptId, uint32_t scriptTime) {
-  size_t offset = scriptOffsets[(size_t)scriptId];
+  const size_t offset = scriptOffsets[(size_t)scriptId];
   if (offset != 0) {
     ExecuteScript(offset, scriptTime);
   }
@@ -163,13 +163,18 @@ struct Script::ScriptTimerContext : public JavelinMallocAllocate {
   size_t offset;
 
   void Run(intptr_t id) const {
-    script->stack[0] = id;
-    script->stackTop = &script->stack[1];
+#if DEBUG
+    intptr_t *const startingStackTop = script->stackTop;
+#endif
+    *(script->stackTop++) = id;
 
     ExecutionContext executionContext;
     executionContext.Run(*script, offset);
 
-    script->stackTop = script->stack;
+    --(script->stackTop);
+#if DEBUG
+    assert(script->stackTop == startingStackTop);
+#endif
   }
 };
 

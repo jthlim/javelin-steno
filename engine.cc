@@ -88,17 +88,19 @@ void StenoEngine::ProcessUndo() {
 
 bool StenoEngine::ProcessScanCode(uint32_t scanCodeAndModifiers,
                                   ScanCodeAction action) {
-  const ExternalFlashSentry externalFlashSentry;
-
   switch (mode) {
   case StenoEngineMode::NORMAL:
     return false;
 
-  case StenoEngineMode::ADD_TRANSLATION:
+  case StenoEngineMode::ADD_TRANSLATION: {
+    const ExternalFlashSentry externalFlashSentry;
     return HandleAddTranslationModeScanCode(scanCodeAndModifiers, action);
+  }
 
-  case StenoEngineMode::CONSOLE:
+  case StenoEngineMode::CONSOLE: {
+    const ExternalFlashSentry externalFlashSentry;
     return HandleConsoleModeScanCode(scanCodeAndModifiers, action);
+  }
   }
   return false;
 }
