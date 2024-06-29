@@ -163,18 +163,15 @@ struct Script::ScriptTimerContext : public JavelinMallocAllocate {
   size_t offset;
 
   void Run(intptr_t id) const {
-#if DEBUG
+    // A routine may or may not consume the id, so this code records the
+    // top of stack and reinstates it after.
     intptr_t *const startingStackTop = script->stackTop;
-#endif
     *(script->stackTop++) = id;
 
     ExecutionContext executionContext;
     executionContext.Run(*script, offset);
 
-    --(script->stackTop);
-#if DEBUG
-    assert(script->stackTop == startingStackTop);
-#endif
+    script->stackTop = startingStackTop;
   }
 };
 
