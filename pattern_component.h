@@ -32,13 +32,12 @@ public:
   bool StartComponent(const PatternComponent *component);
   void AddCode(const void *data, size_t length);
   void PatchBranch(size_t offset);
+  void PatchImm16(size_t offset, uint32_t value);
   void Branch(size_t target);
   void BneFail();
 
-  bool (*Build())(const char *, PatternContext &);
+  bool (*Build())(const char *, const char **, const char *);
   size_t GetOffset() const { return count; }
-
-  static const size_t FAIL_OFFSET = 0;
 
 private:
   uint8_t *buffer;

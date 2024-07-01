@@ -44,7 +44,8 @@ Pattern Pattern::Compile(const char *p) {
 #if JAVELIN_USE_PATTERN_JIT
   PatternJitContext jitContext;
   captureStart->Compile(jitContext);
-  bool (*matchMethod)(const char *, PatternContext &) = jitContext.Build();
+  bool (*matchMethod)(const char *, const char **, const char *) =
+      jitContext.Build();
   PatternComponent::ResetPoolAllocator();
   return Pattern(matchMethod, quickReject);
 #else
@@ -309,7 +310,7 @@ PatternMatch Pattern::MatchBypassingQuickReject(const char *text) const {
       .captureList = result.captures,
   };
 #if JAVELIN_USE_PATTERN_JIT
-  result.match = matchMethod(text, context);
+  result.match = matchMethod(text, result.captures, text);
 #else
   result.match = root->Match(text, context);
 #endif
@@ -318,17 +319,20 @@ PatternMatch Pattern::MatchBypassingQuickReject(const char *text) const {
 
 PatternMatch Pattern::Search(const char *text) const {
   PatternMatch result;
+#if JAVELIN_USE_PATTERN_JIT
+  const char *start = text;
+  do {
+    result.match = matchMethod(start, result.captures, text);
+  } while (!result.match && *text++ != '\0');
+#else
   PatternContext context = {
       .start = text,
       .captureList = result.captures,
   };
   do {
-#if JAVELIN_USE_PATTERN_JIT
-    result.match = matchMethod(text, context);
-#else
     result.match = root->Match(text, context);
-#endif
   } while (!result.match && *text++ != '\0');
+#endif
   return result;
 }
 

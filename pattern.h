@@ -55,11 +55,13 @@ public:
 
 private:
 #if JAVELIN_USE_PATTERN_JIT
-  Pattern(bool (*matchMethod)(const char *p, PatternContext &context),
+  Pattern(bool (*matchMethod)(const char *start, const char **captures,
+                              const char *text),
           PatternQuickReject quickReject)
       : matchMethod(matchMethod), quickReject(quickReject) {}
 
-  bool (*matchMethod)(const char *p, PatternContext &context);
+  bool (*matchMethod)(const char *start, const char **captures,
+                      const char *text);
 
 #else
   Pattern(PatternComponent *root, PatternQuickReject quickReject)

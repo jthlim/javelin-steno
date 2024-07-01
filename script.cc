@@ -830,7 +830,8 @@ void Script::ExecutionContext::Run(Script &script, size_t offset) {
       }
       case SF::PLAY_SEQUENCE: {
         const intptr_t offset = script.Pop();
-        const uint8_t *data = script.byteCode + offset;
+        const SoundSequenceData *data =
+            (SoundSequenceData *)(script.byteCode + offset);
         Sound::PlaySequence(data);
         continue;
       }
