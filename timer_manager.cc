@@ -57,30 +57,31 @@ size_t TimerManager::GetTimerIndex(intptr_t timerId) const {
   return INVALID_TIMER_INDEX;
 }
 
-void *TimerManager::StopTimer(intptr_t timerId, uint32_t currentTime) {
-  size_t index = GetTimerIndex(timerId);
+void TimerManager::StopTimer(intptr_t timerId, uint32_t currentTime) {
+  const size_t index = GetTimerIndex(timerId);
   if (index == INVALID_TIMER_INDEX) {
-    return nullptr;
+    return;
   }
-  void *result = timers[index].context;
+
+  timers[index].destroy();
   RemoveTimerIndex(index, currentTime);
-  return result;
 }
 
-void *TimerManager::StartTimer(intptr_t timerId, uint32_t interval,
-                               bool isRepeating,
-                               void (*handler)(intptr_t, void *), void *context,
-                               uint32_t currentTime) {
+void TimerManager::StartTimer(intptr_t timerId, uint32_t interval,
+                              bool isRepeating,
+                              void (*handler)(intptr_t, void *), void *context,
+                              void (*destructor)(void *context),
+                              uint32_t currentTime) {
   size_t index = GetTimerIndex(timerId);
   void *result = nullptr;
   if (index == INVALID_TIMER_INDEX) {
     if (timerCount >= MAXIMUM_TIMER_COUNT) {
-      return nullptr;
+      return;
     }
     index = timerCount++;
     timers[index].id = timerId;
   } else {
-    result = timers[index].context;
+    timers[index].destroy();
   }
 
   timers[index].isRepeating = isRepeating;
@@ -88,10 +89,9 @@ void *TimerManager::StartTimer(intptr_t timerId, uint32_t interval,
   timers[index].interval = interval;
   timers[index].handler = handler;
   timers[index].context = context;
+  timers[index].destructor = destructor;
 
   OnTimersUpdated(currentTime);
-
-  return result;
 }
 
 void TimerManager::ProcessTimers(uint32_t currentTime) {
@@ -105,6 +105,8 @@ void TimerManager::ProcessTimers(uint32_t currentTime) {
       intptr_t id = timer.id;
       void (*handler)(intptr_t, void *) = timer.handler;
       void *context = timer.context;
+      void (*destructor)(void *) =
+          timer.isRepeating ? nullptr : timer.destructor;
 
       // For non-repeating timers, need to remove it immediately so that
       // if the timer script adds it back, it triggers again.
@@ -114,6 +116,10 @@ void TimerManager::ProcessTimers(uint32_t currentTime) {
       }
 
       handler(id, context);
+
+      if (destructor) {
+        (*destructor)(context);
+      }
     }
   }
 }

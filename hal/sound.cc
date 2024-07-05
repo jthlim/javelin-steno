@@ -14,8 +14,8 @@ uint32_t Sound::CalculateFrequencyForNote(int note) {
       16744, 17740, 18795, 19912, 21096, 22351,
   };
 
-  int index = (note + 4) % 12;
-  int octaveShift = (127 - note) / 12;
+  const int index = (note + 4) % 12;
+  const int octaveShift = (127 - note) / 12;
   return FREQUENCIES[index] >> octaveShift;
 }
 

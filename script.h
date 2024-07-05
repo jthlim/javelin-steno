@@ -25,6 +25,7 @@ enum class ScriptId {
   U2F_STATUS_UPDATE,
   U2F_WINK,
   STENO_MODE_UPDATE,
+  BLE_PAIR_COMPLETE,
 
   COUNT,
 };

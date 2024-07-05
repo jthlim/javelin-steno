@@ -173,6 +173,11 @@ struct Script::ScriptTimerContext : public JavelinMallocAllocate {
 
     script->stackTop = startingStackTop;
   }
+
+  static void Destructor(void *context) {
+    ScriptTimerContext *scriptContext = (ScriptTimerContext *)context;
+    delete scriptContext;
+  }
 };
 
 void Script::TimerHandler(intptr_t id, void *context) {
@@ -181,10 +186,7 @@ void Script::TimerHandler(intptr_t id, void *context) {
 }
 
 void Script::StopTimer(intptr_t timerId) {
-  ScriptTimerContext *oldContext =
-      (ScriptTimerContext *)TimerManager::instance.StopTimer(timerId,
-                                                             scriptTime);
-  delete oldContext;
+  TimerManager::instance.StopTimer(timerId, scriptTime);
 }
 
 void Script::StartTimer(intptr_t timerId, uint32_t interval, bool isRepeating,
@@ -193,11 +195,9 @@ void Script::StartTimer(intptr_t timerId, uint32_t interval, bool isRepeating,
   context->script = this;
   context->offset = offset;
 
-  ScriptTimerContext *oldContext =
-      (ScriptTimerContext *)TimerManager::instance.StartTimer(
-          timerId, interval, isRepeating, TimerHandler, context, scriptTime);
-
-  delete oldContext;
+  TimerManager::instance.StartTimer(
+      timerId, interval, isRepeating, TimerHandler, context,
+      &ScriptTimerContext::Destructor, scriptTime);
 }
 
 //---------------------------------------------------------------------------
