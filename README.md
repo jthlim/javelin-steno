@@ -35,6 +35,57 @@ T/T/T/T/SPHRA*EUPB: it it `T/T`: "it it" -> "it it"
 T/PHRAOES/-S/SPHRA*EUPB: `T/PHRAOES/-S`: "it please {^s}" -> "it pleases"
 ```
 
+## `=transform:<format>`
+
+Transforms the string, substituting template values in `format`
+
+- `%0` - `%63`: Template value
+- `%%`: '%' character
+
+Example usage:
+
+```
+  =transform:Hello %0
+```
+
+## `=set_value:<template value>:<n>`
+
+Sets `template value` to the last `n` lookup translations. The value adopted is
+removed from input to indicate what was set.
+
+Example usage:
+
+```
+  =set_value:0:2
+```
+
+This sets template value 0 to the last 2 lookups.
+
+Suggested bindings:
+
+```
+  "SR*FR": "=set_value:0:1",
+  "SR*FR/SR*FR": "=set_value:0:2",
+  "SR*FR/SR*FR/SR*FR": "=set_value:0:3",
+  "SR*FR/SR*FR/SR*FR/SR*FR": "=set_value:0:4",
+  "SR*PB": "=set_value:1:1",
+  "SR*PB/SR*PB": "=set_value:1:2",
+  "SR*PB/SR*PB/SR*PB": "=set_value:1:3",
+  "SR*PB/SR*PB/SR*PB/SR*PB": "=set_value:1:4",
+  "SR*LG": "=set_value:2:1",
+  "SR*LG/SR*LG": "=set_value:2:2",
+  "SR*LG/SR*LG/SR*LG": "=set_value:2:3",
+  "SR*LG/SR*LG/SR*LG/SR*LG": "=set_value:2:4",
+  "SR*TS": "=set_value:3:1",
+  "SR*TS/SR*TS": "=set_value:3:2",
+  "SR*TS/SR*TS/SR*TS": "=set_value:3:3",
+  "SR*TS/SR*TS/SR*TS/SR*TS": "=set_value:3:4",
+  "SR*DZ": "=set_value:4:1",
+  "SR*DZ/SR*DZ": "=set_value:4:2",
+  "SR*DZ/SR*DZ/SR*DZ": "=set_value:4:3",
+  "SR*DZ/SR*DZ/SR*DZ/SR*DZ": "=set_value:4:4",
+```
+
 ## `{:add_translation}`
 
 Interactive prompt to add translation.
@@ -43,6 +94,13 @@ Example usage:
 
 ```
   {:add_translation}
+```
+
+Providing a parameter will cause only the strokes to be prompted. This can be
+useful in combination with =transform and template values.
+
+```
+  =transform:{:add_translation:\n\nHello %0}
 ```
 
 ## `{:console:}`

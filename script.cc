@@ -1,8 +1,12 @@
 //---------------------------------------------------------------------------
 
 #include "script.h"
+
+#include JAVELIN_BOARD_CONFIG
+
 #include "clock.h"
 #include "console.h"
+#include "engine.h"
 #include "hal/ble.h"
 #include "hal/connection.h"
 #include "hal/display.h"
@@ -19,6 +23,7 @@
 #include "split/split_usb_status.h"
 #include "str.h"
 #include "timer_manager.h"
+
 #include <assert.h>
 
 //---------------------------------------------------------------------------
@@ -37,6 +42,32 @@ private:
 
 Script::Script(const uint8_t *byteCode) : byteCode(byteCode) {
   keyState.ClearAll();
+}
+
+void Script::Reset() {
+  ReleaseAll();
+  inPressAllCount = 0;
+  inReleaseAllCount = 0;
+  pressCount = 0;
+  releaseCount = 0;
+  stenoState = 0;
+  stackTop = stack;
+  keyState.ClearAll();
+  Mem::Clear(scriptOffsets);
+  Mem::Clear(globals);
+}
+
+bool Script::IsValid() const {
+  return ((StenoScriptByteCodeData *)byteCode)->IsValid();
+}
+
+void Script::ReleaseAll() {
+  for (const size_t keyIndex : keyState) {
+    Key::Release(uint32_t(keyIndex));
+  }
+  keyState.ClearAll();
+  stenoState = 0;
+  CancelAllStenoKeys();
 }
 
 void Script::Push(intptr_t value) {
@@ -158,11 +189,15 @@ void Script::PrintInfo() const {
 
 //---------------------------------------------------------------------------
 
-struct Script::ScriptTimerContext : public JavelinMallocAllocate {
+struct Script::ScriptTimerContext final : public TimerHandler,
+                                          public JavelinMallocAllocate {
+  ScriptTimerContext(Script *script, size_t offset)
+      : script(script), offset(offset) {}
+
   Script *script;
   size_t offset;
 
-  void Run(intptr_t id) const {
+  void Run(intptr_t id) final {
     // A routine may or may not consume the id, so this code records the
     // top of stack and reinstates it after.
     intptr_t *const startingStackTop = script->stackTop;
@@ -174,30 +209,18 @@ struct Script::ScriptTimerContext : public JavelinMallocAllocate {
     script->stackTop = startingStackTop;
   }
 
-  static void Destructor(void *context) {
-    ScriptTimerContext *scriptContext = (ScriptTimerContext *)context;
-    delete scriptContext;
-  }
+  void OnTimerRemovedFromManager() override final { delete this; }
 };
 
-void Script::TimerHandler(intptr_t id, void *context) {
-  ScriptTimerContext *scriptContext = (ScriptTimerContext *)context;
-  scriptContext->Run(id);
-}
-
-void Script::StopTimer(intptr_t timerId) {
+void Script::StopTimer(int32_t timerId) {
   TimerManager::instance.StopTimer(timerId, scriptTime);
 }
 
-void Script::StartTimer(intptr_t timerId, uint32_t interval, bool isRepeating,
+void Script::StartTimer(int32_t timerId, uint32_t interval, bool isRepeating,
                         size_t offset) {
-  ScriptTimerContext *context = new ScriptTimerContext;
-  context->script = this;
-  context->offset = offset;
-
-  TimerManager::instance.StartTimer(
-      timerId, interval, isRepeating, TimerHandler, context,
-      &ScriptTimerContext::Destructor, scriptTime);
+  ScriptTimerContext *context = new ScriptTimerContext(this, offset);
+  TimerManager::instance.StartTimer(timerId, interval, isRepeating, context,
+                                    scriptTime);
 }
 
 //---------------------------------------------------------------------------
@@ -212,6 +235,24 @@ __attribute__((weak)) bool Script::ProcessScanCode(int scanCode,
   return false;
 }
 __attribute__((weak)) void Script::SendText(const uint8_t *text) {}
+#else
+void Script::SendText(const uint8_t *text) {
+#if JAVELIN_USE_EMBEDDED_STENO
+  StenoEngine::GetInstance().SendText(text);
+#endif
+}
+
+bool Script::ProcessScanCode(int scanCode, ScanCodeAction action) {
+#if JAVELIN_USE_EMBEDDED_STENO
+  const uint32_t modifiers =
+      keyState.GetRange(KeyCode::L_CTRL, KeyCode::L_CTRL + 8)
+      << MODIFIER_BIT_SHIFT;
+  return StenoEngine::GetInstance().ProcessScanCode(scanCode | modifiers,
+                                                    action);
+#else
+  return false;
+#endif
+}
 #endif
 
 //---------------------------------------------------------------------------
@@ -485,12 +526,7 @@ void Script::ExecutionContext::Run(Script &script, size_t offset) {
         continue;
       }
       case SF::RELEASE_ALL:
-        for (const size_t keyIndex : script.keyState) {
-          Key::Release(uint32_t(keyIndex));
-        }
-        script.keyState.ClearAll();
-        script.stenoState = 0;
-        script.CancelAllStenoKeys();
+        script.ReleaseAll();
         continue;
       case SF::IS_BUTTON_PRESSED: {
         const uint32_t buttonIndex = (uint32_t)script.Pop();
@@ -728,17 +764,17 @@ void Script::ExecutionContext::Run(Script &script, size_t offset) {
         const size_t scriptOffset = script.Pop();
         const bool repeating = script.Pop() != 0;
         const uint32_t interval = (uint32_t)script.Pop();
-        const intptr_t id = script.Pop();
+        const int32_t id = script.Pop() & 0x7fffffff;
         script.StartTimer(id, interval, repeating, scriptOffset);
         continue;
       }
       case SF::STOP_TIMER: {
-        const intptr_t id = script.Pop();
+        const int32_t id = script.Pop() & 0x7fffffff;
         script.StopTimer(id);
         continue;
       }
       case SF::IS_TIMER_ACTIVE: {
-        const intptr_t id = script.Pop();
+        const int32_t id = script.Pop() & 0x7fffffff;
         script.Push(TimerManager::instance.HasTimer(id));
         continue;
       }
@@ -842,6 +878,29 @@ void Script::ExecutionContext::Run(Script &script, size_t offset) {
         Sound::PlayWaveform(data, length, sampleRate);
         continue;
       }
+      case SF::CALL_ALL_RELEASE_SCRIPTS:
+        script.inReleaseAllCount++;
+        for (const size_t buttonIndex : script.buttonState) {
+          script.HandleRelease(buttonIndex, script.scriptTime);
+        }
+        script.inReleaseAllCount--;
+        continue;
+      case SF::IS_IN_RELEASE_ALL:
+        script.Push(script.inReleaseAllCount);
+        continue;
+      case SF::GET_PRESS_COUNT:
+        script.Push(script.pressCount);
+        continue;
+      case SF::GET_RELEASE_COUNT:
+        script.Push(script.releaseCount);
+        continue;
+      case SF::IS_STENO_JOIN_NEXT:
+#if JAVELIN_USE_EMBEDDED_STENO
+        script.Push(StenoEngine::GetInstance().IsJoinNext());
+#else
+        script.Push(0);
+#endif
+        continue;
       }
       continue;
     }

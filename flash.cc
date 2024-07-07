@@ -4,6 +4,7 @@
 #include "base64.h"
 #include "console.h"
 #include "hal/external_flash.h"
+#include "script_manager.h"
 #include "unicode.h"
 #include <assert.h>
 #include <string.h>
@@ -73,6 +74,7 @@ bool Flash::RequiresProgram(const void *target, const void *data, size_t size) {
 
 void Flash::BeginWrite(const uint8_t *address) {
   target = address;
+  writeStart = address;
 
   const void *baseAddress =
       (const void *)(intptr_t(address) & -WRITE_DATA_BUFFER_SIZE);
@@ -115,6 +117,10 @@ void Flash::WriteRemaining() {
 
     Flash::WriteBlock(writeAddress, buffer, WRITE_DATA_BUFFER_SIZE);
   }
+
+  if (IsScriptMemory(writeStart, target)) {
+    ScriptManager::GetInstance().Reset();
+  }
   target = nullptr;
 }
 
@@ -125,6 +131,13 @@ __attribute__((noinline)) void Flash::Write(const void *target,
   instance.BeginWrite((const uint8_t *)target);
   instance.AddData((const uint8_t *)data, size);
   instance.WriteRemaining();
+}
+
+//---------------------------------------------------------------------------
+
+__attribute__((weak)) bool Flash::IsScriptMemory(const void *start,
+                                                 const void *end) {
+  return false;
 }
 
 //---------------------------------------------------------------------------

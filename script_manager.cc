@@ -19,9 +19,9 @@ JavelinStaticAllocate<ScriptManager> ScriptManager::container;
 
 ScriptManager::ScriptManager(const uint8_t *scriptByteCode)
     : script(scriptByteCode) {
-  isScriptValid = ((StenoScriptByteCodeData *)scriptByteCode)->IsValid();
+  isScriptValid = script.IsValid();
   if (isScriptValid) {
-    script.ExecuteInitScript(0);
+    script.ExecuteInitScript(Clock::GetMilliseconds());
   }
 }
 
@@ -46,6 +46,7 @@ void ScriptManager::Update(const ButtonState &newButtonState,
     Console::Printf("Release %zu at %u ms, now: %u ms\n\n", buttonIndex,
                     scriptTime, Clock::GetMilliseconds());
 #endif
+    script.IncrementReleaseCount();
     script.HandleRelease(buttonIndex, scriptTime);
   }
 
@@ -54,6 +55,7 @@ void ScriptManager::Update(const ButtonState &newButtonState,
     Console::Printf("Press %zu at %u ms, now: %u ms\n\n", buttonIndex,
                     scriptTime, Clock::GetMilliseconds());
 #endif
+    script.IncrementPressCount();
     script.HandlePress(buttonIndex, scriptTime);
   }
 }
@@ -97,6 +99,18 @@ void ScriptManager::Tick(uint32_t scriptTime) {
     return;
   }
   script.ExecuteTickScript(scriptTime);
+}
+
+//---------------------------------------------------------------------------
+
+void ScriptManager::Reset() {
+  script.Reset();
+  TimerManager::instance.RemoveScriptTimers(Clock::GetMilliseconds());
+
+  isScriptValid = script.IsValid();
+  if (isScriptValid) {
+    script.ExecuteInitScript(Clock::GetMilliseconds());
+  }
 }
 
 //---------------------------------------------------------------------------

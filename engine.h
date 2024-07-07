@@ -4,12 +4,14 @@
 #include "orthography.h"
 #include "processor/processor.h"
 #include "segment_builder.h"
+#include "static_allocate.h"
 #include "steno_key_code_buffer.h"
 #include "steno_key_code_emitter.h"
 #include "stroke_history.h"
 
 //---------------------------------------------------------------------------
 
+class Console;
 class Pattern;
 class StenoDictionary;
 class StenoReverseDictionaryLookup;
@@ -45,6 +47,9 @@ public:
   bool ToggleDictionary(const char *name);
   void ReverseLookup(StenoReverseDictionaryLookup &lookup) const;
 
+  StenoDictionary &GetDictionary() const { return dictionary; }
+  const StenoCompiledOrthography &GetOrthography() const { return orthography; }
+
   bool IsPaperTapeEnabled() const { return paperTapeEnabled; }
   void EnablePaperTape() { paperTapeEnabled = true; }
   void DisablePaperTape() { paperTapeEnabled = false; }
@@ -60,23 +65,25 @@ public:
   bool IsSpaceAfter() const { return placeSpaceAfter; }
   void SetSpaceAfter(bool spaceAfter) { placeSpaceAfter = spaceAfter; }
 
-  static void SetSpacePosition_Binding(void *context, const char *commandLine);
-  static void ListDictionaries_Binding(void *context, const char *commandLine);
-  static void EnableDictionary_Binding(void *context, const char *commandLine);
-  static void DisableDictionary_Binding(void *context, const char *commandLine);
-  static void ToggleDictionary_Binding(void *context, const char *commandLine);
-  static void PrintDictionary_Binding(void *context, const char *commandLine);
-  static void EnablePaperTape_Binding(void *context, const char *commandLine);
-  static void DisablePaperTape_Binding(void *context, const char *commandLine);
-  static void EnableSuggestions_Binding(void *context, const char *commandLine);
-  static void DisableSuggestions_Binding(void *context,
-                                         const char *commandLine);
-  static void EnableTextLog_Binding(void *context, const char *commandLine);
-  static void DisableTextLog_Binding(void *context, const char *commandLine);
-  static void Lookup_Binding(void *context, const char *commandLine);
-  static void LookupStroke_Binding(void *context, const char *commandLine);
-  static void RemoveStroke_Binding(void *context, const char *commandLine);
-  static void ProcessStrokes_Binding(void *context, const char *commandLine);
+  bool IsJoinNext() const { return state.joinNext; }
+
+  void AddConsoleCommands(Console &console);
+
+  static JavelinStaticAllocate<StenoEngine> container;
+  static StenoEngine &GetInstance() { return container.value; }
+
+  const char *GetTemplateValue(size_t index) const {
+    if (index >= TEMPLATE_VALUE_COUNT)
+      return "";
+    return templateValues[index].GetValue();
+  }
+
+  // data needs to be dynamically allocated, and StenoEngine will assume
+  // responsibility for its lifecycle/
+  void SetTemplateValue(size_t index, char *data, size_t updateId);
+  void SetTemplateValue(size_t index, char *data);
+
+  char *ConvertText(StenoSegmentList &segmentList, size_t startingOffset);
 
 private:
   static const StenoStroke UNDO_STROKE;
@@ -96,6 +103,7 @@ private:
 
   StenoState state;
   StenoState altTranslationState;
+  char *addTranslationText = nullptr;
 
   StenoKeyCodeEmitter emitter;
 
@@ -115,12 +123,35 @@ private:
   ConversionBuffer previousConversionBuffer;
   ConversionBuffer nextConversionBuffer;
 
+  static const size_t TEMPLATE_VALUE_COUNT = 64;
+  struct TemplateValue {
+    size_t updateId = 0;
+    char *value;
+
+    const char *GetValue() const { return value ? value : ""; }
+
+    void Set(char *newValue) {
+      free(value);
+      value = newValue;
+    }
+
+    void Set(size_t updateId, char *newValue) {
+      if (updateId <= this->updateId) {
+        free(newValue);
+        return;
+      }
+      this->updateId = updateId;
+      Set(newValue);
+    }
+  };
+  TemplateValue templateValues[TEMPLATE_VALUE_COUNT] = {};
+
   struct UpdateNormalModeTextBufferThreadData;
 
   void ProcessNormalModeUndo();
   void ProcessNormalModeStroke(StenoStroke stroke);
 
-  void InitiateAddTranslationMode();
+  void InitiateAddTranslationMode(const char *text);
   void ProcessAddTranslationModeUndo();
   void ProcessAddTranslationModeStroke(StenoStroke stroke);
   bool HandleAddTranslationModeScanCode(uint32_t scanCodeAndModifiers,
@@ -154,8 +185,8 @@ private:
       size_t conversionLimit, StenoSegmentList &segmentList,
       const ConversionBuffer &longerBuffer,
       const StenoSegmentList &longerSegmentList);
-  void ConvertText(ConversionBuffer &buffer, StenoSegmentList &segmentList,
-                   size_t startingOffset);
+  void ConvertText(StenoKeyCodeBuffer &keyCodeBuffer,
+                   StenoSegmentList &segmentList, size_t startingOffset);
 
   void PrintPaperTape(StenoStroke stroke,
                       const StenoSegmentList &previousSegmentList,
@@ -173,6 +204,28 @@ private:
                                char *lastLookup);
   void PrintTextLog(const StenoKeyCodeBuffer &previousKeyCodeBuffer,
                     const StenoKeyCodeBuffer &nextKeyCodeBuffer) const;
+
+  static void SetSpacePosition_Binding(void *context, const char *commandLine);
+  static void ListDictionaries_Binding(void *context, const char *commandLine);
+  static void EnableDictionary_Binding(void *context, const char *commandLine);
+  static void DisableDictionary_Binding(void *context, const char *commandLine);
+  static void ToggleDictionary_Binding(void *context, const char *commandLine);
+  static void PrintDictionary_Binding(void *context, const char *commandLine);
+  static void EnablePaperTape_Binding(void *context, const char *commandLine);
+  static void DisablePaperTape_Binding(void *context, const char *commandLine);
+  static void EnableSuggestions_Binding(void *context, const char *commandLine);
+  static void DisableSuggestions_Binding(void *context,
+                                         const char *commandLine);
+  static void EnableTextLog_Binding(void *context, const char *commandLine);
+  static void DisableTextLog_Binding(void *context, const char *commandLine);
+  static void Lookup_Binding(void *context, const char *commandLine);
+  static void LookupStroke_Binding(void *context, const char *commandLine);
+  static void RemoveStroke_Binding(void *context, const char *commandLine);
+  static void ProcessStrokes_Binding(void *context, const char *commandLine);
+
+  static void ListTemplateValues_Binding(void *context,
+                                         const char *commandLine);
+  static void SetTemplateValue_Binding(void *context, const char *commandLine);
 
   friend class StenoEngineTester;
 };

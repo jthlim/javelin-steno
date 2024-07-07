@@ -1,7 +1,6 @@
 //---------------------------------------------------------------------------
 
 #pragma once
-#include "dictionary/dictionary.h"
 #include "segment.h"
 #include "state.h"
 #include "stroke.h"
@@ -12,19 +11,20 @@
 struct StenoSegment;
 class BufferWriter;
 class StenoCompiledOrthography;
+class StenoDictionary;
+class StenoEngine;
 class StenoStrokeHistory;
 
 //---------------------------------------------------------------------------
 
 struct BuildSegmentContext {
-  BuildSegmentContext(StenoSegmentList &segmentList,
-                      const StenoDictionary &dictionary,
-                      const StenoCompiledOrthography &orthography);
+  BuildSegmentContext(StenoSegmentList &segmentList, StenoEngine &engine);
 
   StenoSegmentList &segmentList;
+  StenoEngine &engine;
   const StenoDictionary &dictionary;
-  const size_t maximumOutlineLength;
   const StenoCompiledOrthography &orthography;
+  const size_t maximumOutlineLength;
 };
 
 //---------------------------------------------------------------------------
@@ -99,6 +99,12 @@ private:
                                  size_t currentOffset, size_t length);
   void HandleRepeatLastStroke(BuildSegmentContext &context,
                               size_t currentOffset, size_t length);
+  void HandleRetroSetValue(BuildSegmentContext &context, const char *format,
+                           size_t currentOffset, size_t length);
+  void HandleTransform(BuildSegmentContext &context, size_t currentOffset,
+                       size_t length);
+  char *CreateTransformString(BuildSegmentContext &context,
+                              const char *format) const;
 
   void WriteRetroTransform(const StenoSegmentList &segments,
                            size_t startingSegmentIndex, const char *format,

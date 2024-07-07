@@ -3,6 +3,7 @@
 
 #include "segment_builder.h"
 #include "dictionary/dictionary.h"
+#include "engine.h"
 #include "orthography.h"
 #include "segment.h"
 #include "state.h"
@@ -13,12 +14,11 @@
 
 //---------------------------------------------------------------------------
 
-BuildSegmentContext::BuildSegmentContext(
-    StenoSegmentList &segmentList, const StenoDictionary &dictionary,
-    const StenoCompiledOrthography &orthography)
-    : segmentList(segmentList), dictionary(dictionary),
-      maximumOutlineLength(dictionary.GetMaximumOutlineLength()),
-      orthography(orthography) {}
+BuildSegmentContext::BuildSegmentContext(StenoSegmentList &segmentList,
+                                         StenoEngine &engine)
+    : segmentList(segmentList), engine(engine),
+      dictionary(engine.GetDictionary()), orthography(engine.GetOrthography()),
+      maximumOutlineLength(dictionary.GetMaximumOutlineLength()) {}
 
 //---------------------------------------------------------------------------
 
@@ -112,12 +112,39 @@ bool StenoSegmentBuilder::DirectLookup(BuildSegmentContext &context,
         if (context.segmentList.IsEmpty()) {
           context.segmentList.Add(StenoSegment(
               length, SegmentLookupType::DIRECT, states + offset,
-              StenoDictionaryLookupResult::CreateStaticString("")));
+              StenoDictionaryLookupResult::CreateStaticString("{~|}")));
           offset += length;
         } else {
           offset += length;
           HandleRetroTransform(context, format, offset);
         }
+
+        lookup.Destroy();
+        return true;
+      }
+      if (Str::HasPrefix(lookupText, "=set_value:")) {
+        const char *format = lookupText + sizeof("=set_value:") - 1;
+
+        if (context.segmentList.IsEmpty()) {
+          context.segmentList.Add(StenoSegment(
+              length, SegmentLookupType::DIRECT, states + offset,
+              StenoDictionaryLookupResult::CreateStaticString("{~|}")));
+          offset += length;
+        } else {
+          offset += length;
+          HandleRetroSetValue(context, format, offset, length);
+        }
+
+        lookup.Destroy();
+        return true;
+      }
+      if (Str::HasPrefix(lookupText, "=transform:")) {
+        const char *format = lookupText + sizeof("=transform:") - 1;
+        context.segmentList.Add(
+            StenoSegment(length, SegmentLookupType::DIRECT, states + offset,
+                         StenoDictionaryLookupResult::CreateDynamicString(
+                             CreateTransformString(context, format))));
+        offset += length;
 
         lookup.Destroy();
         return true;
@@ -324,9 +351,67 @@ void StenoSegmentBuilder::ReevaluateSegments(BuildSegmentContext &context,
   }
 }
 
+void StenoSegmentBuilder::HandleRetroSetValue(BuildSegmentContext &context,
+                                              const char *format,
+                                              size_t currentOffset,
+                                              size_t length) {
+  // set_value:<value_index>:<count>
+  // =set_value:0:1
+  int index = 0;
+  int count = 0;
+
+  format = Str::ParseInteger(&index, format);
+  if (format && *format == ':') {
+    format = Str::ParseInteger(&count, format + 1);
+    if (format && *format == ':') {
+      ++format;
+    }
+  }
+
+  if (count == 0 || context.segmentList.GetCount() == 0) {
+    context.segmentList.Add(
+        StenoSegment(length, SegmentLookupType::DIRECT, states + currentOffset,
+                     StenoDictionaryLookupResult::CreateStaticString("{~|}")));
+    return;
+  }
+
+  size_t startingSegmentIndex = context.segmentList.GetCount();
+  for (size_t i = 0; i < count && startingSegmentIndex; ++i) {
+    startingSegmentIndex = context.segmentList.GetWordStartingSegmentIndex(
+        startingSegmentIndex - 1);
+  }
+
+  // Use the stroke offset as the updateId id.
+  size_t strokeEnd = currentOffset + length;
+  size_t offsetFromEnd = context.segmentList.GetCount() - strokeEnd;
+  size_t updateId = context.engine.GetStrokeCount() - offsetFromEnd;
+
+  char *result =
+      context.engine.ConvertText(context.segmentList, startingSegmentIndex);
+  context.engine.SetTemplateValue(index, Str::Trim(result), updateId);
+  free(result);
+
+  StenoSegment &segment = context.segmentList[startingSegmentIndex];
+  for (;;) {
+    StenoSegment &back = context.segmentList.Back();
+    if (&segment == &back) {
+      break;
+    }
+    back.lookup.Destroy();
+    context.segmentList.Pop();
+  }
+
+  segment.strokeLength = states + currentOffset - segment.state;
+  segment.lookup.Destroy();
+
+  // Use case carry as a no-op on the buffer processing layer.
+  // This is so that joinNext state is carried through.
+  segment.lookup = StenoDictionaryLookupResult::CreateStaticString("{~|}");
+}
+
 void StenoSegmentBuilder::HandleRetroTransform(BuildSegmentContext &context,
                                                const char *format,
-                                               size_t currentOffset) {
+                                               size_t endOffset) {
   size_t count = 0;
   if (Unicode::IsAsciiDigit(*format)) {
     count = *format++ - '0';
@@ -342,13 +427,8 @@ void StenoSegmentBuilder::HandleRetroTransform(BuildSegmentContext &context,
 
   size_t startingSegmentIndex = context.segmentList.GetCount();
   for (size_t i = 0; i < count && startingSegmentIndex; ++i) {
-    --startingSegmentIndex;
-    while (
-        startingSegmentIndex &&
-        Str::HasPrefix(
-            context.segmentList[startingSegmentIndex].lookup.GetText(), "{^")) {
-      --startingSegmentIndex;
-    }
+    startingSegmentIndex = context.segmentList.GetWordStartingSegmentIndex(
+        startingSegmentIndex - 1);
   }
 
   BufferWriter bufferWriter;
@@ -366,7 +446,7 @@ void StenoSegmentBuilder::HandleRetroTransform(BuildSegmentContext &context,
     context.segmentList.Pop();
   }
 
-  segment.strokeLength = states + currentOffset - segment.state;
+  segment.strokeLength = states + endOffset - segment.state;
   segment.lookup.Destroy();
   segment.lookup = StenoDictionaryLookupResult::CreateDynamicString(
       bufferWriter.AdoptBuffer());
@@ -381,8 +461,7 @@ void StenoSegmentBuilder::WriteRetroTransform(const StenoSegmentList &segments,
       segments.Back().GetEndStenoState() - segments[startingSegmentIndex].state;
 
   for (;;) {
-    char c = *format++;
-    switch (c) {
+    switch (char c = *format++; c) {
     case '\0':
       return;
     case '%':
@@ -444,6 +523,58 @@ void StenoSegmentBuilder::WriteRetroTransform(const StenoSegmentList &segments,
       break;
     default:
       output.WriteByte(c);
+      break;
+    }
+  }
+}
+
+char *StenoSegmentBuilder::CreateTransformString(BuildSegmentContext &context,
+                                                 const char *format) const {
+
+  BufferWriter bufferWriter;
+
+  for (;;) {
+    switch (char c = *format++; c) {
+    case '\0':
+      bufferWriter.WriteByte('\0');
+      return bufferWriter.AdoptBuffer();
+    case '%':
+      c = *format++;
+      switch (c) {
+      case '\0':
+        bufferWriter.WriteByte('\0');
+        return bufferWriter.AdoptBuffer();
+      case '%':
+        bufferWriter.WriteByte('%');
+        break;
+      case '0' ... '9': {
+        size_t index = c - '0';
+        while (Unicode::IsAsciiDigit(*format)) {
+          index = index * 10 + *format++ - '0';
+        }
+        const char *value = context.engine.GetTemplateValue(index);
+        while (*value) {
+          switch (char c = *value++; c) {
+          case ' ':
+          case '\\':
+          case '{':
+            bufferWriter.WriteByte('\\');
+            [[fallthrough]];
+
+          default:
+            bufferWriter.WriteByte(c);
+            break;
+          }
+        }
+      } break;
+      default:
+        bufferWriter.WriteByte('%');
+        bufferWriter.WriteByte(c);
+        break;
+      }
+      break;
+    default:
+      bufferWriter.WriteByte(c);
       break;
     }
   }
@@ -517,6 +648,7 @@ void StenoSegmentBuilder::HandleRepeatLastStroke(BuildSegmentContext &context,
 #include "dictionary/dictionary_list.h"
 #include "dictionary/emily_symbols_dictionary.h"
 #include "dictionary/test_dictionary.h"
+#include "engine.h"
 #include "orthography.h"
 #include "str.h"
 #include "unit_test.h"
@@ -529,7 +661,7 @@ StenoDictionary *const DICTIONARIES[] = {
 };
 
 TEST_BEGIN("StrokeHistory: Test single segment") {
-  const StenoDictionaryList dictionary(DICTIONARIES, 2);
+  StenoDictionaryList dictionary(DICTIONARIES, 2);
 
   StenoSegmentBuilder history;
   // spellchecker: disable
@@ -540,7 +672,8 @@ TEST_BEGIN("StrokeHistory: Test single segment") {
   const StenoCompiledOrthography orthography(
       StenoOrthography::emptyOrthography);
 
-  BuildSegmentContext context(segmentList, dictionary, orthography);
+  StenoEngine engine(dictionary, orthography);
+  BuildSegmentContext context(segmentList, engine);
   history.CreateSegments(context);
 
   assert(segmentList.GetCount() == 1);
@@ -549,7 +682,7 @@ TEST_BEGIN("StrokeHistory: Test single segment") {
 TEST_END
 
 TEST_BEGIN("StrokeHistory: Test two segments, with multi-stroke") {
-  const StenoDictionaryList dictionary(DICTIONARIES, 2);
+  StenoDictionaryList dictionary(DICTIONARIES, 2);
 
   StenoSegmentBuilder history;
   // spellchecker: disable
@@ -562,7 +695,8 @@ TEST_BEGIN("StrokeHistory: Test two segments, with multi-stroke") {
   const StenoCompiledOrthography orthography(
       StenoOrthography::emptyOrthography);
 
-  BuildSegmentContext context(segmentList, dictionary, orthography);
+  StenoEngine engine(dictionary, orthography);
+  BuildSegmentContext context(segmentList, engine);
   history.CreateSegments(context);
 
   assert(segmentList.GetCount() == 2);
@@ -572,7 +706,7 @@ TEST_BEGIN("StrokeHistory: Test two segments, with multi-stroke") {
 TEST_END
 
 TEST_BEGIN("StrokeHistory: Test *? splits strokes") {
-  const StenoDictionaryList dictionary(DICTIONARIES, 2);
+  StenoDictionaryList dictionary(DICTIONARIES, 2);
 
   StenoSegmentBuilder history;
   // spellchecker: disable
@@ -585,7 +719,8 @@ TEST_BEGIN("StrokeHistory: Test *? splits strokes") {
   const StenoCompiledOrthography orthography(
       StenoOrthography::emptyOrthography);
 
-  BuildSegmentContext context(segmentList, dictionary, orthography);
+  StenoEngine engine(dictionary, orthography);
+  BuildSegmentContext context(segmentList, engine);
   history.CreateSegments(context);
 
   assert(segmentList.GetCount() == 3);
@@ -609,7 +744,8 @@ TEST_BEGIN("StrokeHistory: Test * toggles ") {
   const StenoCompiledOrthography orthography(
       StenoOrthography::emptyOrthography);
 
-  BuildSegmentContext context(segmentList, dictionary, orthography);
+  StenoEngine engine(dictionary, orthography);
+  BuildSegmentContext context(segmentList, engine);
   history.CreateSegments(context);
 
   assert(segmentList.GetCount() == 2);

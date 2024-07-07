@@ -50,6 +50,38 @@ StenoSegmentList::GetCommonStartingSegmentsCount(const List<StenoSegment> &a,
   return commonPrefixCount;
 }
 
+size_t StenoSegmentList::GetWordStartingSegmentIndex(size_t endIndex) const {
+  if (!endIndex)
+    return 0;
+
+  size_t index = endIndex;
+  if (Str::IsFingerSpellingCommand((*this)[index].lookup.GetText())) {
+    // In the case of finger spelling, keep consuming until all finger spelling
+    // used.
+    while (index &&
+           Str::IsFingerSpellingCommand((*this)[index - 1].lookup.GetText())) {
+      --index;
+    }
+    return index;
+  }
+
+  while (index) {
+    if (Str::HasPrefix((*this)[index].lookup.GetText(), "{^")) {
+      --index;
+      continue;
+    }
+
+    if (index > 0 &&
+        Str::HasSuffix((*this)[index - 1].lookup.GetText(), "^}")) {
+      --index;
+      continue;
+    }
+
+    break;
+  }
+  return index;
+}
+
 //---------------------------------------------------------------------------
 
 class StenoSegmentListTokenizer final : public StenoTokenizer {
@@ -168,6 +200,7 @@ StenoTokenizer *StenoTokenizer::Create(const List<StenoSegment> &segments,
 
 #include "dictionary/compact_map_dictionary.h"
 #include "dictionary/test_dictionary.h"
+#include "engine.h"
 #include "orthography.h"
 #include "segment_builder.h"
 #include "str.h"
@@ -185,7 +218,8 @@ TEST_BEGIN("Segment tests") {
   StenoSegmentList segmentList;
   StenoCompiledOrthography compiledOrthography(
       StenoOrthography::emptyOrthography);
-  BuildSegmentContext context(segmentList, dictionary, compiledOrthography);
+  StenoEngine engine(dictionary, compiledOrthography);
+  BuildSegmentContext context(segmentList, engine);
 
   history.CreateSegments(context);
 

@@ -141,6 +141,11 @@ enum class StenoScriptFunction : uint8_t {
   PLAY_FREQUENCY,
   PLAY_SEQUENCE,
   PLAY_WAVEFORM,
+  CALL_ALL_RELEASE_SCRIPTS,
+  IS_IN_RELEASE_ALL,
+  GET_PRESS_COUNT,
+  GET_RELEASE_COUNT,
+  IS_STENO_JOIN_NEXT,
 };
 
 enum class StenoScriptOperator : uint8_t {

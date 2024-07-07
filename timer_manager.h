@@ -1,6 +1,7 @@
 //---------------------------------------------------------------------------
 
 #pragma once
+#include "malloc_allocate.h"
 #include <stddef.h>
 #include <stdint.h>
 
@@ -8,6 +9,12 @@
 // Script timers should use values 0 upwards.
 // Negative values are reserved for internal use.
 //---------------------------------------------------------------------------
+
+class TimerHandler {
+public:
+  virtual void Run(intptr_t id) = 0;
+  virtual void OnTimerRemovedFromManager() {}
+};
 
 class TimerManager {
 public:
@@ -18,19 +25,20 @@ public:
   int GetNextTimerTriggerDelay(uint32_t currentTime) const;
   bool HasOnlyRepeatingTimers() const;
   int GetTimersGCD() const;
-  bool HasTimer(intptr_t timerId) const {
+  bool HasTimer(int32_t timerId) const {
     return GetTimerIndex(timerId) != INVALID_TIMER_INDEX;
   }
+
+  void RemoveScriptTimers(uint32_t currentTime);
 
   // A previously matched timerId will have its destructor called.
   // If the timer can't be started, destructor will immediately be called on
   // context.
-  void StartTimer(intptr_t timerId, uint32_t interval, bool isRepeating,
-                  void (*handler)(intptr_t id, void *context), void *context,
-                  void (*destructor)(void *context), uint32_t currentTime);
+  void StartTimer(int32_t timerId, uint32_t interval, bool isRepeating,
+                  TimerHandler *handler, uint32_t currentTime);
 
   // Removes the timer from the list and calls its destructor.
-  void StopTimer(intptr_t timerId, uint32_t currentTime);
+  void StopTimer(int32_t timerId, uint32_t currentTime);
 
   void ProcessTimers(uint32_t currentTime);
 
@@ -43,14 +51,10 @@ private:
 
   struct Timer {
     bool isRepeating;
-    intptr_t id;
+    int32_t id;
     uint32_t lastUpdateTime;
     uint32_t interval;
-    void (*handler)(intptr_t id, void *context);
-    void *context;
-    void (*destructor)(void *context);
-
-    void destroy() { (*destructor)(context); }
+    TimerHandler *handler;
 
     int GetTriggerDelay(uint32_t currentTime) const {
       // Since time steps can be backwards in case of receiving delayed input
@@ -70,7 +74,7 @@ private:
   uint32_t lastUpdateTime;
   Timer timers[MAXIMUM_TIMER_COUNT];
 
-  size_t GetTimerIndex(intptr_t timerId) const;
+  size_t GetTimerIndex(int32_t timerId) const;
   void RemoveTimerIndex(size_t index, uint32_t currentTime);
 
   void OnTimersUpdated(uint32_t currentTime);

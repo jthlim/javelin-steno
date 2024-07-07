@@ -52,10 +52,15 @@ public:
   }
 
   static bool HasPrefix(const char *p, const char *prefix);
+  static bool HasSuffix(const char *p, const char *suffix);
 
   // Returns the end of the write area. buffer must have enough space to store
   // the result;
   static char *WriteJson(char *buffer, const char *text);
+
+  // Removes leading and trailing whitespace.
+  // Always returns a newly allocated string.
+  static char *Trim(const char *data);
 
   // Needs to be invoked with Str::Length<>(...), otherwise the strlen()
   // version is used instead.

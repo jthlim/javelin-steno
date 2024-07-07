@@ -254,7 +254,7 @@ void StenoKeyCodeBuffer::ProcessCommand(const char *p, size_t length) {
 
   // Carry casing.
   if (p[1] == '~' && p[2] == '|') {
-    p += 2;
+    p += 3;
     AppendText(p, end - p, state.caseMode);
     return;
   }

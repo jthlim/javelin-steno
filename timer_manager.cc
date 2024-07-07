@@ -48,7 +48,7 @@ void TimerManager::OnTimersUpdated(uint32_t currentTime) {
 
 __attribute__((weak)) void TimerManager::UpdateTickDelay(int ms) {}
 
-size_t TimerManager::GetTimerIndex(intptr_t timerId) const {
+size_t TimerManager::GetTimerIndex(int32_t timerId) const {
   for (size_t i = 0; i < timerCount; ++i) {
     if (timers[i].id == timerId) {
       return i;
@@ -57,23 +57,20 @@ size_t TimerManager::GetTimerIndex(intptr_t timerId) const {
   return INVALID_TIMER_INDEX;
 }
 
-void TimerManager::StopTimer(intptr_t timerId, uint32_t currentTime) {
+void TimerManager::StopTimer(int32_t timerId, uint32_t currentTime) {
   const size_t index = GetTimerIndex(timerId);
   if (index == INVALID_TIMER_INDEX) {
     return;
   }
 
-  timers[index].destroy();
+  timers[index].handler->OnTimerRemovedFromManager();
   RemoveTimerIndex(index, currentTime);
 }
 
-void TimerManager::StartTimer(intptr_t timerId, uint32_t interval,
-                              bool isRepeating,
-                              void (*handler)(intptr_t, void *), void *context,
-                              void (*destructor)(void *context),
+void TimerManager::StartTimer(int32_t timerId, uint32_t interval,
+                              bool isRepeating, TimerHandler *handler,
                               uint32_t currentTime) {
   size_t index = GetTimerIndex(timerId);
-  void *result = nullptr;
   if (index == INVALID_TIMER_INDEX) {
     if (timerCount >= MAXIMUM_TIMER_COUNT) {
       return;
@@ -81,15 +78,13 @@ void TimerManager::StartTimer(intptr_t timerId, uint32_t interval,
     index = timerCount++;
     timers[index].id = timerId;
   } else {
-    timers[index].destroy();
+    timers[index].handler->OnTimerRemovedFromManager();
   }
 
   timers[index].isRepeating = isRepeating;
   timers[index].lastUpdateTime = currentTime;
   timers[index].interval = interval;
   timers[index].handler = handler;
-  timers[index].context = context;
-  timers[index].destructor = destructor;
 
   OnTimersUpdated(currentTime);
 }
@@ -103,25 +98,37 @@ void TimerManager::ProcessTimers(uint32_t currentTime) {
       timer.lastUpdateTime = currentTime;
 
       intptr_t id = timer.id;
-      void (*handler)(intptr_t, void *) = timer.handler;
-      void *context = timer.context;
-      void (*destructor)(void *) =
-          timer.isRepeating ? nullptr : timer.destructor;
+      TimerHandler *handler = timer.handler;
+      bool isRepeating = timer.isRepeating;
 
       // For non-repeating timers, need to remove it immediately so that
       // if the timer script adds it back, it triggers again.
-      if (!timer.isRepeating) {
+      if (!isRepeating) {
         RemoveTimerIndex(i, currentTime);
         --i;
       }
 
-      handler(id, context);
+      handler->Run(id);
 
-      if (destructor) {
-        (*destructor)(context);
+      if (!isRepeating) {
+        handler->OnTimerRemovedFromManager();
       }
     }
   }
+}
+
+void TimerManager::RemoveScriptTimers(uint32_t currentTime) {
+  for (size_t i = timerCount; i != 0;) {
+    --i;
+    if (timers[i].id >= 0) {
+      timers[i].handler->OnTimerRemovedFromManager();
+      --timerCount;
+      if (i != timerCount) {
+        timers[i] = timers[timerCount];
+      }
+    }
+  }
+  OnTimersUpdated(currentTime);
 }
 
 void TimerManager::RemoveTimerIndex(size_t index, uint32_t currentTime) {

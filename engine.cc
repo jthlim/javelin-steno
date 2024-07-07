@@ -19,6 +19,7 @@
 
 //---------------------------------------------------------------------------
 
+JavelinStaticAllocate<StenoEngine> StenoEngine::container;
 const StenoStroke StenoEngine::UNDO_STROKE(StrokeMask::STAR);
 
 //---------------------------------------------------------------------------
@@ -185,6 +186,30 @@ void StenoEngine::SendText(const uint8_t *p) {
                   nextConversionBuffer.keyCodeBuffer);
 }
 
+void StenoEngine::SetTemplateValue(size_t index, char *data, size_t updateId) {
+  if (index >= TEMPLATE_VALUE_COUNT) {
+    free(data);
+    return;
+  }
+  templateValues[index].Set(updateId, data);
+}
+
+void StenoEngine::SetTemplateValue(size_t index, char *data) {
+  if (index >= TEMPLATE_VALUE_COUNT) {
+    free(data);
+    return;
+  }
+  templateValues[index].Set(data);
+}
+
+char *StenoEngine::ConvertText(StenoSegmentList &segmentList,
+                               size_t startingOffset) {
+  StenoKeyCodeBuffer &keyCodeBuffer = nextConversionBuffer.keyCodeBuffer;
+  keyCodeBuffer.Reset();
+  ConvertText(keyCodeBuffer, segmentList, startingOffset);
+  return keyCodeBuffer.ToString();
+}
+
 __attribute__((weak)) void StenoEngine::Pump() {}
 
 //---------------------------------------------------------------------------
@@ -201,6 +226,7 @@ __attribute__((weak)) void StenoEngine::Pump() {}
 #include "dictionary/jeff_show_stroke_dictionary.h"
 #include "dictionary/test_dictionary.h"
 #include "dictionary/unicode_dictionary.h"
+#include "dictionary/user_dictionary.h"
 
 extern StenoOrthography testOrthography;
 
@@ -218,6 +244,7 @@ StenoDictionary *const DICTIONARIES[] = {
 class StenoEngineTester {
 public:
   static void TestSymbols(StenoEngine &engine);
+  static void TestTransform(StenoEngine &engine);
   static void TestEngine(StenoEngine &engine);
   static void TestAddTranslation(StenoEngine &engine);
   static void TestScancodeAddTranslation(StenoEngine &engine);
@@ -258,6 +285,39 @@ TEST_BEGIN("Engine: Test symbols") {
       StenoOrthography::emptyOrthography);
   StenoEngine engine(dictionary, orthography);
   StenoEngineTester::TestSymbols(engine);
+}
+TEST_END
+
+void StenoEngineTester::TestTransform(StenoEngine &engine) {
+  engine.SetTemplateValue(0, Str::Dup("c"));
+  engine.ProcessStroke(StenoStroke("S"));
+  engine.ProcessStroke(StenoStroke("T"));
+  engine.ProcessStroke(StenoStroke("K"));
+  char *text = engine.nextConversionBuffer.keyCodeBuffer.ToString();
+  assert(Str::Eq(engine.GetTemplateValue(0), "acb"));
+  assert(Str::Eq(text, "xacb"));
+  free(text);
+}
+
+TEST_BEGIN("Engine: Test symbols") {
+  __attribute__((
+      aligned(4096))) static uint8_t userDictionaryBuffer[512 * 1024];
+
+  const StenoUserDictionaryData layout(userDictionaryBuffer,
+                                       sizeof(userDictionaryBuffer));
+  StenoUserDictionary userDictionary(layout);
+
+  const StenoStroke stroke("S");
+  userDictionary.Add(&stroke, 1, "=transform:a%0b");
+  const StenoStroke setValueStroke("T");
+  userDictionary.Add(&setValueStroke, 1, "=set_value:0:1:a%0b");
+  const StenoStroke useValueStroke("K");
+  userDictionary.Add(&useValueStroke, 1, "=transform:x%0");
+
+  const StenoCompiledOrthography orthography(
+      StenoOrthography::emptyOrthography);
+  StenoEngine engine(userDictionary, orthography);
+  StenoEngineTester::TestTransform(engine);
 }
 TEST_END
 

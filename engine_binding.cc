@@ -1,6 +1,7 @@
 //---------------------------------------------------------------------------
 
 #include "console.h"
+#include "dictionary/dictionary_list.h"
 #include "engine.h"
 #include "hal/external_flash.h"
 #include "stroke_list_parser.h"
@@ -13,7 +14,7 @@ void StenoEngine::CreateSegments(StenoSegmentList &segmentList,
   segmentBuilder.Reset();
   segmentBuilder.Add(strokes, length);
 
-  BuildSegmentContext context(segmentList, dictionary, orthography);
+  BuildSegmentContext context(segmentList, *this);
   segmentBuilder.CreateSegments(context);
 }
 
@@ -322,6 +323,97 @@ void StenoEngine::ProcessStrokes_Binding(void *context,
     engine->ProcessStroke(parser.strokes[i]);
   }
   ConsoleWriter::Pop();
+}
+
+void StenoEngine::ListTemplateValues_Binding(void *context,
+                                             const char *commandLine) {
+  StenoEngine *engine = (StenoEngine *)context;
+
+  Console::Printf("[");
+  for (size_t i = 0; i < TEMPLATE_VALUE_COUNT; ++i) {
+    Console::Printf(i == 0 ? "\n  \"%J\"" : ",\n  \"%J\"",
+                    engine->templateValues[i].GetValue());
+  }
+  Console::Printf("\n]\n\n");
+}
+
+void StenoEngine::SetTemplateValue_Binding(void *context,
+                                           const char *commandLine) {
+  const char *p = strchr(commandLine, ' ');
+  if (!p) {
+    Console::Printf("ERR No parameters specified\n\n");
+    return;
+  }
+  int index = 0;
+  ++p;
+  p = Str::ParseInteger(&index, p, false);
+  if (!p) {
+    Console::Printf("ERR index parameter missing\n\n");
+    return;
+  }
+  if (index >= TEMPLATE_VALUE_COUNT) {
+    Console::Printf("ERR index parameter out of range\n\n");
+    return;
+  }
+  if (*p != ' ') {
+    Console::Printf("ERR value missing\n\n");
+    return;
+  }
+  ++p;
+
+  StenoEngine *engine = (StenoEngine *)context;
+  engine->SetTemplateValue(index, Str::Trim(p));
+  Console::SendOk();
+}
+
+//---------------------------------------------------------------------------
+
+void StenoEngine::AddConsoleCommands(Console &console) {
+  console.RegisterCommand("set_space_position",
+                          "Controls space position before or after",
+                          StenoEngine::SetSpacePosition_Binding, this);
+  console.RegisterCommand("list_dictionaries", "Lists dictionaries",
+                          StenoEngine::ListDictionaries_Binding, this);
+  console.RegisterCommand("enable_dictionary", "Enables a dictionary",
+                          StenoEngine::EnableDictionary_Binding, this);
+  console.RegisterCommand("disable_dictionary", "Disable a dictionary",
+                          StenoEngine::DisableDictionary_Binding, this);
+  console.RegisterCommand("toggle_dictionary", "Toggle a dictionary",
+                          StenoEngine::ToggleDictionary_Binding, this);
+  console.RegisterCommand("print_dictionary",
+                          "Prints all dictionaries in JSON format",
+                          StenoEngine::PrintDictionary_Binding, this);
+  console.RegisterCommand(
+      "enable_dictionary_status", "Enable sending dictionary status updates",
+      StenoDictionaryList::EnableDictionaryStatus_Binding, nullptr);
+  console.RegisterCommand(
+      "disable_dictionary_status", "Disable sending dictionary status updates",
+      StenoDictionaryList::DisableDictionaryStatus_Binding, nullptr);
+  console.RegisterCommand("enable_paper_tape", "Enables paper tape output",
+                          StenoEngine::EnablePaperTape_Binding, this);
+  console.RegisterCommand("disable_paper_tape", "Disables paper tape output",
+                          StenoEngine::DisablePaperTape_Binding, this);
+  console.RegisterCommand("enable_suggestions", "Enables suggestions output",
+                          StenoEngine::EnableSuggestions_Binding, this);
+  console.RegisterCommand("disable_suggestions", "Disables suggestions output",
+                          StenoEngine::DisableSuggestions_Binding, this);
+  console.RegisterCommand("enable_text_log", "Enables text log output",
+                          StenoEngine::EnableTextLog_Binding, this);
+  console.RegisterCommand("disable_text_log", "Disables text log output",
+                          StenoEngine::DisableTextLog_Binding, this);
+  console.RegisterCommand("lookup", "Looks up a word",
+                          StenoEngine::Lookup_Binding, this);
+  console.RegisterCommand("lookup_stroke", "Looks up a stroke",
+                          StenoEngine::LookupStroke_Binding, this);
+  console.RegisterCommand("remove_stroke",
+                          "Removes a stroke from specified dictionary",
+                          StenoEngine::RemoveStroke_Binding, this);
+  console.RegisterCommand("process_strokes", "Processes a stroke list",
+                          StenoEngine::ProcessStrokes_Binding, this);
+  console.RegisterCommand("list_template_values", "Lists all template values",
+                          StenoEngine::ListTemplateValues_Binding, this);
+  console.RegisterCommand("set_template_value", "Sets template value",
+                          StenoEngine::SetTemplateValue_Binding, this);
 }
 
 //---------------------------------------------------------------------------

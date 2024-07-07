@@ -443,8 +443,6 @@ void StenoUserDictionary::WriteReverseEntryIndex(size_t entryIndex,
 
 void StenoUserDictionary::PrintDictionary(
     PrintDictionaryContext &context) const {
-  char *buffer = (char *)malloc(2048);
-
   for (size_t i = 0; i < activeDescriptor->data.hashTableSize; ++i) {
     const uint32_t offset = activeDescriptor->data.hashTable[i];
     switch (offset) {
@@ -460,8 +458,6 @@ void StenoUserDictionary::PrintDictionary(
       context.Print(entry->strokes, entry->strokeLength, entry->GetText());
     }
   }
-
-  free(buffer);
 }
 
 void StenoUserDictionary::PrintJsonDictionary() const {

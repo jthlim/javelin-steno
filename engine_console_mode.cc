@@ -71,7 +71,7 @@ void StenoEngine::UpdateConsoleModeTextBuffer(ConversionBuffer &buffer) {
   buffer.keyCodeBuffer.Reset();
 
   StenoSegmentList segmentList;
-  BuildSegmentContext context(segmentList, dictionary, orthography);
+  BuildSegmentContext context(segmentList, *this);
 
   buffer.segmentBuilder.TransferFrom(altTranslationHistory,
                                      altTranslationHistory.GetCount(),

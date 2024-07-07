@@ -70,6 +70,12 @@ public:
 
   static size_t GetCommonStartingSegmentsCount(const List<StenoSegment> &a,
                                                const List<StenoSegment> &b);
+
+  // Returns the starting index of a word.
+  //
+  // A word is defined as either finger spelling start or
+  // a cluster of prefixes + lookup + suffixes.
+  size_t GetWordStartingSegmentIndex(size_t endIndex) const;
 };
 
 //---------------------------------------------------------------------------

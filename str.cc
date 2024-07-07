@@ -2,6 +2,7 @@
 
 #include "str.h"
 #include "hint.h"
+#include "unicode.h"
 #include "writer.h"
 #include <stdarg.h>
 #include <stdio.h>
@@ -127,6 +128,32 @@ bool Str::HasPrefix(const char *p, const char *prefix) {
   }
 }
 
+bool Str::HasSuffix(const char *p, const char *suffix) {
+  size_t length = Length(p);
+  size_t suffixLength = Length(suffix);
+  if (suffixLength > length) {
+    return false;
+  }
+
+  return Str::Eq(p + length - suffixLength, suffix);
+}
+
+char *Str::Trim(const char *data) {
+  const char *start = data;
+  while (*start && Unicode::IsWhitespace(*start)) {
+    ++start;
+  }
+  const char *p = start;
+  const char *end = start;
+  while (*p) {
+    if (!Unicode::IsWhitespace(*p++)) {
+      end = p;
+    }
+  }
+
+  return Str::DupN(start, end - start);
+}
+
 char *Str::WriteJson(char *p, const char *text) {
   while (*text) {
     int c = *text++;
@@ -185,5 +212,34 @@ const char *Str::ParseInteger(int *result, const char *p, bool allowNegative) {
 
   return p;
 }
+
+//---------------------------------------------------------------------------
+
+#include "unit_test.h"
+
+TEST_BEGIN("Str::Suffix returns correct results") {
+  assert(Str::HasSuffix("abcd", "cd"));
+  assert(Str::HasSuffix("abcd", "de") == false);
+  assert(Str::HasSuffix("abcd", "") == true);
+  assert(Str::HasSuffix("abcd", "abcde") == false);
+}
+TEST_END
+
+static bool TestTrim(const char *input, const char *expected) {
+  char *output = Str::Trim(input);
+  bool result = Str::Eq(output, expected);
+  free(output);
+  return result;
+}
+
+TEST_BEGIN("Str::Trim returns correct results") {
+  assert(TestTrim("", ""));
+  assert(TestTrim("  a", "a"));
+  assert(TestTrim("  ab", "ab"));
+  assert(TestTrim("ab ", "ab"));
+  assert(TestTrim("ab  ", "ab"));
+  assert(TestTrim("  ab  ", "ab"));
+}
+TEST_END
 
 //---------------------------------------------------------------------------

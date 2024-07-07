@@ -45,6 +45,11 @@ public:
 
   void ExecuteScriptId(ScriptId scriptId, uint32_t scriptTime);
 
+  // These are done outside of Handle() as handle will be affected by
+  // PressAll/CallAllReleaseScripts.
+  void IncrementPressCount() { ++pressCount; }
+  void IncrementReleaseCount() { ++releaseCount; }
+
   void HandlePress(size_t keyIndex, uint32_t scriptTime) {
     buttonState.Set(keyIndex);
     ExecuteScriptIndex(keyIndex * 2 + 2, scriptTime);
@@ -66,14 +71,19 @@ public:
   void EnableScriptEvents() { scriptEventsEnabled = true; }
   void DisableScriptEvents() { scriptEventsEnabled = false; }
 
+  void Reset();
+  bool IsValid() const;
+
 private:
   struct ScriptTimerContext;
 
   static const size_t MAX_STACK_SIZE = 256;
 
-  bool cancelStenoState = false;
   bool scriptEventsEnabled = false;
-  int inPressAllCount = 0;
+  uint8_t inPressAllCount = 0;
+  uint8_t inReleaseAllCount = 0;
+  uint32_t pressCount = 0;
+  uint32_t releaseCount = 0;
   uint32_t scriptTime;
   const uint8_t *byteCode;
   intptr_t *stackTop = stack;
@@ -96,9 +106,9 @@ private:
 
   bool IsScriptEmpty(size_t offset) const;
 
-  void StartTimer(intptr_t timerId, uint32_t interval, bool isRepeating,
+  void StartTimer(int32_t timerId, uint32_t interval, bool isRepeating,
                   size_t offset);
-  void StopTimer(intptr_t timerId);
+  void StopTimer(int32_t timerId);
 
   class ExecutionContext;
 
@@ -109,6 +119,7 @@ private:
   void CancelStenoKeys(StenoKeyState state);
   void CancelAllStenoKeys();
   bool ProcessScanCode(int scanCode, ScanCodeAction action);
+  void ReleaseAll();
 
   void SendText(const uint8_t *text);
   bool CheckButtonState(const uint8_t *text) const;
@@ -122,8 +133,6 @@ private:
       scriptOffsets[(size_t)scriptId] = scriptOffset;
     }
   }
-
-  static void TimerHandler(intptr_t id, void *context);
 };
 
 //---------------------------------------------------------------------------

@@ -289,7 +289,7 @@ StenoEmilySymbolsDictionary::Lookup(const StenoDictionaryLookup &lookup) const {
   const char *leftSpace = (s & LEFT_SPACE_MASK).IsNotEmpty() ? "{}" : "{^}";
   const char *rightSpace = (s & RIGHT_SPACE_MASK).IsNotEmpty() ? "{}" : "{^}";
 
-  if (Str::Eq(text, "{*!}") || Str::Eq(text, "{*?}")) {
+  if (text[0] == '{' && (Str::Eq(text, "{*!}") || Str::Eq(text, "{*?}"))) {
     leftSpace = "";
     rightSpace = "";
   }

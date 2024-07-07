@@ -10,16 +10,26 @@
 
 //---------------------------------------------------------------------------
 
-static const char ADD_TRANSLATION_PROMPT[] = " >>> Add/Delete Translation - "
+static const char ADD_TRANSLATION_PROMPT[] = " >>> Add Translation - "
                                              "Strokes: ";
+
+static const char ADD_DELETE_TRANSLATION_PROMPT[] =
+    " >>> Add/Delete Translation - "
+    "Strokes: ";
 
 static const char TRANSLATION_PROMPT[] = "; Translation: ";
 
 //---------------------------------------------------------------------------
 
-void StenoEngine::InitiateAddTranslationMode() {
+void StenoEngine::InitiateAddTranslationMode(const char *text) {
   if (!userDictionary) {
     return;
+  }
+
+  free(addTranslationText);
+  addTranslationText = nullptr;
+  if (text) {
+    addTranslationText = Str::Dup(text);
   }
 
   mode = StenoEngineMode::ADD_TRANSLATION;
@@ -48,6 +58,11 @@ void StenoEngine::ProcessAddTranslationModeStroke(StenoStroke stroke) {
   if (IsNewline(stroke)) {
     // Don't do anything with an empty stroke.
     if (altTranslationHistory.IsEmpty()) {
+      return;
+    }
+    if (addTranslationText) {
+      AddTranslation(altTranslationHistory.GetCount());
+      EndAddTranslationMode();
       return;
     }
     if (newlineIndex != 0) {
@@ -112,9 +127,16 @@ void StenoEngine::ProcessAddTranslationModeUndo() {
 
 void StenoEngine::UpdateAddTranslationModeTextBuffer(ConversionBuffer &buffer) {
   buffer.keyCodeBuffer.Reset();
-  buffer.keyCodeBuffer.AppendText(ADD_TRANSLATION_PROMPT,
-                                  Str::Length<>(ADD_TRANSLATION_PROMPT),
-                                  StenoCaseMode::NORMAL);
+
+  if (addTranslationText) {
+    buffer.keyCodeBuffer.AppendText(ADD_TRANSLATION_PROMPT,
+                                    Str::Length<>(ADD_TRANSLATION_PROMPT),
+                                    StenoCaseMode::NORMAL);
+  } else {
+    buffer.keyCodeBuffer.AppendText(
+        ADD_DELETE_TRANSLATION_PROMPT,
+        Str::Length<>(ADD_DELETE_TRANSLATION_PROMPT), StenoCaseMode::NORMAL);
+  }
 
   size_t i = 0;
   for (;;) {
@@ -141,7 +163,7 @@ void StenoEngine::UpdateAddTranslationModeTextBuffer(ConversionBuffer &buffer) {
                                   StenoCaseMode::NORMAL);
 
   StenoSegmentList segmentList;
-  BuildSegmentContext context(segmentList, dictionary, orthography);
+  BuildSegmentContext context(segmentList, *this);
 
   buffer.segmentBuilder.TransferFrom(altTranslationHistory,
                                      altTranslationHistory.GetCount(),
@@ -173,27 +195,36 @@ void StenoEngine::AddTranslation(size_t newlineIndex) {
     return;
   }
 
-  nextConversionBuffer.keyCodeBuffer.Reset();
+  char *word;
 
-  StenoSegmentList segmentList;
-  BuildSegmentContext context(segmentList, dictionary, orthography);
+  if (addTranslationText) {
+    word = addTranslationText;
+  } else {
+    nextConversionBuffer.keyCodeBuffer.Reset();
 
-  nextConversionBuffer.segmentBuilder.TransferFrom(
-      altTranslationHistory, altTranslationHistory.GetCount(),
-      StenoSegmentBuilder::BUFFER_SIZE);
-  nextConversionBuffer.segmentBuilder.CreateSegments(context, newlineIndex + 1);
+    StenoSegmentList segmentList;
+    BuildSegmentContext context(segmentList, *this);
 
-  StenoTokenizer *tokenizer = StenoTokenizer::Create(segmentList);
-  nextConversionBuffer.keyCodeBuffer.Append(tokenizer);
-  delete tokenizer;
+    nextConversionBuffer.segmentBuilder.TransferFrom(
+        altTranslationHistory, altTranslationHistory.GetCount(),
+        StenoSegmentBuilder::BUFFER_SIZE);
+    nextConversionBuffer.segmentBuilder.CreateSegments(context,
+                                                       newlineIndex + 1);
 
-  char *word = nextConversionBuffer.keyCodeBuffer.ToString();
+    StenoTokenizer *tokenizer = StenoTokenizer::Create(segmentList);
+    nextConversionBuffer.keyCodeBuffer.Append(tokenizer);
+    delete tokenizer;
+
+    word = nextConversionBuffer.keyCodeBuffer.ToString();
+  }
+
   StenoStroke strokes[newlineIndex];
   for (size_t i = 0; i < newlineIndex; ++i) {
     strokes[i] = altTranslationHistory[i].stroke;
   }
   userDictionary->Add(strokes, newlineIndex, word);
   free(word);
+  addTranslationText = nullptr;
 }
 
 void StenoEngine::DeleteTranslation(size_t newlineIndex) {

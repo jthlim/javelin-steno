@@ -418,8 +418,16 @@ bool StenoKeyCodeBuffer::ProcessFunction(const List<char *> &parameters) {
 
 //---------------------------------------------------------------------------
 
-bool StenoKeyCodeBuffer::AddTranslationFunction(const List<char *> &) {
+bool StenoKeyCodeBuffer::AddTranslationFunction(
+    const List<char *> &parameters) {
+  free(addTranslationText);
+  addTranslationText = nullptr;
   addTranslationCount++;
+
+  if (parameters.GetCount() >= 2) {
+    addTranslationText = Str::Trim(parameters[1]);
+  }
+
   return true;
 }
 

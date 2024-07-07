@@ -43,6 +43,7 @@ public:
   size_t resetStateCount = 0;
   size_t lastTextOffset = 0;
   StenoState state;
+  char *addTranslationText = nullptr;
   StenoKeyCode buffer[BUFFER_SIZE];
 
   void Reset();
@@ -87,6 +88,7 @@ public:
 
   // parameters[0] == function name.
   bool AddTranslationFunction(const List<char *> &parameters);
+  bool ConsoleFunction(const List<char *> &parameters);
   bool DisableDictionaryFunction(const List<char *> &parameters);
   bool EnableDictionaryFunction(const List<char *> &parameters);
   bool KeyboardLayoutFunction(const List<char *> &parameters);
@@ -103,7 +105,6 @@ public:
   bool SetSpaceFunction(const List<char *> &parameters);
   bool ToggleDictionaryFunction(const List<char *> &parameters);
   bool UnicodeFunction(const List<char *> &parameters);
-  bool ConsoleFunction(const List<char *> &parameters);
 
   void operator=(const StenoKeyCodeBuffer &o);
 

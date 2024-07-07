@@ -34,6 +34,8 @@ public:
 
   static void AddConsoleCommands(Console &console);
 
+  bool IsScriptMemory(const void *start, const void *end);
+
 private:
   static bool RequiresErase(const void *target, size_t size);
   static bool RequiresErase(const void *target, const void *data, size_t size);
@@ -55,6 +57,7 @@ private:
   size_t reprogrammedBytes;
 
   const uint8_t *target;
+  const void *writeStart;
   uint8_t buffer[WRITE_DATA_BUFFER_SIZE];
 
   static Flash instance;

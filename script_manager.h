@@ -18,6 +18,9 @@ public:
     new (container) ScriptManager(scriptByteCode);
   }
 
+  // Called when a new script is uploaded.
+  void Reset();
+
   bool HasTickScript() const { return !script.IsTickScriptEmpty(); }
   void Update(const ButtonState &newButtonState, uint32_t scriptTime);
   void Tick(uint32_t scriptTime);
