@@ -92,6 +92,7 @@ private:
 
   bool paperTapeEnabled = false;
   bool suggestionsEnabled = false;
+  bool templateValueUpdateEnabled = false;
   bool textLogEnabled = false;
   bool placeSpaceAfter = false;
   StenoEngineMode mode = StenoEngineMode::NORMAL;
@@ -130,19 +131,8 @@ private:
 
     const char *GetValue() const { return value ? value : ""; }
 
-    void Set(char *newValue) {
-      free(value);
-      value = newValue;
-    }
-
-    void Set(size_t updateId, char *newValue) {
-      if (updateId <= this->updateId) {
-        free(newValue);
-        return;
-      }
-      this->updateId = updateId;
-      Set(newValue);
-    }
+    void Set(char *newValue);
+    bool Set(size_t updateId, char *newValue);
   };
   TemplateValue templateValues[TEMPLATE_VALUE_COUNT] = {};
 
@@ -226,6 +216,10 @@ private:
   static void ListTemplateValues_Binding(void *context,
                                          const char *commandLine);
   static void SetTemplateValue_Binding(void *context, const char *commandLine);
+  static void EnableTemplateValueUpdate_Binding(void *context,
+                                                const char *commandLine);
+  static void DisableTemplateValueUpdate_Binding(void *context,
+                                                 const char *commandLine);
 
   friend class StenoEngineTester;
 };

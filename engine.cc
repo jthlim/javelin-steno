@@ -24,6 +24,23 @@ const StenoStroke StenoEngine::UNDO_STROKE(StrokeMask::STAR);
 
 //---------------------------------------------------------------------------
 
+void StenoEngine::TemplateValue::Set(char *newValue) {
+  free(value);
+  value = newValue;
+}
+
+bool StenoEngine::TemplateValue::Set(size_t updateId, char *newValue) {
+  if (updateId <= this->updateId) {
+    free(newValue);
+    return false;
+  }
+  this->updateId = updateId;
+  Set(newValue);
+  return true;
+}
+
+//---------------------------------------------------------------------------
+
 StenoEngine::StenoEngine(StenoDictionary &dictionary,
                          const StenoCompiledOrthography &orthography,
                          StenoUserDictionary *userDictionary)
@@ -191,7 +208,14 @@ void StenoEngine::SetTemplateValue(size_t index, char *data, size_t updateId) {
     free(data);
     return;
   }
-  templateValues[index].Set(updateId, data);
+  if (templateValues[index].Set(updateId, data)) {
+    if (templateValueUpdateEnabled) {
+      Console::Printf(
+          "EV "
+          "{\"event\":\"template_value\",\"index\":%zu,\"value\":\"%J\"}\n\n",
+          index, data);
+    }
+  }
 }
 
 void StenoEngine::SetTemplateValue(size_t index, char *data) {
@@ -200,6 +224,11 @@ void StenoEngine::SetTemplateValue(size_t index, char *data) {
     return;
   }
   templateValues[index].Set(data);
+  if (templateValueUpdateEnabled) {
+    Console::Printf(
+        "EV {\"event\":\"template_value\",\"index\":%zu,\"value\":\"%J\"}\n\n",
+        index, data);
+  }
 }
 
 char *StenoEngine::ConvertText(StenoSegmentList &segmentList,

@@ -425,7 +425,35 @@ bool StenoKeyCodeBuffer::AddTranslationFunction(
   addTranslationCount++;
 
   if (parameters.GetCount() >= 2) {
-    addTranslationText = Str::Trim(parameters[1]);
+    BufferWriter unescaped;
+    const char *p = parameters[1];
+    while (*p) {
+      int c = *p++;
+      if (c == '\\') {
+        c = *p++;
+        if (c == '\0') {
+          break;
+        }
+        switch (c) {
+        case 'b':
+          c = '\b';
+          break;
+        case 'n':
+          c = '\n';
+          break;
+        case 'r':
+          c = '\r';
+          break;
+        case 't':
+          c = '\t';
+          break;
+        }
+      }
+
+      unescaped.WriteByte(c);
+    }
+    unescaped.WriteByte('\0');
+    addTranslationText = Str::Trim(unescaped.GetBuffer());
   }
 
   return true;

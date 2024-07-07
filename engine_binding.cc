@@ -366,6 +366,20 @@ void StenoEngine::SetTemplateValue_Binding(void *context,
   Console::SendOk();
 }
 
+void StenoEngine::EnableTemplateValueUpdate_Binding(void *context,
+                                                    const char *commandLine) {
+  StenoEngine *engine = (StenoEngine *)context;
+  engine->templateValueUpdateEnabled = true;
+  Console::SendOk();
+}
+
+void StenoEngine::DisableTemplateValueUpdate_Binding(void *context,
+                                                     const char *commandLine) {
+  StenoEngine *engine = (StenoEngine *)context;
+  engine->templateValueUpdateEnabled = false;
+  Console::SendOk();
+}
+
 //---------------------------------------------------------------------------
 
 void StenoEngine::AddConsoleCommands(Console &console) {
@@ -414,6 +428,12 @@ void StenoEngine::AddConsoleCommands(Console &console) {
                           StenoEngine::ListTemplateValues_Binding, this);
   console.RegisterCommand("set_template_value", "Sets template value",
                           StenoEngine::SetTemplateValue_Binding, this);
+  console.RegisterCommand("enable_template_value_updates",
+                          "Enables template value update events",
+                          StenoEngine::EnableTemplateValueUpdate_Binding, this);
+  console.RegisterCommand(
+      "disable_template_value_updates", "Disables template value update events",
+      StenoEngine::DisableTemplateValueUpdate_Binding, this);
 }
 
 //---------------------------------------------------------------------------

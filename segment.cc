@@ -71,10 +71,13 @@ size_t StenoSegmentList::GetWordStartingSegmentIndex(size_t endIndex) const {
       continue;
     }
 
-    if (index > 0 &&
-        Str::HasSuffix((*this)[index - 1].lookup.GetText(), "^}")) {
-      --index;
-      continue;
+    if (index > 0) {
+      const char *previousLookup = (*this)[index - 1].lookup.GetText();
+      if (Str::HasSuffix(previousLookup, "^}") &&
+          !Str::Eq(previousLookup, "{^ ^}")) {
+        --index;
+        continue;
+      }
     }
 
     break;
