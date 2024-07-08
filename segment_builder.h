@@ -18,8 +18,10 @@ class StenoStrokeHistory;
 //---------------------------------------------------------------------------
 
 struct BuildSegmentContext {
-  BuildSegmentContext(StenoSegmentList &segmentList, StenoEngine &engine);
+  BuildSegmentContext(StenoSegmentList &segmentList, StenoEngine &engine,
+                      bool allowSetValue);
 
+  bool allowSetValue;
   StenoSegmentList &segmentList;
   StenoEngine &engine;
   const StenoDictionary &dictionary;
@@ -85,26 +87,30 @@ private:
   StenoStroke strokes[BUFFER_SIZE];
   StenoState states[BUFFER_SIZE];
 
+  char *EscapeCommand(const char *p);
+  void EscapeCommand(BufferWriter &writer, const char *p);
+
   void AddSegments(BuildSegmentContext &context, size_t offset);
 
   void ResetStrokes(size_t offset, size_t length);
 
   void ReevaluateSegments(BuildSegmentContext &context, size_t &offset);
 
-  void HandleRetroTransform(BuildSegmentContext &context, const char *format,
-                            size_t currentOffset);
+  void HandleRetroTransform(BuildSegmentContext &context, const char *command,
+                            size_t currentOffset, size_t length);
   void HandleRetroInsertSpace(BuildSegmentContext &context,
                               size_t currentOffset, size_t length);
   void HandleRetroToggleAsterisk(BuildSegmentContext &context,
                                  size_t currentOffset, size_t length);
   void HandleRepeatLastStroke(BuildSegmentContext &context,
                               size_t currentOffset, size_t length);
-  void HandleRetroSetValue(BuildSegmentContext &context, const char *format,
+  void HandleRetroSetValue(BuildSegmentContext &context, const char *command,
                            size_t currentOffset, size_t length);
   void HandleTransform(BuildSegmentContext &context, size_t currentOffset,
                        size_t length);
-  char *CreateTransformString(BuildSegmentContext &context,
-                              const char *format) const;
+  void CreateTransformString(BufferWriter &bufferWriter,
+                             BuildSegmentContext &context,
+                             const char *format) const;
 
   void WriteRetroTransform(const StenoSegmentList &segments,
                            size_t startingSegmentIndex, const char *format,

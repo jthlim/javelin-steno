@@ -15,6 +15,8 @@ public:
   virtual void WriteByte(char c) { Write(&c, 1); }
   virtual void Write(const char *data, size_t length) = 0;
 
+  void WriteString(const char *s);
+
   void Printf(const char *p, ...);
   void Vprintf(const char *p, va_list args);
 
@@ -72,6 +74,11 @@ public:
     bufferSize = 0;
     bufferUsedCount = 0;
     return returnValue;
+  }
+
+  char *TerminateStringAndAdoptBuffer() {
+    WriteByte('\0');
+    return AdoptBuffer();
   }
 
   const char *GetBuffer() const { return buffer; }

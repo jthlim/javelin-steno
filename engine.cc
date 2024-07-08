@@ -29,16 +29,6 @@ void StenoEngine::TemplateValue::Set(char *newValue) {
   value = newValue;
 }
 
-bool StenoEngine::TemplateValue::Set(size_t updateId, char *newValue) {
-  if (updateId <= this->updateId) {
-    free(newValue);
-    return false;
-  }
-  this->updateId = updateId;
-  Set(newValue);
-  return true;
-}
-
 //---------------------------------------------------------------------------
 
 StenoEngine::StenoEngine(StenoDictionary &dictionary,
@@ -201,21 +191,6 @@ void StenoEngine::SendText(const uint8_t *p) {
 
   emitter.Process(previousConversionBuffer.keyCodeBuffer,
                   nextConversionBuffer.keyCodeBuffer);
-}
-
-void StenoEngine::SetTemplateValue(size_t index, char *data, size_t updateId) {
-  if (index >= TEMPLATE_VALUE_COUNT) {
-    free(data);
-    return;
-  }
-  if (templateValues[index].Set(updateId, data)) {
-    if (templateValueUpdateEnabled) {
-      Console::Printf(
-          "EV "
-          "{\"event\":\"template_value\",\"index\":%zu,\"value\":\"%J\"}\n\n",
-          index, data);
-    }
-  }
 }
 
 void StenoEngine::SetTemplateValue(size_t index, char *data) {

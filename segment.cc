@@ -51,10 +51,16 @@ StenoSegmentList::GetCommonStartingSegmentsCount(const List<StenoSegment> &a,
 }
 
 size_t StenoSegmentList::GetWordStartingSegmentIndex(size_t endIndex) const {
-  if (!endIndex)
+  if (!endIndex) {
     return 0;
+  }
 
   size_t index = endIndex;
+  // Special case trailing spaces.
+  while (index && Str::Eq((*this)[index].lookup.GetText(), "{^ ^}")) {
+    --index;
+  }
+
   if (Str::IsFingerSpellingCommand((*this)[index].lookup.GetText())) {
     // In the case of finger spelling, keep consuming until all finger spelling
     // used.
@@ -222,7 +228,7 @@ TEST_BEGIN("Segment tests") {
   StenoCompiledOrthography compiledOrthography(
       StenoOrthography::emptyOrthography);
   StenoEngine engine(dictionary, compiledOrthography);
-  BuildSegmentContext context(segmentList, engine);
+  BuildSegmentContext context(segmentList, engine, false);
 
   history.CreateSegments(context);
 

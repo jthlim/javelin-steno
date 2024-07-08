@@ -294,6 +294,12 @@ void StenoKeyCodeBuffer::ProcessCommand(const char *p, size_t length) {
   }
 
   if (p[1] == ':') {
+    // This is a special case for the steno tools to display more meaningful
+    // data.
+    if (p[2] == '=') {
+      return;
+    }
+
     List<char *> parameters;
     const char *token = p + 2;
     while (token) {

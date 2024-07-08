@@ -435,18 +435,13 @@ bool StenoKeyCodeBuffer::AddTranslationFunction(
           break;
         }
         switch (c) {
-        case 'b':
-          c = '\b';
+        case ':':
+        case '{':
+        case '}':
+        case '\\':
           break;
-        case 'n':
-          c = '\n';
-          break;
-        case 'r':
-          c = '\r';
-          break;
-        case 't':
-          c = '\t';
-          break;
+        default:
+          unescaped.WriteByte('\\');
         }
       }
 

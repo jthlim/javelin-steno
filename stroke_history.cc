@@ -45,7 +45,7 @@ void StenoStrokeHistory::UpdateDefinitionBoundaries(
   const StenoState *firstState = segments[0].state;
   for (const StenoSegment &segment : segments) {
     StenoState &state =
-        (*this)[startingOffset + (segment.state - firstState)].state;
+        (*this)[startingOffset + segment.GetStrokeIndex(firstState)].state;
     state.lookupType = segment.lookupType;
   }
 }

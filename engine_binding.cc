@@ -14,7 +14,7 @@ void StenoEngine::CreateSegments(StenoSegmentList &segmentList,
   segmentBuilder.Reset();
   segmentBuilder.Add(strokes, length);
 
-  BuildSegmentContext context(segmentList, *this);
+  BuildSegmentContext context(segmentList, *this, false);
   segmentBuilder.CreateSegments(context);
 }
 

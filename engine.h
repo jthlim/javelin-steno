@@ -80,7 +80,6 @@ public:
 
   // data needs to be dynamically allocated, and StenoEngine will assume
   // responsibility for its lifecycle/
-  void SetTemplateValue(size_t index, char *data, size_t updateId);
   void SetTemplateValue(size_t index, char *data);
 
   char *ConvertText(StenoSegmentList &segmentList, size_t startingOffset);
@@ -126,7 +125,6 @@ private:
 
   static const size_t TEMPLATE_VALUE_COUNT = 64;
   struct TemplateValue {
-    size_t updateId = 0;
     char *value;
 
     const char *GetValue() const { return value ? value : ""; }
@@ -169,7 +167,8 @@ private:
                       size_t length);
 
   void CreateSegments(size_t sourceStrokeCount, ConversionBuffer &buffer,
-                      size_t conversionLimit, StenoSegmentList &segmentList);
+                      size_t conversionLimit, StenoSegmentList &segmentList,
+                      bool allowSetValue);
   void CreateSegmentsUsingLongerResult(
       size_t sourceStrokeCount, ConversionBuffer &buffer,
       size_t conversionLimit, StenoSegmentList &segmentList,

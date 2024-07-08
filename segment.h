@@ -29,6 +29,14 @@ struct StenoSegment {
   bool HasCommand() const;
   const StenoState *GetEndStenoState() const { return state + strokeLength; }
 
+  size_t GetStrokeIndex(const StenoState *firstState) const {
+    return state - firstState;
+  }
+
+  size_t GetEndStrokeIndex(const StenoState *firstState) const {
+    return (state - firstState) + strokeLength;
+  }
+
   static StenoSegment CreateInvalid() { return StenoSegment(); }
 
 private:

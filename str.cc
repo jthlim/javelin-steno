@@ -18,8 +18,7 @@ char *Str::Asprintf(const char *p, ...) {
   bufferWriter.Vprintf(p, args);
   va_end(args);
 
-  bufferWriter.WriteByte('\0');
-  return bufferWriter.AdoptBuffer();
+  return bufferWriter.TerminateStringAndAdoptBuffer();
 }
 
 size_t Str::Sprintf(char *target, const char *p, ...) {

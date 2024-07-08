@@ -53,6 +53,8 @@ static char *WriteReversedHex64(char *p, uint64_t v, const char *alphabet) {
   return p;
 }
 
+void IWriter::WriteString(const char *s) { Write(s, Str::Length(s)); }
+
 void IWriter::Printf(const char *p, ...) {
   va_list args;
   va_start(args, p);
