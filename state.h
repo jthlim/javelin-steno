@@ -28,12 +28,16 @@ enum class SegmentLookupType : uint8_t {
 
 struct StenoState {
   StenoCaseMode caseMode;
-  StenoCaseMode overrideCaseMode;
+  StenoCaseMode overrideCaseMode : 3;
   SegmentLookupType lookupType : 2;
   bool joinNext : 1;
   bool isGlue : 1;
   bool isManualStateChange : 1;
   bool shouldCombineUndo : 1;
+  bool isHistoryExtending : 1;       // e.g. fingerspelling
+  bool isSpace : 1;                  // {^ ^}
+  bool requestsHistoryExtending : 1; // e.g. =set_value, =retro_transform
+  uint8_t _reserved : 2;
   uint32_t spaceLength : 4;
   uint32_t spaceOffset : 6;
 

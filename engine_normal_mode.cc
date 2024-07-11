@@ -42,6 +42,75 @@ struct StenoEngine::UpdateNormalModeTextBufferThreadData {
 
 #endif
 
+size_t StenoEngine::GetStartingStrokeForNormalModeProcessing() const {
+  if (history.IsEmpty()) {
+    return 0;
+  }
+
+  const size_t maximumConversionStrokes =
+      dictionary.GetMaximumOutlineLength() +
+      SEGMENT_CONVERSION_PREFIX_SUFFIX_LIMIT;
+  if (history.GetCount() < maximumConversionStrokes) {
+    return 0;
+  }
+
+  const size_t startingStrokeIndex =
+      history.GetStartingStroke(maximumConversionStrokes);
+
+  // Code below is to expand the history scope when finger spelling is used
+  // in case a set_value or retro_transform command is used.
+
+  size_t lastLookupIndex = history.GetIndexOfWordStart(history.GetCount() - 1);
+  const StenoState &lastState = history[lastLookupIndex].state;
+  if (!lastState.isSpace && !lastState.isHistoryExtending &&
+      !lastState.requestsHistoryExtending) {
+    return startingStrokeIndex;
+  }
+
+  size_t loops = 1;
+  while (lastLookupIndex > 0 &&
+         history[lastLookupIndex].state.requestsHistoryExtending) {
+    ++loops;
+    lastLookupIndex = history.GetIndexOfWordStart(lastLookupIndex - 1);
+  }
+
+  do {
+    if (placeSpaceAfter) {
+      while (lastLookupIndex > 0) {
+        const size_t previousStartIndex =
+            history.GetIndexOfWordStart(lastLookupIndex - 1);
+        if (!history[previousStartIndex].state.isSpace) {
+          break;
+        }
+        lastLookupIndex = previousStartIndex;
+      }
+    }
+
+    while (lastLookupIndex > 0) {
+      const size_t previousStartIndex =
+          history.GetIndexOfWordStart(lastLookupIndex - 1);
+      if (!history[previousStartIndex].state.isHistoryExtending) {
+        break;
+      }
+      lastLookupIndex = previousStartIndex;
+    }
+
+    if (!placeSpaceAfter) {
+      while (lastLookupIndex > 0) {
+        const size_t previousStartIndex =
+            history.GetIndexOfWordStart(lastLookupIndex - 1);
+        if (!history[previousStartIndex].state.isSpace) {
+          break;
+        }
+        lastLookupIndex = previousStartIndex;
+      }
+    }
+  } while (--loops);
+
+  return lastLookupIndex < startingStrokeIndex ? lastLookupIndex
+                                               : startingStrokeIndex;
+}
+
 void StenoEngine::ProcessNormalModeStroke(StenoStroke stroke) {
 #if ENABLE_DICTIONARY_STATS
   StenoDictionary::ResetStats();
@@ -49,19 +118,18 @@ void StenoEngine::ProcessNormalModeStroke(StenoStroke stroke) {
 
   history.PruneIfFull();
 
-  const size_t previousSourceStrokeCount = history.GetCount();
-  history.Add(stroke, state);
-
 #if ENABLE_PROFILE
   uint32_t t0 = Clock::GetMicroseconds();
 #endif
 
-  const size_t maximumConversionStrokes =
-      dictionary.GetMaximumOutlineLength() +
-      SEGMENT_CONVERSION_PREFIX_SUFFIX_LIMIT;
-  const size_t startingStroke =
-      history.GetStartingStroke(maximumConversionStrokes);
-  const size_t conversionCount = history.GetCount() - startingStroke;
+  const size_t previousSourceStrokeCount = history.GetCount();
+  const size_t startingStroke = GetStartingStrokeForNormalModeProcessing();
+
+  // ConversionCount adds one as a stroke is added below, but that call
+  // also needs to be provided with the conversion count.
+  const size_t conversionCount = history.GetCount() + 1 - startingStroke;
+
+  history.Add(stroke, state, conversionCount);
 
   StenoSegmentList nextSegmentList;
   CreateSegments(history.GetCount(), nextConversionBuffer, conversionCount,
@@ -206,13 +274,12 @@ void StenoEngine::ProcessNormalModeStroke(StenoStroke stroke) {
 
 void StenoEngine::ProcessNormalModeUndo() {
   const size_t maximumConversionStrokes =
-      dictionary.GetMaximumOutlineLength() +
-      SEGMENT_CONVERSION_PREFIX_SUFFIX_LIMIT;
+      history.IsEmpty() ? 0 : history.Back().conversionCount;
 
   const size_t undoCount = history.GetUndoCount(maximumConversionStrokes);
   if (undoCount == 0) {
-    Key::Press(KeyCode::BACKSPACE);
-    Key::Release(KeyCode::BACKSPACE);
+    Key::PressRaw(KeyCode::BACKSPACE);
+    Key::ReleaseRaw(KeyCode::BACKSPACE);
     PrintPaperTapeUndo(0);
     return;
   }
@@ -540,16 +607,17 @@ char *StenoEngine::PrintSegmentSuggestion(size_t segmentCount,
         return nullptr;
       }
 
+      if (segmentList[startSegmentIndex].lookup ==
+          StenoDictionaryLookupResult::NO_OP) {
+        return nullptr;
+      }
+
       // Consider it a segment start if it isn't a suffix stroke and it isn't
       // a fingerspelling joined to a previous fingerspelling.
       // This will still give suggestions after prefixes, e.g.
       //   overwatching: AUFR/WAFP/-G will suggest to combine WAFPG
       const char *startSegmentText =
           segmentList[startSegmentIndex].lookup.GetText();
-
-      if (Str::Eq(startSegmentText, "{~|}")) {
-        return nullptr;
-      }
 
       if (!Str::IsJoinPrevious(startSegmentText) &&
           (startSegmentIndex == 0 ||

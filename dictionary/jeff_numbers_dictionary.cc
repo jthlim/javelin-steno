@@ -88,7 +88,8 @@ StenoJeffNumbersDictionary::LookupInternal(
   const size_t length = lookup.length;
 
   for (size_t i = 0; i < length; ++i) {
-    if ((strokes[i] & ACTIVATION_MASK) != ACTIVATION_MATCH) {
+    if ((strokes[i] & ACTIVATION_MASK) != ACTIVATION_MATCH ||
+        strokes[i] == ACTIVATION_MATCH) {
       free(result);
       return StenoDictionaryLookupResult::CreateInvalid();
     }

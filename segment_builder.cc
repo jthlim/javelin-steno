@@ -10,6 +10,7 @@
 #include "str.h"
 #include "stroke_history.h"
 #include "unicode.h"
+#include "utf8_pointer.h"
 #include "writer.h"
 
 //---------------------------------------------------------------------------
@@ -417,7 +418,7 @@ void StenoSegmentBuilder::HandleRetroSetValue(BuildSegmentContext &context,
        ++i) {
     StenoSegment &segment = context.segmentList[i];
     segment.lookup.Destroy();
-    segment.lookup = StenoDictionaryLookupResult::CreateStaticString("{~|}");
+    segment.lookup = StenoDictionaryLookupResult::NO_OP;
   }
 
   // Use case carry as a no-op on the buffer processing layer.
@@ -438,6 +439,8 @@ void StenoSegmentBuilder::HandleRetroSetValue(BuildSegmentContext &context,
       writer.TerminateStringAndAdoptBuffer());
 
   hasModifiedStrokeHistory = true;
+  states[currentOffset].joinNext =
+      context.segmentList[startingSegmentIndex].state->joinNext;
   context.segmentList.Add(StenoSegment(length, SegmentLookupType::DIRECT,
                                        states + currentOffset, lookup));
 }
@@ -477,7 +480,7 @@ void StenoSegmentBuilder::HandleRetroTransform(BuildSegmentContext &context,
        ++i) {
     StenoSegment &segment = context.segmentList[i];
     segment.lookup.Destroy();
-    segment.lookup = StenoDictionaryLookupResult::CreateStaticString("{~|}");
+    segment.lookup = StenoDictionaryLookupResult::NO_OP;
   }
 
   hasModifiedStrokeHistory = true;
@@ -492,7 +495,7 @@ void StenoSegmentBuilder::WriteRetroTransform(const StenoSegmentList &segments,
                                               const char *format,
                                               BufferWriter &output) const {
 
-  size_t strokeCount =
+  const size_t strokeCount =
       segments.Back().GetEndStenoState() - segments[startingSegmentIndex].state;
 
   for (;;) {
@@ -569,35 +572,105 @@ void StenoSegmentBuilder::CreateTransformString(BufferWriter &bufferWriter,
                                                 BuildSegmentContext &context,
                                                 const char *format) const {
 
+  enum class Formatter {
+    NORMAL,
+    UPPER,
+    LOWER,
+    TITLE,
+    CAPITALIZE,
+  };
+
+  Formatter formatter;
+  Utf8Pointer p(format);
+
   for (;;) {
-    switch (char c = *format++; c) {
+    switch (int c = *p++; c) {
     case '\0':
       return;
+
     case '%':
-      c = *format++;
+      c = *p++;
+      formatter = Formatter::NORMAL;
+
       switch (c) {
       case '\0':
         return;
+      case 'u':
+        formatter = Formatter::UPPER;
+        c = *p++;
+        break;
+      case 'l':
+        formatter = Formatter::LOWER;
+        c = *p++;
+        break;
+      case 't':
+        formatter = Formatter::TITLE;
+        c = *p++;
+        break;
+      case 'c':
+        formatter = Formatter::CAPITALIZE;
+        c = *p++;
+        break;
+      }
+
+      switch (c) {
       case '%':
         bufferWriter.WriteByte('%');
         break;
       case '0' ... '9': {
         size_t index = c - '0';
-        while (Unicode::IsAsciiDigit(*format)) {
-          index = index * 10 + *format++ - '0';
+        while (Unicode::IsAsciiDigit(*p)) {
+          index = index * 10 + *p++ - '0';
         }
         const char *value = context.engine.GetTemplateValue(index);
-        while (*value) {
-          switch (char c = *value++; c) {
-          case ' ':
-          case '\\':
-          case '{':
-            bufferWriter.WriteByte('\\');
-            [[fallthrough]];
 
-          default:
-            bufferWriter.WriteByte(c);
+        bool isStart = true;
+        while (*value) {
+          uint32_t c = *value++;
+
+          switch (formatter) {
+          case Formatter::NORMAL:
+            // Do nothing
             break;
+          case Formatter::UPPER:
+            c = Unicode::ToUpper(c);
+            break;
+          case Formatter::LOWER:
+            c = Unicode::ToLower(c);
+            break;
+          case Formatter::TITLE:
+            if (Unicode::IsWhitespace(c)) {
+              isStart = true;
+            } else if (isStart) {
+              c = Unicode::ToUpper(c);
+              isStart = false;
+            }
+            break;
+          case Formatter::CAPITALIZE:
+            if (!Unicode::IsWhitespace(c) && isStart) {
+              c = Unicode::ToUpper(c);
+              isStart = false;
+            }
+            break;
+          }
+
+          if (c < 128) {
+            switch (c) {
+            case ' ':
+            case '\\':
+            case '{':
+              bufferWriter.WriteByte('\\');
+              [[fallthrough]];
+
+            default:
+              bufferWriter.WriteByte(c);
+              break;
+            }
+          } else {
+            char data[4];
+            Utf8Pointer output(data);
+            output.SetAndAdvance(c);
+            bufferWriter.Write(data, output.GetRawPointer() - data);
           }
         }
       } break;

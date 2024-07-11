@@ -94,7 +94,7 @@ void StenoEngine::ProcessAddTranslationModeStroke(StenoStroke stroke) {
     return;
   }
 
-  altTranslationHistory.Add(stroke, altTranslationState);
+  altTranslationHistory.Add(stroke, altTranslationState, 0);
 
   UpdateAddTranslationModeTextBuffer(nextConversionBuffer);
   altTranslationState = nextConversionBuffer.keyCodeBuffer.state;

@@ -48,6 +48,19 @@ Example usage:
   =transform:Hello %0
 ```
 
+Modifiers supported:
+
+- `%u`: Upper case
+- `%l`: Lower case
+- `%t`: Title case
+- `%c`: Capitalize
+
+Example usage:
+
+```
+  =transform:Hello %u0
+```
+
 ## `=set_value:<template value>:<n>`
 
 Sets `template value` to the last `n` lookup translations. The value adopted is

@@ -194,6 +194,8 @@ private:
   void PrintTextLog(const StenoKeyCodeBuffer &previousKeyCodeBuffer,
                     const StenoKeyCodeBuffer &nextKeyCodeBuffer) const;
 
+  size_t GetStartingStrokeForNormalModeProcessing() const;
+
   static void SetSpacePosition_Binding(void *context, const char *commandLine);
   static void ListDictionaries_Binding(void *context, const char *commandLine);
   static void EnableDictionary_Binding(void *context, const char *commandLine);

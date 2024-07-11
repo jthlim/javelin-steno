@@ -38,7 +38,7 @@ void StenoStrokeHistory::UpdateDefinitionBoundaries(
     return;
   }
 
-  size_t count = GetCount();
+  const size_t count = GetCount();
   for (size_t i = startingOffset; i < count; ++i) {
     (*this)[i].state.lookupType = SegmentLookupType::UNKNOWN;
   }
@@ -47,11 +47,28 @@ void StenoStrokeHistory::UpdateDefinitionBoundaries(
     StenoState &state =
         (*this)[startingOffset + segment.GetStrokeIndex(firstState)].state;
     state.lookupType = segment.lookupType;
+
+    const char *lookupText = segment.lookup.GetText();
+    if (lookupText[0] == '{') {
+      state.requestsHistoryExtending =
+          lookupText[1] == ':' &&
+          (Str::HasPrefix(lookupText, "{:=set_value") ||
+           Str::HasPrefix(lookupText, "{:=retro_transform"));
+      state.isSpace = Str::Eq(lookupText, "{^ ^}");
+      state.isHistoryExtending =
+          Str::IsFingerSpellingCommand(lookupText) ||
+          segment.lookup == StenoDictionaryLookupResult::NO_OP;
+
+    } else {
+      state.requestsHistoryExtending = false;
+      state.isSpace = false;
+      state.isHistoryExtending = false;
+    }
   }
 }
 
 size_t StenoStrokeHistory::GetStartingStroke(size_t maximumCount) const {
-  size_t count = GetCount();
+  const size_t count = GetCount();
   if (maximumCount >= count) {
     return 0;
   }
@@ -61,6 +78,14 @@ size_t StenoStrokeHistory::GetStartingStroke(size_t maximumCount) const {
     }
   }
   return count - maximumCount;
+}
+
+size_t StenoStrokeHistory::GetIndexOfWordStart(size_t index) const {
+  size_t i = index;
+  while (i > 0 && !(*this)[i].state.IsDefinitionStart()) {
+    --i;
+  }
+  return i;
 }
 
 //---------------------------------------------------------------------------

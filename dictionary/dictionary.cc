@@ -19,6 +19,9 @@ StenoDictionary::Stats StenoDictionary::stats;
 
 #if JAVELIN_PLATFORM_NRF5_SDK || JAVELIN_PLATFORM_PICO_SDK
 
+constexpr StenoDictionaryLookupResult
+    StenoDictionaryLookupResult::NO_OP("{:=}");
+
 #if JAVELIN_CPU_CORTEX_M0
 
 __attribute__((naked)) void
@@ -52,6 +55,10 @@ const char *StenoDictionaryLookupResult::CloneInternal(const char *text) {
 }
 
 #else
+
+const StenoDictionaryLookupResult StenoDictionaryLookupResult::NO_OP =
+    StenoDictionaryLookupResult::CreateStaticString("{~|}");
+
 void StenoDictionaryLookupResult::Nop(StenoDictionaryLookupResult *) {}
 
 void StenoDictionaryLookupResult::FreeText(StenoDictionaryLookupResult *p) {

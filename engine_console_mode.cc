@@ -36,7 +36,7 @@ void StenoEngine::ProcessConsoleModeStroke(StenoStroke stroke) {
     return;
   }
 
-  altTranslationHistory.Add(stroke, altTranslationState);
+  altTranslationHistory.Add(stroke, altTranslationState, 0);
 
   UpdateConsoleModeTextBuffer(nextConversionBuffer);
   altTranslationState = nextConversionBuffer.keyCodeBuffer.state;

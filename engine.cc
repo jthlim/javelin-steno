@@ -314,7 +314,7 @@ TEST_BEGIN("Engine: Test symbols") {
   const StenoStroke stroke("S");
   userDictionary.Add(&stroke, 1, "=transform:a%0b");
   const StenoStroke setValueStroke("T");
-  userDictionary.Add(&setValueStroke, 1, "=set_value:0:1:a%0b");
+  userDictionary.Add(&setValueStroke, 1, "=set_value:0:1");
   const StenoStroke useValueStroke("K");
   userDictionary.Add(&useValueStroke, 1, "=transform:x%0");
 

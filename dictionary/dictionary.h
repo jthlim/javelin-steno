@@ -32,7 +32,7 @@ class StenoDictionary;
 // Dynamic strings are represented by a pointer to RAM region
 class StenoDictionaryLookupResult {
 private:
-  StenoDictionaryLookupResult(const char *text) : text(text) {}
+  constexpr StenoDictionaryLookupResult(const char *text) : text(text) {}
 
   const char *text;
 
@@ -48,6 +48,8 @@ public:
 
   const char *GetText() const { return text; }
   void Destroy() { DestroyInternal(text); }
+
+  static const StenoDictionaryLookupResult NO_OP;
 
   StenoDictionaryLookupResult Clone() const {
     return StenoDictionaryLookupResult(CloneInternal(text));
@@ -97,6 +99,8 @@ public:
       (*destroyMethod)(this);
     }
   }
+
+  static const StenoDictionaryLookupResult NO_OP;
 
   StenoDictionaryLookupResult Clone() const;
 
