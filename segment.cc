@@ -56,10 +56,6 @@ size_t StenoSegmentList::GetWordStartingSegmentIndex(size_t endIndex) const {
   }
 
   size_t index = endIndex;
-  // Special case trailing spaces.
-  while (index && Str::Eq((*this)[index].lookup.GetText(), "{^ ^}")) {
-    --index;
-  }
 
   if (Str::IsFingerSpellingCommand((*this)[index].lookup.GetText())) {
     // In the case of finger spelling, keep consuming until all finger spelling
@@ -68,26 +64,31 @@ size_t StenoSegmentList::GetWordStartingSegmentIndex(size_t endIndex) const {
            Str::IsFingerSpellingCommand((*this)[index - 1].lookup.GetText())) {
       --index;
     }
-    return index;
-  }
-
-  while (index) {
-    if (Str::HasPrefix((*this)[index].lookup.GetText(), "{^")) {
-      --index;
-      continue;
-    }
-
-    if (index > 0) {
-      const char *previousLookup = (*this)[index - 1].lookup.GetText();
-      if (Str::HasSuffix(previousLookup, "^}") &&
-          !Str::Eq(previousLookup, "{^ ^}")) {
+  } else {
+    while (index) {
+      if (Str::HasPrefix((*this)[index].lookup.GetText(), "{^")) {
         --index;
         continue;
       }
-    }
 
-    break;
+      if (index > 0) {
+        const char *previousLookup = (*this)[index - 1].lookup.GetText();
+        if (Str::HasSuffix(previousLookup, "^}") &&
+            !Str::Eq(previousLookup, "{^ ^}")) {
+          --index;
+          continue;
+        }
+      }
+
+      break;
+    }
   }
+
+  // Special case leading spaces.
+  while (index && Str::Eq((*this)[index - 1].lookup.GetText(), "{^ ^}")) {
+    --index;
+  }
+
   return index;
 }
 

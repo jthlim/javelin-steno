@@ -19,12 +19,12 @@ const uint8_t *StenoScriptByteCodeData::FindStringOrReturnOriginal(
   const StenoScriptHashTable *hashTable =
       (const StenoScriptHashTable *)(base + stringHashTableOffset);
 
-  size_t mask = hashTable->size - 1;
-  size_t length = Str::Length(string);
+  const size_t mask = hashTable->size - 1;
+  const size_t length = Str::Length(string);
   size_t index = Crc32(string, length);
 
   for (;;) {
-    size_t textOffset = hashTable->offsets[index & mask];
+    const size_t textOffset = hashTable->offsets[index & mask];
     if (textOffset == 0) {
       return string;
     }

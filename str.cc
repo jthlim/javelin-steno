@@ -108,7 +108,7 @@ char *Str::DupN(const char *p, size_t length) {
 }
 
 char *Str::Dup(const char *p) {
-  size_t length = strlen(p);
+  const size_t length = strlen(p);
   char *buffer = (char *)malloc(length + 1);
   buffer[length] = '\0';
   return (char *)memcpy(buffer, p, length);
@@ -128,8 +128,8 @@ bool Str::HasPrefix(const char *p, const char *prefix) {
 }
 
 bool Str::HasSuffix(const char *p, const char *suffix) {
-  size_t length = Length(p);
-  size_t suffixLength = Length(suffix);
+  const size_t length = Length(p);
+  const size_t suffixLength = Length(suffix);
   if (suffixLength > length) {
     return false;
   }

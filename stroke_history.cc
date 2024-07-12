@@ -52,17 +52,18 @@ void StenoStrokeHistory::UpdateDefinitionBoundaries(
     if (lookupText[0] == '{') {
       state.requestsHistoryExtending =
           lookupText[1] == ':' &&
-          (Str::HasPrefix(lookupText, "{:=set_value") ||
-           Str::HasPrefix(lookupText, "{:=retro_transform"));
+          (Str::HasPrefix(lookupText, "{:==set_value") ||
+           Str::HasPrefix(lookupText, "{:==retro_transform"));
       state.isSpace = Str::Eq(lookupText, "{^ ^}");
       state.isHistoryExtending =
           Str::IsFingerSpellingCommand(lookupText) ||
           segment.lookup == StenoDictionaryLookupResult::NO_OP;
-
+      state.isSuffix = Str::HasPrefix(lookupText, "{^");
     } else {
       state.requestsHistoryExtending = false;
       state.isSpace = false;
       state.isHistoryExtending = false;
+      state.isSuffix = false;
     }
   }
 }

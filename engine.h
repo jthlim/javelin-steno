@@ -86,7 +86,6 @@ public:
 
 private:
   static const StenoStroke UNDO_STROKE;
-  static const size_t SEGMENT_CONVERSION_PREFIX_SUFFIX_LIMIT = 4;
   static const size_t PAPER_TAPE_SUGGESTION_SEGMENT_LIMIT = 8;
 
   bool paperTapeEnabled = false;

@@ -109,7 +109,6 @@ bool StenoSegmentBuilder::DirectLookup(BuildSegmentContext &context,
 
     if (lookupText[0] == '=') {
       if (Str::HasPrefix(lookupText, "=retro_transform:")) {
-
         if (context.segmentList.IsEmpty()) {
           context.segmentList.Add(
               StenoSegment(length, SegmentLookupType::DIRECT, states + offset,
@@ -154,30 +153,48 @@ bool StenoSegmentBuilder::DirectLookup(BuildSegmentContext &context,
         return true;
       }
       if (Str::Eq(lookupText, "=retro_toggle_asterisk")) {
+        if (offset + length == count) {
+          context.lastSegmentCommand = "=retro_toggle_asterisk";
+        }
         goto HandleRetroToggleAsterisk;
       }
       if (Str::Eq(lookupText, "=retro_insert_space")) {
+        if (offset + length == count) {
+          context.lastSegmentCommand = "=retro_insert_space";
+        }
         goto HandleRetroInsertSpace;
       }
       if (Str::Eq(lookupText, "=repeat_last_stroke")) {
+        if (offset + length == count) {
+          context.lastSegmentCommand = "=repeat_last_stroke";
+        }
         goto HandleRepeatLastStroke;
       }
     }
 
     if (lookupText[0] == '{' && lookupText[1] == '*') {
       if (lookupText[2] == '?' && lookupText[3] == '}') { // {*?}
+        if (offset + length == count) {
+          context.lastSegmentCommand = "{*?}";
+        }
       HandleRetroInsertSpace:
         lookup.Destroy();
         HandleRetroInsertSpace(context, offset, length);
         ReevaluateSegments(context, offset);
         return true;
       } else if (lookupText[2] == '}') { // {*}
+        if (offset + length == count) {
+          context.lastSegmentCommand = "{*}";
+        }
       HandleRetroToggleAsterisk:
         lookup.Destroy();
         HandleRetroToggleAsterisk(context, offset, length);
         ReevaluateSegments(context, offset);
         return true;
       } else if (lookupText[2] == '+' && lookupText[3] == '}') { // {*+}
+        if (offset + length == count) {
+          context.lastSegmentCommand = "{*+}";
+        }
       HandleRepeatLastStroke:
         lookup.Destroy();
         HandleRepeatLastStroke(context, offset, length);
@@ -696,6 +713,7 @@ char *StenoSegmentBuilder::EscapeCommand(const char *p) {
 void StenoSegmentBuilder::EscapeCommand(BufferWriter &writer, const char *p) {
   writer.WriteByte('{');
   writer.WriteByte(':');
+  writer.WriteByte('=');
   while (*p) {
     int c = *p++;
     switch (c) {
@@ -711,6 +729,22 @@ void StenoSegmentBuilder::EscapeCommand(BufferWriter &writer, const char *p) {
     }
   }
   writer.WriteByte('}');
+}
+
+void StenoSegmentBuilder::UpdateLastSegmentWithCommand(
+    BuildSegmentContext &context, const char *command) {
+  if (context.segmentList.IsEmpty()) {
+    return;
+  }
+
+  StenoSegment &back = context.segmentList.Back();
+  BufferWriter writer;
+  EscapeCommand(writer, command);
+  const char *text = back.lookup.GetText();
+  writer.WriteString(text);
+  back.lookup.Destroy();
+  back.lookup = StenoDictionaryLookupResult::CreateDynamicString(
+      writer.TerminateStringAndAdoptBuffer());
 }
 
 void StenoSegmentBuilder::ResetStrokes(size_t offset, size_t length) {
@@ -859,7 +893,7 @@ TEST_BEGIN("StrokeHistory: Test *? splits strokes") {
   assert(segmentList.GetCount() == 3);
   assert(Str::Eq(segmentList[0].lookup.GetText(), "test"));
   assert(Str::Eq(segmentList[1].lookup.GetText(), ""));
-  assert(Str::Eq(segmentList[2].lookup.GetText(), "-D"));
+  assert(Str::Eq(segmentList[2].lookup.GetText(), "{:=\\{*?\\}}-D"));
 }
 TEST_END
 
@@ -883,7 +917,7 @@ TEST_BEGIN("StrokeHistory: Test * toggles ") {
 
   assert(segmentList.GetCount() == 2);
   assert(Str::Eq(segmentList[0].lookup.GetText(), "T*EFT"));
-  assert(Str::Eq(segmentList[1].lookup.GetText(), ""));
+  assert(Str::Eq(segmentList[1].lookup.GetText(), "{:=\\{*\\}}"));
 }
 TEST_END
 

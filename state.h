@@ -37,7 +37,8 @@ struct StenoState {
   bool isHistoryExtending : 1;       // e.g. fingerspelling
   bool isSpace : 1;                  // {^ ^}
   bool requestsHistoryExtending : 1; // e.g. =set_value, =retro_transform
-  uint8_t _reserved : 2;
+  bool isSuffix : 1;
+  uint8_t _reserved : 1;
   uint32_t spaceLength : 4;
   uint32_t spaceOffset : 6;
 

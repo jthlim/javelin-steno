@@ -22,8 +22,9 @@ constexpr int8_t BASE64_DECODE_TABLE[256] = {
 };
 
 //---------------------------------------------------------------------------
+
 size_t Base64::Decode(uint8_t *destination, const uint8_t *source) {
-  uint8_t *startDestination = destination;
+  uint8_t *const startDestination = destination;
 
   int value = 0;
   int bytes = 0;
@@ -56,6 +57,7 @@ size_t Base64::Decode(uint8_t *destination, const uint8_t *source) {
       value = 0;
     }
   }
+
 exit:
   return destination - startDestination;
 }

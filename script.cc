@@ -201,12 +201,17 @@ struct Script::ScriptTimerContext final : public TimerHandler,
     // A routine may or may not consume the id, so this code records the
     // top of stack and reinstates it after.
     intptr_t *const startingStackTop = script->stackTop;
+
+    // Take a local copy of the script
+    // executionContext.Run can cause this object to be destroyed, and a local
+    // copy is needed so that the last line does not corrupt memory.
+    Script *localScript = script;
     *(script->stackTop++) = id;
 
     ExecutionContext executionContext;
     executionContext.Run(*script, offset);
 
-    script->stackTop = startingStackTop;
+    localScript->stackTop = startingStackTop;
   }
 
   void OnTimerRemovedFromManager() override final { delete this; }

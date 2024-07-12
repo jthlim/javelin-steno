@@ -43,13 +43,7 @@ struct StenoEngine::UpdateNormalModeTextBufferThreadData {
 #endif
 
 size_t StenoEngine::GetStartingStrokeForNormalModeProcessing() const {
-  if (history.IsEmpty()) {
-    return 0;
-  }
-
-  const size_t maximumConversionStrokes =
-      dictionary.GetMaximumOutlineLength() +
-      SEGMENT_CONVERSION_PREFIX_SUFFIX_LIMIT;
+  const size_t maximumConversionStrokes = dictionary.GetMaximumOutlineLength();
   if (history.GetCount() < maximumConversionStrokes) {
     return 0;
   }
@@ -64,38 +58,39 @@ size_t StenoEngine::GetStartingStrokeForNormalModeProcessing() const {
   const StenoState &lastState = history[lastLookupIndex].state;
   if (!lastState.isSpace && !lastState.isHistoryExtending &&
       !lastState.requestsHistoryExtending) {
-    return startingStrokeIndex;
-  }
-
-  size_t loops = 1;
-  while (lastLookupIndex > 0 &&
-         history[lastLookupIndex].state.requestsHistoryExtending) {
-    ++loops;
-    lastLookupIndex = history.GetIndexOfWordStart(lastLookupIndex - 1);
-  }
-
-  do {
-    if (placeSpaceAfter) {
-      while (lastLookupIndex > 0) {
-        const size_t previousStartIndex =
-            history.GetIndexOfWordStart(lastLookupIndex - 1);
-        if (!history[previousStartIndex].state.isSpace) {
-          break;
-        }
-        lastLookupIndex = previousStartIndex;
-      }
-    }
-
-    while (lastLookupIndex > 0) {
+    // Not fingerspelling -- trace back extra prefixes and suffixes up to limit.
+    const size_t MAX_EXTRA_STROKES = 4;
+    const size_t limit = startingStrokeIndex > MAX_EXTRA_STROKES
+                             ? startingStrokeIndex - MAX_EXTRA_STROKES
+                             : 0;
+    while (lastLookupIndex > limit) {
       const size_t previousStartIndex =
           history.GetIndexOfWordStart(lastLookupIndex - 1);
-      if (!history[previousStartIndex].state.isHistoryExtending) {
+      if (!history[lastLookupIndex].state.isSuffix &&
+          !history[previousStartIndex].state.joinNext) {
         break;
       }
       lastLookupIndex = previousStartIndex;
     }
+  } else {
+    // Fingerspelling -- trace back as far as one unit.
+    size_t loops = 1;
+    while (lastLookupIndex > 0 &&
+           history[lastLookupIndex].state.requestsHistoryExtending) {
+      ++loops;
+      lastLookupIndex = history.GetIndexOfWordStart(lastLookupIndex - 1);
+    }
 
-    if (!placeSpaceAfter) {
+    do {
+      while (lastLookupIndex > 0) {
+        const size_t previousStartIndex =
+            history.GetIndexOfWordStart(lastLookupIndex - 1);
+        if (!history[previousStartIndex].state.isHistoryExtending) {
+          break;
+        }
+        lastLookupIndex = previousStartIndex;
+      }
+
       while (lastLookupIndex > 0) {
         const size_t previousStartIndex =
             history.GetIndexOfWordStart(lastLookupIndex - 1);
@@ -104,8 +99,8 @@ size_t StenoEngine::GetStartingStrokeForNormalModeProcessing() const {
         }
         lastLookupIndex = previousStartIndex;
       }
-    }
-  } while (--loops);
+    } while (--loops);
+  }
 
   return lastLookupIndex < startingStrokeIndex ? lastLookupIndex
                                                : startingStrokeIndex;
@@ -462,7 +457,7 @@ void StenoEngine::PrintPaperTape(
   // Unescape buffer commands.
   const char *lookup = segment.lookup.GetText();
   if (Str::HasPrefix(lookup, "{:=")) {
-    const char *p = lookup + 2;
+    const char *p = lookup + 3;
     BufferWriter writer;
     while (*p && *p != '}') {
       int c = *p++;

@@ -22,6 +22,7 @@ struct BuildSegmentContext {
                       bool allowSetValue);
 
   bool allowSetValue;
+  const char *lastSegmentCommand = nullptr;
   StenoSegmentList &segmentList;
   StenoEngine &engine;
   const StenoDictionary &dictionary;
@@ -66,6 +67,9 @@ public:
   void CreateSegments(BuildSegmentContext &context,
                       size_t minimumStartOffset = 0) {
     AddSegments(context, minimumStartOffset);
+    if (context.lastSegmentCommand) {
+      UpdateLastSegmentWithCommand(context, context.lastSegmentCommand);
+    }
   }
 
   size_t GetStateIndex(const StenoState *v) const { return v - states; }
@@ -84,6 +88,7 @@ private:
   bool hasModifiedStrokeHistory;
   bool hasRawStroke;
   size_t count = 0;
+  const char *lastSegmentCommand;
   StenoStroke strokes[BUFFER_SIZE];
   StenoState states[BUFFER_SIZE];
 
@@ -120,6 +125,9 @@ private:
 
   bool AutoSuffixLookup(BuildSegmentContext &context, size_t &offset);
   void AddRawStroke(BuildSegmentContext &context, size_t &offset);
+
+  void UpdateLastSegmentWithCommand(BuildSegmentContext &context,
+                                    const char *command);
 
   StenoSegment AutoSuffixTest(BuildSegmentContext &context, size_t offset,
                               size_t startLength, size_t minimumLength);

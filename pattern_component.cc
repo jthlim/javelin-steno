@@ -178,15 +178,28 @@ bool LiteralPatternComponent::Match(const char *p,
 ContainerPatternComponent::ContainerPatternComponent(
     PatternComponent *initialComponent) {
   componentCount = 1;
+#if JAVELIN_USE_PATTERN_JIT
+  components =
+      (PatternComponent **)operator new(4 * sizeof(PatternComponent *));
+#else
   components = (PatternComponent **)malloc(4 * sizeof(PatternComponent *));
+#endif
   components[0] = initialComponent;
 }
 
 void ContainerPatternComponent::Add(PatternComponent *component) {
   const size_t capacity = (componentCount + 3) & -4;
   if (componentCount == capacity) {
+#if JAVELIN_USE_PATTERN_JIT
+    PatternComponent **newComponents = (PatternComponent **)operator new(
+        (capacity + 4) * sizeof(PatternComponent *));
+    memcpy(newComponents, components,
+           (capacity + 4) * sizeof(PatternComponent *));
+    components = newComponents;
+#else
     components = (PatternComponent **)realloc(
         components, (capacity + 4) * sizeof(PatternComponent *));
+#endif
   }
   components[componentCount++] = component;
 }

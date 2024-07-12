@@ -36,7 +36,6 @@ StenoEngine::StenoEngine(StenoDictionary &dictionary,
                          StenoUserDictionary *userDictionary)
     : dictionary(dictionary), orthography(orthography),
       userDictionary(userDictionary) {
-
   previousConversionBuffer.Prepare(&this->orthography, &this->dictionary);
   nextConversionBuffer.Prepare(&this->orthography, &this->dictionary);
   ResetState();
