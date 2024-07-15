@@ -37,6 +37,9 @@ public:
   static void DisableScriptEvents_Binding(void *context,
                                           const char *commandLine);
   void AddConsoleCommands(Console &console);
+  void PrintScriptHistory() { script.PrintScriptHistory(); }
+
+  uint32_t Crc() const { return script.Crc(); }
 
 private:
   ScriptManager(const uint8_t *scriptByteCode);

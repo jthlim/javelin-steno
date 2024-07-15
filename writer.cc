@@ -11,6 +11,9 @@
 const int FLAG_FILL_ZERO = 1;
 const int FLAG_LENGTH_64_BIT = 2;
 
+constexpr char BASE64_ALPHABET[] =
+    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+
 //---------------------------------------------------------------------------
 
 static void Reverse(char *start, char *end) {
@@ -54,6 +57,40 @@ static char *WriteReversedHex64(char *p, uint64_t v, const char *alphabet) {
 }
 
 void IWriter::WriteString(const char *s) { Write(s, Str::Length(s)); }
+
+void IWriter::WriteBase64(const void *data, size_t length) {
+  // 3*8 bits -> 4*6
+  const uint8_t *p = (const uint8_t *)data;
+  while (length >= 3) {
+    uint32_t value = (p[0] << 16) + (p[1] << 8) + p[2];
+
+    WriteByte(BASE64_ALPHABET[value >> 18]);
+    WriteByte(BASE64_ALPHABET[(value >> 12) & 0x3f]);
+    WriteByte(BASE64_ALPHABET[(value >> 6) & 0x3f]);
+    WriteByte(BASE64_ALPHABET[value & 0x3f]);
+
+    p += 3;
+    length -= 3;
+  }
+
+  switch (length) {
+  case 1: {
+    int value = p[0];
+    WriteByte(BASE64_ALPHABET[value >> 2]);
+    WriteByte(BASE64_ALPHABET[(value << 4) & 0x3f]);
+    WriteByte('=');
+    WriteByte('=');
+  } break;
+
+  case 2: {
+    int value = (p[0] << 8) + p[1];
+    WriteByte(BASE64_ALPHABET[value >> 10]);
+    WriteByte(BASE64_ALPHABET[(value >> 4) & 0x3f]);
+    WriteByte(BASE64_ALPHABET[(value << 2) & 0x3f]);
+    WriteByte('=');
+  } break;
+  }
+}
 
 void IWriter::Printf(const char *p, ...) {
   va_list args;
@@ -228,6 +265,13 @@ void IWriter::Vprintf(const char *p, va_list args) {
         p = strokes[j].ToString(p);
         Write(scratch, p - scratch);
       }
+      goto NextSegment;
+    }
+    case 'D': {
+      // Write Data as Base64 Dat
+      const void *data = va_arg(args, const void *);
+      const size_t length = va_arg(args, size_t);
+      WriteBase64(data, length);
       goto NextSegment;
     }
     case 'J': {

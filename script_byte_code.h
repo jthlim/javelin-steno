@@ -1,6 +1,7 @@
 //---------------------------------------------------------------------------
 
 #pragma once
+#include "crc.h"
 #include <stddef.h>
 #include <stdint.h>
 
@@ -176,6 +177,11 @@ enum class StenoScriptOperator : uint8_t {
   DECREMENT,                // 0x18
 };
 
+struct StenoScriptHashTable {
+  uint16_t size;
+  uint16_t offsets[1];
+};
+
 struct StenoScriptByteCodeData {
   union {
     uint8_t magic[4]; // JSS3
@@ -186,6 +192,25 @@ struct StenoScriptByteCodeData {
 
   bool IsValid() const { return magic4 == SCRIPT_MAGIC; }
   const uint8_t *FindStringOrReturnOriginal(const uint8_t *string) const;
+  const StenoScriptHashTable *GetHashTable() const {
+    const uint8_t *base = (const uint8_t *)this;
+    return (const StenoScriptHashTable *)(base + stringHashTableOffset);
+  }
+
+  size_t GetLength() const {
+    return stringHashTableOffset + 2 + sizeof(uint16_t) * GetHashTable()->size;
+  }
+
+  uint32_t Crc() const { return Crc32(this, GetLength()); }
+};
+
+struct JavelinLayoutData {
+  uint32_t expectedScriptCrc;
+  size_t length;
+  uint8_t data[0];
+
+  size_t GetEffectiveLength() const;
+  static void GetJavelinLayoutParameter();
 };
 
 //---------------------------------------------------------------------------

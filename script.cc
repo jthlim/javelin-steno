@@ -61,6 +61,10 @@ bool Script::IsValid() const {
   return ((StenoScriptByteCodeData *)byteCode)->IsValid();
 }
 
+uint32_t Script::Crc() const {
+  return ((StenoScriptByteCodeData *)byteCode)->Crc();
+}
+
 void Script::ReleaseAll() {
   for (const size_t keyIndex : keyState) {
     Key::Release(uint32_t(keyIndex));
@@ -206,7 +210,7 @@ struct Script::ScriptTimerContext final : public TimerHandler,
     // executionContext.Run can cause this object to be destroyed, and a local
     // copy is needed so that the last line does not corrupt memory.
     Script *localScript = script;
-    *(script->stackTop++) = id;
+    *(localScript->stackTop++) = id;
 
     ExecutionContext executionContext;
     executionContext.Run(*script, offset);
@@ -744,8 +748,12 @@ void Script::ExecutionContext::Run(Script &script, size_t offset) {
         continue;
       case SF::SEND_EVENT: {
         const intptr_t offset = script.Pop();
+        const char *text = (const char *)script.byteCode + offset;
+        for (size_t i = 0; i < EVENT_HISTORY_COUNT - 1; ++i) {
+          script.eventHistory[i] = script.eventHistory[i + 1];
+        }
+        script.eventHistory[EVENT_HISTORY_COUNT - 1] = text;
         if (script.scriptEventsEnabled) {
-          const char *text = (const char *)script.byteCode + offset;
           Console::WriteScriptEvent(text);
         }
         continue;
@@ -987,6 +995,24 @@ void Script::ExecutionContext::Run(Script &script, size_t offset) {
     }
     }
   }
+}
+
+void Script::PrintScriptHistory() {
+  Console::Printf("[");
+  bool first = true;
+  for (const char *event : eventHistory) {
+    if (first) {
+      first = false;
+    } else {
+      Console::Printf(",");
+    }
+    if (event) {
+      Console::Printf("\"%J\"", event);
+    } else {
+      Console::Printf("null");
+    }
+  }
+  Console::Printf("]\n\n");
 }
 
 void Script::RunConsoleCommand(const char *command) {

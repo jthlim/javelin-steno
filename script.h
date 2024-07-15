@@ -71,12 +71,17 @@ public:
   void EnableScriptEvents() { scriptEventsEnabled = true; }
   void DisableScriptEvents() { scriptEventsEnabled = false; }
 
+  void PrintScriptHistory();
+
   void Reset();
   bool IsValid() const;
+
+  uint32_t Crc() const;
 
 private:
   struct ScriptTimerContext;
 
+  static const size_t EVENT_HISTORY_COUNT = 4;
   static const size_t MAX_STACK_SIZE = 256;
 
   bool scriptEventsEnabled = false;
@@ -89,6 +94,7 @@ private:
   intptr_t *stackTop = stack;
   StenoKeyState stenoState;
   LimitedBufferWriter consoleWriter;
+  const char *eventHistory[EVENT_HISTORY_COUNT];
   size_t scriptOffsets[(int)ScriptId::COUNT];
   BitField<256> buttonState;
   BitField<256> keyState;

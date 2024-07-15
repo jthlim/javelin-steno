@@ -16,6 +16,7 @@ public:
   virtual void Write(const char *data, size_t length) = 0;
 
   void WriteString(const char *s);
+  void WriteBase64(const void *data, size_t length);
 
   void Printf(const char *p, ...);
   void Vprintf(const char *p, va_list args);

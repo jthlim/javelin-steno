@@ -168,7 +168,7 @@ static int GCD(int a, int b) {
     return a;
   }
 
-  int commonPowerOf2 = __builtin_ctz(a | b);
+  const int commonPowerOf2 = __builtin_ctz(a | b);
 
   a >>= __builtin_ctz(a);
 
@@ -176,7 +176,7 @@ static int GCD(int a, int b) {
     b >>= __builtin_ctz(b);
 
     if (a > b) {
-      int temp = a;
+      const int temp = a;
       a = b;
       b = temp;
     }
