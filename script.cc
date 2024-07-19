@@ -51,6 +51,10 @@ void Script::Reset() {
   pressCount = 0;
   releaseCount = 0;
   stenoState = 0;
+  eventHistory[0] = nullptr;
+  eventHistory[1] = nullptr;
+  eventHistory[2] = nullptr;
+  eventHistory[3] = nullptr;
   stackTop = stack;
   keyState.ClearAll();
   Mem::Clear(scriptOffsets);
@@ -549,7 +553,7 @@ void Script::ExecutionContext::Run(Script &script, size_t offset) {
       case SF::PRESS_ALL:
         script.inPressAllCount++;
         for (const size_t buttonIndex : script.buttonState) {
-          script.HandlePress(buttonIndex, script.scriptTime);
+          script.CallPress(buttonIndex, script.scriptTime);
         }
         script.inPressAllCount--;
         continue;
@@ -894,7 +898,7 @@ void Script::ExecutionContext::Run(Script &script, size_t offset) {
       case SF::CALL_ALL_RELEASE_SCRIPTS:
         script.inReleaseAllCount++;
         for (const size_t buttonIndex : script.buttonState) {
-          script.HandleRelease(buttonIndex, script.scriptTime);
+          script.CallRelease(buttonIndex, script.scriptTime);
         }
         script.inReleaseAllCount--;
         continue;

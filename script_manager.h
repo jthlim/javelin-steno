@@ -39,7 +39,7 @@ public:
   void AddConsoleCommands(Console &console);
   void PrintScriptHistory() { script.PrintScriptHistory(); }
 
-  uint32_t Crc() const { return script.Crc(); }
+  uint32_t Crc() const { return isScriptValid ? 0 : script.Crc(); }
 
 private:
   ScriptManager(const uint8_t *scriptByteCode);

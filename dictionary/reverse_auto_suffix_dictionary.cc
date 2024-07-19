@@ -94,9 +94,12 @@ void StenoReverseAutoSuffixDictionary::ProcessReverseAutoSuffix(
   // matches.
   char *replacedSuffix = match.Replace(test.replacement);
 
-  char *withoutSuffix = (char *)malloc(lookup.definitionLength + 8);
+  const size_t replacedSuffixWithNulLength = strlen(replacedSuffix) + 1;
+  char *withoutSuffix =
+      (char *)malloc(definitionOffset + replacedSuffixWithNulLength);
   memcpy(withoutSuffix, lookup.definition, definitionOffset);
-  strcpy(withoutSuffix + definitionOffset, replacedSuffix);
+  memcpy(withoutSuffix + definitionOffset, replacedSuffix,
+         replacedSuffixWithNulLength);
   free(replacedSuffix);
 
   char *suffix = Str::DupN(test.text + 3, test.textLength - 4);

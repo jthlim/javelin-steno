@@ -52,12 +52,12 @@ public:
 
   void HandlePress(size_t keyIndex, uint32_t scriptTime) {
     buttonState.Set(keyIndex);
-    ExecuteScriptIndex(keyIndex * 2 + 2, scriptTime);
+    CallPress(keyIndex, scriptTime);
   }
 
   void HandleRelease(size_t keyIndex, uint32_t scriptTime) {
     buttonState.Clear(keyIndex);
-    ExecuteScriptIndex(keyIndex * 2 + 3, scriptTime);
+    CallRelease(keyIndex, scriptTime);
   }
 
   void PrintInfo() const;
@@ -94,7 +94,7 @@ private:
   intptr_t *stackTop = stack;
   StenoKeyState stenoState;
   LimitedBufferWriter consoleWriter;
-  const char *eventHistory[EVENT_HISTORY_COUNT];
+  const char *eventHistory[EVENT_HISTORY_COUNT] = {};
   size_t scriptOffsets[(int)ScriptId::COUNT];
   BitField<256> buttonState;
   BitField<256> keyState;
@@ -138,6 +138,13 @@ private:
     if (scriptId < ScriptId::COUNT) {
       scriptOffsets[(size_t)scriptId] = scriptOffset;
     }
+  }
+
+  void CallPress(size_t keyIndex, uint32_t scriptTime) {
+    ExecuteScriptIndex(keyIndex * 2 + 2, scriptTime);
+  }
+  void CallRelease(size_t keyIndex, uint32_t scriptTime) {
+    ExecuteScriptIndex(keyIndex * 2 + 3, scriptTime);
   }
 };
 

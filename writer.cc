@@ -24,7 +24,7 @@ static void Reverse(char *start, char *end) {
   }
 }
 
-static char *WriteReversedUint32(char *p, uint32_t v) {
+template <typename T> static char *WriteReversed(char *p, T v) {
   do {
     *p++ = v % 10 + '0';
     v /= 10;
@@ -32,23 +32,8 @@ static char *WriteReversedUint32(char *p, uint32_t v) {
   return p;
 }
 
-static char *WriteReversedUint64(char *p, uint64_t v) {
-  do {
-    *p++ = v % 10 + '0';
-    v /= 10;
-  } while (v);
-  return p;
-}
-
-static char *WriteReversedHex32(char *p, uint32_t v, const char *alphabet) {
-  do {
-    *p++ = alphabet[v & 0xf];
-    v >>= 4;
-  } while (v);
-  return p;
-}
-
-static char *WriteReversedHex64(char *p, uint64_t v, const char *alphabet) {
+template <typename T>
+static char *WriteReversedHex(char *p, T v, const char *alphabet) {
   do {
     *p++ = alphabet[v & 0xf];
     v >>= 4;
@@ -62,20 +47,27 @@ void IWriter::WriteBase64(const void *data, size_t length) {
   // 3*8 bits -> 4*6
   const uint8_t *p = (const uint8_t *)data;
   while (length >= 3) {
-    uint32_t value = (p[0] << 16) + (p[1] << 8) + p[2];
+#if JAVELIN_CPU_CORTEX_M4
+    // There's some XIP reading bug that this sequence avoids.
+    // Using the default code causes the bzip2 header to be corrupted.
+    const uint32_t value = __builtin_bswap32(*(uint32_t *)p << 8);
+    p += 3;
+#else
+    const uint32_t value = (p[0] << 16) + (p[1] << 8) + p[2];
+    p += 3;
+#endif
 
     WriteByte(BASE64_ALPHABET[value >> 18]);
     WriteByte(BASE64_ALPHABET[(value >> 12) & 0x3f]);
     WriteByte(BASE64_ALPHABET[(value >> 6) & 0x3f]);
     WriteByte(BASE64_ALPHABET[value & 0x3f]);
 
-    p += 3;
     length -= 3;
   }
 
   switch (length) {
   case 1: {
-    int value = p[0];
+    const uint32_t value = p[0];
     WriteByte(BASE64_ALPHABET[value >> 2]);
     WriteByte(BASE64_ALPHABET[(value << 4) & 0x3f]);
     WriteByte('=');
@@ -83,7 +75,7 @@ void IWriter::WriteBase64(const void *data, size_t length) {
   } break;
 
   case 2: {
-    int value = (p[0] << 8) + p[1];
+    const uint32_t value = (p[0] << 8) + p[1];
     WriteByte(BASE64_ALPHABET[value >> 10]);
     WriteByte(BASE64_ALPHABET[(value >> 4) & 0x3f]);
     WriteByte(BASE64_ALPHABET[(value << 2) & 0x3f]);
@@ -162,14 +154,14 @@ void IWriter::Vprintf(const char *p, va_list args) {
           *t++ = '-';
           v = -v;
         }
-        end = WriteReversedUint64(t, v);
+        end = WriteReversed<uint64_t>(t, v);
       } else {
         int32_t v = va_arg(args, int32_t);
         if (v < 0) {
           *t++ = '-';
           v = -v;
         }
-        end = WriteReversedUint32(t, v);
+        end = WriteReversed<uint32_t>(t, v);
       }
       Reverse(t, end);
       break;
@@ -178,10 +170,10 @@ void IWriter::Vprintf(const char *p, va_list args) {
     case 'u':
       if (flags & FLAG_LENGTH_64_BIT) {
         const uint64_t v = va_arg(args, uint64_t);
-        end = WriteReversedUint64(start, v);
+        end = WriteReversed<uint64_t>(start, v);
       } else {
         const uint32_t v = va_arg(args, uint32_t);
-        end = WriteReversedUint32(start, v);
+        end = WriteReversed<uint32_t>(start, v);
       }
       Reverse(start, end);
       break;
@@ -189,10 +181,10 @@ void IWriter::Vprintf(const char *p, va_list args) {
     case 'x':
       if (flags & FLAG_LENGTH_64_BIT) {
         const uint64_t v = va_arg(args, uint64_t);
-        end = WriteReversedHex64(start, v, "0123456789abcdef");
+        end = WriteReversedHex<uint64_t>(start, v, "0123456789abcdef");
       } else {
         const uint32_t v = va_arg(args, uint32_t);
-        end = WriteReversedHex32(start, v, "0123456789abcdef");
+        end = WriteReversedHex<uint32_t>(start, v, "0123456789abcdef");
       }
       Reverse(start, end);
       break;
@@ -200,10 +192,10 @@ void IWriter::Vprintf(const char *p, va_list args) {
     case 'X':
       if (flags & FLAG_LENGTH_64_BIT) {
         const uint64_t v = va_arg(args, uint64_t);
-        end = WriteReversedHex64(start, v, "0123456789ABCDEF");
+        end = WriteReversedHex<uint64_t>(start, v, "0123456789ABCDEF");
       } else {
         const uint32_t v = va_arg(args, uint32_t);
-        end = WriteReversedHex32(start, v, "0123456789ABCDEF");
+        end = WriteReversedHex<uint32_t>(start, v, "0123456789ABCDEF");
       }
       Reverse(start, end);
       break;
@@ -211,10 +203,10 @@ void IWriter::Vprintf(const char *p, va_list args) {
     case 'p':
       if (sizeof(void *) == sizeof(uint64_t)) {
         const uint64_t v = va_arg(args, uint64_t);
-        end = WriteReversedHex64(start, v, "0123456789abcdef");
+        end = WriteReversedHex<uint64_t>(start, v, "0123456789abcdef");
       } else {
         const uint32_t v = va_arg(args, uint32_t);
-        end = WriteReversedHex32(start, v, "0123456789abcdef");
+        end = WriteReversedHex<uint32_t>(start, v, "0123456789abcdef");
       }
       Reverse(start, end);
       break;

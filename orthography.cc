@@ -322,9 +322,10 @@ void StenoCompiledOrthography::AddCandidates(BestCandidate &bestCandidate,
 
     char *candidate = match.Replace(data.rules[i].replacement);
     if (offset != 0) {
-      char *fullCandidate = (char *)malloc(offset + strlen(candidate) + 1);
+      const size_t candidateWithNulLength = strlen(candidate) + 1;
+      char *fullCandidate = (char *)malloc(offset + candidateWithNulLength);
       memcpy(fullCandidate, word, offset);
-      strcpy(fullCandidate + offset, candidate);
+      memcpy(fullCandidate + offset, candidate, candidateWithNulLength);
       free(candidate);
       candidate = fullCandidate;
     }

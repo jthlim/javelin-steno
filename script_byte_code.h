@@ -204,13 +204,4 @@ struct StenoScriptByteCodeData {
   uint32_t Crc() const { return Crc32(this, GetLength()); }
 };
 
-struct JavelinLayoutData {
-  uint32_t expectedScriptCrc;
-  size_t length;
-  uint8_t data[0];
-
-  size_t GetEffectiveLength() const;
-  static void GetJavelinLayoutParameter();
-};
-
 //---------------------------------------------------------------------------
