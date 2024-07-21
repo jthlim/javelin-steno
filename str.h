@@ -15,6 +15,7 @@ public:
   static bool Contains(const char *p, char c) {
     return strchr(p, c) != nullptr;
   }
+  static bool IsSpace(const char *p);
 
   static char *Join(const char *const *p, size_t n);
 

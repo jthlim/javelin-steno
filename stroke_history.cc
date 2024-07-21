@@ -54,7 +54,7 @@ void StenoStrokeHistory::UpdateDefinitionBoundaries(
           lookupText[1] == ':' &&
           (Str::HasPrefix(lookupText, "{:==set_value") ||
            Str::HasPrefix(lookupText, "{:==retro_transform"));
-      state.isSpace = Str::Eq(lookupText, "{^ ^}");
+      state.isSpace = Str::IsSpace(lookupText);
       state.isHistoryExtending =
           Str::IsFingerSpellingCommand(lookupText) ||
           segment.lookup == StenoDictionaryLookupResult::NO_OP;

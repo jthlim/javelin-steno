@@ -10,6 +10,29 @@
 
 //---------------------------------------------------------------------------
 
+bool Str::IsSpace(const char *p) {
+  if (*p != '{') {
+    return false;
+  }
+
+  if (p[1] != '^') {
+    return false;
+  }
+
+  p += 2;
+  if (p[0] == '~' && p[1] == '|') {
+    p += 2;
+  }
+  if (*p == ' ' || *p == '\n') {
+    ++p;
+  } else if (p[0] == '\\' && p[1] == 'n') {
+    p += 2;
+  } else {
+    return false;
+  }
+  return p[0] == '^' && p[1] == '}';
+}
+
 char *Str::Asprintf(const char *p, ...) {
   va_list args;
   va_start(args, p);
@@ -238,6 +261,14 @@ TEST_BEGIN("Str::Trim returns correct results") {
   assert(TestTrim("ab ", "ab"));
   assert(TestTrim("ab  ", "ab"));
   assert(TestTrim("  ab  ", "ab"));
+}
+TEST_END
+
+TEST_BEGIN("Str::IsSpace returns correct results") {
+  assert(Str::IsSpace("{^ ^}"));
+  assert(Str::IsSpace("{^~|\n^}"));
+  assert(Str::IsSpace("{^\n^}"));
+  assert(Str::IsSpace("{^\\n^}"));
 }
 TEST_END
 

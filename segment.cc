@@ -74,7 +74,7 @@ size_t StenoSegmentList::GetWordStartingSegmentIndex(size_t endIndex) const {
       if (index > 0) {
         const char *previousLookup = (*this)[index - 1].lookup.GetText();
         if (Str::HasSuffix(previousLookup, "^}") &&
-            !Str::Eq(previousLookup, "{^ ^}")) {
+            !Str::IsSpace(previousLookup)) {
           --index;
           continue;
         }
@@ -85,7 +85,7 @@ size_t StenoSegmentList::GetWordStartingSegmentIndex(size_t endIndex) const {
   }
 
   // Special case leading spaces.
-  while (index && Str::Eq((*this)[index - 1].lookup.GetText(), "{^ ^}")) {
+  while (index && Str::IsSpace((*this)[index - 1].lookup.GetText())) {
     --index;
   }
 
