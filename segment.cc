@@ -57,6 +57,11 @@ size_t StenoSegmentList::GetWordStartingSegmentIndex(size_t endIndex) const {
 
   size_t index = endIndex;
 
+  // Special case trailing spaces.
+  while (index && Str::IsSpace((*this)[index].lookup.GetText())) {
+    --index;
+  }
+
   if (Str::IsFingerSpellingCommand((*this)[index].lookup.GetText())) {
     // In the case of finger spelling, keep consuming until all finger spelling
     // used.
@@ -82,11 +87,6 @@ size_t StenoSegmentList::GetWordStartingSegmentIndex(size_t endIndex) const {
 
       break;
     }
-  }
-
-  // Special case leading spaces.
-  while (index && Str::IsSpace((*this)[index - 1].lookup.GetText())) {
-    --index;
   }
 
   return index;
