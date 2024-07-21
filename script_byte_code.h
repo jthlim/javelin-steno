@@ -147,6 +147,8 @@ enum class StenoScriptFunction : uint8_t {
   GET_PRESS_COUNT,
   GET_RELEASE_COUNT,
   IS_STENO_JOIN_NEXT,
+  CALL_PRESS,
+  CALL_RELEASE,
 };
 
 enum class StenoScriptOperator : uint8_t {
@@ -175,6 +177,7 @@ enum class StenoScriptOperator : uint8_t {
   WORD_LOOKUP,              // 0x16
   INCREMENT,                // 0x17
   DECREMENT,                // 0x18
+  HALF_WORD_LOOKUP,         // 0x19
 };
 
 struct StenoScriptHashTable {

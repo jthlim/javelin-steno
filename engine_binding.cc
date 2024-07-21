@@ -202,9 +202,7 @@ void StenoEngine::Lookup_Binding(void *context, const char *commandLine) {
     Console::Printf("\"");
 
     const char *name = entry.dictionary->GetName();
-    if (*name == '#') {
-      Console::Printf(",\"dictionary\":\"#\"");
-    } else {
+    if (*name != '#') {
       Console::Printf(",\"dictionary\":\"%J\"", name);
       if (entry.dictionary->CanRemove()) {
         Console::Printf(",\"can_remove\":true");
@@ -263,7 +261,6 @@ void StenoEngine::LookupStroke_Binding(void *context, const char *commandLine) {
         isFirst = false;
       }
       delete tokenizer;
-      Console::Printf("\",\"dictionary\":\"#\"}\n\n");
     } else {
       Console::Printf("null\n\n");
     }

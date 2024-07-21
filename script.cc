@@ -456,7 +456,7 @@ void Script::ExecutionContext::Run(Script &script, size_t offset) {
     case BC::OPERATOR_START + (int)OP::WORD_LOOKUP: {
       const intptr_t index = script.Pop();
       const intptr_t offset = script.Pop();
-      const int32_t *data = (const int32_t *)(script.byteCode + offset);
+      const intptr_t *data = (const intptr_t *)(script.byteCode + offset);
       script.Push(data[index]);
       continue;
     }
@@ -466,6 +466,13 @@ void Script::ExecutionContext::Run(Script &script, size_t offset) {
     case BC::OPERATOR_START + (int)OP::DECREMENT:
       script.UnaryOp([](intptr_t a) -> intptr_t { return a - 1; });
       continue;
+    case BC::OPERATOR_START + (int)OP::HALF_WORD_LOOKUP: {
+      const intptr_t index = script.Pop();
+      const intptr_t offset = script.Pop();
+      const uint16_t *data = (const uint16_t *)(script.byteCode + offset);
+      script.Push(data[index]);
+      continue;
+    }
     case BC::CALL_INTERNAL: {
       const StenoScriptFunction function = StenoScriptFunction(*p++);
 
@@ -917,6 +924,12 @@ void Script::ExecutionContext::Run(Script &script, size_t offset) {
 #else
         script.Push(0);
 #endif
+        continue;
+      case SF::CALL_PRESS:
+        script.CallPress(script.Pop(), script.scriptTime);
+        continue;
+      case SF::CALL_RELEASE:
+        script.CallPress(script.Pop(), script.scriptTime);
         continue;
       }
       continue;
