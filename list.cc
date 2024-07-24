@@ -50,6 +50,24 @@ void _ListBase::AddCount(const void *data, size_t n, size_t elementSize) {
   count = newCount;
 }
 
+void _ListBase::InsertAt(const void *data, size_t index, size_t elementSize) {
+  const size_t capacity = GetCapacity(count);
+  if (count == capacity) {
+    const size_t newCapacity = GetCapacity(count + 1);
+    uint8_t *newBuffer = (uint8_t *)malloc(newCapacity * elementSize);
+    memcpy(newBuffer, buffer, index * elementSize);
+    memcpy(newBuffer + (index + 1) * elementSize, buffer + index * elementSize,
+           (count - index) * elementSize);
+
+    free(buffer);
+    buffer = newBuffer;
+  } else {
+    memmove(buffer + (index + 1) * elementSize, buffer + index * elementSize,
+            (count - index) * elementSize);
+  }
+  ++count;
+}
+
 size_t _ListBase::GetCapacity(size_t count) {
   if (count == 0) {
     return 0;

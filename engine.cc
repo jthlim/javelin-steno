@@ -251,6 +251,8 @@ public:
   static void TestEngine(StenoEngine &engine);
   static void TestAddTranslation(StenoEngine &engine);
   static void TestScancodeAddTranslation(StenoEngine &engine);
+  static void TestRetroInsertSpace(StenoEngine &engine);
+  static void TestRetroInsertSpaceAutoSuffix(StenoEngine &engine);
   static void VerifyTextBuffer(StenoEngine &engine, const char *expected);
 };
 
@@ -461,6 +463,70 @@ TEST_BEGIN("Engine: Scancode Add Translation Test") {
 
   delete userDictionary;
   delete[] buffer;
+}
+TEST_END
+
+void StenoEngineTester::TestRetroInsertSpace(StenoEngine &engine) {
+  engine.ProcessStroke(StenoStroke("TEFT"));
+  VerifyTextBuffer(engine, "test");
+
+  engine.ProcessStroke(StenoStroke("SKWHU"));
+  VerifyTextBuffer(engine, "test");
+
+  engine.ProcessStroke(StenoStroke("TEFT"));
+  VerifyTextBuffer(engine, "test test");
+
+  engine.ProcessStroke(StenoStroke("-D"));
+  VerifyTextBuffer(engine, " tested");
+
+  engine.ProcessStroke(StenoStroke("SKWHU"));
+  VerifyTextBuffer(engine, " test -D");
+
+  engine.ProcessStroke(StenoStroke("TEFT"));
+  VerifyTextBuffer(engine, " -D test");
+}
+
+TEST_BEGIN("Engine: Verify =retro_insert_space") {
+
+  StenoDictionaryList dictionaryList(
+      DICTIONARIES, sizeof(DICTIONARIES) / sizeof(*DICTIONARIES)); // NOLINT
+  const StenoCompiledOrthography orthography(
+      StenoOrthography::emptyOrthography);
+  StenoEngine engine(dictionaryList, orthography);
+
+  const StenoEngineTester tester;
+  tester.TestRetroInsertSpace(engine);
+}
+TEST_END
+
+void StenoEngineTester::TestRetroInsertSpaceAutoSuffix(StenoEngine &engine) {
+  engine.ProcessStroke(StenoStroke("TEFTD"));
+  VerifyTextBuffer(engine, "tested");
+
+  engine.ProcessStroke(StenoStroke("SKWHU"));
+  VerifyTextBuffer(engine, "tested");
+
+  engine.ProcessStroke(StenoStroke("TEFTD"));
+  VerifyTextBuffer(engine, "tested tested");
+
+  engine.ProcessStroke(StenoStroke("TEFTD"));
+  VerifyTextBuffer(engine, " tested tested");
+
+  engine.ProcessStroke(StenoStroke("TEFTD"));
+  VerifyTextBuffer(engine, " tested tested tested");
+
+  engine.ProcessStroke(StenoStroke("TEFTD"));
+  VerifyTextBuffer(engine, " tested tested tested");
+}
+
+TEST_BEGIN("Engine: Verify =retro_insert_space with auto-suffix") {
+  StenoDictionaryList dictionaryList(
+      DICTIONARIES, sizeof(DICTIONARIES) / sizeof(*DICTIONARIES)); // NOLINT
+  const StenoCompiledOrthography orthography(testOrthography);
+  StenoEngine engine(dictionaryList, orthography);
+
+  const StenoEngineTester tester;
+  tester.TestRetroInsertSpaceAutoSuffix(engine);
 }
 TEST_END
 

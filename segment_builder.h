@@ -95,7 +95,7 @@ private:
   char *EscapeCommand(const char *p);
   void EscapeCommand(BufferWriter &writer, const char *p);
 
-  void AddSegments(BuildSegmentContext &context, size_t offset);
+  void AddSegments(BuildSegmentContext &context, size_t &offset);
 
   void ResetStrokes(size_t offset, size_t length);
 

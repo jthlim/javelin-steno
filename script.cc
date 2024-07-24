@@ -281,8 +281,7 @@ void Script::ExecutionContext::Run(Script &script, size_t offset) {
   const uint8_t *p = script.byteCode + offset;
 
   for (;;) {
-    const uint8_t c = *p++;
-    switch (c) {
+    switch (const uint8_t c = *p++; c) {
     case BC::PUSH_CONSTANT_START... BC::PUSH_CONSTANT_END:
       script.Push(c);
       continue;

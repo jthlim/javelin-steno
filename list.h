@@ -35,6 +35,7 @@ protected:
 
   void Add(const void *data, size_t elementSize);
   void AddCount(const void *data, size_t n, size_t elementSize);
+  void InsertAt(const void *data, size_t index, size_t elementSize);
 
   size_t count;
   uint8_t *buffer;
@@ -63,6 +64,8 @@ public:
       Add(v);
     }
   }
+
+  void InsertAt(size_t i, const T &v) { _ListBase::InsertAt(&v, i, sizeof(T)); }
 
   void Sort(int (*comparator)(const T *, const T *)) {
     qsort(buffer, count, sizeof(T),
