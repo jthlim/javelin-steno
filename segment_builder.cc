@@ -401,9 +401,8 @@ void StenoSegmentBuilder::ReevaluateSegments(BuildSegmentContext &context,
       segment = &context.segmentList[i];
     }
 
-    if (segment->strokeLength == 1) {
-      segment->lookupType = SegmentLookupType::DIRECT;
-    } else {
+    segment->lookupType = SegmentLookupType::DIRECT;
+    if (segment->strokeLength != 1) {
       segment->state++;
       segment->strokeLength--;
       context.segmentList.InsertAt(

@@ -65,6 +65,7 @@ void _ListBase::InsertAt(const void *data, size_t index, size_t elementSize) {
     memmove(buffer + (index + 1) * elementSize, buffer + index * elementSize,
             (count - index) * elementSize);
   }
+  memcpy(buffer + index * elementSize, data, elementSize);
   ++count;
 }
 
