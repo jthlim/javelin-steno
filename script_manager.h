@@ -36,6 +36,10 @@ public:
                                          const char *commandLine);
   static void DisableScriptEvents_Binding(void *context,
                                           const char *commandLine);
+  static void EnableButtonStateUpdates_Binding(void *context,
+                                               const char *commandLine);
+  static void DisableButtonStateUpdates_Binding(void *context,
+                                                const char *commandLine);
   void AddConsoleCommands(Console &console);
   void PrintScriptHistory() { script.PrintScriptHistory(); }
 
@@ -45,8 +49,11 @@ private:
   ScriptManager(const uint8_t *scriptByteCode);
 
   bool isScriptValid;
+  bool isButtonStateUpdatesEnabled;
   ButtonState buttonState;
   Script script;
+
+  void SendButtonStateUpdate() const;
 
   static JavelinStaticAllocate<ScriptManager> container;
 };

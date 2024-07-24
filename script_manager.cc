@@ -10,6 +10,7 @@
 //---------------------------------------------------------------------------
 
 #define CONSOLE_LOG_BUTTON_PRESSES 0
+#define ENABLE_BUTTON_STATE_UPDATES 0
 
 //---------------------------------------------------------------------------
 
@@ -58,6 +59,7 @@ void ScriptManager::Update(const ButtonState &newButtonState,
     script.IncrementPressCount();
     script.HandlePress(buttonIndex, scriptTime);
   }
+  SendButtonStateUpdate();
 }
 
 void ScriptManager::ExecuteScript(ScriptId scriptId) {
@@ -78,6 +80,7 @@ void ScriptManager::PressButton(size_t index, uint32_t scriptTime) {
   }
   buttonState.Set(index);
   script.HandlePress(index, scriptTime);
+  SendButtonStateUpdate();
 }
 
 void ScriptManager::ReleaseButton(size_t index, uint32_t scriptTime) {
@@ -86,6 +89,16 @@ void ScriptManager::ReleaseButton(size_t index, uint32_t scriptTime) {
   }
   buttonState.Clear(index);
   script.HandleRelease(index, scriptTime);
+  SendButtonStateUpdate();
+}
+
+void ScriptManager::SendButtonStateUpdate() const {
+#if ENABLE_BUTTON_STATE_UPDATES
+  if (isButtonStateUpdatesEnabled) {
+    Console::Printf("EV {\"event\":\"button_state\",\"data\":\"%D\"}\n\n",
+                    &buttonState, sizeof(buttonState));
+  }
+#endif
 }
 
 //---------------------------------------------------------------------------
@@ -127,12 +140,32 @@ void ScriptManager::DisableScriptEvents_Binding(void *context,
   Console::SendOk();
 }
 
+void ScriptManager::EnableButtonStateUpdates_Binding(void *context,
+                                                     const char *commandLine) {
+  ((ScriptManager *)context)->isButtonStateUpdatesEnabled = true;
+  Console::SendOk();
+}
+
+void ScriptManager::DisableButtonStateUpdates_Binding(void *context,
+                                                      const char *commandLine) {
+  ((ScriptManager *)context)->isButtonStateUpdatesEnabled = false;
+  Console::SendOk();
+}
+
 void ScriptManager::AddConsoleCommands(Console &console) {
   console.RegisterCommand("enable_script_events", "Enables events from scripts",
                           EnableScriptEvents_Binding, &script);
   console.RegisterCommand("disable_script_events",
                           "Disables events from scripts",
                           DisableScriptEvents_Binding, &script);
+#if ENABLE_BUTTON_STATE_UPDATES
+  console.RegisterCommand("enable_button_state_updates",
+                          "Enables button state updates",
+                          EnableButtonStateUpdates_Binding, this);
+  console.RegisterCommand("disable_button_state_updates",
+                          "Disables button state updates",
+                          DisableButtonStateUpdates_Binding, this);
+#endif
 }
 
 //---------------------------------------------------------------------------

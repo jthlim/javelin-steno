@@ -280,7 +280,7 @@ void IWriter::Vprintf(const char *p, va_list args) {
       goto NextSegment;
     }
 
-    case '\0': // Shouldn't happen, but catc
+    case '\0': // Shouldn't happen
     default:
       // Just use span start.
       continue;
