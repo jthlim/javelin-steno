@@ -19,8 +19,9 @@ struct StenoConfigBlock {
   KeyboardLayout keyboardLayout;
   bool hidCompatibilityMode;
   bool useSpaceAfter;
+  bool allowButtonStateUpdates;
 
-  bool _reserved[21];
+  bool _reserved[20];
 
   int8_t keyMap[(int)StenoKey::COUNT];
 };

@@ -10,7 +10,6 @@
 //---------------------------------------------------------------------------
 
 #define CONSOLE_LOG_BUTTON_PRESSES 0
-#define ENABLE_BUTTON_STATE_UPDATES 0
 
 //---------------------------------------------------------------------------
 
@@ -93,12 +92,10 @@ void ScriptManager::ReleaseButton(size_t index, uint32_t scriptTime) {
 }
 
 void ScriptManager::SendButtonStateUpdate() const {
-#if ENABLE_BUTTON_STATE_UPDATES
   if (isButtonStateUpdatesEnabled) {
     Console::Printf("EV {\"event\":\"button_state\",\"data\":\"%D\"}\n\n",
                     &buttonState, sizeof(buttonState));
   }
-#endif
 }
 
 //---------------------------------------------------------------------------
@@ -142,7 +139,12 @@ void ScriptManager::DisableScriptEvents_Binding(void *context,
 
 void ScriptManager::EnableButtonStateUpdates_Binding(void *context,
                                                      const char *commandLine) {
-  ((ScriptManager *)context)->isButtonStateUpdatesEnabled = true;
+  ScriptManager *manager = (ScriptManager *)context;
+  if (!manager->allowButtonStateUpdates) {
+    Console::Printf("ERR Button state updates unavailable\n\n");
+    return;
+  }
+  manager->isButtonStateUpdatesEnabled = true;
   Console::SendOk();
 }
 
@@ -158,14 +160,12 @@ void ScriptManager::AddConsoleCommands(Console &console) {
   console.RegisterCommand("disable_script_events",
                           "Disables events from scripts",
                           DisableScriptEvents_Binding, &script);
-#if ENABLE_BUTTON_STATE_UPDATES
   console.RegisterCommand("enable_button_state_updates",
                           "Enables button state updates",
                           EnableButtonStateUpdates_Binding, this);
   console.RegisterCommand("disable_button_state_updates",
                           "Disables button state updates",
                           DisableButtonStateUpdates_Binding, this);
-#endif
 }
 
 //---------------------------------------------------------------------------

@@ -29,6 +29,10 @@ public:
   void PressButton(size_t index, uint32_t scriptTime);
   void ReleaseButton(size_t index, uint32_t scriptTime);
 
+  void SetAllowButtonStateUpdates(bool value) {
+    allowButtonStateUpdates = value;
+  }
+
   static void ExecuteScript(ScriptId scriptId);
   static ScriptManager &GetInstance() { return container.value; }
 
@@ -49,7 +53,12 @@ private:
   ScriptManager(const uint8_t *scriptByteCode);
 
   bool isScriptValid;
+
+  // Controlled by console commands.
   bool isButtonStateUpdatesEnabled;
+
+  // Controlled by firmware configuration.
+  bool allowButtonStateUpdates;
   ButtonState buttonState;
   Script script;
 
