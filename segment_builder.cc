@@ -15,10 +15,10 @@
 
 //---------------------------------------------------------------------------
 
-BuildSegmentContext::BuildSegmentContext(StenoSegmentList &segmentList,
+BuildSegmentContext::BuildSegmentContext(StenoSegmentList &segments,
                                          StenoEngine &engine,
                                          bool allowSetValue)
-    : allowSetValue(allowSetValue), segmentList(segmentList), engine(engine),
+    : allowSetValue(allowSetValue), segments(segments), engine(engine),
       dictionary(engine.GetDictionary()), orthography(engine.GetOrthography()),
       maximumOutlineLength(dictionary.GetMaximumOutlineLength()) {}
 
@@ -110,8 +110,8 @@ bool StenoSegmentBuilder::DirectLookup(BuildSegmentContext &context,
 
     if (lookupText[0] == '=') {
       if (Str::HasPrefix(lookupText, "=retro_transform:")) {
-        if (context.segmentList.IsEmpty()) {
-          context.segmentList.Add(
+        if (context.segments.IsEmpty()) {
+          context.segments.Add(
               StenoSegment(length, SegmentLookupType::DIRECT, states + offset,
                            StenoDictionaryLookupResult::CreateDynamicString(
                                EscapeCommand(lookupText))));
@@ -125,8 +125,8 @@ bool StenoSegmentBuilder::DirectLookup(BuildSegmentContext &context,
         return true;
       }
       if (Str::HasPrefix(lookupText, "=set_value:")) {
-        if (context.segmentList.IsEmpty()) {
-          context.segmentList.Add(
+        if (context.segments.IsEmpty()) {
+          context.segments.Add(
               StenoSegment(length, SegmentLookupType::DIRECT, states + offset,
                            StenoDictionaryLookupResult::CreateDynamicString(
                                EscapeCommand(lookupText))));
@@ -145,7 +145,7 @@ bool StenoSegmentBuilder::DirectLookup(BuildSegmentContext &context,
         EscapeCommand(writer, lookupText);
         CreateTransformString(writer, context, format);
         char *result = writer.TerminateStringAndAdoptBuffer();
-        context.segmentList.Add(StenoSegment(
+        context.segments.Add(StenoSegment(
             length, SegmentLookupType::DIRECT, states + offset,
             StenoDictionaryLookupResult::CreateDynamicString(result)));
         offset += length;
@@ -204,8 +204,8 @@ bool StenoSegmentBuilder::DirectLookup(BuildSegmentContext &context,
       }
     }
 
-    context.segmentList.Add(StenoSegment(length, SegmentLookupType::DIRECT,
-                                         states + offset, lookup));
+    context.segments.Add(StenoSegment(length, SegmentLookupType::DIRECT,
+                                      states + offset, lookup));
     offset += length;
     return true;
   }
@@ -222,23 +222,22 @@ bool StenoSegmentBuilder::AutoSuffixLookup(BuildSegmentContext &context,
           ? states
           : states + offset + 1 - context.maximumOutlineLength;
 
-  size_t startingSegment = context.segmentList.GetCount();
+  size_t startingSegment = context.segments.GetCount();
   while (startingSegment > 0) {
-    if (context.segmentList[startingSegment - 1].state < oldestState) {
+    if (context.segments[startingSegment - 1].state < oldestState) {
       break;
     }
 
     // If a previous segment is not direct, then it would have already attempted
     // to autosuffix as long as possible, so doesn't need to be extended.
-    if (context.segmentList[startingSegment - 1].lookupType !=
+    if (context.segments[startingSegment - 1].lookupType !=
         SegmentLookupType::DIRECT) {
       break;
     }
     --startingSegment;
   }
 
-  for (StenoSegment &existingSegment :
-       context.segmentList.Skip(startingSegment)) {
+  for (StenoSegment &existingSegment : context.segments.Skip(startingSegment)) {
     StenoSegment segment = AutoSuffixTest(context, existingSegment, offset);
     if (!segment.IsValid()) {
       continue;
@@ -246,12 +245,12 @@ bool StenoSegmentBuilder::AutoSuffixLookup(BuildSegmentContext &context,
 
     // There's a match! Pop off history.
     offset = segment.GetEndStrokeIndex(states);
-    StenoSegmentList &segmentList = context.segmentList;
+    StenoSegmentList &segments = context.segments;
     for (;;) {
-      StenoSegment &back = segmentList.Back();
+      StenoSegment &back = segments.Back();
       back.lookup.Destroy();
       if (&back != &existingSegment) {
-        segmentList.Pop();
+        segments.Pop();
 
         continue;
       }
@@ -277,7 +276,7 @@ bool StenoSegmentBuilder::AutoSuffixLookup(BuildSegmentContext &context,
   }
 
   // Auto-suffix worked. Add it to the list.
-  context.segmentList.Add(segment);
+  context.segments.Add(segment);
   offset += segment.strokeLength;
   return true;
 }
@@ -354,7 +353,7 @@ void StenoSegmentBuilder::AddRawStroke(BuildSegmentContext &context,
   char buffer[StenoStroke::MAX_STRING_LENGTH];
 
   strokes[offset].ToString(buffer);
-  context.segmentList.Add(StenoSegment(
+  context.segments.Add(StenoSegment(
       1, SegmentLookupType::STROKE, states + offset,
       StenoDictionaryLookupResult::CreateDynamicString(Str::Dup(buffer))));
   ++offset;
@@ -365,14 +364,14 @@ void StenoSegmentBuilder::ReevaluateSegments(BuildSegmentContext &context,
   // Removes all segments that could be affected and updates offset to
   // reprocess them.
   size_t currentOffset = offset;
-  while (context.segmentList.IsNotEmpty()) {
-    StenoSegment &lastSegment = context.segmentList.Back();
+  while (context.segments.IsNotEmpty()) {
+    StenoSegment &lastSegment = context.segments.Back();
     size_t lastOffset = lastSegment.GetStrokeIndex(states);
     if (lastOffset + context.maximumOutlineLength < currentOffset) {
       return;
     }
     lastSegment.lookup.Destroy();
-    context.segmentList.Pop();
+    context.segments.Pop();
     offset = lastOffset;
   }
 
@@ -380,8 +379,8 @@ void StenoSegmentBuilder::ReevaluateSegments(BuildSegmentContext &context,
   AddSegments(context, offset);
 
   // Ensure currentOffset is tagged with a DIRECT lookup
-  for (size_t i = 0; i < context.segmentList.GetCount(); ++i) {
-    StenoSegment *segment = &context.segmentList[i];
+  for (size_t i = 0; i < context.segments.GetCount(); ++i) {
+    StenoSegment *segment = &context.segments[i];
     size_t segmentOffset = segment->GetStrokeIndex(states);
     const size_t segmentEndOffset = segmentOffset + segment->strokeLength;
     if (segmentEndOffset <= currentOffset) {
@@ -394,18 +393,18 @@ void StenoSegmentBuilder::ReevaluateSegments(BuildSegmentContext &context,
       segment->lookupType = SegmentLookupType::DIRECT;
       segment->strokeLength = currentOffset - segmentOffset;
       ++i;
-      context.segmentList.InsertAt(
+      context.segments.InsertAt(
           i, StenoSegment(remainingLength, SegmentLookupType::DIRECT,
                           states + currentOffset,
                           StenoDictionaryLookupResult::CreateStaticString("")));
-      segment = &context.segmentList[i];
+      segment = &context.segments[i];
     }
 
     segment->lookupType = SegmentLookupType::DIRECT;
     if (segment->strokeLength != 1) {
       segment->state++;
       segment->strokeLength--;
-      context.segmentList.InsertAt(
+      context.segments.InsertAt(
           i, StenoSegment(1, SegmentLookupType::DIRECT, states + currentOffset,
                           StenoDictionaryLookupResult::CreateStaticString("")));
     }
@@ -444,8 +443,8 @@ void StenoSegmentBuilder::HandleRetroSetValue(BuildSegmentContext &context,
   // =set_value:0:1
   RetroSetValueParameters parameters;
 
-  if (context.segmentList.GetCount() == 0 || !parameters.Parse(command)) {
-    context.segmentList.Add(
+  if (context.segments.GetCount() == 0 || !parameters.Parse(command)) {
+    context.segments.Add(
         StenoSegment(length, SegmentLookupType::DIRECT, states + currentOffset,
                      StenoDictionaryLookupResult::CreateDynamicString(
                          EscapeCommand(command))));
@@ -457,24 +456,23 @@ void StenoSegmentBuilder::HandleRetroSetValue(BuildSegmentContext &context,
     ++format;
   }
 
-  size_t startingSegmentIndex = context.segmentList.GetCount();
+  size_t startingSegmentIndex = context.segments.GetCount();
   for (size_t i = 0; i < parameters.wordCount && startingSegmentIndex; ++i) {
-    startingSegmentIndex = context.segmentList.GetWordStartingSegmentIndex(
-        startingSegmentIndex - 1);
+    startingSegmentIndex =
+        context.segments.GetWordStartingSegmentIndex(startingSegmentIndex - 1);
   }
 
   // Only set the value if it is the last entry in the buffer.
   if (context.allowSetValue && currentOffset + length == count) {
     char *result =
-        context.engine.ConvertText(context.segmentList, startingSegmentIndex);
+        context.engine.ConvertText(context.segments, startingSegmentIndex);
 
     context.engine.SetTemplateValue(parameters.index, Str::Trim(result));
     free(result);
   }
 
-  for (size_t i = startingSegmentIndex; i < context.segmentList.GetCount();
-       ++i) {
-    StenoSegment &segment = context.segmentList[i];
+  for (size_t i = startingSegmentIndex; i < context.segments.GetCount(); ++i) {
+    StenoSegment &segment = context.segments[i];
     segment.lookup.Destroy();
     segment.lookup = StenoDictionaryLookupResult::NO_OP;
   }
@@ -498,9 +496,9 @@ void StenoSegmentBuilder::HandleRetroSetValue(BuildSegmentContext &context,
 
   hasModifiedStrokeHistory = true;
   states[currentOffset].joinNext =
-      context.segmentList[startingSegmentIndex].state->joinNext;
-  context.segmentList.Add(StenoSegment(length, SegmentLookupType::DIRECT,
-                                       states + currentOffset, lookup));
+      context.segments[startingSegmentIndex].state->joinNext;
+  context.segments.Add(StenoSegment(length, SegmentLookupType::DIRECT,
+                                    states + currentOffset, lookup));
 }
 
 void StenoSegmentBuilder::HandleRetroTransform(BuildSegmentContext &context,
@@ -523,26 +521,25 @@ void StenoSegmentBuilder::HandleRetroTransform(BuildSegmentContext &context,
     count = 1;
   }
 
-  size_t startingSegmentIndex = context.segmentList.GetCount();
+  size_t startingSegmentIndex = context.segments.GetCount();
   for (size_t i = 0; i < count && startingSegmentIndex; ++i) {
-    startingSegmentIndex = context.segmentList.GetWordStartingSegmentIndex(
-        startingSegmentIndex - 1);
+    startingSegmentIndex =
+        context.segments.GetWordStartingSegmentIndex(startingSegmentIndex - 1);
   }
 
   BufferWriter bufferWriter;
   EscapeCommand(bufferWriter, command);
-  WriteRetroTransform(context.segmentList, startingSegmentIndex, format,
+  WriteRetroTransform(context.segments, startingSegmentIndex, format,
                       bufferWriter);
 
-  for (size_t i = startingSegmentIndex; i < context.segmentList.GetCount();
-       ++i) {
-    StenoSegment &segment = context.segmentList[i];
+  for (size_t i = startingSegmentIndex; i < context.segments.GetCount(); ++i) {
+    StenoSegment &segment = context.segments[i];
     segment.lookup.Destroy();
     segment.lookup = StenoDictionaryLookupResult::NO_OP;
   }
 
   hasModifiedStrokeHistory = true;
-  context.segmentList.Add(
+  context.segments.Add(
       StenoSegment(length, SegmentLookupType::DIRECT, states + currentOffset,
                    StenoDictionaryLookupResult::CreateDynamicString(
                        bufferWriter.TerminateStringAndAdoptBuffer())));
@@ -774,11 +771,11 @@ void StenoSegmentBuilder::EscapeCommand(BufferWriter &writer, const char *p) {
 
 void StenoSegmentBuilder::UpdateLastSegmentWithCommand(
     BuildSegmentContext &context, const char *command) {
-  if (context.segmentList.IsEmpty()) {
+  if (context.segments.IsEmpty()) {
     return;
   }
 
-  StenoSegment &back = context.segmentList.Back();
+  StenoSegment &back = context.segments.Back();
   BufferWriter writer;
   EscapeCommand(writer, command);
   const char *text = back.lookup.GetText();
@@ -876,16 +873,16 @@ TEST_BEGIN("StrokeHistory: Test single segment") {
   history.Add(StenoStroke("TEFT"), StenoState());
   // spellchecker: enable
 
-  StenoSegmentList segmentList;
+  StenoSegmentList segments;
   const StenoCompiledOrthography orthography(
       StenoOrthography::emptyOrthography);
 
   StenoEngine engine(dictionary, orthography);
-  BuildSegmentContext context(segmentList, engine, false);
+  BuildSegmentContext context(segments, engine, false);
   history.CreateSegments(context);
 
-  assert(segmentList.GetCount() == 1);
-  assert(Str::Eq(segmentList[0].lookup.GetText(), "test"));
+  assert(segments.GetCount() == 1);
+  assert(Str::Eq(segments[0].lookup.GetText(), "test"));
 }
 TEST_END
 
@@ -899,17 +896,17 @@ TEST_BEGIN("StrokeHistory: Test two segments, with multi-stroke") {
   history.Add(StenoStroke("-D"), StenoState{});
   // spellchecker: enable
 
-  StenoSegmentList segmentList;
+  StenoSegmentList segments;
   const StenoCompiledOrthography orthography(
       StenoOrthography::emptyOrthography);
 
   StenoEngine engine(dictionary, orthography);
-  BuildSegmentContext context(segmentList, engine, false);
+  BuildSegmentContext context(segments, engine, false);
   history.CreateSegments(context);
 
-  assert(segmentList.GetCount() == 2);
-  assert(Str::Eq(segmentList[0].lookup.GetText(), "test"));
-  assert(Str::Eq(segmentList[1].lookup.GetText(), "tested"));
+  assert(segments.GetCount() == 2);
+  assert(Str::Eq(segments[0].lookup.GetText(), "test"));
+  assert(Str::Eq(segments[1].lookup.GetText(), "tested"));
 }
 TEST_END
 
@@ -923,18 +920,18 @@ TEST_BEGIN("StrokeHistory: Test *? splits strokes") {
   history.Add(StenoStroke("SKWHU"), StenoState{});
   // spellchecker: enable
 
-  StenoSegmentList segmentList;
+  StenoSegmentList segments;
   const StenoCompiledOrthography orthography(
       StenoOrthography::emptyOrthography);
 
   StenoEngine engine(dictionary, orthography);
-  BuildSegmentContext context(segmentList, engine, false);
+  BuildSegmentContext context(segments, engine, false);
   history.CreateSegments(context);
 
-  assert(segmentList.GetCount() == 3);
-  assert(Str::Eq(segmentList[0].lookup.GetText(), "test"));
-  assert(Str::Eq(segmentList[1].lookup.GetText(), ""));
-  assert(Str::Eq(segmentList[2].lookup.GetText(), "{:=\\{*?\\}}-D"));
+  assert(segments.GetCount() == 3);
+  assert(Str::Eq(segments[0].lookup.GetText(), "test"));
+  assert(Str::Eq(segments[1].lookup.GetText(), ""));
+  assert(Str::Eq(segments[2].lookup.GetText(), "{:=\\{*?\\}}-D"));
 }
 TEST_END
 
@@ -948,17 +945,17 @@ TEST_BEGIN("StrokeHistory: Test * toggles lookup") {
   history.Add(StenoStroke("#EU"), StenoState());
   // spellchecker: enable
 
-  StenoSegmentList segmentList;
+  StenoSegmentList segments;
   const StenoCompiledOrthography orthography(
       StenoOrthography::emptyOrthography);
 
   StenoEngine engine(dictionary, orthography);
-  BuildSegmentContext context(segmentList, engine, false);
+  BuildSegmentContext context(segments, engine, false);
   history.CreateSegments(context);
 
-  assert(segmentList.GetCount() == 2);
-  assert(Str::Eq(segmentList[0].lookup.GetText(), "T*EFT"));
-  assert(Str::Eq(segmentList[1].lookup.GetText(), "{:=\\{*\\}}"));
+  assert(segments.GetCount() == 2);
+  assert(Str::Eq(segments[0].lookup.GetText(), "T*EFT"));
+  assert(Str::Eq(segments[1].lookup.GetText(), "{:=\\{*\\}}"));
 }
 TEST_END
 
@@ -977,26 +974,26 @@ TEST_BEGIN("StrokeHistory: Test {*?} behaves properly") {
   history.Add(StenoStroke("TEFT"), StenoState());
   // spellchecker: enable
 
-  StenoSegmentList segmentList;
+  StenoSegmentList segments;
   const StenoCompiledOrthography orthography(
       StenoOrthography::emptyOrthography);
 
   StenoDictionaryList dictionary(DICTIONARIES, 2);
   StenoEngine engine(dictionary, orthography);
-  BuildSegmentContext context(segmentList, engine, false);
+  BuildSegmentContext context(segments, engine, false);
   history.CreateSegments(context);
 
-  assert(segmentList.GetCount() == 10);
-  assert(Str::Eq(segmentList[0].lookup.GetText(), "test"));
-  assert(Str::Eq(segmentList[1].lookup.GetText(), ""));
-  assert(Str::Eq(segmentList[2].lookup.GetText(), "test"));
-  assert(Str::Eq(segmentList[3].lookup.GetText(), "test"));
-  assert(Str::Eq(segmentList[4].lookup.GetText(), "test"));
-  assert(Str::Eq(segmentList[5].lookup.GetText(), "test"));
-  assert(Str::Eq(segmentList[6].lookup.GetText(), "test"));
-  assert(Str::Eq(segmentList[7].lookup.GetText(), "test"));
-  assert(Str::Eq(segmentList[8].lookup.GetText(), "test"));
-  assert(Str::Eq(segmentList[9].lookup.GetText(), "test"));
+  assert(segments.GetCount() == 10);
+  assert(Str::Eq(segments[0].lookup.GetText(), "test"));
+  assert(Str::Eq(segments[1].lookup.GetText(), ""));
+  assert(Str::Eq(segments[2].lookup.GetText(), "test"));
+  assert(Str::Eq(segments[3].lookup.GetText(), "test"));
+  assert(Str::Eq(segments[4].lookup.GetText(), "test"));
+  assert(Str::Eq(segments[5].lookup.GetText(), "test"));
+  assert(Str::Eq(segments[6].lookup.GetText(), "test"));
+  assert(Str::Eq(segments[7].lookup.GetText(), "test"));
+  assert(Str::Eq(segments[8].lookup.GetText(), "test"));
+  assert(Str::Eq(segments[9].lookup.GetText(), "test"));
 }
 TEST_END
 

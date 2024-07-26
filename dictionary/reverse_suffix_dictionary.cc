@@ -112,16 +112,16 @@ SizedList<StenoReverseSuffixDictionary::Suffix>
 StenoReverseSuffixDictionary::CreateSuffixList(
     const SizedList<const uint8_t *> suffixes,
     const List<const uint8_t *> &ignoreSuffixes) {
-  SizedList<Suffix> filteredList =
+  SizedList<Suffix> filteredSuffixes =
       SizedList<Suffix>::CreateWithCapacity(suffixes.GetCount());
 
   for (const uint8_t *suffix : suffixes) {
     if (!ignoreSuffixes.Contains(suffix)) {
-      filteredList.Add(Suffix{.suffix = suffix});
+      filteredSuffixes.Add(Suffix{.suffix = suffix});
     }
   }
 
-  return filteredList;
+  return filteredSuffixes;
 }
 
 void StenoReverseSuffixDictionary::ReverseLookup(

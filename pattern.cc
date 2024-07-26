@@ -307,7 +307,7 @@ PatternMatch Pattern::MatchBypassingQuickReject(const char *text) const {
 
   PatternContext context = {
       .start = text,
-      .captureList = result.captures,
+      .captures = result.captures,
   };
 #if JAVELIN_USE_PATTERN_JIT
   result.match = matchMethod(text, result.captures, text);
@@ -327,7 +327,7 @@ PatternMatch Pattern::Search(const char *text) const {
 #else
   PatternContext context = {
       .start = text,
-      .captureList = result.captures,
+      .captures = result.captures,
   };
   do {
     result.match = root->Match(text, context);

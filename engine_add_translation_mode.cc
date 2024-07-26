@@ -162,16 +162,16 @@ void StenoEngine::UpdateAddTranslationModeTextBuffer(ConversionBuffer &buffer) {
                                   Str::Length<>(TRANSLATION_PROMPT),
                                   StenoCaseMode::NORMAL);
 
-  StenoSegmentList segmentList;
-  BuildSegmentContext context(segmentList, *this, false);
+  StenoSegmentList segments;
+  BuildSegmentContext context(segments, *this, false);
 
   buffer.segmentBuilder.TransferFrom(altTranslationHistory,
                                      altTranslationHistory.GetCount(),
                                      StenoSegmentBuilder::BUFFER_SIZE);
   buffer.segmentBuilder.CreateSegments(context, i);
-  altTranslationHistory.UpdateDefinitionBoundaries(i, segmentList);
+  altTranslationHistory.UpdateDefinitionBoundaries(i, segments);
 
-  StenoTokenizer *tokenizer = StenoTokenizer::Create(segmentList);
+  StenoTokenizer *tokenizer = StenoTokenizer::Create(segments);
   buffer.keyCodeBuffer.Append(tokenizer);
   delete tokenizer;
   if (placeSpaceAfter && !buffer.keyCodeBuffer.state.joinNext &&
@@ -202,8 +202,8 @@ void StenoEngine::AddTranslation(size_t newlineIndex) {
   } else {
     nextConversionBuffer.keyCodeBuffer.Reset();
 
-    StenoSegmentList segmentList;
-    BuildSegmentContext context(segmentList, *this, false);
+    StenoSegmentList segments;
+    BuildSegmentContext context(segments, *this, false);
 
     nextConversionBuffer.segmentBuilder.TransferFrom(
         altTranslationHistory, altTranslationHistory.GetCount(),
@@ -211,7 +211,7 @@ void StenoEngine::AddTranslation(size_t newlineIndex) {
     nextConversionBuffer.segmentBuilder.CreateSegments(context,
                                                        newlineIndex + 1);
 
-    StenoTokenizer *tokenizer = StenoTokenizer::Create(segmentList);
+    StenoTokenizer *tokenizer = StenoTokenizer::Create(segments);
     nextConversionBuffer.keyCodeBuffer.Append(tokenizer);
     delete tokenizer;
 

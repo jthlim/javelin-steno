@@ -205,11 +205,11 @@ void StenoEngine::SetTemplateValue(size_t index, char *data) {
   }
 }
 
-char *StenoEngine::ConvertText(StenoSegmentList &segmentList,
+char *StenoEngine::ConvertText(StenoSegmentList &segments,
                                size_t startingOffset) {
   StenoKeyCodeBuffer &keyCodeBuffer = nextConversionBuffer.keyCodeBuffer;
   keyCodeBuffer.Reset();
-  ConvertText(keyCodeBuffer, segmentList, startingOffset);
+  ConvertText(keyCodeBuffer, segments, startingOffset);
   return keyCodeBuffer.ToString();
 }
 

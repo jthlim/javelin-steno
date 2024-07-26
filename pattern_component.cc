@@ -65,8 +65,8 @@ bool AnyStarPatternComponent::Match(const char *p,
 
 bool BackReferencePatternComponent::Match(const char *p,
                                           PatternContext &context) const {
-  const char *compareP = context.captureList[index * 2];
-  const char *comparedEnd = context.captureList[index * 2 + 1];
+  const char *compareP = context.captures[index * 2];
+  const char *comparedEnd = context.captures[index * 2 + 1];
 
   while (compareP < comparedEnd) {
     if (*p++ != *compareP++) {
@@ -95,7 +95,7 @@ bool CharacterSetPatternComponent::Match(const char *p,
 bool CapturePatternComponent::Match(const char *p,
                                     PatternContext &context) const {
 
-  const char **const capture = &context.captureList[index];
+  const char **const capture = &context.captures[index];
   const char *previous = *capture;
   *capture = p;
   const bool result = CallNext(p, context);

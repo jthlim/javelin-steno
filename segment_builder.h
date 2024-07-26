@@ -18,12 +18,12 @@ class StenoStrokeHistory;
 //---------------------------------------------------------------------------
 
 struct BuildSegmentContext {
-  BuildSegmentContext(StenoSegmentList &segmentList, StenoEngine &engine,
+  BuildSegmentContext(StenoSegmentList &segments, StenoEngine &engine,
                       bool allowSetValue);
 
   bool allowSetValue;
   const char *lastSegmentCommand = nullptr;
-  StenoSegmentList &segmentList;
+  StenoSegmentList &segments;
   StenoEngine &engine;
   const StenoDictionary &dictionary;
   const StenoCompiledOrthography &orthography;

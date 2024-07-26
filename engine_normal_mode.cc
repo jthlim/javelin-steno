@@ -21,18 +21,18 @@
 struct StenoEngine::UpdateNormalModeTextBufferThreadData {
   UpdateNormalModeTextBufferThreadData(StenoEngine *engine,
                                        StenoKeyCodeBuffer *keyCodeBuffer,
-                                       StenoSegmentList *segmentList,
+                                       StenoSegmentList *segments,
                                        size_t startingOffset)
-      : engine(engine), keyCodeBuffer(keyCodeBuffer), segmentList(segmentList),
+      : engine(engine), keyCodeBuffer(keyCodeBuffer), segments(segments),
         startingOffset(startingOffset) {}
 
   StenoEngine *engine;
   StenoKeyCodeBuffer *keyCodeBuffer;
-  StenoSegmentList *segmentList;
+  StenoSegmentList *segments;
   size_t startingOffset;
 
   void ConvertText() {
-    engine->ConvertText(*keyCodeBuffer, *segmentList, startingOffset);
+    engine->ConvertText(*keyCodeBuffer, *segments, startingOffset);
   }
 
   static void ConvertTextEntryPoint(void *data) {
@@ -126,25 +126,25 @@ void StenoEngine::ProcessNormalModeStroke(StenoStroke stroke) {
 
   history.Add(stroke, state, conversionCount);
 
-  StenoSegmentList nextSegmentList;
+  StenoSegmentList nextSegments;
   CreateSegments(history.GetCount(), nextConversionBuffer, conversionCount,
-                 nextSegmentList, true);
+                 nextSegments, true);
   history.UpdateDefinitionBoundaries(history.GetCount() - conversionCount,
-                                     nextSegmentList);
+                                     nextSegments);
 
 #if ENABLE_PROFILE
   uint32_t t1 = Clock::GetMicroseconds();
 #endif
 
-  StenoSegmentList previousSegmentList;
+  StenoSegmentList previousSegments;
   if (nextConversionBuffer.segmentBuilder.HasModifiedStrokeHistory()) {
     CreateSegments(previousSourceStrokeCount, previousConversionBuffer,
-                   conversionCount - 1, previousSegmentList, false);
+                   conversionCount - 1, previousSegments, false);
   } else {
     CreateSegmentsUsingLongerResult(previousSourceStrokeCount,
                                     previousConversionBuffer,
-                                    conversionCount - 1, previousSegmentList,
-                                    nextConversionBuffer, nextSegmentList);
+                                    conversionCount - 1, previousSegments,
+                                    nextConversionBuffer, nextSegments);
   }
 
 #if ENABLE_PROFILE
@@ -152,7 +152,7 @@ void StenoEngine::ProcessNormalModeStroke(StenoStroke stroke) {
 #endif
 
   size_t startingOffset = StenoSegmentList::GetCommonStartingSegmentsCount(
-      previousSegmentList, nextSegmentList);
+      previousSegments, nextSegments);
   if (startingOffset > 0 && placeSpaceAfter) {
     --startingOffset;
   }
@@ -163,21 +163,19 @@ void StenoEngine::ProcessNormalModeStroke(StenoStroke stroke) {
 
 #if JAVELIN_THREADS
   UpdateNormalModeTextBufferThreadData previousThreadData(
-      this, &previousConversionBuffer.keyCodeBuffer, &previousSegmentList,
+      this, &previousConversionBuffer.keyCodeBuffer, &previousSegments,
       startingOffset);
   UpdateNormalModeTextBufferThreadData nextThreadData(
-      this, &nextConversionBuffer.keyCodeBuffer, &nextSegmentList,
-      startingOffset);
+      this, &nextConversionBuffer.keyCodeBuffer, &nextSegments, startingOffset);
 
   RunParallel(&UpdateNormalModeTextBufferThreadData::ConvertTextEntryPoint,
               &previousThreadData,
               &UpdateNormalModeTextBufferThreadData::ConvertTextEntryPoint,
               &nextThreadData);
 #else
-  ConvertText(previousConversionBuffer.keyCodeBuffer, previousSegmentList,
+  ConvertText(previousConversionBuffer.keyCodeBuffer, previousSegments,
               startingOffset);
-  ConvertText(nextConversionBuffer.keyCodeBuffer, nextSegmentList,
-              startingOffset);
+  ConvertText(nextConversionBuffer.keyCodeBuffer, nextSegments, startingOffset);
 #endif
 
 #if ENABLE_PROFILE
@@ -210,7 +208,7 @@ void StenoEngine::ProcessNormalModeStroke(StenoStroke stroke) {
 
   PrintTextLog(previousConversionBuffer.keyCodeBuffer,
                nextConversionBuffer.keyCodeBuffer);
-  PrintPaperTape(stroke, previousSegmentList, nextSegmentList);
+  PrintPaperTape(stroke, previousSegments, nextSegments);
 
   if (nextConversionBuffer.keyCodeBuffer.addTranslationCount >
       previousConversionBuffer.keyCodeBuffer.addTranslationCount) {
@@ -239,7 +237,7 @@ void StenoEngine::ProcessNormalModeStroke(StenoStroke stroke) {
 
   if (printSuggestions) {
     // PrintSuggestions will overwrite the previousConversionBuffer
-    PrintSuggestions(previousSegmentList, nextSegmentList);
+    PrintSuggestions(previousSegments, nextSegments);
   }
 
 #if ENABLE_PROFILE
@@ -283,9 +281,9 @@ void StenoEngine::ProcessNormalModeUndo() {
       history.GetStartingStroke(maximumConversionStrokes);
   const size_t conversionCount = history.GetCount() - startingStroke;
 
-  StenoSegmentList previousSegmentList;
+  StenoSegmentList previousSegments;
   CreateSegments(history.GetCount(), previousConversionBuffer, conversionCount,
-                 previousSegmentList, false);
+                 previousSegments, false);
 
   state = history.Back(undoCount).state;
   state.shouldCombineUndo = false;
@@ -295,43 +293,41 @@ void StenoEngine::ProcessNormalModeUndo() {
   const size_t nextConversionCount =
       undoCount >= conversionCount ? 0 : conversionCount - undoCount;
 
-  StenoSegmentList nextSegmentList;
+  StenoSegmentList nextSegments;
   if (previousConversionBuffer.segmentBuilder.HasModifiedStrokeHistory()) {
     CreateSegments(history.GetCount(), nextConversionBuffer,
-                   nextConversionCount, nextSegmentList, true);
+                   nextConversionCount, nextSegments, true);
 
   } else {
-    CreateSegmentsUsingLongerResult(
-        history.GetCount(), nextConversionBuffer, nextConversionCount,
-        nextSegmentList, previousConversionBuffer, previousSegmentList);
+    CreateSegmentsUsingLongerResult(history.GetCount(), nextConversionBuffer,
+                                    nextConversionCount, nextSegments,
+                                    previousConversionBuffer, previousSegments);
   }
 
   history.UpdateDefinitionBoundaries(history.GetCount() - nextConversionCount,
-                                     nextSegmentList);
+                                     nextSegments);
 
   size_t startingOffset = StenoSegmentList::GetCommonStartingSegmentsCount(
-      previousSegmentList, nextSegmentList);
+      previousSegments, nextSegments);
   if (startingOffset > 0 && placeSpaceAfter) {
     --startingOffset;
   }
 
 #if JAVELIN_THREADS
   UpdateNormalModeTextBufferThreadData previousThreadData(
-      this, &previousConversionBuffer.keyCodeBuffer, &previousSegmentList,
+      this, &previousConversionBuffer.keyCodeBuffer, &previousSegments,
       startingOffset);
   UpdateNormalModeTextBufferThreadData nextThreadData(
-      this, &nextConversionBuffer.keyCodeBuffer, &nextSegmentList,
-      startingOffset);
+      this, &nextConversionBuffer.keyCodeBuffer, &nextSegments, startingOffset);
 
   RunParallel(&UpdateNormalModeTextBufferThreadData::ConvertTextEntryPoint,
               &previousThreadData,
               &UpdateNormalModeTextBufferThreadData::ConvertTextEntryPoint,
               &nextThreadData);
 #else
-  ConvertText(previousConversionBuffer.keyCodeBuffer, previousSegmentList,
+  ConvertText(previousConversionBuffer.keyCodeBuffer, previousSegments,
               startingOffset);
-  ConvertText(nextConversionBuffer.keyCodeBuffer, nextSegmentList,
-              startingOffset);
+  ConvertText(nextConversionBuffer.keyCodeBuffer, nextSegments, startingOffset);
 #endif
 
   emitter.Process(previousConversionBuffer.keyCodeBuffer,
@@ -345,18 +341,18 @@ void StenoEngine::ProcessNormalModeUndo() {
 void StenoEngine::CreateSegments(size_t sourceStrokeCount,
                                  ConversionBuffer &buffer,
                                  size_t conversionLimit,
-                                 StenoSegmentList &segmentList,
+                                 StenoSegmentList &segments,
                                  bool allowSetValue) {
   buffer.segmentBuilder.TransferFrom(history, sourceStrokeCount,
                                      conversionLimit);
-  BuildSegmentContext context(segmentList, *this, allowSetValue);
+  BuildSegmentContext context(segments, *this, allowSetValue);
   buffer.segmentBuilder.CreateSegments(context);
 }
 
 void StenoEngine::CreateSegmentsUsingLongerResult(
     size_t sourceStrokeCount, ConversionBuffer &buffer, size_t conversionLimit,
-    StenoSegmentList &segmentList, const ConversionBuffer &longerBuffer,
-    const StenoSegmentList &longerSegmentList) {
+    StenoSegmentList &segments, const ConversionBuffer &longerBuffer,
+    const StenoSegmentList &longerSegments) {
 
   // state pointers are used to track segment length, so a proper stroke
   // history needs to be set up and translated.
@@ -368,12 +364,12 @@ void StenoEngine::CreateSegmentsUsingLongerResult(
   if (conversionLimit > sourceStrokeCount) {
     conversionLimit = sourceStrokeCount;
   }
-  for (const StenoSegment &segment : longerSegmentList) {
+  for (const StenoSegment &segment : longerSegments) {
     if (startingOffset + segment.strokeLength > conversionLimit) {
       break;
     }
     startingOffset += segment.strokeLength;
-    segmentList.Add(StenoSegment(
+    segments.Add(StenoSegment(
         segment.strokeLength, segment.lookupType,
         buffer.segmentBuilder.GetStatePointer(
             longerBuffer.segmentBuilder.GetStateIndex(segment.state)),
@@ -386,18 +382,17 @@ void StenoEngine::CreateSegmentsUsingLongerResult(
 
   buffer.segmentBuilder.TransferStartFrom(longerBuffer.segmentBuilder,
                                           startingOffset);
-  BuildSegmentContext context(segmentList, *this, false);
+  BuildSegmentContext context(segments, *this, false);
   buffer.segmentBuilder.CreateSegments(context, startingOffset);
 }
 
 void StenoEngine::ConvertText(StenoKeyCodeBuffer &keyCodeBuffer,
-                              StenoSegmentList &segmentList,
+                              StenoSegmentList &segments,
                               size_t startingOffset) {
-  StenoTokenizer *tokenizer =
-      StenoTokenizer::Create(segmentList, startingOffset);
+  StenoTokenizer *tokenizer = StenoTokenizer::Create(segments, startingOffset);
   keyCodeBuffer.Populate(tokenizer);
   if (placeSpaceAfter && !keyCodeBuffer.state.joinNext &&
-      segmentList.IsNotEmpty()) {
+      segments.IsNotEmpty()) {
     keyCodeBuffer.AppendSpace();
   }
   delete tokenizer;
@@ -417,9 +412,9 @@ void StenoEngine::PrintPaperTapeUndo(size_t undoCount) const {
       undoCount);
 }
 
-void StenoEngine::PrintPaperTape(
-    StenoStroke stroke, const StenoSegmentList &previousSegmentList,
-    const StenoSegmentList &nextSegmentList) const {
+void StenoEngine::PrintPaperTape(StenoStroke stroke,
+                                 const StenoSegmentList &previousSegments,
+                                 const StenoSegmentList &nextSegments) const {
   if (!IsPaperTapeEnabled()) {
     return;
   }
@@ -429,15 +424,14 @@ void StenoEngine::PrintPaperTape(
   Console::Printf("EV {\"event\":\"paper_tape\",\"data\":\"%s\"", buffer);
 
   size_t undoCount = 0;
-  const StenoSegment &segment = nextSegmentList.Back();
+  const StenoSegment &segment = nextSegments.Back();
   const size_t startingStrokeIndex =
-      segment.GetStrokeIndex(nextSegmentList.Front().state);
+      segment.GetStrokeIndex(nextSegments.Front().state);
 
-  const size_t previousSegmentCount = previousSegmentList.GetCount();
-  while (
-      undoCount < previousSegmentCount &&
-      previousSegmentList[previousSegmentCount - 1 - undoCount].GetStrokeIndex(
-          previousSegmentList.Front().state) > startingStrokeIndex) {
+  const size_t previousSegmentCount = previousSegments.GetCount();
+  while (undoCount < previousSegmentCount &&
+         previousSegments[previousSegmentCount - 1 - undoCount].GetStrokeIndex(
+             previousSegments.Front().state) > startingStrokeIndex) {
     ++undoCount;
   }
 
@@ -473,19 +467,19 @@ void StenoEngine::PrintPaperTape(
   }
 }
 
-void StenoEngine::PrintSuggestions(const StenoSegmentList &previousSegmentList,
-                                   const StenoSegmentList &nextSegmentList) {
+void StenoEngine::PrintSuggestions(const StenoSegmentList &previousSegments,
+                                   const StenoSegmentList &nextSegments) {
   if (!IsSuggestionsEnabled()) {
     return;
   }
 
   // Finger spelling suggestions.
-  if (Str::IsFingerSpellingCommand(nextSegmentList.Back().lookup.GetText())) {
+  if (Str::IsFingerSpellingCommand(nextSegments.Back().lookup.GetText())) {
     if (state.isManualStateChange || state.joinNext) {
       return;
     }
 
-    PrintFingerSpellingSuggestions(previousSegmentList, nextSegmentList);
+    PrintFingerSpellingSuggestions(previousSegments, nextSegments);
     return;
   }
 
@@ -494,7 +488,7 @@ void StenoEngine::PrintSuggestions(const StenoSegmentList &previousSegmentList,
   for (size_t segmentCount = 1; segmentCount < 8; ++segmentCount) {
     Pump();
     char *newLookup =
-        PrintSegmentSuggestion(segmentCount, nextSegmentList, lastLookup);
+        PrintSegmentSuggestion(segmentCount, nextSegments, lastLookup);
     free(lastLookup);
     lastLookup = newLookup;
     if (!lastLookup) {
@@ -505,8 +499,8 @@ void StenoEngine::PrintSuggestions(const StenoSegmentList &previousSegmentList,
 }
 
 void StenoEngine::PrintFingerSpellingSuggestions(
-    const StenoSegmentList &previousSegmentList,
-    const StenoSegmentList &nextSegmentList) {
+    const StenoSegmentList &previousSegments,
+    const StenoSegmentList &nextSegments) {
   // Get the last word out of the buffer and look that up.
   char buffer[256];
   char *p = buffer + sizeof(buffer) - 1;
@@ -564,21 +558,21 @@ void StenoEngine::PrintSuggestion(const char *p, size_t arrowPrefixCount,
   Console::Printf("}\n\n");
 }
 
-static bool ShouldShowSuggestions(const List<StenoSegment> &segmentList) {
+static bool ShouldShowSuggestions(const List<StenoSegment> &segments) {
   // Count the number of suffix "{*!}" entries.
   // There must be more that number of entries before that.
   size_t joinPreviousCount = 0;
-  for (const StenoSegment &segment : segmentList.Reverse()) {
+  for (const StenoSegment &segment : segments.Reverse()) {
     if (!Str::Eq(segment.lookup.GetText(), "{*!}")) {
       break;
     }
     ++joinPreviousCount;
   }
-  return segmentList.GetCount() > 2 * joinPreviousCount;
+  return segments.GetCount() > 2 * joinPreviousCount;
 }
 
-static bool HasManualStateChange(const List<StenoSegment> &segmentList) {
-  for (const StenoSegment &segment : segmentList) {
+static bool HasManualStateChange(const List<StenoSegment> &segments) {
+  for (const StenoSegment &segment : segments) {
     if (segment.state->isManualStateChange) {
       return true;
     }
@@ -587,10 +581,10 @@ static bool HasManualStateChange(const List<StenoSegment> &segmentList) {
 }
 
 char *StenoEngine::PrintSegmentSuggestion(size_t segmentCount,
-                                          const StenoSegmentList &segmentList,
+                                          const StenoSegmentList &segments,
                                           char *lastLookup) {
 
-  size_t startSegmentIndex = segmentList.GetCount();
+  size_t startSegmentIndex = segments.GetCount();
   StenoState lastState = state;
   for (size_t i = 0; i < segmentCount; ++i) {
     if (startSegmentIndex == 0) {
@@ -598,11 +592,11 @@ char *StenoEngine::PrintSegmentSuggestion(size_t segmentCount,
     }
     while (startSegmentIndex != 0) {
       --startSegmentIndex;
-      if (segmentList[startSegmentIndex].ContainsKeyCode()) {
+      if (segments[startSegmentIndex].ContainsKeyCode()) {
         return nullptr;
       }
 
-      if (segmentList[startSegmentIndex].lookup ==
+      if (segments[startSegmentIndex].lookup ==
           StenoDictionaryLookupResult::NO_OP) {
         return nullptr;
       }
@@ -612,29 +606,29 @@ char *StenoEngine::PrintSegmentSuggestion(size_t segmentCount,
       // This will still give suggestions after prefixes, e.g.
       //   overwatching: AUFR/WAFP/-G will suggest to combine WAFPG
       const char *startSegmentText =
-          segmentList[startSegmentIndex].lookup.GetText();
+          segments[startSegmentIndex].lookup.GetText();
 
       if (!Str::IsJoinPrevious(startSegmentText) &&
           (startSegmentIndex == 0 ||
            !Str::IsFingerSpellingCommand(startSegmentText) ||
            !Str::IsFingerSpellingCommand(
-               segmentList[startSegmentIndex - 1].lookup.GetText()))) {
+               segments[startSegmentIndex - 1].lookup.GetText()))) {
         break;
       }
     }
-    lastState = *segmentList[startSegmentIndex].state;
+    lastState = *segments[startSegmentIndex].state;
   }
 
-  if (segmentList.GetCount() - startSegmentIndex >=
+  if (segments.GetCount() - startSegmentIndex >=
       PAPER_TAPE_SUGGESTION_SEGMENT_LIMIT) {
     return nullptr;
   }
 
   List<StenoSegment> testSegments;
-  testSegments.AddCount(segmentList.Skip(startSegmentIndex));
+  testSegments.AddCount(segments.Skip(startSegmentIndex));
 
   size_t strokeThresholdCount = 0;
-  for (const StenoSegment &segment : segmentList.Skip(startSegmentIndex)) {
+  for (const StenoSegment &segment : segments.Skip(startSegmentIndex)) {
     strokeThresholdCount += segment.strokeLength;
   }
 
@@ -660,16 +654,16 @@ char *StenoEngine::PrintSegmentSuggestion(size_t segmentCount,
     return lookup;
   }
 
-  bool printSuggestion = *spaceRemoved != '\0' &&
-                         (startSegmentIndex != segmentList.GetCount() - 1 ||
-                          strokeThresholdCount != 1);
+  bool printSuggestion =
+      *spaceRemoved != '\0' && (startSegmentIndex != segments.GetCount() - 1 ||
+                                strokeThresholdCount != 1);
 
   if (state.joinNext) {
     bool usePrefixSyntax = true;
-    if (segmentList.GetCount() >= 2) {
+    if (segments.GetCount() >= 2) {
       // If the previous state is the same, and the new state ends in a space,
       // truncate the space and treat it as a non-space lookup.
-      if (*segmentList.Back().state == state) {
+      if (*segments.Back().state == state) {
         const size_t length = Str::Length(spaceRemoved);
         if (length != 0 && spaceRemoved[length - 1] == ' ') {
           spaceRemoved = Str::DupN(spaceRemoved, length - 1);

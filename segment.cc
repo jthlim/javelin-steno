@@ -225,15 +225,15 @@ TEST_BEGIN("Segment tests") {
   history.Add(StenoStroke("-G"), StenoState());
   // spellchecker: enable
 
-  StenoSegmentList segmentList;
+  StenoSegmentList segments;
   StenoCompiledOrthography compiledOrthography(
       StenoOrthography::emptyOrthography);
   StenoEngine engine(dictionary, compiledOrthography);
-  BuildSegmentContext context(segmentList, engine, false);
+  BuildSegmentContext context(segments, engine, false);
 
   history.CreateSegments(context);
 
-  StenoTokenizer *tokenizer = StenoTokenizer::Create(segmentList);
+  StenoTokenizer *tokenizer = StenoTokenizer::Create(segments);
 
   assert(tokenizer->HasMore());
   assert(Str::Eq(tokenizer->GetNext().text, "test"));

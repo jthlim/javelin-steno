@@ -70,16 +70,16 @@ void StenoEngine::ProcessConsoleModeUndo() {
 void StenoEngine::UpdateConsoleModeTextBuffer(ConversionBuffer &buffer) {
   buffer.keyCodeBuffer.Reset();
 
-  StenoSegmentList segmentList;
-  BuildSegmentContext context(segmentList, *this, false);
+  StenoSegmentList segments;
+  BuildSegmentContext context(segments, *this, false);
 
   buffer.segmentBuilder.TransferFrom(altTranslationHistory,
                                      altTranslationHistory.GetCount(),
                                      StenoSegmentBuilder::BUFFER_SIZE);
   buffer.segmentBuilder.CreateSegments(context);
-  altTranslationHistory.UpdateDefinitionBoundaries(0, segmentList);
+  altTranslationHistory.UpdateDefinitionBoundaries(0, segments);
 
-  StenoTokenizer *tokenizer = StenoTokenizer::Create(segmentList);
+  StenoTokenizer *tokenizer = StenoTokenizer::Create(segments);
   buffer.keyCodeBuffer.Append(tokenizer);
   delete tokenizer;
   if (placeSpaceAfter && !buffer.keyCodeBuffer.state.joinNext &&

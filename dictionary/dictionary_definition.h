@@ -4,6 +4,7 @@
 #include "../sized_list.h"
 #include "../stroke.h"
 #include "../xip_pointer.h"
+#include "orthospelling_data.h"
 #include <stddef.h>
 
 //---------------------------------------------------------------------------
@@ -108,6 +109,7 @@ enum class StenoDictionaryType : uint8_t {
   JEFF_NUMBERS,
   JEFF_PHRASING,
   EMILY_SYMBOLS,
+  ORTHOSPELLING,
 };
 
 struct StenoDictionaryDefinition {
@@ -130,6 +132,11 @@ struct StenoFullMapDictionaryDefinition : public StenoDictionaryDefinition {
   XipPointer<char> name;
   const uint8_t *textBlock;
   const StenoFullMapDictionaryStrokesDefinition *strokes;
+};
+
+struct StenoOrthospellingDictionaryDefinition
+    : public StenoDictionaryDefinition {
+  OrthospellingData data;
 };
 
 //---------------------------------------------------------------------------

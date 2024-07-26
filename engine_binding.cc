@@ -8,13 +8,13 @@
 
 //---------------------------------------------------------------------------
 
-void StenoEngine::CreateSegments(StenoSegmentList &segmentList,
+void StenoEngine::CreateSegments(StenoSegmentList &segments,
                                  StenoSegmentBuilder &segmentBuilder,
                                  const StenoStroke *strokes, size_t length) {
   segmentBuilder.Reset();
   segmentBuilder.Add(strokes, length);
 
-  BuildSegmentContext context(segmentList, *this, false);
+  BuildSegmentContext context(segments, *this, false);
   segmentBuilder.CreateSegments(context);
 }
 
@@ -183,9 +183,9 @@ void StenoEngine::Lookup_Binding(void *context, const char *commandLine) {
 
   Console::Printf("[");
   for (const StenoReverseDictionaryResult &entry : lookup.results) {
-    StenoSegmentList segmentList;
+    StenoSegmentList segments;
     ConversionBuffer &buffer = engine->previousConversionBuffer;
-    engine->CreateSegments(segmentList, buffer.segmentBuilder, entry.strokes,
+    engine->CreateSegments(segments, buffer.segmentBuilder, entry.strokes,
                            entry.length);
 
     Console::Printf(&entry == begin(lookup.results) ? "\n{" : ",\n{", nullptr);
@@ -193,7 +193,7 @@ void StenoEngine::Lookup_Binding(void *context, const char *commandLine) {
     Console::Printf(",\"definition\":\"");
 
     bool isFirst = true;
-    StenoTokenizer *tokenizer = StenoTokenizer::Create(segmentList);
+    StenoTokenizer *tokenizer = StenoTokenizer::Create(segments);
     while (tokenizer->HasMore()) {
       Console::Printf(isFirst ? "%J" : " %J", tokenizer->GetNext().text);
       isFirst = false;
@@ -246,16 +246,16 @@ void StenoEngine::LookupStroke_Binding(void *context, const char *commandLine) {
 
     Console::Printf("}\n\n");
   } else {
-    StenoSegmentList segmentList;
+    StenoSegmentList segments;
     ConversionBuffer &buffer = engine->previousConversionBuffer;
-    engine->CreateSegments(segmentList, buffer.segmentBuilder, parser.strokes,
+    engine->CreateSegments(segments, buffer.segmentBuilder, parser.strokes,
                            parser.length);
 
     if (!buffer.segmentBuilder.HasRawStroke()) {
       Console::Printf("{\"definition\":\"");
 
       bool isFirst = true;
-      StenoTokenizer *tokenizer = StenoTokenizer::Create(segmentList);
+      StenoTokenizer *tokenizer = StenoTokenizer::Create(segments);
       while (tokenizer->HasMore()) {
         Console::Printf(isFirst ? "%J" : " %J", tokenizer->GetNext().text);
         isFirst = false;

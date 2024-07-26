@@ -56,9 +56,6 @@ const StenoDictionary *StenoJeffShowStrokeDictionary::GetDictionaryForOutline(
   }
 
   const size_t length = lookup.length;
-  if (length == 1) {
-    return this;
-  }
   for (size_t i = 1; i < length - 1; ++i) {
     if (strokes[i] == trigger) {
       return nullptr;

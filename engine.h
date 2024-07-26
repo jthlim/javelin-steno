@@ -82,7 +82,7 @@ public:
   // responsibility for its lifecycle/
   void SetTemplateValue(size_t index, char *data);
 
-  char *ConvertText(StenoSegmentList &segmentList, size_t startingOffset);
+  char *ConvertText(StenoSegmentList &segments, size_t startingOffset);
 
 private:
   static const StenoStroke UNDO_STROKE;
@@ -161,36 +161,35 @@ private:
   void ResetState();
   static void Pump();
 
-  void CreateSegments(StenoSegmentList &segmentList,
-                      StenoSegmentBuilder &builder, const StenoStroke *strokes,
-                      size_t length);
+  void CreateSegments(StenoSegmentList &segments, StenoSegmentBuilder &builder,
+                      const StenoStroke *strokes, size_t length);
 
   void CreateSegments(size_t sourceStrokeCount, ConversionBuffer &buffer,
-                      size_t conversionLimit, StenoSegmentList &segmentList,
+                      size_t conversionLimit, StenoSegmentList &segments,
                       bool allowSetValue);
-  void CreateSegmentsUsingLongerResult(
-      size_t sourceStrokeCount, ConversionBuffer &buffer,
-      size_t conversionLimit, StenoSegmentList &segmentList,
-      const ConversionBuffer &longerBuffer,
-      const StenoSegmentList &longerSegmentList);
+  void CreateSegmentsUsingLongerResult(size_t sourceStrokeCount,
+                                       ConversionBuffer &buffer,
+                                       size_t conversionLimit,
+                                       StenoSegmentList &segments,
+                                       const ConversionBuffer &longerBuffer,
+                                       const StenoSegmentList &longerSegments);
   void ConvertText(StenoKeyCodeBuffer &keyCodeBuffer,
-                   StenoSegmentList &segmentList, size_t startingOffset);
+                   StenoSegmentList &segments, size_t startingOffset);
 
   void PrintPaperTape(StenoStroke stroke,
-                      const StenoSegmentList &previousSegmentList,
-                      const StenoSegmentList &nextSegmentList) const;
+                      const StenoSegmentList &previousSegments,
+                      const StenoSegmentList &nextSegments) const;
   void PrintPaperTapeUndo(size_t undoCount) const;
-  void PrintSuggestions(const StenoSegmentList &previousSegmentList,
-                        const StenoSegmentList &nextSegmentList);
-  void
-  PrintFingerSpellingSuggestions(const StenoSegmentList &previousSegmentList,
-                                 const StenoSegmentList &nextSegmentList);
+  void PrintSuggestions(const StenoSegmentList &previousSegments,
+                        const StenoSegmentList &nextSegments);
+  void PrintFingerSpellingSuggestions(const StenoSegmentList &previousSegments,
+                                      const StenoSegmentList &nextSegments);
   void PrintSuggestion(const char *p, size_t arrowPrefixCount,
                        size_t strokeThreshold) const;
   char *PrintSegmentSuggestion(size_t wordCount,
-                               const StenoSegmentList &segmentList,
+                               const StenoSegmentList &segments,
                                char *lastLookup);
-  void PrintTextLog(const StenoKeyCodeBuffer &previousKeyCodeBuffer,
+  void PrintTextLog(const StenoKeyCodeBuffer &previousKeyCodeBus,
                     const StenoKeyCodeBuffer &nextKeyCodeBuffer) const;
 
   size_t GetStartingStrokeForNormalModeProcessing() const;

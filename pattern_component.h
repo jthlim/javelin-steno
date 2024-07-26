@@ -17,7 +17,7 @@ class PatternQuickReject;
 
 struct PatternContext {
   const char *start;
-  const char **captureList;
+  const char **captures;
 };
 
 //---------------------------------------------------------------------------

@@ -9,6 +9,7 @@
 #include "jeff_numbers_dictionary.h"
 #include "jeff_phrasing_dictionary.h"
 #include "jeff_show_stroke_dictionary.h"
+#include "orthospelling_dictionary.h"
 
 //---------------------------------------------------------------------------
 
@@ -37,6 +38,10 @@ StenoDictionary *StenoDictionaryDefinition::Create() const {
 
   case StenoDictionaryType::EMILY_SYMBOLS:
     return &StenoEmilySymbolsDictionary::instance;
+
+  case StenoDictionaryType::ORTHOSPELLING:
+    return new StenoOrthospellingDictionary(
+        *(StenoOrthospellingDictionaryDefinition *)this);
   }
 
   return nullptr;
