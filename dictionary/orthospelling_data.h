@@ -53,7 +53,7 @@ struct OrthospellingData {
   const Starter *GetStarterDefinition(StenoStroke stroke) const;
   const bool IsExit(StenoStroke stroke) const;
 
-  bool ConvertToText(StenoStroke stroke, OrthospellingContext context) const;
+  bool ConvertToText(StenoStroke stroke, OrthospellingContext context, size_t startingIndex = 0) const;
 
   static const OrthospellingData shrimple;
 };

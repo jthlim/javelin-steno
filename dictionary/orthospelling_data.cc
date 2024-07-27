@@ -24,8 +24,10 @@ const bool OrthospellingData::IsExit(StenoStroke stroke) const {
 }
 
 bool OrthospellingData::ConvertToText(StenoStroke stroke,
-                                      OrthospellingContext context) const {
-  for (const Letter &letter : letters) {
+                                      OrthospellingContext context,
+                                      size_t startingIndex) const {
+  for (size_t i = 0; i < letters.count; ++i) {
+    const Letter &letter = letters[i];
     if ((letter.stroke & stroke) == letter.stroke) {
       const StenoStroke remainingStroke = stroke & ~letter.stroke;
       const char *s = letter.data;
@@ -40,7 +42,7 @@ bool OrthospellingData::ConvertToText(StenoStroke stroke,
 
       OrthospellingContext remainingContext = context;
       remainingContext.buffers[letter.order] = p;
-      if (ConvertToText(remainingStroke, remainingContext)) {
+      if (ConvertToText(remainingStroke, remainingContext, i + 1)) {
         return true;
       }
     }
