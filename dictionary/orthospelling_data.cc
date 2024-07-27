@@ -4,10 +4,11 @@
 
 //---------------------------------------------------------------------------
 
-const char *OrthospellingData::GetStarterDefinition(StenoStroke stroke) const {
+const OrthospellingData::Starter *
+OrthospellingData::GetStarterDefinition(StenoStroke stroke) const {
   for (const Starter &starter : starters) {
-    if (starter.stroke == stroke) {
-      return starter.definition;
+    if ((stroke & starter.mask) == starter.stroke) {
+      return &starter;
     }
   }
   return nullptr;
@@ -15,7 +16,7 @@ const char *OrthospellingData::GetStarterDefinition(StenoStroke stroke) const {
 
 const bool OrthospellingData::IsExit(StenoStroke stroke) const {
   for (const Exit &exit : exits) {
-    if ((stroke & exit.mask) == exit.stroke) {
+    if (((stroke & exit.fullMask) == exit.stroke) == exit.polarity) {
       return true;
     }
   }
@@ -24,11 +25,11 @@ const bool OrthospellingData::IsExit(StenoStroke stroke) const {
 
 bool OrthospellingData::ConvertToText(StenoStroke stroke,
                                       OrthospellingContext context) const {
-  for (const Definition &definition : definitions) {
-    if ((definition.stroke & stroke) == definition.stroke) {
-      const StenoStroke remainingStroke = stroke & ~definition.stroke;
-      const char *s = definition.data;
-      char *p = context.buffers[definition.priority];
+  for (const Letter &letter : letters) {
+    if ((letter.stroke & stroke) == letter.stroke) {
+      const StenoStroke remainingStroke = stroke & ~letter.stroke;
+      const char *s = letter.data;
+      char *p = context.buffers[letter.order];
       while (*s) {
         *p++ = *s++;
       }
@@ -38,7 +39,7 @@ bool OrthospellingData::ConvertToText(StenoStroke stroke,
       }
 
       OrthospellingContext remainingContext = context;
-      remainingContext.buffers[definition.priority] = p;
+      remainingContext.buffers[letter.order] = p;
       if (ConvertToText(remainingStroke, remainingContext)) {
         return true;
       }

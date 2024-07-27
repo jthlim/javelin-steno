@@ -7,6 +7,7 @@
 
 //---------------------------------------------------------------------------
 
+class BufferWriter;
 struct StenoOrthospellingDictionaryDefinition;
 
 //---------------------------------------------------------------------------
@@ -33,6 +34,9 @@ public:
 
 private:
   const OrthospellingData data;
+
+  void ProcessStroke(BufferWriter &result, char (&buffer)[64],
+                     StenoStroke stroke) const;
 };
 
 //---------------------------------------------------------------------------
