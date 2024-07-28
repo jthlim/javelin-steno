@@ -3,6 +3,7 @@
 #include "orthospelling_dictionary.h"
 #include "../writer.h"
 #include "dictionary_definition.h"
+#include "orthospelling_data.h"
 
 //---------------------------------------------------------------------------
 
@@ -30,7 +31,7 @@ StenoDictionaryLookupResult StenoOrthospellingDictionary::Lookup(
     }
   }
 
-  char buffer[64];
+  OrthospellingData::Context::LetterBuffer buffer;
   BufferWriter result;
   result.WriteString(starter->definition);
 
@@ -47,23 +48,11 @@ StenoDictionaryLookupResult StenoOrthospellingDictionary::Lookup(
       result.TerminateStringAndAdoptBuffer());
 }
 
-void StenoOrthospellingDictionary::ProcessStroke(BufferWriter &result,
-                                                 char (&buffer)[64],
-                                                 StenoStroke stroke) const {
-  OrthospellingContext context(buffer);
-  data.ConvertToText(stroke, context);
-  if (*context.buffers[0]) {
-    result.WriteString(context.buffers[0]);
-  }
-  if (*context.buffers[1]) {
-    result.WriteString(context.buffers[1]);
-  }
-  if (*context.buffers[2]) {
-    result.WriteString(context.buffers[2]);
-  }
-  if (*context.buffers[3]) {
-    result.WriteString(context.buffers[3]);
-  }
+void StenoOrthospellingDictionary::ProcessStroke(
+    BufferWriter &result, OrthospellingData::Context context,
+    StenoStroke stroke) const {
+  data.ResolveStroke(stroke, context);
+  context.WriteToBuffer(result);
 }
 
 const StenoDictionary *StenoOrthospellingDictionary::GetDictionaryForOutline(

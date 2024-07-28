@@ -1,6 +1,7 @@
 //---------------------------------------------------------------------------
 
 #include "orthospelling_data.h"
+#include "../writer.h"
 
 //---------------------------------------------------------------------------
 
@@ -23,31 +24,49 @@ const bool OrthospellingData::IsExit(StenoStroke stroke) const {
   return false;
 }
 
-bool OrthospellingData::ConvertToText(StenoStroke stroke,
-                                      OrthospellingContext context,
+bool OrthospellingData::ResolveStroke(StenoStroke stroke, Context context,
                                       size_t startingIndex) const {
   for (size_t i = 0; i < letters.count; ++i) {
     const Letter &letter = letters[i];
     if ((letter.stroke & stroke) == letter.stroke) {
       const StenoStroke remainingStroke = stroke & ~letter.stroke;
-      const char *s = letter.data;
-      char *p = context.buffers[letter.order];
-      while (*s) {
-        *p++ = *s++;
-      }
-      *p = '\0';
-      if (remainingStroke.IsEmpty()) {
-        return true;
-      }
-
-      OrthospellingContext remainingContext = context;
-      remainingContext.buffers[letter.order] = p;
-      if (ConvertToText(remainingStroke, remainingContext, i + 1)) {
+      Context remainingContext = context;
+      remainingContext.Add(&letter);
+      if (ResolveStroke(remainingStroke, remainingContext, i + 1)) {
         return true;
       }
     }
   }
   return false;
+}
+
+uint32_t OrthospellingData::Context::FindLowestOrder() const {
+  const Letter **letters = this->letters;
+  uint32_t result = (*letters)->order;
+  for (++letters; *letters; ++letters) {
+    if ((*letters)->order < result) {
+      result = (*letters)->order;
+    }
+  }
+  return result;
+}
+
+void OrthospellingData::Context::WriteToBuffer(BufferWriter &writer) {
+  while (!IsEmpty()) {
+    const uint32_t order = FindLowestOrder();
+
+    const Letter **output = letters;
+    const Letter **input = letters;
+    while (*input) {
+      if ((*input)->order == order) {
+        writer.WriteString((*input)->data);
+      } else {
+        *output++ = *input;
+      }
+      ++input;
+    }
+    *output = nullptr;
+  }
 }
 
 //---------------------------------------------------------------------------

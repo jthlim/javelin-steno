@@ -35,7 +35,7 @@ public:
 private:
   const OrthospellingData data;
 
-  void ProcessStroke(BufferWriter &result, char (&buffer)[64],
+  void ProcessStroke(BufferWriter &result, OrthospellingData::Context context,
                      StenoStroke stroke) const;
 };
 

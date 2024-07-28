@@ -6,20 +6,9 @@
 
 //---------------------------------------------------------------------------
 
-struct OrthospellingContext {
-  OrthospellingContext(char (&buffer)[64]) {
-    buffers[0] = &buffer[0];
-    buffers[1] = &buffer[16];
-    buffers[2] = &buffer[32];
-    buffers[3] = &buffer[48];
-    buffer[0] = '\0';
-    buffer[16] = '\0';
-    buffer[32] = '\0';
-    buffer[48] = '\0';
-  }
+class BufferWriter;
 
-  char *buffers[4];
-};
+//---------------------------------------------------------------------------
 
 struct OrthospellingData {
   struct Starter {
@@ -27,11 +16,13 @@ struct OrthospellingData {
     StenoStroke mask;
     const char *definition;
   };
+
   struct Letter {
     StenoStroke stroke;
     uint8_t order; // 0-2 inclusive, representing the buffer used in
     const char data[7];
   };
+
   struct Exit {
     StenoStroke stroke;
     union {
@@ -44,6 +35,24 @@ struct OrthospellingData {
     };
   };
 
+  struct Context {
+    const Letter **letters;
+
+    typedef const Letter *(LetterBuffer[32]);
+
+    Context(LetterBuffer &letters) : letters(letters) { *letters = nullptr; }
+
+    void Add(const Letter *letter) {
+      *letters++ = letter;
+      *letters = nullptr;
+    }
+
+    bool IsEmpty() const { return *letters == nullptr; }
+
+    void WriteToBuffer(BufferWriter &writer);
+    uint32_t FindLowestOrder() const;
+  };
+
   const char *name;
   SizedList<Starter> starters;
   SizedList<Letter> letters;
@@ -53,7 +62,7 @@ struct OrthospellingData {
   const Starter *GetStarterDefinition(StenoStroke stroke) const;
   const bool IsExit(StenoStroke stroke) const;
 
-  bool ConvertToText(StenoStroke stroke, OrthospellingContext context,
+  bool ResolveStroke(StenoStroke stroke, Context context,
                      size_t startingIndex = 0) const;
 };
 
