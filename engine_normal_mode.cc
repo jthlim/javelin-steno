@@ -431,7 +431,7 @@ void StenoEngine::PrintPaperTape(StenoStroke stroke,
   const size_t previousSegmentCount = previousSegments.GetCount();
   while (undoCount < previousSegmentCount &&
          previousSegments[previousSegmentCount - 1 - undoCount].GetStrokeIndex(
-             previousSegments.Front().state) > startingStrokeIndex) {
+             previousSegments.Front().state) >= startingStrokeIndex) {
     ++undoCount;
   }
 
