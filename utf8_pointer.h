@@ -21,6 +21,7 @@ public:
   }
 
   void SetAndAdvance(uint32_t c);
+  void SetAsciiAndAdvance(uint8_t c) { *p++ = c; }
   void SetTerminatingNull() { *p = '\0'; }
   static uint32_t BytesForCharacterCode(uint32_t c);
 
@@ -28,10 +29,19 @@ public:
 
   char *GetRawPointer() const { return (char *)p; }
 
+  bool IsEndOfString() const { return *p == '\0'; }
+
 private:
   uint8_t *p;
 
   static const uint8_t DECODE_TABLE[];
+};
+
+//---------------------------------------------------------------------------
+
+class Utf8 {
+public:
+  static size_t Length(const char *p);
 };
 
 //---------------------------------------------------------------------------

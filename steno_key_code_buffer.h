@@ -37,6 +37,7 @@ public:
   const StenoCompiledOrthography *orthography;
   StenoDictionary *rootDictionary;
 
+  bool wasLastActionAStitch;
   size_t count = 0;
   size_t consoleCount = 0;
   size_t addTranslationCount = 0;
@@ -103,6 +104,8 @@ public:
   bool RetroUpperCaseFunction(const List<char *> &parameters);
   bool SetCaseFunction(const List<char *> &parameters);
   bool SetSpaceFunction(const List<char *> &parameters);
+  bool StitchFunction(const List<char *> &parameters);
+  bool StitchLastWordFunction(const List<char *> &parameters);
   bool ToggleDictionaryFunction(const List<char *> &parameters);
   bool UnicodeFunction(const List<char *> &parameters);
 

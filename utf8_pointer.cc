@@ -122,3 +122,15 @@ uint32_t Utf8Pointer::operator*() const {
 #endif
 
 //---------------------------------------------------------------------------
+
+size_t Utf8::Length(const char *p) {
+  Utf8Pointer utf8p(p);
+  size_t length = 0;
+  while (!utf8p.IsEndOfString()) {
+    ++length;
+    ++utf8p;
+  }
+  return length;
+}
+
+//---------------------------------------------------------------------------

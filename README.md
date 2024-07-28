@@ -321,6 +321,41 @@ The following will give "snake case" words:
   {:set_space:_}
 ```
 
+## `{:stitch:<text>:<delimiter?>}`
+
+Use `delimiter` between text, if the previous text was also a stitch.
+
+Example usage:
+
+- Stitched capital letter alphabet:
+
+  `{:stitch:A}{:stitch:B}` → `A-B`
+
+- Joining repeated words
+
+  `{:stitch:ha:}` → `ha`
+
+  `{:stitch:ha:}{:stitch:ha:}{:stitch:ha:}` → `hahaha`
+
+- Custom delimiter
+
+  `{:stitch:lol:o}` → `lol`
+
+  `{:stitch:lol:o}{:stitch:lol:o}{:stitch:lol:o}` → `lololololol`
+
+## `{:stitch_last_word:<n>:<delimiter>}`
+
+Use `delimiter` between the last `n` words.
+
+Example usage:
+Text: `This is a test`
+
+```
+  {:stitch:3:-}
+```
+
+Output: `This i-s a t-e-s-t`
+
 ## `{:disable_dictionary:<dictionary_name>}`
 
 Toggles a dictionary between enabled and disabled.

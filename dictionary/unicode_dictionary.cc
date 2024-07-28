@@ -41,9 +41,9 @@ StenoUnicodeDictionary::Lookup(const StenoDictionaryLookup &lookup) const {
     char buffer[12] = {'{', '^', '}'};
     Utf8Pointer utf8p(buffer + 3);
     utf8p.SetAndAdvance(unicode);
-    utf8p.SetAndAdvance('{');
-    utf8p.SetAndAdvance('^');
-    utf8p.SetAndAdvance('}');
+    utf8p.SetAsciiAndAdvance('{');
+    utf8p.SetAsciiAndAdvance('^');
+    utf8p.SetAsciiAndAdvance('}');
 
     return StenoDictionaryLookupResult::CreateDynamicString(
         Str::DupN(buffer, utf8p.GetRawPointer() - buffer));

@@ -12,6 +12,7 @@
 //---------------------------------------------------------------------------
 
 void StenoKeyCodeBuffer::Reset() {
+  wasLastActionAStitch = false;
   count = 0;
   consoleCount = 0;
   addTranslationCount = 0;
@@ -113,6 +114,8 @@ void StenoKeyCodeBuffer::AppendTextNoCaseModeOverride(const char *p, size_t n,
 
     caseMode = GetNextLetterCaseMode(caseMode);
   }
+
+  wasLastActionAStitch = false;
 }
 
 bool StenoKeyCodeBuffer::IsGlue(const char *p) {
