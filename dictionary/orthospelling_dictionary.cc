@@ -35,7 +35,7 @@ StenoDictionaryLookupResult StenoOrthospellingDictionary::Lookup(
   BufferWriter result;
   result.WriteString(starter->definition);
 
-  StenoStroke remainder = lookup.strokes[0] & ~starter->mask;
+  const StenoStroke remainder = lookup.strokes[0] & ~starter->mask;
   if (remainder.IsNotEmpty()) {
     ProcessStroke(result, buffer, remainder);
   }
@@ -51,8 +51,9 @@ StenoDictionaryLookupResult StenoOrthospellingDictionary::Lookup(
 void StenoOrthospellingDictionary::ProcessStroke(
     BufferWriter &result, OrthospellingData::Context context,
     StenoStroke stroke) const {
-  data.ResolveStroke(stroke, context);
-  context.WriteToBuffer(result);
+  if (data.ResolveStroke(stroke, context)) {
+    context.WriteToBuffer(result);
+  }
 }
 
 const StenoDictionary *StenoOrthospellingDictionary::GetDictionaryForOutline(

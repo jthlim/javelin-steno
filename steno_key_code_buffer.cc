@@ -178,6 +178,7 @@ void StenoKeyCodeBuffer::ProcessCommand(const char *p, size_t length) {
     if (caseMode != StenoCaseMode::UNSPECIFIED) {
       state.caseMode = caseMode;
     }
+    state.isGlue = false;
     state.joinNext = false;
     return;
   }
@@ -198,6 +199,7 @@ void StenoKeyCodeBuffer::ProcessCommand(const char *p, size_t length) {
     state.caseMode = caseMode != StenoCaseMode::UNSPECIFIED
                          ? caseMode
                          : state.GetNextWordCaseMode();
+    state.isGlue = false;
     state.joinNext = true;
     return;
   }
@@ -240,6 +242,7 @@ void StenoKeyCodeBuffer::ProcessCommand(const char *p, size_t length) {
     case '!':
       AppendText(p + 1, 1, StenoCaseMode::NORMAL);
       state.joinNext = false;
+      state.isGlue = false;
       state.caseMode = StenoCaseMode::TITLE_ONCE;
       return;
 
@@ -248,6 +251,7 @@ void StenoKeyCodeBuffer::ProcessCommand(const char *p, size_t length) {
     case ';':
       AppendText(p + 1, 1, StenoCaseMode::NORMAL);
       state.joinNext = false;
+      state.isGlue = false;
       state.caseMode = StenoCaseMode::NORMAL;
       return;
     }

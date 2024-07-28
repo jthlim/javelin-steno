@@ -26,12 +26,15 @@ const bool OrthospellingData::IsExit(StenoStroke stroke) const {
 
 bool OrthospellingData::ResolveStroke(StenoStroke stroke, Context context,
                                       size_t startingIndex) const {
-  for (size_t i = 0; i < letters.count; ++i) {
+  for (size_t i = startingIndex; i < letters.count; ++i) {
     const Letter &letter = letters[i];
     if ((letter.stroke & stroke) == letter.stroke) {
-      const StenoStroke remainingStroke = stroke & ~letter.stroke;
       Context remainingContext = context;
       remainingContext.Add(&letter);
+      const StenoStroke remainingStroke = stroke & ~letter.stroke;
+      if (remainingStroke.IsEmpty()) {
+        return true;
+      }
       if (ResolveStroke(remainingStroke, remainingContext, i + 1)) {
         return true;
       }
@@ -56,14 +59,12 @@ void OrthospellingData::Context::WriteToBuffer(BufferWriter &writer) {
     const uint32_t order = FindLowestOrder();
 
     const Letter **output = letters;
-    const Letter **input = letters;
-    while (*input) {
+    for (const Letter **input = letters; *input; ++input) {
       if ((*input)->order == order) {
         writer.WriteString((*input)->data);
       } else {
         *output++ = *input;
       }
-      ++input;
     }
     *output = nullptr;
   }
