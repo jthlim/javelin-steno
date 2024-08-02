@@ -98,6 +98,7 @@ private:
   size_t scriptOffsets[(int)ScriptId::COUNT];
   BitField<256> buttonState;
   BitField<256> keyState;
+  BitField<32> mouseButtonState;
   intptr_t globals[256];
   intptr_t stack[MAX_STACK_SIZE];
 

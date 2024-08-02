@@ -149,6 +149,12 @@ enum class StenoScriptFunction : uint8_t {
   IS_STENO_JOIN_NEXT,
   CALL_PRESS,
   CALL_RELEASE,
+  PRESS_MOUSE_BUTTON,
+  RELEASE_MOUSE_BUTTON,
+  TAP_MOUSE_BUTTON,
+  IS_MOUSE_BUTTON_PRESSED,
+  MOVE_MOUSE,
+  WHEEL_MOUSE,
 };
 
 enum class StenoScriptOperator : uint8_t {

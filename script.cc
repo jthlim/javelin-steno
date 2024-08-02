@@ -18,6 +18,7 @@
 #include "key.h"
 #include "keyboard_led_status.h"
 #include "malloc_allocate.h"
+#include "mouse.h"
 #include "random.h"
 #include "script_byte_code.h"
 #include "split/split_usb_status.h"
@@ -56,7 +57,6 @@ void Script::Reset() {
   eventHistory[2] = nullptr;
   eventHistory[3] = nullptr;
   stackTop = stack;
-  keyState.ClearAll();
   Mem::Clear(scriptOffsets);
   Mem::Clear(globals);
 }
@@ -76,6 +76,9 @@ void Script::ReleaseAll() {
   keyState.ClearAll();
   stenoState = 0;
   CancelAllStenoKeys();
+  for (const size_t mouseButtonIndex : mouseButtonState) {
+    Mouse::ReleaseButton(mouseButtonIndex);
+  }
 }
 
 void Script::Push(intptr_t value) {
@@ -930,6 +933,54 @@ void Script::ExecutionContext::Run(Script &script, size_t offset) {
       case SF::CALL_RELEASE:
         script.CallPress(script.Pop(), script.scriptTime);
         continue;
+      case SF::PRESS_MOUSE_BUTTON: {
+        const uint32_t mouseButton = (uint32_t)script.Pop();
+        if (mouseButton < 32 && !script.mouseButtonState.IsSet(mouseButton)) {
+          script.mouseButtonState.Set(mouseButton);
+          Mouse::PressButton(mouseButton);
+        }
+        continue;
+      }
+      case SF::RELEASE_MOUSE_BUTTON: {
+        const uint32_t mouseButton = (uint32_t)script.Pop();
+        if (mouseButton < 32 && script.mouseButtonState.IsSet(mouseButton)) {
+          script.mouseButtonState.Clear(mouseButton);
+          Mouse::ReleaseButton(mouseButton);
+        }
+        continue;
+      }
+      case SF::TAP_MOUSE_BUTTON: {
+        const uint32_t mouseButton = (uint32_t)script.Pop();
+        if (mouseButton < 32) {
+          if (script.mouseButtonState.IsSet(mouseButton)) {
+            script.mouseButtonState.Clear(mouseButton);
+          } else {
+            Mouse::PressButton(mouseButton);
+          }
+          Mouse::ReleaseButton(mouseButton);
+        }
+        continue;
+      }
+      case SF::IS_MOUSE_BUTTON_PRESSED: {
+        const uint32_t mouseButton = (uint32_t)script.Pop();
+        int isPressed = 0;
+        if (mouseButton < 32) {
+          isPressed = script.mouseButtonState.IsSet(mouseButton);
+        }
+        script.Push(isPressed);
+        continue;
+      }
+      case SF::MOVE_MOUSE: {
+        const int32_t dy = (int32_t)script.Pop();
+        const int32_t dx = (int32_t)script.Pop();
+        Mouse::Move(dx, dy);
+        continue;
+      }
+      case SF::WHEEL_MOUSE: {
+        const int32_t delta = (int32_t)script.Pop();
+        Mouse::Wheel(delta);
+        continue;
+      }
       }
       continue;
     }
