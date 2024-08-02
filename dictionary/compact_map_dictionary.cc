@@ -337,12 +337,11 @@ StenoCompactMapDictionary::CreateStrokeCache(
 }
 
 //---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
 #include "../unit_test.h"
 #include "test_dictionary.h"
 #include <assert.h>
-
-static StenoCompactMapDictionary mainDictionary(TestDictionary::definition);
 
 TEST_BEGIN("MapDictionary: Single stroke lookup test") {
   // spellchecker: disable
@@ -350,6 +349,8 @@ TEST_BEGIN("MapDictionary: Single stroke lookup test") {
       StenoStroke("TEFT"),
   };
   // spellchecker: enable
+
+  StenoCompactMapDictionary mainDictionary(TestDictionary::definition);
 
   auto lookup = mainDictionary.Lookup(strokes, 1);
   assert(lookup.IsValid());
@@ -365,6 +366,8 @@ TEST_BEGIN("MapDictionary: Double stroke lookup test") {
       StenoStroke("-D"),
   };
   // spellchecker: enable
+
+  StenoCompactMapDictionary mainDictionary(TestDictionary::definition);
 
   auto lookup = mainDictionary.Lookup(strokes, 2);
   assert(lookup.IsValid());

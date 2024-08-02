@@ -23,7 +23,8 @@ public:
   virtual void Process(const StenoKeyState &value, StenoAction action) = 0;
   virtual void Tick() {}
   virtual void PrintInfo() const = 0;
-  virtual bool ProcessScanCode(int scanCodeAndModifiers, ScanCodeAction action);
+  virtual bool ProcessScanCode(uint32_t scanCodeAndModifiers,
+                               ScanCodeAction action);
 
 private:
   // Disable copy and assignment, to ensure code isn't accidentally copying

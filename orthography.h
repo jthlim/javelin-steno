@@ -74,11 +74,22 @@ private:
     const char *GetWord() const { return base; }
     const char *GetSuffix() const { return base + suffixOffset; }
     const char *GetResult() const { return base + resultOffset; }
+    char *DupResult() const;
 
   private:
     char *base;
     uint8_t suffixOffset;
     uint8_t resultOffset;
+    uint8_t resultLength;
+
+  public:
+    // The index of the currently used CacheEntry for a block.
+    //
+    // This should be stored in CacheBlock, but put here for better data
+    // packing.
+    //
+    // Only the first entry in each cache block is used.
+    uint8_t blockIndex;
   };
 
   static void LockCache();
@@ -95,12 +106,10 @@ private:
     CacheEntry entries[CACHE_ASSOCIATIVITY];
 
     char *Lookup(const char *word, const char *suffix) const;
-    void AddEntry(size_t index, const char *word, const char *suffix,
-                  const char *result);
+    void AddEntry(const char *word, const char *suffix, const char *result);
   };
 
   mutable CacheBlock cache[CACHE_BLOCK_COUNT];
-  mutable uint8_t blockIndexes[CACHE_BLOCK_COUNT];
 
 #endif
 

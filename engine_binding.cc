@@ -176,8 +176,7 @@ void StenoEngine::Lookup_Binding(void *context, const char *commandLine) {
   const ExternalFlashSentry externalFlashSentry;
 
   ++definition;
-  StenoReverseDictionaryLookup lookup(
-      StenoReverseDictionaryLookup::MAX_STROKE_THRESHOLD, definition);
+  StenoReverseDictionaryLookup lookup(definition);
   StenoEngine *engine = (StenoEngine *)context;
   engine->ReverseLookup(lookup);
 
@@ -286,7 +285,7 @@ void StenoEngine::RemoveStroke_Binding(void *context, const char *commandLine) {
 
   const ExternalFlashSentry externalFlashSentry;
   StenoEngine *engine = (StenoEngine *)context;
-  bool result =
+  const bool result =
       engine->dictionary.Remove(dictionaryName, parser.strokes, parser.length);
 
   if (!result) {

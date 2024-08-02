@@ -12,6 +12,7 @@ public:
 
   static bool IsAsciiDigit(uint32_t c) { return '0' <= c && c <= '9'; }
   static bool IsLetter(uint32_t c);
+  static bool IsUpper(uint32_t c) { return ToLower(c) != c; }
 
   static int GetHexValue(uint32_t c) {
     if ('0' <= c && c <= '9') {

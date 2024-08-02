@@ -97,9 +97,9 @@ void TimerManager::ProcessTimers(uint32_t currentTime) {
     if (timer.ShouldTrigger(currentTime)) {
       timer.lastUpdateTime = currentTime;
 
-      intptr_t id = timer.id;
-      TimerHandler *handler = timer.handler;
-      bool isRepeating = timer.isRepeating;
+      const intptr_t id = timer.id;
+      TimerHandler *const handler = timer.handler;
+      const bool isRepeating = timer.isRepeating;
 
       // For non-repeating timers, need to remove it immediately so that
       // if the timer script adds it back, it triggers again.
@@ -142,7 +142,7 @@ void TimerManager::RemoveTimerIndex(size_t index, uint32_t currentTime) {
 int TimerManager::GetNextTimerTriggerDelay(uint32_t currentTime) const {
   int result = INT32_MAX;
   for (size_t i = 0; i < timerCount; ++i) {
-    int delay = timers[i].GetTriggerDelay(currentTime);
+    const int delay = timers[i].GetTriggerDelay(currentTime);
     if (delay < result) {
       result = delay;
     }

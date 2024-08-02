@@ -4,6 +4,7 @@
 #include "console.h"
 #include "str.h"
 #include "stroke.h"
+#include "utf8_pointer.h"
 #include <string.h>
 
 //---------------------------------------------------------------------------
@@ -216,6 +217,13 @@ void IWriter::Vprintf(const char *p, va_list args) {
       end = start + 1;
       break;
 
+    case 'C': {
+      const uint32_t c = va_arg(args, int);
+      Utf8Pointer p(start);
+      p.SetAndAdvance(c);
+      end = p.GetRawPointer();
+    } break;
+
     case 's':
       start = va_arg(args, char *);
       end = start + Str::Length(start);
@@ -260,7 +268,7 @@ void IWriter::Vprintf(const char *p, va_list args) {
       goto NextSegment;
     }
     case 'D': {
-      // Write Data as Base64 Dat
+      // Write Data (void*, length) as Base64
       const void *data = va_arg(args, const void *);
       const size_t length = va_arg(args, size_t);
       WriteBase64(data, length);

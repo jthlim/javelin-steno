@@ -188,8 +188,8 @@ void StenoReverseSuffixDictionary::AddSuffixReverseLookup(
     }
 
     StenoReverseDictionaryLookup *prefixLookup =
-        new StenoReverseDictionaryLookup(lookup.strokeThreshold - 1,
-                                         withoutSuffix);
+        new StenoReverseDictionaryLookup(withoutSuffix,
+                                         lookup.strokeThreshold - 1);
 
     prefixDictionary->ReverseLookup(*prefixLookup);
     free(withoutSuffix);
@@ -201,8 +201,8 @@ void StenoReverseSuffixDictionary::AddSuffixReverseLookup(
       if (lookup.strokeThreshold > minimumPrefixStrokeCount + 1) {
         StenoReverseDictionaryLookup *suffixLookup =
             new StenoReverseDictionaryLookup(
-                lookup.strokeThreshold - minimumPrefixStrokeCount,
-                (const char *)test.suffix->GetText(suffixLength));
+                (const char *)test.suffix->GetText(suffixLength),
+                lookup.strokeThreshold - minimumPrefixStrokeCount);
 
         // Add map lookup hints.
         suffixLookup->AddMapDataLookup(test.suffix->GetMapDataLookup(),

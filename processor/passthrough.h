@@ -15,7 +15,7 @@ public:
 
   void Tick() { next->Tick(); }
   void PrintInfo() const { next->PrintInfo(); }
-  bool ProcessScanCode(int scanCodeAndModifiers, ScanCodeAction action) {
+  bool ProcessScanCode(uint32_t scanCodeAndModifiers, ScanCodeAction action) {
     return next->ProcessScanCode(scanCodeAndModifiers, action);
   }
 

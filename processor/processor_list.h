@@ -14,7 +14,7 @@ public:
   void Process(const StenoKeyState &value, StenoAction action);
   void Tick();
   void PrintInfo() const;
-  bool ProcessScanCode(int scanCodeAndModifiers, ScanCodeAction action);
+  bool ProcessScanCode(uint32_t scanCodeAndModifiers, ScanCodeAction action);
 
 private:
   const SizedList<StenoProcessorElement *> processors;

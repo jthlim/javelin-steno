@@ -216,6 +216,9 @@ char *StenoEngine::ConvertText(StenoSegmentList &segments,
 __attribute__((weak)) void StenoEngine::Pump() {}
 
 //---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+#if RUN_TESTS
 
 #include "key_code.h"
 #include "unit_test.h"
@@ -530,4 +533,6 @@ TEST_BEGIN("Engine: Verify =retro_insert_space with auto-suffix") {
 }
 TEST_END
 
+//---------------------------------------------------------------------------
+#endif // RUN_TESTS
 //---------------------------------------------------------------------------

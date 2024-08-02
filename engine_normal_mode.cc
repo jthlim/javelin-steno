@@ -531,7 +531,7 @@ void StenoEngine::PrintFingerSpellingSuggestions(
 
 void StenoEngine::PrintSuggestion(const char *p, size_t arrowPrefixCount,
                                   size_t strokeThreshold) const {
-  StenoReverseDictionaryLookup lookup(strokeThreshold, p);
+  StenoReverseDictionaryLookup lookup(p, strokeThreshold);
   ReverseLookup(lookup);
   if (lookup.results.IsEmpty()) {
     return;

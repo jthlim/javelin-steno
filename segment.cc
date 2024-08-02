@@ -216,8 +216,6 @@ StenoTokenizer *StenoTokenizer::Create(const List<StenoSegment> &segments,
 #include "str.h"
 #include "unit_test.h"
 
-static StenoCompactMapDictionary dictionary(TestDictionary::definition);
-
 TEST_BEGIN("Segment tests") {
   StenoSegmentBuilder history;
   // spellchecker: disable
@@ -228,6 +226,7 @@ TEST_BEGIN("Segment tests") {
   StenoSegmentList segments;
   StenoCompiledOrthography compiledOrthography(
       StenoOrthography::emptyOrthography);
+  StenoCompactMapDictionary dictionary(TestDictionary::definition);
   StenoEngine engine(dictionary, compiledOrthography);
   BuildSegmentContext context(segments, engine, false);
 

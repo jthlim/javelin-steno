@@ -70,7 +70,7 @@ StenoDictionaryLookupResult StenoDictionaryLookupResult::Clone() const {
     return *this;
   }
 
-  return CreateDynamicString(Str::Dup(GetText()));
+  return CreateDup(GetText());
 }
 
 #endif
@@ -171,6 +171,11 @@ bool StenoReverseDictionaryLookup::AreAllFromSameDictionary() const {
   }
 
   return true;
+}
+
+StenoDictionaryLookupResult
+StenoDictionaryLookupResult::CreateFromBuffer(BufferWriter &writer) {
+  return CreateDynamicString(writer.TerminateStringAndAdoptBuffer());
 }
 
 //---------------------------------------------------------------------------

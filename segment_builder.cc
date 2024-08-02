@@ -144,10 +144,9 @@ bool StenoSegmentBuilder::DirectLookup(BuildSegmentContext &context,
         BufferWriter writer;
         EscapeCommand(writer, lookupText);
         CreateTransformString(writer, context, format);
-        char *result = writer.TerminateStringAndAdoptBuffer();
         context.segments.Add(StenoSegment(
             length, SegmentLookupType::DIRECT, states + offset,
-            StenoDictionaryLookupResult::CreateDynamicString(result)));
+            StenoDictionaryLookupResult::CreateFromBuffer(writer)));
         offset += length;
 
         lookup.Destroy();
@@ -352,10 +351,10 @@ void StenoSegmentBuilder::AddRawStroke(BuildSegmentContext &context,
 
   char buffer[StenoStroke::MAX_STRING_LENGTH];
 
-  strokes[offset].ToString(buffer);
+  char *end = strokes[offset].ToString(buffer);
   context.segments.Add(StenoSegment(
       1, SegmentLookupType::STROKE, states + offset,
-      StenoDictionaryLookupResult::CreateDynamicString(Str::Dup(buffer))));
+      StenoDictionaryLookupResult::CreateDupN(buffer, end - buffer)));
   ++offset;
 }
 
@@ -477,28 +476,23 @@ void StenoSegmentBuilder::HandleRetroSetValue(BuildSegmentContext &context,
     segment.lookup = StenoDictionaryLookupResult::NO_OP;
   }
 
-  // Use case carry as a no-op on the buffer processing layer.
-  // This is so that joinNext state is carried through.
-  // Special case if followed by =transform
-  StenoDictionaryLookupResult lookup =
-      StenoDictionaryLookupResult::CreateInvalid();
-
   BufferWriter writer;
   EscapeCommand(writer, command);
+
+  // Special case if followed by =transform
   if (Str::HasPrefix(format, "=transform:")) {
     CreateTransformString(writer, context,
                           format + Str::Length<>("=transform:"));
   } else {
     writer.WriteString(format);
   }
-  lookup = StenoDictionaryLookupResult::CreateDynamicString(
-      writer.TerminateStringAndAdoptBuffer());
 
   hasModifiedStrokeHistory = true;
   states[currentOffset].joinNext =
       context.segments[startingSegmentIndex].state->joinNext;
-  context.segments.Add(StenoSegment(length, SegmentLookupType::DIRECT,
-                                    states + currentOffset, lookup));
+  context.segments.Add(
+      StenoSegment(length, SegmentLookupType::DIRECT, states + currentOffset,
+                   StenoDictionaryLookupResult::CreateFromBuffer(writer)));
 }
 
 void StenoSegmentBuilder::HandleRetroTransform(BuildSegmentContext &context,
@@ -539,10 +533,9 @@ void StenoSegmentBuilder::HandleRetroTransform(BuildSegmentContext &context,
   }
 
   hasModifiedStrokeHistory = true;
-  context.segments.Add(
-      StenoSegment(length, SegmentLookupType::DIRECT, states + currentOffset,
-                   StenoDictionaryLookupResult::CreateDynamicString(
-                       bufferWriter.TerminateStringAndAdoptBuffer())));
+  context.segments.Add(StenoSegment(
+      length, SegmentLookupType::DIRECT, states + currentOffset,
+      StenoDictionaryLookupResult::CreateFromBuffer(bufferWriter)));
 }
 
 void StenoSegmentBuilder::WriteRetroTransform(const StenoSegmentList &segments,
@@ -781,8 +774,7 @@ void StenoSegmentBuilder::UpdateLastSegmentWithCommand(
   const char *text = back.lookup.GetText();
   writer.WriteString(text);
   back.lookup.Destroy();
-  back.lookup = StenoDictionaryLookupResult::CreateDynamicString(
-      writer.TerminateStringAndAdoptBuffer());
+  back.lookup = StenoDictionaryLookupResult::CreateFromBuffer(writer);
 }
 
 void StenoSegmentBuilder::ResetStrokes(size_t offset, size_t length) {
@@ -847,6 +839,7 @@ void StenoSegmentBuilder::HandleRepeatLastStroke(BuildSegmentContext &context,
 }
 
 //---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
 #include "dictionary/compact_map_dictionary.h"
 #include "dictionary/debug_dictionary.h"
@@ -858,14 +851,12 @@ void StenoSegmentBuilder::HandleRepeatLastStroke(BuildSegmentContext &context,
 #include "str.h"
 #include "unit_test.h"
 
-static StenoCompactMapDictionary mainDictionary(TestDictionary::definition);
-
-StenoDictionary *const DICTIONARIES[] = {
-    &StenoEmilySymbolsDictionary::instance,
-    &mainDictionary,
-};
-
 TEST_BEGIN("StrokeHistory: Test single segment") {
+  StenoCompactMapDictionary mainDictionary(TestDictionary::definition);
+  StenoDictionary *const DICTIONARIES[] = {
+      &StenoEmilySymbolsDictionary::instance,
+      &mainDictionary,
+  };
   StenoDictionaryList dictionary(DICTIONARIES, 2);
 
   StenoSegmentBuilder history;
@@ -887,6 +878,11 @@ TEST_BEGIN("StrokeHistory: Test single segment") {
 TEST_END
 
 TEST_BEGIN("StrokeHistory: Test two segments, with multi-stroke") {
+  StenoCompactMapDictionary mainDictionary(TestDictionary::definition);
+  StenoDictionary *const DICTIONARIES[] = {
+      &StenoEmilySymbolsDictionary::instance,
+      &mainDictionary,
+  };
   StenoDictionaryList dictionary(DICTIONARIES, 2);
 
   StenoSegmentBuilder history;
@@ -911,6 +907,11 @@ TEST_BEGIN("StrokeHistory: Test two segments, with multi-stroke") {
 TEST_END
 
 TEST_BEGIN("StrokeHistory: Test *? splits strokes") {
+  StenoCompactMapDictionary mainDictionary(TestDictionary::definition);
+  StenoDictionary *const DICTIONARIES[] = {
+      &StenoEmilySymbolsDictionary::instance,
+      &mainDictionary,
+  };
   StenoDictionaryList dictionary(DICTIONARIES, 2);
 
   StenoSegmentBuilder history;
@@ -978,6 +979,11 @@ TEST_BEGIN("StrokeHistory: Test {*?} behaves properly") {
   const StenoCompiledOrthography orthography(
       StenoOrthography::emptyOrthography);
 
+  StenoCompactMapDictionary mainDictionary(TestDictionary::definition);
+  StenoDictionary *const DICTIONARIES[] = {
+      &StenoEmilySymbolsDictionary::instance,
+      &mainDictionary,
+  };
   StenoDictionaryList dictionary(DICTIONARIES, 2);
   StenoEngine engine(dictionary, orthography);
   BuildSegmentContext context(segments, engine, false);

@@ -44,8 +44,7 @@ StenoDictionaryLookupResult StenoOrthospellingDictionary::Lookup(
     ProcessStroke(result, buffer, lookup.strokes[i]);
   }
 
-  return StenoDictionaryLookupResult::CreateDynamicString(
-      result.TerminateStringAndAdoptBuffer());
+  return StenoDictionaryLookupResult::CreateFromBuffer(result);
 }
 
 void StenoOrthospellingDictionary::ProcessStroke(

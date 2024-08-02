@@ -15,6 +15,7 @@
 
 //---------------------------------------------------------------------------
 
+class BufferWriter;
 class MapDataLookup;
 class StenoDictionary;
 
@@ -75,6 +76,16 @@ public:
     return StenoDictionaryLookupResult(p);
   }
 
+  static StenoDictionaryLookupResult CreateDup(const char *p) {
+    return CreateDynamicString(Str::Dup(p));
+  }
+
+  static StenoDictionaryLookupResult CreateDupN(const char *p, size_t n) {
+    return CreateDynamicString(Str::DupN(p, n));
+  }
+
+  static StenoDictionaryLookupResult CreateFromBuffer(BufferWriter &writer);
+
   bool operator==(const StenoDictionaryLookupResult &other) const {
     return text == other.text;
   }
@@ -132,6 +143,16 @@ public:
     return result;
   }
 
+  static StenoDictionaryLookupResult CreateDup(const char *p) {
+    return CreateDynamicString(Str::Dup(p));
+  }
+
+  static StenoDictionaryLookupResult CreateDupN(const char *p, size_t n) {
+    return CreateDynamicString(Str::DupN(p, n));
+  }
+
+  static StenoDictionaryLookupResult CreateFromBuffer(BufferWriter &writer);
+
   bool operator==(const StenoDictionaryLookupResult &other) const {
     return text == other.text;
   }
@@ -167,7 +188,8 @@ struct StenoReverseDictionaryResult {
 
 class StenoReverseDictionaryLookup : public JavelinMallocAllocate {
 public:
-  StenoReverseDictionaryLookup(size_t strokeThreshold, const char *definition)
+  StenoReverseDictionaryLookup(const char *definition,
+                               size_t strokeThreshold = MAX_STROKE_THRESHOLD)
       : strokeThreshold(strokeThreshold), definition(definition),
         definitionLength(strlen(definition)) {}
 

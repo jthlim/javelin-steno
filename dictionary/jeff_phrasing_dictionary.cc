@@ -331,14 +331,10 @@ char *PhrasingParts::CreatePhrase() const {
   // Abuse pattern replace code to substitute text.
   PatternMatch match;
   match.match = true;
-  match.captures[0] = pronoun->word;
-  match.captures[1] = pronoun->word + strlen(pronoun->word);
-  match.captures[2] = middleText;
-  match.captures[3] = middleText + strlen(middleText);
-  match.captures[4] = verbText;
-  match.captures[5] = verbText + strlen(verbText);
-  match.captures[6] = ender->suffix;
-  match.captures[7] = ender->suffix + strlen(ender->suffix);
+  match.SetCapture(0, pronoun->word);
+  match.SetCapture(1, middleText);
+  match.SetCapture(2, verbText);
+  match.SetCapture(3, ender->suffix);
   return match.Replace(structureText);
 }
 
@@ -1687,7 +1683,7 @@ TEST_BEGIN("JeffPhrasing: Enders tests") {
 TEST_END
 
 TEST_BEGIN("JeffPhrasing: Omit past tense lookup when present exists") {
-  StenoReverseDictionaryLookup lookup(2, "to read");
+  StenoReverseDictionaryLookup lookup("to read");
   StenoJeffPhrasingDictionary::instance.ReverseLookup(lookup);
   assert(lookup.results.GetCount() == 2);
 }
@@ -1695,14 +1691,14 @@ TEST_END
 
 TEST_BEGIN("JeffPhrasing: Include all past tense results when there's no "
            "present tense") {
-  StenoReverseDictionaryLookup lookup(2, "you were");
+  StenoReverseDictionaryLookup lookup("you were");
   StenoJeffPhrasingDictionary::instance.ReverseLookup(lookup);
   assert(lookup.results.GetCount() == 2);
 }
 TEST_END
 
 static void VerifyReverseLookup(const char *text, StenoStroke expected) {
-  StenoReverseDictionaryLookup lookup(2, text);
+  StenoReverseDictionaryLookup lookup(text);
   StenoJeffPhrasingDictionary::instance.ReverseLookup(lookup);
   assert(lookup.results.IsNotEmpty());
   for (size_t i = 0; i < lookup.results.GetCount(); ++i) {

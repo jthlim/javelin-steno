@@ -3,6 +3,7 @@
 #pragma once
 #include "pattern_quick_reject.h"
 #include <stddef.h>
+#include <string.h>
 
 //---------------------------------------------------------------------------
 
@@ -16,6 +17,10 @@ struct PatternMatch {
   const char *captures[8];
 
   char *Replace(const char *format) const;
+  void SetCapture(size_t n, const char *p) {
+    captures[2 * n] = p;
+    captures[2 * n + 1] = p + strlen(p);
+  }
 
   friend class Pattern;
 };

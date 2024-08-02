@@ -5,7 +5,7 @@
 
 //---------------------------------------------------------------------------
 
-bool StenoProcessorElement::ProcessScanCode(int scanCodeAndModifiers,
+bool StenoProcessorElement::ProcessScanCode(uint32_t scanCodeAndModifiers,
                                             ScanCodeAction action) {
   return false;
 }

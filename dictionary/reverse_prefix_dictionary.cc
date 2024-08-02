@@ -146,8 +146,8 @@ void StenoReversePrefixDictionary::AddPrefixReverseLookup(
     //   result.strokeThreshold - minimumStrokesForPrefix
     // Use "1" as an quick approximation.
     StenoReverseDictionaryLookup *suffixLookup =
-        new StenoReverseDictionaryLookup(lookup.strokeThreshold - 1,
-                                         test.suffix);
+        new StenoReverseDictionaryLookup(test.suffix,
+                                         lookup.strokeThreshold - 1);
 
     suffixLookup->prefixLookupDepth = lookup.prefixLookupDepth + 1;
     ReverseLookup(*suffixLookup);
@@ -159,9 +159,9 @@ void StenoReversePrefixDictionary::AddPrefixReverseLookup(
           suffixLookup->GetMinimumStrokeCount();
       if (lookup.strokeThreshold > minimumSuffixStrokeCount + 1) {
         StenoReverseDictionaryLookup *prefixLookup =
-            new StenoReverseDictionaryLookup(lookup.strokeThreshold -
-                                                 minimumSuffixStrokeCount,
-                                             test.prefix->GetText());
+            new StenoReverseDictionaryLookup(test.prefix->GetText(),
+                                             lookup.strokeThreshold -
+                                                 minimumSuffixStrokeCount);
 
         // Add map lookup hints.
         const size_t prefixLength = test.suffix - lookup.definition;

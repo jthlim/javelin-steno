@@ -12,7 +12,7 @@
 struct StenoSegment {
   StenoSegment(size_t strokeLength, SegmentLookupType lookupType,
                const StenoState *state, StenoDictionaryLookupResult lookup)
-      : strokeLength(strokeLength), lookupType(lookupType), state(state),
+      : lookupType(lookupType), strokeLength(strokeLength), state(state),
         lookup(lookup) {}
 
   bool ContainsKeyCode() const;

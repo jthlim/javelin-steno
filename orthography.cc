@@ -59,6 +59,10 @@ void StenoCompiledOrthography::UnlockCache() {}
 
 #endif
 
+inline char *StenoCompiledOrthography::CacheEntry::DupResult() const {
+  return Str::DupN(GetResult(), resultLength);
+}
+
 void StenoCompiledOrthography::CacheEntry::Set(const char *word,
                                                const char *suffix,
                                                const char *result) {
@@ -67,6 +71,7 @@ void StenoCompiledOrthography::CacheEntry::Set(const char *word,
   const size_t wordLength = Str::Length(word);
   const size_t suffixLength = Str::Length(suffix);
   const size_t resultLength = Str::Length(result);
+  this->resultLength = resultLength;
   base = (char *)malloc(wordLength + suffixLength + resultLength + 3);
 
   char *p = base;
@@ -93,7 +98,7 @@ char *StenoCompiledOrthography::CacheBlock::Lookup(const char *word,
   for (size_t i = 0; i < CACHE_ASSOCIATIVITY; ++i) {
     const CacheEntry &entry = entries[i];
     if (entry.IsEqual(word, suffix)) {
-      char *result = Str::Dup(entry.GetResult());
+      char *result = entry.DupResult();
       UnlockCache();
       return result;
     }
@@ -103,13 +108,12 @@ char *StenoCompiledOrthography::CacheBlock::Lookup(const char *word,
   return nullptr;
 }
 
-void StenoCompiledOrthography::CacheBlock::AddEntry(size_t index,
-                                                    const char *word,
+void StenoCompiledOrthography::CacheBlock::AddEntry(const char *word,
                                                     const char *suffix,
                                                     const char *result) {
   LockCache();
 
-  const size_t entryIndex = index & (CACHE_ASSOCIATIVITY - 1);
+  const size_t entryIndex = entries[0].blockIndex++ & (CACHE_ASSOCIATIVITY - 1);
   CacheEntry &entry = entries[entryIndex];
   entry.Set(word, suffix, result);
 
@@ -193,7 +197,6 @@ StenoCompiledOrthography::StenoCompiledOrthography(
     : data(orthography), patterns(CreatePatterns(orthography)) {
 #if USE_ORTHOGRAPHY_CACHE
   Mem::Clear(cache);
-  Mem::Clear(blockIndexes);
 #endif
 }
 
@@ -237,7 +240,7 @@ char *StenoCompiledOrthography::AddSuffix(const char *word,
 #endif
 
   char *result = AddSuffixInternal(word, suffix);
-  cache[blockIndex].AddEntry(blockIndexes[blockIndex]++, word, suffix, result);
+  cache[blockIndex].AddEntry(word, suffix, result);
   return result;
 }
 

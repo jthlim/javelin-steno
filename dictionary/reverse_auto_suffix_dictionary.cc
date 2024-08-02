@@ -114,8 +114,8 @@ void StenoReverseAutoSuffixDictionary::ProcessReverseAutoSuffix(
   }
 
   // 3. Lookup the un-suffixed word
-  StenoReverseDictionaryLookup lookupWithoutSuffix(lookup.strokeThreshold,
-                                                   withoutSuffix);
+  StenoReverseDictionaryLookup lookupWithoutSuffix(withoutSuffix,
+                                                   lookup.strokeThreshold);
   dictionary->ReverseLookup(lookupWithoutSuffix);
   free(withoutSuffix);
 

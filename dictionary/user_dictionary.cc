@@ -649,7 +649,7 @@ TEST_END
 
 static void VerifyReverseLookup(StenoUserDictionary &userDictionary,
                                 const char *text, StenoStroke expected) {
-  StenoReverseDictionaryLookup lookup(2, text);
+  StenoReverseDictionaryLookup lookup(text);
   userDictionary.ReverseLookup(lookup);
   assert(lookup.results.IsNotEmpty() > 0);
   for (size_t i = 0; i < lookup.results.GetCount(); ++i) {
@@ -663,7 +663,7 @@ static void VerifyReverseLookup(StenoUserDictionary &userDictionary,
 
 static void VerifyNoReverseLookup(StenoUserDictionary &userDictionary,
                                   const char *text) {
-  StenoReverseDictionaryLookup lookup(2, text);
+  StenoReverseDictionaryLookup lookup(text);
   userDictionary.ReverseLookup(lookup);
   assert(lookup.results.IsEmpty());
 }

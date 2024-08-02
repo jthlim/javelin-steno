@@ -472,7 +472,7 @@ TEST_BEGIN("EmilySymbolsDictionary Reverse Lookup") {
 #if BUILD_REVERSE_HASH_TABLE
   BuildReverseLookupTable();
 #endif
-  StenoReverseDictionaryLookup lookup(2, "!");
+  StenoReverseDictionaryLookup lookup("!");
 
   StenoEmilySymbolsDictionary::instance.ReverseLookup(lookup);
   assert(lookup.HasResults());
