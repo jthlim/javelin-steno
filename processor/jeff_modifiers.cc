@@ -462,7 +462,7 @@ void StenoJeffModifiers::Process(const StenoKeyState &value,
                                  StenoAction action) {
   const StenoStroke stroke = value.ToStroke();
 
-  bool isModifier = (stroke & TRIGGER_MASK) == TRIGGER_STROKE;
+  const bool isModifier = (stroke & TRIGGER_MASK) == TRIGGER_STROKE;
 
   switch (action) {
   case StenoAction::PRESS:
@@ -497,7 +497,7 @@ void StenoJeffModifiers::Process(const StenoKeyState &value,
 
   case StenoAction::TRIGGER:
     if (wasModifier || isModifier) {
-      StenoStroke previousStroke = lastModifiers;
+      const StenoStroke previousStroke = lastModifiers;
       UpdateModifiers(stroke);
       const bool result = TriggerSendKey(stroke);
       UpdateModifiers(previousStroke);
@@ -563,7 +563,7 @@ bool StenoJeffModifiers::TriggerSendKey(StenoStroke stroke) const {
 
   for (size_t i = 0; i < sizeof(DATA) / sizeof(*DATA); ++i) {
     if (DATA[i].keyState == keyState) {
-      KeyCode code = DATA[i].keyCode;
+      const KeyCode code = DATA[i].keyCode;
       Key::Press(code);
       Key::Release(code);
       return true;

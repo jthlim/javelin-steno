@@ -184,7 +184,7 @@ uint32_t WindowsAltUnicodeData::GetAltCodeForUnicode(uint32_t unicode) {
   while (left < right) {
     const WindowsAltUnicodeEntry *mid = left + size_t(right - left) / 2;
 
-    int compare = (int)unicode - (int)mid->unicode;
+    const int compare = (int)unicode - (int)mid->unicode;
     if (compare < 0) {
       right = mid;
     } else if (compare == 0) {

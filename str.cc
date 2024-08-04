@@ -61,7 +61,7 @@ bool Str::IsFingerSpellingCommand(const char *p) {
   bool result = false;
 
   while (*p) {
-    int c = *p++;
+    const int c = *p++;
     if (c == ' ') {
       continue;
     }
@@ -72,7 +72,7 @@ bool Str::IsFingerSpellingCommand(const char *p) {
         result = true;
       }
       while (*p) {
-        int c = *p++;
+        const int c = *p++;
         if (c == '}') {
           break;
         }
@@ -89,7 +89,7 @@ bool Str::IsJoinPrevious(const char *p) {
 
 bool Str::ContainsKeyCode(const char *p) {
   while (*p) {
-    int c = *p++;
+    const int c = *p++;
     if (c == '{') {
       if (*p == '#') {
         return true;
@@ -178,7 +178,7 @@ char *Str::Trim(const char *data) {
 
 char *Str::WriteJson(char *p, const char *text) {
   while (*text) {
-    int c = *text++;
+    const int c = *text++;
     if (JAVELIN_UNLIKELY(c < 32)) {
       switch (c) {
       case '\f':
@@ -249,7 +249,7 @@ TEST_END
 
 static bool TestTrim(const char *input, const char *expected) {
   char *output = Str::Trim(input);
-  bool result = Str::Eq(output, expected);
+  const bool result = Str::Eq(output, expected);
   free(output);
   return result;
 }

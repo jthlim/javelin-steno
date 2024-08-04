@@ -33,8 +33,9 @@ void SplitU2fScript::OnDataReceived(const void *data, size_t length) {
 }
 
 void SplitU2fScript::OnReceiveConnectionReset() {
-  Data data;
-  data.isWaitingForUserPresence = false;
+  static constexpr Data data = {
+      .isWaitingForUserPresence = false,
+  };
   OnDataReceived(&data, sizeof(data));
 }
 

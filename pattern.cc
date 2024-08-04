@@ -150,10 +150,10 @@ Pattern::BuildResult Pattern::ParseAtom(BuildContext &c) {
 
     assert(c.captureIndex < 8);
 
-    int captureIndex = c.captureIndex;
+    const int captureIndex = c.captureIndex;
     c.captureIndex += 2;
     PatternComponent *captureStart = new CapturePatternComponent(captureIndex);
-    BuildResult component = ParseAlternate(c);
+    const BuildResult component = ParseAlternate(c);
     assert(*c.p == ')');
     c.p++;
     captureStart->next = component.head;
@@ -208,7 +208,7 @@ Pattern::BuildResult Pattern::ParseAtom(BuildContext &c) {
   default:
     const char *pStart = c.p;
     c.p = FindLiteralEnd(pStart);
-    size_t length = c.p - pStart;
+    const size_t length = c.p - pStart;
     PatternComponent *component;
     if (length == 1) {
       component = new BytePatternComponent(*pStart);
@@ -305,7 +305,7 @@ PatternMatch Pattern::MatchBypassingQuickReject(const char *text) const {
   result.captures[6] = nullptr;
   result.captures[7] = nullptr;
 
-  PatternContext context = {
+  const PatternContext context = {
       .start = text,
       .captures = result.captures,
   };
@@ -370,7 +370,7 @@ char *PatternMatch::Replace(const char *format) const {
 
     case '\\': {
       ++format;
-      int index = *format - '0';
+      const int index = *format - '0';
       ++format;
       assert(0 <= index && index < 4);
       const char *start = captures[index * 2];

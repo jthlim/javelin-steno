@@ -238,7 +238,7 @@ void StenoKeyCodeBuffer::RetroactiveLowerCase(int wordCount) {
 
 void StenoKeyCodeBuffer::RetroactiveReplaceSpace(int wordCount,
                                                  const char *replacement) {
-  size_t replacementLength = Str::Length(replacement);
+  const size_t replacementLength = Str::Length(replacement);
   StenoKeyCode *p = buffer + count;
   while (wordCount) {
     for (;;) {
@@ -375,7 +375,7 @@ void StenoKeyCodeBuffer::RetroactiveFormatCurrency(const char *pStart,
 
   // Replace the buffer with the template.
   for (Utf8Pointer t = pStart; t < pEnd; ++t) {
-    if (uint32_t unicode = *t; unicode != 'c') {
+    if (const uint32_t unicode = *t; unicode != 'c') {
       *p++ = StenoKeyCode(unicode, StenoCaseMode::NORMAL);
       continue;
     }

@@ -310,7 +310,7 @@ void StenoCompiledOrthography::AddCandidates(BestCandidate &bestCandidate,
                             : 0;
   char *text = Str::Join(word + offset, " ^", suffix);
 
-  PatternQuickReject inputQuickReject(text);
+  const PatternQuickReject inputQuickReject(text);
 
   for (size_t i = 0; i < data.rules.GetCount(); ++i) {
     const Pattern &pattern = patterns[i];

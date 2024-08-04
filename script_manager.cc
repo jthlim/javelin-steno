@@ -104,8 +104,7 @@ void ScriptManager::Tick(uint32_t scriptTime) {
   if (Flash::IsUpdating()) {
     return;
   }
-  ScriptManager &instance = GetInstance();
-  if (!instance.isScriptValid) {
+  if (!isScriptValid) {
     return;
   }
   script.ExecuteTickScript(scriptTime);

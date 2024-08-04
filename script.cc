@@ -875,7 +875,7 @@ void Script::ExecutionContext::Run(Script &script, size_t offset) {
       case SF::CANCEL_STENO_KEY: {
         const uint32_t stenoKey = (uint32_t)script.Pop();
         if (stenoKey < (uint32_t)StenoKey::COUNT) {
-          StenoKeyState state = StenoKeyState(1ULL << stenoKey);
+          const StenoKeyState state = StenoKeyState(1ULL << stenoKey);
           script.stenoState &= ~state;
           script.CancelStenoKeys(state);
         }
@@ -1034,7 +1034,7 @@ void Script::ExecutionContext::Run(Script &script, size_t offset) {
       continue;
     case BC::JUMP_IF_ZERO_SHORT_BEGIN... BC::JUMP_IF_ZERO_SHORT_END:
       if (!script.Pop()) {
-        int offset = c + 1 - BC::JUMP_IF_ZERO_SHORT_BEGIN;
+        const int offset = c + 1 - BC::JUMP_IF_ZERO_SHORT_BEGIN;
         p += offset;
       }
       continue;

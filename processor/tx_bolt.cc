@@ -60,7 +60,7 @@ void StenoTxBoltPacket::Set(const StenoStroke &stroke) {
 
   uint32_t localKeyState = stroke.GetKeyState();
   while (localKeyState) {
-    int index = __builtin_ctzl(localKeyState);
+    const int index = __builtin_ctzl(localKeyState);
     const TxBoltCode boltCode = TX_BOLT_LOOKUP[index];
     data[boltCode.group] |= boltCode.bitmask;
 
@@ -68,7 +68,7 @@ void StenoTxBoltPacket::Set(const StenoStroke &stroke) {
   }
 
   for (size_t i = 0; i < 4; ++i) {
-    uint8_t bits = data[i];
+    const uint8_t bits = data[i];
     if (bits) {
       data[length++] = (i << 6) | bits;
     }

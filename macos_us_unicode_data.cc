@@ -168,7 +168,7 @@ const uint16_t *MacOsUsUnicodeData::GetSequenceForUnicode(uint32_t unicode) {
       --entryStart;
     }
 
-    int compare = (int)unicode - (int)*entryStart;
+    const int compare = (int)unicode - (int)*entryStart;
     if (compare < 0) {
       right = entryStart;
     } else if (compare == 0) {

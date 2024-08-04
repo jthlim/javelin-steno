@@ -67,7 +67,7 @@ void SplitUsbStatus::UpdateBuffer(TxBuffer &buffer) {
 void SplitUsbStatus::OnDataReceived(const void *data, size_t length) {
   assert(length == sizeof(UsbStatus));
   UsbStatus &instance = GetRemoteUsbStatus();
-  UsbStatus oldStatus = instance;
+  const UsbStatus oldStatus = instance;
   memcpy(&instance, data, sizeof(UsbStatus));
   if (instance.IsConnected() != oldStatus.IsConnected()) {
     ScriptManager::ExecuteScript(ScriptId::CONNECTION_UPDATE);

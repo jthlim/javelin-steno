@@ -69,7 +69,7 @@ void PairConsole::PairBinding(void *context, const char *commandLine) {
   }
 
   ++p;
-  size_t length = Str::Length(p) + 1;
+  const size_t length = Str::Length(p) + 1;
   Add(p, length);
 
   Console::SendOk();

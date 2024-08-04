@@ -34,7 +34,7 @@ void StenoSegmentBuilder::TransferStartFrom(const StenoSegmentBuilder &source,
 void StenoSegmentBuilder::TransferFrom(const StenoStrokeHistory &source,
                                        size_t sourceStrokeCount,
                                        size_t maxCount) {
-  size_t offset =
+  const size_t offset =
       sourceStrokeCount <= maxCount ? 0 : sourceStrokeCount - maxCount;
   count = sourceStrokeCount - offset;
 
@@ -237,7 +237,8 @@ bool StenoSegmentBuilder::AutoSuffixLookup(BuildSegmentContext &context,
   }
 
   for (StenoSegment &existingSegment : context.segments.Skip(startingSegment)) {
-    StenoSegment segment = AutoSuffixTest(context, existingSegment, offset);
+    const StenoSegment segment =
+        AutoSuffixTest(context, existingSegment, offset);
     if (!segment.IsValid()) {
       continue;
     }
@@ -268,7 +269,7 @@ bool StenoSegmentBuilder::AutoSuffixLookup(BuildSegmentContext &context,
     startLength =
         GetStartingDefinitionLength(offset, context.maximumOutlineLength);
   }
-  StenoSegment segment = AutoSuffixTest(context, offset, startLength, 1);
+  const StenoSegment segment = AutoSuffixTest(context, offset, startLength, 1);
 
   if (!segment.IsValid()) {
     return false;
@@ -283,7 +284,7 @@ bool StenoSegmentBuilder::AutoSuffixLookup(BuildSegmentContext &context,
 StenoSegment StenoSegmentBuilder::AutoSuffixTest(BuildSegmentContext &context,
                                                  const StenoSegment &segment,
                                                  size_t offset) {
-  size_t lastStrokeOffset = segment.GetStrokeIndex(states);
+  const size_t lastStrokeOffset = segment.GetStrokeIndex(states);
   size_t startLength = count - lastStrokeOffset;
   if (startLength > context.maximumOutlineLength) {
     if (!hasModifiedStrokeHistory &&
@@ -294,7 +295,7 @@ StenoSegment StenoSegmentBuilder::AutoSuffixTest(BuildSegmentContext &context,
                                               context.maximumOutlineLength);
   }
 
-  size_t minimumLength = offset - lastStrokeOffset + 1;
+  const size_t minimumLength = offset - lastStrokeOffset + 1;
   return AutoSuffixTest(context, lastStrokeOffset, startLength, minimumLength);
 }
 
@@ -362,10 +363,10 @@ void StenoSegmentBuilder::ReevaluateSegments(BuildSegmentContext &context,
                                              size_t &offset) {
   // Removes all segments that could be affected and updates offset to
   // reprocess them.
-  size_t currentOffset = offset;
+  const size_t currentOffset = offset;
   while (context.segments.IsNotEmpty()) {
     StenoSegment &lastSegment = context.segments.Back();
-    size_t lastOffset = lastSegment.GetStrokeIndex(states);
+    const size_t lastOffset = lastSegment.GetStrokeIndex(states);
     if (lastOffset + context.maximumOutlineLength < currentOffset) {
       return;
     }
@@ -380,7 +381,7 @@ void StenoSegmentBuilder::ReevaluateSegments(BuildSegmentContext &context,
   // Ensure currentOffset is tagged with a DIRECT lookup
   for (size_t i = 0; i < context.segments.GetCount(); ++i) {
     StenoSegment *segment = &context.segments[i];
-    size_t segmentOffset = segment->GetStrokeIndex(states);
+    const size_t segmentOffset = segment->GetStrokeIndex(states);
     const size_t segmentEndOffset = segmentOffset + segment->strokeLength;
     if (segmentEndOffset <= currentOffset) {
       continue;
@@ -746,7 +747,7 @@ void StenoSegmentBuilder::EscapeCommand(BufferWriter &writer, const char *p) {
   writer.WriteByte(':');
   writer.WriteByte('=');
   while (*p) {
-    int c = *p++;
+    const int c = *p++;
     switch (c) {
     case '{':
     case '}':
@@ -797,8 +798,8 @@ void StenoSegmentBuilder::HandleRetroInsertSpace(BuildSegmentContext &context,
     return;
   }
 
-  StenoStroke lastStroke = strokes[currentOffset - 1];
-  StenoState lastState = states[currentOffset - 1];
+  const StenoStroke lastStroke = strokes[currentOffset - 1];
+  const StenoState lastState = states[currentOffset - 1];
 
   ResetStrokes(currentOffset - 1, length);
 
@@ -829,8 +830,8 @@ void StenoSegmentBuilder::HandleRepeatLastStroke(BuildSegmentContext &context,
     return;
   }
 
-  StenoStroke lastStroke = strokes[currentOffset - 1];
-  StenoState state = states[currentOffset];
+  const StenoStroke lastStroke = strokes[currentOffset - 1];
+  const StenoState state = states[currentOffset];
 
   ResetStrokes(currentOffset, length - 1);
 

@@ -317,7 +317,7 @@ TEST_BEGIN("MapDictionary: Single stroke lookup test") {
   };
   // spellchecker: enable
 
-  StenoFullMapDictionary mainDictionary(TestDictionary::fullDefinition);
+  const StenoFullMapDictionary mainDictionary(TestDictionary::fullDefinition);
 
   auto lookup = mainDictionary.Lookup(strokes, 1);
   assert(lookup.IsValid());
@@ -334,7 +334,7 @@ TEST_BEGIN("MapDictionary: Double stroke lookup test") {
   };
   // spellchecker: enable
 
-  StenoFullMapDictionary mainDictionary(TestDictionary::fullDefinition);
+  const StenoFullMapDictionary mainDictionary(TestDictionary::fullDefinition);
 
   auto lookup = mainDictionary.Lookup(strokes, 2);
   assert(lookup.IsValid());

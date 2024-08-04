@@ -179,10 +179,10 @@ void StenoKeyCodeEmitter::EmitterContext::ProcessStenoKeyCode(
     }
   } else {
     shouldCombineUndo = false;
-    uint32_t unicode = stenoKeyCode.ResolveOutputUnicode();
+    const uint32_t unicode = stenoKeyCode.ResolveOutputUnicode();
 
     if (unicode < 128) {
-      uint32_t keyCode = ASCII_KEY_CODES[unicode];
+      const uint32_t keyCode = ASCII_KEY_CODES[unicode];
       if (keyCode != 0) {
         EmitKeyCode(keyCode);
       }
@@ -269,8 +269,8 @@ void StenoKeyCodeEmitter::EmitterContext::EmitIBusDelay() {
 
 __attribute__((noinline)) void
 StenoKeyCodeEmitter::EmitterContext::RecurseEmitIBus(uint32_t code) {
-  uint32_t quotient = code / 16;
-  uint32_t remainder = code % 16;
+  const uint32_t quotient = code / 16;
+  const uint32_t remainder = code % 16;
   if (quotient != 0) {
     RecurseEmitIBus(quotient);
   }
@@ -278,13 +278,13 @@ StenoKeyCodeEmitter::EmitterContext::RecurseEmitIBus(uint32_t code) {
 }
 
 void StenoKeyCodeEmitter::EmitterContext::EmitWindowsAlt(uint32_t unicode) {
-  uint32_t alt = WindowsAltUnicodeData::GetAltCodeForUnicode(unicode);
+  const uint32_t alt = WindowsAltUnicodeData::GetAltCodeForUnicode(unicode);
   if (alt == 0) {
     EmitKeyCode(QUESTION_MARK_KEY_CODE);
     return;
   }
 
-  bool isNumLockOn = GetIsNumLockOn();
+  const bool isNumLockOn = GetIsNumLockOn();
   if (!isNumLockOn) {
     TapKey(KeyCode::NUM_LOCK);
   }
@@ -299,8 +299,8 @@ void StenoKeyCodeEmitter::EmitterContext::EmitWindowsAlt(uint32_t unicode) {
 
 __attribute__((noinline)) void
 StenoKeyCodeEmitter::EmitterContext::RecurseEmitWindowsAlt(uint32_t alt) {
-  uint32_t quotient = alt / 10;
-  uint32_t remainder = alt % 10;
+  const uint32_t quotient = alt / 10;
+  const uint32_t remainder = alt % 10;
   if (quotient != 0) {
     RecurseEmitWindowsAlt(quotient);
   }
@@ -314,7 +314,7 @@ void StenoKeyCodeEmitter::EmitterContext::EmitWindowsHex(uint32_t unicode) {
     return;
   }
 
-  bool isNumLockOn = GetIsNumLockOn();
+  const bool isNumLockOn = GetIsNumLockOn();
   if (!isNumLockOn) {
     TapKey(KeyCode::NUM_LOCK);
   }

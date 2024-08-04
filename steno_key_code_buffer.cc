@@ -44,7 +44,7 @@ void StenoKeyCodeBuffer::Append(StenoTokenizer *tokenizer) {
 //---------------------------------------------------------------------------
 
 void StenoKeyCodeBuffer::ProcessText(const char *text, size_t length) {
-  bool isAutoGlue = IsGlue(text);
+  const bool isAutoGlue = IsGlue(text);
   if (!state.joinNext && !(isAutoGlue && state.isGlue)) {
     AppendText(state.GetSpace(), state.spaceLength, StenoCaseMode::NORMAL);
   }
@@ -313,7 +313,7 @@ void StenoKeyCodeBuffer::ProcessCommand(const char *p, size_t length) {
       token = AddParameter(parameters, token, end);
     }
 
-    bool handled = ProcessFunction(parameters);
+    const bool handled = ProcessFunction(parameters);
     for (char *parameter : parameters) {
       free(parameter);
     }
@@ -338,7 +338,7 @@ const char *StenoKeyCodeBuffer::AddParameter(List<char *> &parameters,
   const char *result = nullptr;
 
   while (p < end) {
-    char c = *p;
+    const char c = *p;
     if (c == ':') {
       result = p + 1;
       break;
@@ -362,7 +362,7 @@ void StenoKeyCodeBuffer::ProcessOrthographicSuffix(const char *text,
   size_t start = count;
   size_t byteCount = 1; // Need one byte for terminating null.
   while (start != lastTextOffset && buffer[start - 1].IsLetter()) {
-    size_t utf8Length =
+    const size_t utf8Length =
         Utf8Pointer::BytesForCharacterCode(buffer[start - 1].GetUnicode());
     if (byteCount + utf8Length > sizeof(orthographicScratchPad)) {
       break;
@@ -463,7 +463,7 @@ char *StenoKeyCodeBuffer::ToUnresolvedString() const {
 void StenoKeyCodeBuffer::Reverse(StenoKeyCode *start, StenoKeyCode *end) {
   --end;
   while (start < end) {
-    StenoKeyCode t = *start;
+    const StenoKeyCode t = *start;
     *start = *end;
     *end = t;
     ++start;
@@ -478,10 +478,10 @@ bool StenoKeyCodeBuffer::ProcessKeyPresses(const char *p, const char *end) {
   List<KeyCode> keyPressStack;
 
   for (;;) {
-    StenoKeyPressToken token = tokenizer.GetNext();
+    const StenoKeyPressToken token = tokenizer.GetNext();
     switch (token.type) {
     case StenoKeyPressToken::Type::KEY: {
-      KeyCode keyCode = token.keyCode;
+      const KeyCode keyCode = token.keyCode;
       if (keyCode != 0) {
         buffer[count++] = StenoKeyCode::CreateRawKeyCodePress(keyCode);
       }
@@ -503,7 +503,7 @@ bool StenoKeyCodeBuffer::ProcessKeyPresses(const char *p, const char *end) {
       if (keyPressStack.IsEmpty()) {
         return false;
       }
-      KeyCode keyCode = keyPressStack.Back();
+      const KeyCode keyCode = keyPressStack.Back();
       if (keyCode != 0) {
         buffer[count++] = StenoKeyCode::CreateRawKeyCodeRelease(keyCode);
       }
@@ -520,7 +520,7 @@ bool StenoKeyCodeBuffer::ProcessKeyPresses(const char *p, const char *end) {
 
 void StenoKeyCodeBuffer::ReleaseKeyStack(List<KeyCode> &keyPressStack) {
   while (keyPressStack.IsNotEmpty()) {
-    KeyCode keyCode = keyPressStack.Back();
+    const KeyCode keyCode = keyPressStack.Back();
     if (keyCode != 0) {
       buffer[count++] = StenoKeyCode::CreateRawKeyCodeRelease(keyCode);
     }

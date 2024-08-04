@@ -22,7 +22,8 @@ StenoSegmentList::~StenoSegmentList() {
 size_t
 StenoSegmentList::GetCommonStartingSegmentsCount(const List<StenoSegment> &a,
                                                  const List<StenoSegment> &b) {
-  size_t limit = a.GetCount() < b.GetCount() ? a.GetCount() : b.GetCount();
+  const size_t limit =
+      a.GetCount() < b.GetCount() ? a.GetCount() : b.GetCount();
 
   size_t commonPrefixCount = 0;
   for (; commonPrefixCount < limit; ++commonPrefixCount) {
@@ -154,7 +155,7 @@ StenoToken StenoSegmentListTokenizer::GetNext() {
       case '\\':
         if (p[1] == '\0') {
           free(scratch);
-          size_t length = p - start;
+          const size_t length = p - start;
           scratch = Str::DupN(start, length);
           ++p;
           PrepareNextP();
@@ -171,7 +172,7 @@ StenoToken StenoSegmentListTokenizer::GetNext() {
 
 ReturnSpan:
   const char *result = elementText;
-  size_t length = p - start;
+  const size_t length = p - start;
   if (start != elementText || *p != '\0') {
     free(scratch);
     result = scratch = Str::DupN(start, length);
@@ -224,7 +225,7 @@ TEST_BEGIN("Segment tests") {
   // spellchecker: enable
 
   StenoSegmentList segments;
-  StenoCompiledOrthography compiledOrthography(
+  const StenoCompiledOrthography compiledOrthography(
       StenoOrthography::emptyOrthography);
   StenoCompactMapDictionary dictionary(TestDictionary::definition);
   StenoEngine engine(dictionary, compiledOrthography);
