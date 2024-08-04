@@ -22,7 +22,7 @@ StenoUnicodeDictionary::Lookup(const StenoDictionaryLookup &lookup) const {
   const int unicode = (stroke & ~StrokeMask::UNICODE).GetKeyState();
   switch (unicode) {
   case '{':
-    return StenoDictionaryLookupResult::CreateStaticString("{^}\\{}");
+    return StenoDictionaryLookupResult::CreateStaticString("{^}\\{");
 
   case '\\':
     return StenoDictionaryLookupResult::CreateStaticString("{^}\\\\");

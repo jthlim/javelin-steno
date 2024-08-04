@@ -20,12 +20,8 @@ StenoDictionary *StenoDictionaryDefinition::Create() const {
         *(StenoCompactMapDictionaryDefinition *)this);
 
   case StenoDictionaryType::FULL_MAP:
-#if defined(JAVELIN_PLATFORM_NRF5_SDK)
     return new StenoFullMapDictionary(
         *(StenoFullMapDictionaryDefinition *)this);
-#else
-    return nullptr;
-#endif
 
   case StenoDictionaryType::JEFF_SHOW_STROKE:
     return &StenoJeffShowStrokeDictionary::instance;
