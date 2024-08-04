@@ -305,7 +305,7 @@ PatternMatch Pattern::MatchBypassingQuickReject(const char *text) const {
   result.captures[6] = nullptr;
   result.captures[7] = nullptr;
 
-  const PatternContext context = {
+  PatternContext context = {
       .start = text,
       .captures = result.captures,
   };
