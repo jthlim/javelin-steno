@@ -297,7 +297,7 @@ TEST_BEGIN("KeyPressParser tests") {
   assert(GetKeyCodeName("space")->keyCode == KeyCode::SPACE);
 
   const char *test = "Shift_L(h a p) p y";
-  const StenoKeyPressTokenizer tokenizer(test, test + strlen(test));
+  StenoKeyPressTokenizer tokenizer(test, test + strlen(test));
   assert(tokenizer.GetNext() ==
          StenoKeyPressToken(StenoKeyPressToken::Type::KEY, KeyCode::L_SHIFT));
   assert(tokenizer.GetNext() ==

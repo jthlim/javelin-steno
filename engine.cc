@@ -308,11 +308,9 @@ void StenoEngineTester::TestTransform(StenoEngine &engine) {
 }
 
 TEST_BEGIN("Engine: Test symbols") {
-  __attribute__((
-      aligned(4096))) static uint8_t userDictionaryBuffer[512 * 1024];
-
-  const StenoUserDictionaryData layout(userDictionaryBuffer,
-                                       sizeof(userDictionaryBuffer));
+  uint8_t *buffer = new uint8_t[512 * 1024];
+  memset(buffer, 0, 512 * 1024);
+  const StenoUserDictionaryData layout(buffer, 512 * 1024);
   StenoUserDictionary userDictionary(layout);
 
   const StenoStroke stroke("S");
@@ -326,6 +324,8 @@ TEST_BEGIN("Engine: Test symbols") {
       StenoOrthography::emptyOrthography);
   StenoEngine engine(userDictionary, orthography);
   StenoEngineTester::TestTransform(engine);
+
+  delete[] buffer;
 }
 TEST_END
 
@@ -425,6 +425,7 @@ TEST_END
 TEST_BEGIN("Engine: Add Translation Test") {
   const StenoEngineTester tester;
   uint8_t *buffer = new uint8_t[512 * 1024];
+  memset(buffer, 0, 512 * 1024);
   const StenoUserDictionaryData layout(buffer, 512 * 1024);
   StenoUserDictionary *userDictionary = new StenoUserDictionary(layout);
 
@@ -448,6 +449,7 @@ TEST_END
 TEST_BEGIN("Engine: Scancode Add Translation Test") {
   const StenoEngineTester tester;
   uint8_t *buffer = new uint8_t[512 * 1024];
+  memset(buffer, 0, 512 * 1024);
   const StenoUserDictionaryData layout(buffer, 512 * 1024);
   StenoUserDictionary *userDictionary = new StenoUserDictionary(layout);
 
