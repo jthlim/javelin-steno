@@ -85,7 +85,7 @@ public:
   static const size_t BUFFER_SIZE = 256;
 
 private:
-  bool hasModifiedStrokeHistory;
+  bool hasModifiedStrokeHistory = false;
   bool hasRawStroke;
   size_t count = 0;
   const char *lastSegmentCommand;
