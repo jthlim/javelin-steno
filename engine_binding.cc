@@ -260,6 +260,7 @@ void StenoEngine::LookupStroke_Binding(void *context, const char *commandLine) {
         isFirst = false;
       }
       delete tokenizer;
+      Console::Printf("\"}\n\n");
     } else {
       Console::Printf("null\n\n");
     }
