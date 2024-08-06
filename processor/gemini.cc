@@ -2,7 +2,7 @@
 
 #include "gemini.h"
 #include "../console.h"
-#include "../serial_port.h"
+#include "../hal/serial_port.h"
 
 //---------------------------------------------------------------------------
 

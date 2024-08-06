@@ -775,7 +775,8 @@ void Script::ExecutionContext::Run(Script &script, size_t offset) {
         script.Push(SplitUsbStatus::instance.IsPowered());
         continue;
       case SF::SET_INPUT_HINT:
-        script.SetInputHint((int)script.Pop());
+        // Deprecated. Just pop the parameter.
+        script.Pop();
         continue;
       case SF::SET_SCRIPT: {
         const size_t scriptOffset = script.Pop();
@@ -1106,7 +1107,6 @@ void Script::RunGetParameterCommand(const char *parameter) {
 
 //---------------------------------------------------------------------------
 
-__attribute__((weak)) void Script::SetInputHint(int hint) {}
 __attribute__((weak)) bool Script::IsWaitingForUserPresence() { return false; }
 __attribute__((weak)) void Script::ReplyUserPresence(bool present) {}
 

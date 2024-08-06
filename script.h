@@ -134,7 +134,6 @@ private:
   void RunConsoleCommand(const char *command);
   void RunGetParameterCommand(const char *parameter);
 
-  static void SetInputHint(int hint);
   void SetScript(ScriptId scriptId, size_t scriptOffset) {
     if (scriptId < ScriptId::COUNT) {
       scriptOffsets[(size_t)scriptId] = scriptOffset;
