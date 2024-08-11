@@ -2,6 +2,7 @@
 
 #include "orthospelling_data.h"
 #include "../writer.h"
+#include <cstdlib>
 
 //---------------------------------------------------------------------------
 
@@ -28,14 +29,14 @@ bool OrthospellingData::ResolveStroke(StenoStroke stroke, Context context,
                                       size_t startingIndex) const {
   for (size_t i = startingIndex; i < letters.count; ++i) {
     const Letter &letter = letters[i];
+    if ((stroke & letter.avoidMask).IsNotEmpty()) {
+      continue;
+    }
     if ((letter.stroke & stroke) == letter.stroke) {
-      Context remainingContext = context;
-      remainingContext.Add(&letter);
-      const StenoStroke remainingStroke = stroke & ~letter.stroke;
-      if (remainingStroke.IsEmpty()) {
-        return true;
-      }
-      if (ResolveStroke(remainingStroke, remainingContext, i + 1)) {
+      context.Add(&letter);
+      stroke &= ~letter.stroke;
+      if (stroke.IsEmpty()) {
+        context.End();
         return true;
       }
     }
@@ -43,30 +44,30 @@ bool OrthospellingData::ResolveStroke(StenoStroke stroke, Context context,
   return false;
 }
 
-uint32_t OrthospellingData::Context::FindLowestOrder() const {
+size_t OrthospellingData::Context::GetCount() const {
+  size_t count = 0;
   const Letter **letters = this->letters;
-  uint32_t result = (*letters)->order;
-  for (++letters; *letters; ++letters) {
-    if ((*letters)->order < result) {
-      result = (*letters)->order;
-    }
+  while (*letters) {
+    ++letters;
+    ++count;
   }
-  return result;
+  return count;
+}
+
+static int LetterComparator(const OrthospellingData::Letter **a,
+                            const OrthospellingData::Letter **b) {
+  if ((*a)->order != (*b)->order) {
+    return (*a)->order - (*b)->order;
+  }
+  return int(intptr_t(a) - intptr_t(b));
 }
 
 void OrthospellingData::Context::WriteToBuffer(BufferWriter &writer) {
-  while (!IsEmpty()) {
-    const uint32_t order = FindLowestOrder();
-
-    const Letter **output = letters;
-    for (const Letter **input = letters; *input; ++input) {
-      if ((*input)->order == order) {
-        writer.WriteString((*input)->data);
-      } else {
-        *output++ = *input;
-      }
-    }
-    *output = nullptr;
+  const size_t count = GetCount();
+  qsort(letters, count, sizeof(*letters),
+        (int (*)(const void *, const void *)) & LetterComparator);
+  for (const Letter **letter = letters; *letter; ++letter) {
+    writer.WriteString((*letter)->data);
   }
 }
 

@@ -19,6 +19,7 @@ struct OrthospellingData {
 
   struct Letter {
     StenoStroke stroke;
+    StenoStroke avoidMask;
     uint8_t order; // 0-2 inclusive, representing the buffer used in
     const char data[7];
   };
@@ -42,15 +43,13 @@ struct OrthospellingData {
 
     Context(LetterBuffer &letters) : letters(letters) { *letters = nullptr; }
 
-    void Add(const Letter *letter) {
-      *letters++ = letter;
-      *letters = nullptr;
-    }
+    void Add(const Letter *letter) { *letters++ = letter; }
+    void End() { *letters = nullptr; }
 
     bool IsEmpty() const { return *letters == nullptr; }
 
     void WriteToBuffer(BufferWriter &writer);
-    uint32_t FindLowestOrder() const;
+    size_t GetCount() const;
   };
 
   const char *name;
