@@ -121,7 +121,10 @@ const uint16_t StenoKeyCodeEmitter::EmitterContext::ASCII_KEY_CODES[] = {
   // x            y               z               {               |               }               ~               DEL
   KeyCode::X,     KeyCode::Y,     KeyCode::Z,     LS|KeyCode::L_BRACKET,LS|KeyCode::BACKSLASH,LS|KeyCode::R_BRACKET,LS|KeyCode::GRAVE, 0,
 };
-#undef S
+#undef LS
+#undef BS
+#undef APOS
+#undef SCN
 // spellchecker: enable
 // clang-format on
 

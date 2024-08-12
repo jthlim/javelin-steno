@@ -29,16 +29,16 @@ bool OrthospellingData::ResolveStroke(StenoStroke stroke, Context context,
                                       size_t startingIndex) const {
   for (size_t i = startingIndex; i < letters.count; ++i) {
     const Letter &letter = letters[i];
-    if ((stroke & letter.avoidMask).IsNotEmpty()) {
+    if ((letter.mask & stroke) != letter.stroke) {
       continue;
     }
-    if ((letter.stroke & stroke) == letter.stroke) {
-      context.Add(&letter);
-      stroke &= ~letter.stroke;
-      if (stroke.IsEmpty()) {
-        context.End();
-        return true;
-      }
+
+    context.Add(&letter);
+    stroke &= ~letter.stroke;
+
+    if (stroke.IsEmpty()) {
+      context.End();
+      return true;
     }
   }
   return false;

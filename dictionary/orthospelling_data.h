@@ -19,7 +19,7 @@ struct OrthospellingData {
 
   struct Letter {
     StenoStroke stroke;
-    StenoStroke avoidMask;
+    StenoStroke mask;
     uint8_t order; // 0-2 inclusive, representing the buffer used in
     const char data[7];
   };
