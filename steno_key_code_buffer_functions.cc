@@ -2,6 +2,7 @@
 
 #include "console.h"
 #include "engine.h"
+#include "host_layout.h"
 #include "key.h"
 #include "mem.h"
 #include "str.h"
@@ -19,7 +20,7 @@ constexpr KeyCodeFunctionEntry HANDLERS[] = {
     {"console", &StenoKeyCodeBuffer::ConsoleFunction},
     {"disable_dictionary", &StenoKeyCodeBuffer::DisableDictionaryFunction},
     {"enable_dictionary", &StenoKeyCodeBuffer::EnableDictionaryFunction},
-    {"keyboard_layout", &StenoKeyCodeBuffer::KeyboardLayoutFunction},
+    {"host_layout", &StenoKeyCodeBuffer::HostLayoutFunction},
     {"reset_state", &StenoKeyCodeBuffer::ResetStateFunction},
     {"retro_capitalise", &StenoKeyCodeBuffer::RetroCapitalizeFunction},
     {"retro_double_quotes", &StenoKeyCodeBuffer::RetroDoubleQuotesFunction},
@@ -34,7 +35,6 @@ constexpr KeyCodeFunctionEntry HANDLERS[] = {
     {"stitch", &StenoKeyCodeBuffer::StitchFunction},
     {"stitch_last_word", &StenoKeyCodeBuffer::StitchLastWordFunction},
     {"toggle_dictionary", &StenoKeyCodeBuffer::ToggleDictionaryFunction},
-    {"unicode", &StenoKeyCodeBuffer::UnicodeFunction},
 };
 
 //---------------------------------------------------------------------------
@@ -727,21 +727,12 @@ bool StenoKeyCodeBuffer::ResetStateFunction(const List<char *> &) {
 
 //---------------------------------------------------------------------------
 
-bool StenoKeyCodeBuffer::UnicodeFunction(const List<char *> &parameters) {
+bool StenoKeyCodeBuffer::HostLayoutFunction(const List<char *> &parameters) {
   if (parameters.GetCount() != 2) {
     return false;
   }
 
-  return StenoKeyCodeEmitter::SetUnicodeMode(parameters[1]);
-}
-
-bool StenoKeyCodeBuffer::KeyboardLayoutFunction(
-    const List<char *> &parameters) {
-  if (parameters.GetCount() != 2) {
-    return false;
-  }
-
-  return KeyboardLayout::SetActiveLayout(parameters[1]);
+  return HostLayouts::SetActiveLayout(parameters[1]);
 }
 
 bool StenoKeyCodeBuffer::ConsoleFunction(const List<char *> &parameters) {

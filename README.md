@@ -157,22 +157,14 @@ Example usage:
   {:enable_dictionary:main.json}
 ```
 
-## `{:keyboard_layout:<layout_name>}`
+## `{:host_layout:<layout_name>}`
 
-Sets the keyboard layout of the host computer.
+Sets the layout of the host computer.
 
-Supported values:
-
-- qwerty
-- dvorak
-- colemak
-- workman
-- qmglwy
-
-Example usage:
+Supported values are determined at firmware build time.
 
 ```
-  {:keyboard_layout:dvorak}
+  {:host_layout:us_windows_alt}
 ```
 
 ## `{:reset_state}`

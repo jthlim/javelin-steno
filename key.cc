@@ -10,14 +10,14 @@
 bool Key::historyEnabled = true;
 std::vector<Key::HistoryEntry> Key::history;
 
-void Key::PressRaw(KeyCode key) {
+void Key::Press(KeyCode key) {
   if (!historyEnabled) {
     return;
   }
   history.push_back(HistoryEntry(key, true));
 }
 
-void Key::ReleaseRaw(KeyCode key) {
+void Key::Release(KeyCode key) {
   if (!historyEnabled) {
     return;
   }
@@ -28,23 +28,6 @@ void Key::ReleaseRaw(KeyCode key) {
 
 //---------------------------------------------------------------------------
 
-void Key::Press(KeyCode key) { PressRaw(TranslateKey(key)); }
-
-void Key::Release(KeyCode key) { ReleaseRaw(TranslateKey(key)); }
-
 __attribute__((weak)) void Key::Flush() {}
-
-//---------------------------------------------------------------------------
-
-KeyCode Key::TranslateKey(KeyCode key) {
-  if (key.value >= 64) {
-    return key;
-  }
-  const KeyboardLayoutTable *layoutTable =
-      KeyboardLayout::GetActiveLayoutTable();
-  return layoutTable == nullptr
-             ? key
-             : KeyCode::Value(layoutTable->values[key.value]);
-}
 
 //---------------------------------------------------------------------------

@@ -271,8 +271,7 @@ void StenoEngine::ProcessNormalModeUndo() {
 
   const size_t undoCount = history.GetUndoCount(maximumConversionStrokes);
   if (undoCount == 0) {
-    Key::PressRaw(KeyCode::BACKSPACE);
-    Key::ReleaseRaw(KeyCode::BACKSPACE);
+    Key::Tap(KeyCode::BACKSPACE);
     PrintPaperTapeUndo(0);
     return;
   }

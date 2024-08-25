@@ -2,7 +2,6 @@
 
 #pragma once
 #include "key_code.h"
-#include "keyboard_layout.h"
 
 #if RUN_TESTS
 #include <vector>
@@ -12,11 +11,12 @@
 
 class Key {
 public:
-  static void PressRaw(KeyCode key);
-  static void ReleaseRaw(KeyCode key);
-
   static void Press(KeyCode key);
   static void Release(KeyCode key);
+  static void Tap(KeyCode key) {
+    Press(key);
+    Release(key);
+  }
   static void Flush();
 
   static void EnableHistory() { historyEnabled = true; }
@@ -35,9 +35,6 @@ public:
 
   static std::vector<HistoryEntry> history;
 #endif
-
-private:
-  static KeyCode TranslateKey(KeyCode key);
 };
 
 //---------------------------------------------------------------------------

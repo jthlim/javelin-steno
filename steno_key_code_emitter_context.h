@@ -7,39 +7,41 @@
 
 //---------------------------------------------------------------------------
 
+struct HostLayoutEntry;
+struct HostLayout;
+
+//---------------------------------------------------------------------------
+
 struct StenoKeyCodeEmitter::EmitterContext {
+  EmitterContext();
+
   uint32_t modifiers = 0;
   bool shouldCombineUndo = true;
   bool hasDeterminedNumLockState = false;
   bool isNumLockOn;
+  const HostLayout &hostLayout;
 
   static const KeyCode::Value MASK_KEY_CODES[];
   static const KeyCode::Value HEX_KEY_CODES[];
   static const uint16_t ALT_HEX_KEY_CODES[];
   static const uint16_t KP_ALT_HEX_KEY_CODES[];
-  static const uint16_t ASCII_KEY_CODES[];
 
   bool GetIsNumLockOn();
   void ProcessStenoKeyCode(StenoKeyCode stenoKeyCode);
 
   static void PressKey(KeyCode keyCode) { Key::Press(keyCode); }
   static void ReleaseKey(KeyCode keyCode) { Key::Release(keyCode); };
-
-  static void TapKey(KeyCode keyCode) {
-    PressKey(keyCode);
-    ReleaseKey(keyCode);
-  }
+  static void TapKey(KeyCode keyCode) { Key::Tap(keyCode); }
 
   void EmitKeyCode(uint32_t keyCode);
 
-  static void PressModifiers(uint32_t modifiers);
-  static void ReleaseModifiers(uint32_t modifiers);
+  void PressModifiers(uint32_t modifiers);
+  void ReleaseModifiers(uint32_t modifiers);
 
+  void EmitAscii(uint32_t unicode);
   void EmitNonAscii(uint32_t unicode);
-  void EmitMacOsUs(uint32_t unicode);
+  void EmitSequence(const HostLayoutEntry &sequence);
   void EmitMacOsUnicodeHex(uint32_t unicode);
-  void EmitWindowsAlt(uint32_t unicode);
-  void RecurseEmitWindowsAlt(uint32_t alt);
   void EmitIBus(uint32_t unicode);
   void RecurseEmitIBus(uint32_t unicode);
   static void EmitIBusDelay();

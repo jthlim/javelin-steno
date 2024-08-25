@@ -2,8 +2,6 @@
 
 #pragma once
 #include "key.h"
-#include "steno_key_code_emitter.h"
-#include "steno_key_state.h"
 
 //---------------------------------------------------------------------------
 
@@ -15,8 +13,8 @@ struct StenoConfigBlock {
   bool _deprecatedUseJeffNumbers;
   bool _deprecatedUseEmilySymbols;
   bool _deprecatedUseJeffPhrasing;
-  UnicodeMode unicodeMode;
-  KeyboardLayout keyboardLayout;
+  uint8_t _deprecatedUnicodeMode;
+  uint8_t _deprecatedKeyboardLayout;
   bool hidCompatibilityMode;
   bool useSpaceAfter;
   bool allowButtonStateUpdates;

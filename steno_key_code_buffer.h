@@ -92,7 +92,7 @@ public:
   bool ConsoleFunction(const List<char *> &parameters);
   bool DisableDictionaryFunction(const List<char *> &parameters);
   bool EnableDictionaryFunction(const List<char *> &parameters);
-  bool KeyboardLayoutFunction(const List<char *> &parameters);
+  bool HostLayoutFunction(const List<char *> &parameters);
   bool ResetStateFunction(const List<char *> &parameters);
   bool RetroCapitalizeFunction(const List<char *> &parameters);
   bool RetroDoubleQuotesFunction(const List<char *> &parameters);

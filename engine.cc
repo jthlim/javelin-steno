@@ -7,6 +7,7 @@
 #include "dictionary/user_dictionary.h"
 #include "flash.h"
 #include "hal/external_flash.h"
+#include "host_layout.h"
 #include "key.h"
 #include "list.h"
 #include "orthography.h"
@@ -126,9 +127,8 @@ void StenoEngine::ResetState() {
 void StenoEngine::PrintInfo() const {
   Console::Printf("  Javelin Steno Engine\n");
   Console::Printf("    Strokes: %zu\n", strokeCount);
-  Console::Printf("    Unicode mode: %s\n", emitter.GetUnicodeModeName());
-  Console::Printf("    Keyboard layout: %s\n",
-                  KeyboardLayout::GetActiveLayout().GetName());
+  Console::Printf("    Host layout: %s\n",
+                  HostLayouts::GetActiveLayout().GetName());
   Console::Printf("    Space position: %s\n",
                   placeSpaceAfter ? "after" : "before");
 
