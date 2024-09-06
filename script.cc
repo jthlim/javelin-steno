@@ -1018,8 +1018,10 @@ void Script::ExecutionContext::Run(Script &script, size_t offset) {
     }
     case BC::CALL_VALUE: {
       const size_t offset = script.Pop();
-      ExecutionContext localContext;
-      localContext.Run(script, offset);
+      if (offset != 0) {
+        ExecutionContext localContext;
+        localContext.Run(script, offset);
+      }
       continue;
     }
     case BC::JUMP_VALUE:

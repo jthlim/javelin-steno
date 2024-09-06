@@ -91,6 +91,16 @@ bool StenoKeyCodeEmitter::Process(const StenoKeyCode *previous,
   return context.shouldCombineUndo;
 }
 
+void StenoKeyCodeEmitter::Emit(const StenoKeyCode *value, size_t length) const {
+  EmitterContext context;
+
+  for (size_t i = 0; i < length; ++i) {
+    context.ProcessStenoKeyCode(value[i]);
+  }
+
+  context.ReleaseModifiers(context.modifiers);
+}
+
 //---------------------------------------------------------------------------
 
 void StenoKeyCodeEmitter::EmitterContext::ProcessStenoKeyCode(

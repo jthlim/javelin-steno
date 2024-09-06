@@ -186,10 +186,8 @@ void StenoEngine::SendText(const uint8_t *p) {
   nextConversionBuffer.keyCodeBuffer.Reset();
   nextConversionBuffer.keyCodeBuffer.AppendTextNoCaseModeOverride(
       ccp, strlen(ccp), StenoCaseMode::NORMAL);
-  previousConversionBuffer.keyCodeBuffer.Reset();
 
-  emitter.Process(previousConversionBuffer.keyCodeBuffer,
-                  nextConversionBuffer.keyCodeBuffer);
+  emitter.Emit(nextConversionBuffer.keyCodeBuffer);
 }
 
 void StenoEngine::SetTemplateValue(size_t index, char *data) {

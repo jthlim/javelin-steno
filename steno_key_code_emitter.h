@@ -19,6 +19,11 @@ public:
                const StenoKeyCodeBuffer &next) const {
     return Process(previous.buffer, previous.count, next.buffer, next.count);
   }
+
+  void Emit(const StenoKeyCode *value, size_t length) const;
+  void Emit(const StenoKeyCodeBuffer &buffer) const {
+    Emit(buffer.buffer, buffer.count);
+  }
 };
 
 //---------------------------------------------------------------------------
