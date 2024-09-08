@@ -44,7 +44,7 @@ void StenoReverseAutoSuffixDictionary::AddTest(
 
 void StenoReverseAutoSuffixDictionary::ReverseLookup(
     StenoReverseDictionaryLookup &lookup) const {
-  dictionary->ReverseLookup(lookup);
+  super::ReverseLookup(lookup);
 
   if (lookup.definitionLength < 2) {
     return;
@@ -116,7 +116,7 @@ void StenoReverseAutoSuffixDictionary::ProcessReverseAutoSuffix(
   // 3. Lookup the un-suffixed word
   StenoReverseDictionaryLookup lookupWithoutSuffix(withoutSuffix,
                                                    lookup.strokeThreshold);
-  dictionary->ReverseLookup(lookupWithoutSuffix);
+  super::ReverseLookup(lookupWithoutSuffix);
   free(withoutSuffix);
 
   // 4. Verify that lookup up with suffix produces an invalid lookup.
@@ -172,7 +172,7 @@ void StenoReverseAutoSuffixDictionary::ProcessReverseAutoSuffix(
         strokes->CopyTo(strokesWithSuffixStroke, length);
         strokesWithSuffixStroke[length] = reverseAutoSuffix->autoSuffix->stroke;
 
-        if (!dictionary->HasOutline(strokesWithSuffixStroke, length + 1)) {
+        if (!super::HasOutline(strokesWithSuffixStroke, length + 1)) {
           lookup.AddResult(strokesWithSuffixStroke, length + 1, this);
         }
       }
@@ -185,7 +185,7 @@ bool StenoReverseAutoSuffixDictionary::HasValidLookup(
   for (;;) {
     size_t i = length;
     for (;;) {
-      if (dictionary->HasOutline(strokes, i)) {
+      if (super::HasOutline(strokes, i)) {
         length -= i;
         if (length == 0) {
           return true;

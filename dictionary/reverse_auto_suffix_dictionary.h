@@ -16,6 +16,9 @@ struct StenoOrthographyReverseAutoSuffix;
 //---------------------------------------------------------------------------
 
 class StenoReverseAutoSuffixDictionary final : public StenoWrappedDictionary {
+private:
+  using super = StenoWrappedDictionary;
+
 public:
   StenoReverseAutoSuffixDictionary(StenoDictionary *dictionary,
                                    const StenoCompiledOrthography &orthography);

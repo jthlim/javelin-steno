@@ -12,6 +12,9 @@ class StenoCompiledOrthography;
 //---------------------------------------------------------------------------
 
 class StenoReverseSuffixDictionary final : public StenoWrappedDictionary {
+private:
+  using super = StenoWrappedDictionary;
+
 public:
   StenoReverseSuffixDictionary(StenoDictionary *dictionary,
                                const uint8_t *baseAddress,

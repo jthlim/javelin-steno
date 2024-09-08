@@ -323,6 +323,16 @@ StenoJeffNumbersDictionary::LookupInternal(
   return StenoDictionaryLookupResult::CreateDynamicString(result);
 }
 
+const StenoDictionary *StenoJeffNumbersDictionary::GetDictionaryForOutline(
+    const StenoDictionaryLookup &lookup) const {
+  for (size_t i = 0; i < lookup.length; ++i) {
+    if ((lookup.strokes[i] & ACTIVATION_MASK) != ACTIVATION_MATCH) {
+      return nullptr;
+    }
+  }
+  return super::GetDictionaryForOutline(lookup);
+}
+
 const char *StenoJeffNumbersDictionary::GetName() const {
   return "jeff-numbers";
 }

@@ -67,7 +67,7 @@ struct StenoCompactMapDictionaryStrokesDefinition {
   // Hash map.
   const StenoCompactHashMapEntryBlock *offsets;
 
-  bool ContainsData(const void *p) const { return data <= p && p < offsets; }
+  bool IsEntryAfter(const void *p) const { return p >= offsets; }
 
   size_t GetOffset(size_t index) const;
   bool HasEntry(size_t index) const;
@@ -85,7 +85,7 @@ struct StenoFullMapDictionaryStrokesDefinition {
   // Hash map.
   const StenoFullHashMapEntryBlock *offsets;
 
-  bool ContainsData(const void *p) const { return data <= p && p < offsets; }
+  bool IsEntryAfter(const void *p) const { return p >= offsets; }
 
   size_t GetOffset(size_t index) const;
   bool HasEntry(size_t index) const;

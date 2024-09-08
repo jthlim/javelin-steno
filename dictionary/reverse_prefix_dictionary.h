@@ -7,6 +7,9 @@
 //---------------------------------------------------------------------------
 
 class StenoReversePrefixDictionary final : public StenoWrappedDictionary {
+private:
+  using super = StenoWrappedDictionary;
+
 public:
   StenoReversePrefixDictionary(StenoDictionary *dictionary,
                                const uint8_t *baseAddress,

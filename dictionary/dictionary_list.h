@@ -56,6 +56,9 @@ struct StenoDictionaryListEntry {
 //---------------------------------------------------------------------------
 
 class StenoDictionaryList final : public StenoDictionary {
+private:
+  using super = StenoDictionary;
+
 public:
   StenoDictionaryList(List<StenoDictionaryListEntry> &dictionaries);
   StenoDictionaryList(StenoDictionary *const *dictionaries, size_t count);

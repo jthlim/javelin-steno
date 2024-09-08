@@ -97,7 +97,7 @@ StenoReversePrefixDictionary::StenoReversePrefixDictionary(
 
 void StenoReversePrefixDictionary::ReverseLookup(
     StenoReverseDictionaryLookup &lookup) const {
-  dictionary->ReverseLookup(lookup);
+  super::ReverseLookup(lookup);
   if (lookup.definitionLength > 1 && lookup.strokeThreshold > 2 &&
       lookup.prefixLookupDepth < MAXIMUM_REVERSE_PREFIX_DEPTH &&
       !Str::Contains(lookup.definition, ' ')) {
@@ -168,7 +168,7 @@ void StenoReversePrefixDictionary::AddPrefixReverseLookup(
         prefixLookup->AddMapDataLookup(
             test.prefix->GetMapDataLookup(prefixLength), baseAddress);
 
-        dictionary->ReverseLookup(*prefixLookup);
+        super::ReverseLookup(*prefixLookup);
 
         if (prefixLookup->HasResults()) {
           // Prioritize shorter results if they can't all fit in.
@@ -213,7 +213,7 @@ bool StenoReversePrefixDictionary::IsStrokeDefined(
     const StenoStroke *strokes, size_t prefixStrokeCount,
     size_t combinedStrokeCount) const {
   for (size_t i = prefixStrokeCount + 1; i <= combinedStrokeCount; ++i) {
-    if (dictionary->HasOutline(strokes, i)) {
+    if (super::HasOutline(strokes, i)) {
       return true;
     }
   }

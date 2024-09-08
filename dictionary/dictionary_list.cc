@@ -12,8 +12,7 @@ bool StenoDictionaryList::isSendDictionaryStatusEnabled = false;
 
 StenoDictionaryList::StenoDictionaryList(
     List<StenoDictionaryListEntry> &dictionaries)
-    : StenoDictionary(GetMaximumOutlineLength(dictionaries)),
-      dictionaries(dictionaries) {
+    : super(GetMaximumOutlineLength(dictionaries)), dictionaries(dictionaries) {
   SetParentRecursively(nullptr);
 }
 
@@ -95,7 +94,7 @@ bool StenoDictionaryList::Remove(const char *name, const StenoStroke *strokes,
 }
 
 void StenoDictionaryList::SetParentRecursively(StenoDictionary *parent) {
-  StenoDictionary::SetParentRecursively(parent);
+  super::SetParentRecursively(parent);
   for (StenoDictionaryListEntry &entry : dictionaries) {
     entry.dictionary->SetParentRecursively(this);
   }
@@ -107,7 +106,7 @@ void StenoDictionaryList::UpdateMaximumOutlineLength() {
   }
 
   maximumOutlineLength = GetMaximumOutlineLength(dictionaries);
-  StenoDictionary::UpdateMaximumOutlineLength();
+  super::UpdateMaximumOutlineLength();
 }
 
 size_t StenoDictionaryList::GetMaximumOutlineLength(

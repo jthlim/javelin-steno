@@ -7,6 +7,10 @@
 
 //---------------------------------------------------------------------------
 
+struct FullStenoMapDictionaryDataEntry;
+
+//---------------------------------------------------------------------------
+
 class StenoFullMapDictionary final : public StenoDictionary,
                                      public JavelinMallocAllocate {
 public:
@@ -41,7 +45,7 @@ private:
   CreateStrokeCache(const StenoFullMapDictionaryDefinition &definition);
 
   void ReverseLookup(StenoReverseDictionaryLookup &lookup,
-                     const void *data) const;
+                     const FullStenoMapDictionaryDataEntry *entry) const;
 };
 
 //---------------------------------------------------------------------------

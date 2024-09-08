@@ -10,12 +10,18 @@ class StenoJeffNumbersDictionary final : public StenoDictionary {
 private:
   static const size_t MAXIMUM_OUTLINE_LENGTH = 10;
 
+  using super = StenoDictionary;
+
 public:
-  StenoJeffNumbersDictionary() : StenoDictionary(MAXIMUM_OUTLINE_LENGTH) {}
+  StenoJeffNumbersDictionary() : super(MAXIMUM_OUTLINE_LENGTH) {}
 
   virtual StenoDictionaryLookupResult
   Lookup(const StenoDictionaryLookup &lookup) const;
-  using StenoDictionary::Lookup;
+  using super::Lookup;
+
+  virtual const StenoDictionary *
+  GetDictionaryForOutline(const StenoDictionaryLookup &lookup) const;
+  using super::GetDictionaryForOutline;
 
   virtual const char *GetName() const;
 

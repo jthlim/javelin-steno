@@ -126,7 +126,7 @@ StenoReverseSuffixDictionary::CreateSuffixList(
 
 void StenoReverseSuffixDictionary::ReverseLookup(
     StenoReverseDictionaryLookup &lookup) const {
-  dictionary->ReverseLookup(lookup);
+  super::ReverseLookup(lookup);
   if (lookup.definitionLength > 1 && lookup.strokeThreshold > 2 &&
       !Str::Contains(lookup.definition, ' ')) {
     ReverseLookupContext context;
@@ -208,7 +208,7 @@ void StenoReverseSuffixDictionary::AddSuffixReverseLookup(
         suffixLookup->AddMapDataLookup(test.suffix->GetMapDataLookup(),
                                        baseAddress);
 
-        dictionary->ReverseLookup(*suffixLookup);
+        super::ReverseLookup(*suffixLookup);
 
         if (suffixLookup->HasResults()) {
           for (const StenoReverseDictionaryResult &prefix :
@@ -241,7 +241,7 @@ bool StenoReverseSuffixDictionary::IsStrokeDefined(
     const StenoStroke *strokes, size_t prefixStrokeCount,
     size_t combinedStrokeCount) const {
   for (size_t i = prefixStrokeCount + 1; i <= combinedStrokeCount; ++i) {
-    if (dictionary->HasOutline(strokes, i)) {
+    if (super::HasOutline(strokes, i)) {
       return true;
     }
   }

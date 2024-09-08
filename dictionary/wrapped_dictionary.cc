@@ -25,7 +25,7 @@ bool StenoWrappedDictionary::Remove(const char *name,
 }
 
 void StenoWrappedDictionary::SetParentRecursively(StenoDictionary *parent) {
-  StenoDictionary::SetParentRecursively(parent);
+  super::SetParentRecursively(parent);
   dictionary->SetParentRecursively(this);
 }
 

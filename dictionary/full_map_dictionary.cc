@@ -199,33 +199,24 @@ void StenoFullMapDictionary::ReverseLookup(
     if (data >= dataRange.max) {
       return;
     }
-    ReverseLookup(lookup, data);
+    ReverseLookup(lookup, (const FullStenoMapDictionaryDataEntry *)data);
   }
 }
 
-void StenoFullMapDictionary::ReverseLookup(StenoReverseDictionaryLookup &lookup,
-                                           const void *data) const {
-  for (size_t strokeLength = 1; strokeLength <= maximumOutlineLength;
-       ++strokeLength) {
-    const StenoFullMapDictionaryStrokesDefinition &strokeDefinition =
-        strokes[strokeLength];
-
-    if (!strokeDefinition.ContainsData(data)) {
-      continue;
-    }
-
-    // There is a match! Convert it to StenoStrokes.
-    const FullStenoMapDictionaryDataEntry *entry =
-        (const FullStenoMapDictionaryDataEntry *)data;
-
-    // Check for deletion
-    if (entry->strokes[0].IsEmpty()) {
-      return;
-    }
-
-    lookup.AddResult(entry->strokes, strokeLength, this);
+void StenoFullMapDictionary::ReverseLookup(
+    StenoReverseDictionaryLookup &lookup,
+    const FullStenoMapDictionaryDataEntry *entry) const {
+  // Check for deletion
+  if (entry->strokes[0].IsEmpty()) {
     return;
   }
+
+  size_t strokeLength = 1;
+  while (strokes[strokeLength].IsEntryAfter(entry)) {
+    ++strokeLength;
+  }
+
+  lookup.AddResult(entry->strokes, strokeLength, this);
 }
 
 bool StenoFullMapDictionary::Remove(const char *name,

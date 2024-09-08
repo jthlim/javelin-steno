@@ -7,6 +7,10 @@
 
 //---------------------------------------------------------------------------
 
+struct CompactStenoMapDictionaryDataEntry;
+
+//---------------------------------------------------------------------------
+
 class StenoCompactMapDictionary final : public StenoDictionary,
                                         public JavelinMallocAllocate {
 public:
@@ -42,7 +46,7 @@ private:
   CreateStrokeCache(const StenoCompactMapDictionaryDefinition &definition);
 
   void ReverseLookup(StenoReverseDictionaryLookup &lookup,
-                     const void *data) const;
+                     const CompactStenoMapDictionaryDataEntry *entry) const;
 };
 
 //---------------------------------------------------------------------------
