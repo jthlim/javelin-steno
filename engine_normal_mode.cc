@@ -502,8 +502,7 @@ void StenoEngine::PrintFingerSpellingSuggestions(
     const StenoSegmentList &nextSegments) {
   // Get the last word out of the buffer and look that up.
   char buffer[256];
-  char *p = buffer + sizeof(buffer) - 1;
-  *p = '\0';
+  char *p = buffer + sizeof(buffer) - 2;
   const StenoKeyCode *skc =
       &nextConversionBuffer.keyCodeBuffer
            .buffer[nextConversionBuffer.keyCodeBuffer.count - 1];
@@ -518,12 +517,26 @@ void StenoEngine::PrintFingerSpellingSuggestions(
     const uint32_t unicode = skc->GetUnicode();
     const size_t length = Utf8Pointer::BytesForCharacterCode(unicode);
     p -= length;
+    if (p <= buffer) {
+      return;
+    }
     Utf8Pointer(p).SetAndAdvance(unicode);
     ++keyCodeCount;
     --skc;
   }
 
-  if (keyCodeCount > 1) {
+  if (keyCodeCount >= 3) {
+    char t = buffer[253];
+    buffer[253] = '^';
+    buffer[254] = '}';
+    buffer[255] = '\0';
+    p[-1] = '{';
+    PrintSuggestion(p - 1, 1, keyCodeCount - 1);
+    buffer[253] = t;
+  }
+
+  if (keyCodeCount >= 2) {
+    buffer[254] = '\0';
     PrintSuggestion(p, 1, keyCodeCount);
   }
 }

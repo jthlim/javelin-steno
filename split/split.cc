@@ -3,6 +3,7 @@
 #include "split.h"
 #include "../clock.h"
 #include "../crc.h"
+#include "../hash.h"
 #include "../script_manager.h"
 #include <string.h>
 
@@ -19,21 +20,43 @@ SplitRxHandler *RxBuffer::handlers[(size_t)SplitHandlerId::COUNT];
 
 //---------------------------------------------------------------------------
 
+inline uint32_t RotateLeft(uint32_t v, int shift) {
+  return (v << shift) | (v >> (32 - shift));
+}
+
+uint16_t TxRxHeader::Hash(const uint32_t *data, size_t wordCount) {
+#if JAVELIN_PLATFORM_PICO_SDK
+  // Since the pico has a hardware accelerated Crc, just use that.
+  return (uint16_t)Crc32(data, sizeof(uint32_t) * wordCount);
+#else
+  const uint32_t v = JavelinHash::Hash(data, wordCount);
+  return (uint16_t)(v ^ (v >> 16));
+#endif
+}
+
+//---------------------------------------------------------------------------
+
 void TxBuffer::Build() {
   Reset();
   for (size_t i = 0; i < handlers.handlerCount; ++i) {
     handlers.handlers[i]->UpdateBuffer(*this);
   }
-  UpdateCrc();
+  UpdateHash();
 }
 
 void TxBuffer::BuildEmpty() {
   Reset();
-  header.crc16 = 0; // This is the same as calling UpdateCrc();
+#if JAVELIN_PLATFORM_PICO_SDK
+  header.hash = EmptyCrc32();
+#else
+  constexpr uint32_t v = JavelinHash::EmptyHash();
+  constexpr uint16_t hash = (uint16_t)(v ^ (v >> 16));
+  header.hash = hash;
+#endif
 }
 
-void TxBuffer::UpdateCrc() {
-  header.crc16 = (uint16_t)Crc32(buffer, sizeof(uint32_t) * header.wordCount);
+void TxBuffer::UpdateHash() {
+  header.hash = TxRxHeader::Hash(buffer, header.wordCount);
 }
 
 bool TxBuffer::Add(SplitHandlerId id, const void *data, size_t length) {
@@ -118,11 +141,10 @@ RxBufferValidateResult RxBuffer::Validate(size_t totalWordsReceived,
     metrics[SplitMetricId::EXCESS_DATA_COUNT]++;
   }
 
-  const uint16_t expectedCrc =
-      (uint16_t)Crc32(buffer, sizeof(uint32_t) * header.wordCount);
-  if (header.crc16 != expectedCrc) {
-    // Crc failure.
-    metrics[SplitMetricId::CRC_FAILURE_COUNT]++;
+  const uint16_t expectedHash = TxRxHeader::Hash(buffer, header.wordCount);
+  if (header.hash != expectedHash) {
+    // Hash failure.
+    metrics[SplitMetricId::HASH_FAILURE_COUNT]++;
     return RxBufferValidateResult::ERROR;
   }
 

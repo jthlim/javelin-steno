@@ -31,7 +31,7 @@ enum SplitMetricId {
   RESET_COUNT,
   TIMEOUT_COUNT,
   MAGIC_MISMATCH_COUNT,
-  CRC_FAILURE_COUNT,
+  HASH_FAILURE_COUNT,
   WAITING_FOR_HEADER_COUNT,
   WAITING_FOR_DATA_COUNT,
   EXCESS_DATA_COUNT,
@@ -48,7 +48,7 @@ struct TxRxHeader {
   uint16_t magic;
   uint16_t wordCount;
   uint16_t transferId;
-  uint16_t crc16;
+  uint16_t hash;
 
   static const uint16_t MAGIC = 0x534a; // 'JS';
 
@@ -58,6 +58,8 @@ struct TxRxHeader {
   size_t GetWordCount() const {
     return sizeof(*this) / sizeof(uint32_t) + wordCount;
   }
+
+  static uint16_t Hash(const uint32_t *data, size_t wordCount);
 };
 
 class SplitTxHandler;
@@ -73,7 +75,7 @@ public:
   uint8_t *Reserve(size_t length);
   void Build();
   void BuildEmpty();
-  void UpdateCrc();
+  void UpdateHash();
   size_t GetByteCount() const { return header.GetByteCount(); }
   size_t GetWordCount() const { return header.GetWordCount(); }
 
