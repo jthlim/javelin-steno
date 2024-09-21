@@ -155,6 +155,7 @@ enum class StenoScriptFunction : uint8_t {
   IS_MOUSE_BUTTON_PRESSED,
   MOVE_MOUSE,
   WHEEL_MOUSE,
+  SET_ENABLE_BUTTON_STATES,
 };
 
 enum class StenoScriptOperator : uint8_t {

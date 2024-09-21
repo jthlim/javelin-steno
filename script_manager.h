@@ -29,9 +29,7 @@ public:
   void PressButton(size_t index, uint32_t scriptTime);
   void ReleaseButton(size_t index, uint32_t scriptTime);
 
-  void SetAllowButtonStateUpdates(bool value) {
-    allowButtonStateUpdates = value;
-  }
+  void SetAllowButtonStateUpdates(bool value);
 
   static void ExecuteScript(ScriptId scriptId);
   static ScriptManager &GetInstance() { return container.value; }
@@ -57,12 +55,13 @@ private:
   // Controlled by console commands.
   bool isButtonStateUpdatesEnabled;
 
-  // Controlled by firmware configuration.
+  // Controlled by scripts.
   bool allowButtonStateUpdates;
   ButtonState buttonState;
   Script script;
 
   void SendButtonStateUpdate() const;
+  void SendButtonStateUpdate(const ButtonState &state) const;
 
   static JavelinStaticAllocate<ScriptManager> container;
 };

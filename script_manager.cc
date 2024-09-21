@@ -91,10 +91,30 @@ void ScriptManager::ReleaseButton(size_t index, uint32_t scriptTime) {
   SendButtonStateUpdate();
 }
 
-void ScriptManager::SendButtonStateUpdate() const {
+void ScriptManager::SendButtonStateUpdate(const ButtonState &state) const {
   if (isButtonStateUpdatesEnabled) {
     Console::Printf("EV {\"event\":\"button_state\",\"data\":\"%D\"}\n\n",
-                    &buttonState, sizeof(buttonState));
+                    &state, sizeof(state));
+  }
+}
+
+void ScriptManager::SendButtonStateUpdate() const {
+  if (allowButtonStateUpdates) {
+    SendButtonStateUpdate(buttonState);
+  }
+}
+
+void ScriptManager::SetAllowButtonStateUpdates(bool value) {
+  if (value == allowButtonStateUpdates) {
+    return;
+  }
+  allowButtonStateUpdates = value;
+  if (value) {
+    SendButtonStateUpdate();
+  } else {
+    ButtonState state;
+    state.ClearAll();
+    SendButtonStateUpdate(state);
   }
 }
 
@@ -139,10 +159,6 @@ void ScriptManager::DisableScriptEvents_Binding(void *context,
 void ScriptManager::EnableButtonStateUpdates_Binding(void *context,
                                                      const char *commandLine) {
   ScriptManager *manager = (ScriptManager *)context;
-  if (!manager->allowButtonStateUpdates) {
-    Console::Printf("ERR Button state updates unavailable\n\n");
-    return;
-  }
   manager->isButtonStateUpdatesEnabled = true;
   Console::SendOk();
 }

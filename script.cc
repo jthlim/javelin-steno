@@ -21,6 +21,7 @@
 #include "malloc_allocate.h"
 #include "random.h"
 #include "script_byte_code.h"
+#include "script_manager.h"
 #include "split/split_usb_status.h"
 #include "str.h"
 #include "timer_manager.h"
@@ -982,6 +983,10 @@ void Script::ExecutionContext::Run(Script &script, size_t offset) {
         Mouse::Wheel(delta);
         continue;
       }
+      case SF::SET_ENABLE_BUTTON_STATES:
+        ScriptManager::GetInstance().SetAllowButtonStateUpdates(script.Pop() !=
+                                                                0);
+        continue;
       }
       continue;
     }

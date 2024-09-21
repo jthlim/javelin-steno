@@ -17,7 +17,7 @@ struct StenoConfigBlock {
   uint8_t _deprecatedKeyboardLayout;
   bool hidCompatibilityMode;
   bool useSpaceAfter;
-  bool allowButtonStateUpdates;
+  bool _deprecatedAllowButtonStateUpdates;
 
   bool _reserved[20];
 
