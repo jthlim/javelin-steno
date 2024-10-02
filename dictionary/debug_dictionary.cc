@@ -1,7 +1,6 @@
 //---------------------------------------------------------------------------
 
 #include "debug_dictionary.h"
-#include "../console.h"
 #include "../str.h"
 #include "../stroke.h"
 

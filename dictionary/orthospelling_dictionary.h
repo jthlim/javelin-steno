@@ -1,7 +1,6 @@
 //---------------------------------------------------------------------------
 
 #pragma once
-#include "../list.h"
 #include "dictionary.h"
 #include "orthospelling_data.h"
 

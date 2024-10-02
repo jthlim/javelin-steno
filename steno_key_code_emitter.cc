@@ -7,7 +7,6 @@
 #include "keyboard_led_status.h"
 #include "steno_key_code.h"
 #include "steno_key_code_emitter_context.h"
-#include "str.h"
 
 //---------------------------------------------------------------------------
 

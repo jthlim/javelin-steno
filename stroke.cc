@@ -2,8 +2,8 @@
 
 #include "stroke.h"
 #include "crc.h"
+#include "str.h"
 #include <assert.h>
-#include <string.h>
 
 //---------------------------------------------------------------------------
 
@@ -185,15 +185,15 @@ TEST_BEGIN("Stroke tests") {
 
   const StenoStroke hello(StrokeMask::HL | StrokeMask::LR);
   hello.ToString(buffer);
-  assert(strcmp(buffer, "H-L") == 0);
+  assert(Str::Eq(buffer, "H-L"));
 
   const StenoStroke cat("KAT");
   cat.ToString(buffer);
-  assert(strcmp(buffer, "KAT") == 0);
+  assert(Str::Eq(buffer, "KAT"));
 
   const StenoStroke star("STA*R");
   star.ToString(buffer);
-  assert(strcmp(buffer, "STA*R") == 0);
+  assert(Str::Eq(buffer, "STA*R"));
 }
 TEST_END
 

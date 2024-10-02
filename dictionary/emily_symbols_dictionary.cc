@@ -1,7 +1,6 @@
 //---------------------------------------------------------------------------
 
 #include "emily_symbols_dictionary.h"
-#include "../crc.h"
 #include "../str.h"
 #include "../stroke.h"
 #include <assert.h>

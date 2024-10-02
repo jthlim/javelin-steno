@@ -345,7 +345,7 @@ TEST_BEGIN("MapDictionary: Single stroke lookup test") {
 
   auto lookup = mainDictionary.Lookup(strokes, 1);
   assert(lookup.IsValid());
-  assert(strcmp(lookup.GetText(), "test") == 0);
+  assert(Str::Eq(lookup.GetText(), "test"));
   lookup.Destroy();
 }
 TEST_END
@@ -362,7 +362,7 @@ TEST_BEGIN("MapDictionary: Double stroke lookup test") {
 
   auto lookup = mainDictionary.Lookup(strokes, 2);
   assert(lookup.IsValid());
-  assert(strcmp(lookup.GetText(), "tested") == 0);
+  assert(Str::Eq(lookup.GetText(), "tested"));
   lookup.Destroy();
 }
 TEST_END

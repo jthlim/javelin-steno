@@ -1,7 +1,6 @@
 //---------------------------------------------------------------------------
 
 #include "split.h"
-#include "../clock.h"
 #include "../crc.h"
 #include "../hash.h"
 #include "../script_manager.h"
@@ -102,14 +101,14 @@ void TxBuffer::Handlers::OnConnectionReset() const {
   for (size_t i = 0; i < handlerCount; ++i) {
     handlers[i]->OnTransmitConnectionReset();
   }
-  ScriptManager::ExecuteScript(ScriptId::PAIR_CONNECTION_UPDATE);
+  ScriptManager::ExecuteScript(ButtonScriptId::PAIR_CONNECTION_UPDATE);
 }
 
 void TxBuffer::Handlers::OnConnect() const {
   for (size_t i = 0; i < handlerCount; ++i) {
     handlers[i]->OnTransmitConnected();
   }
-  ScriptManager::ExecuteScript(ScriptId::PAIR_CONNECTION_UPDATE);
+  ScriptManager::ExecuteScript(ButtonScriptId::PAIR_CONNECTION_UPDATE);
 }
 
 //---------------------------------------------------------------------------

@@ -6,8 +6,8 @@
 
 //---------------------------------------------------------------------------
 
-const uint8_t *StenoScriptByteCodeData::FindStringOrReturnOriginal(
-    const uint8_t *string) const {
+const uint8_t *
+ScriptByteCode::FindStringOrReturnOriginal(const uint8_t *string) const {
   const StenoScriptHashTable *hashTable = GetHashTable();
 
   const size_t mask = hashTable->size - 1;

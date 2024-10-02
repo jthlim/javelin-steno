@@ -1,7 +1,6 @@
 //---------------------------------------------------------------------------
 
 #include "unicode_dictionary.h"
-#include "../str.h"
 #include "../utf8_pointer.h"
 #include <assert.h>
 

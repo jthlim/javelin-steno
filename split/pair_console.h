@@ -2,7 +2,6 @@
 
 #pragma once
 #include "../queue.h"
-#include "../writer.h"
 #include "split.h"
 
 //---------------------------------------------------------------------------

@@ -100,8 +100,8 @@ StenoStroke StenoKeyState::ToStroke() const {
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+#include "str.h"
 #include "unit_test.h"
-#include <string.h>
 
 TEST_BEGIN("StenoKeyState tests") {
   char buffer[StenoStroke::MAX_STRING_LENGTH];
@@ -112,7 +112,7 @@ TEST_BEGIN("StenoKeyState tests") {
   {
     const StenoStroke stroke = state.ToStroke();
     stroke.ToString(buffer);
-    assert(strcmp(buffer, "H-L") == 0);
+    assert(Str::Eq(buffer, "H-L"));
   }
 }
 TEST_END

@@ -1,7 +1,6 @@
 //---------------------------------------------------------------------------
 
 #include "writer.h"
-#include "console.h"
 #include "str.h"
 #include "stroke.h"
 #include "utf8_pointer.h"

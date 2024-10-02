@@ -2,7 +2,6 @@
 
 #pragma once
 #include "static_list.h"
-#include <stddef.h>
 #include <stdint.h>
 
 //---------------------------------------------------------------------------

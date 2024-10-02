@@ -4,7 +4,6 @@
 #include "clock.h"
 #include "console.h"
 #include "flash.h"
-#include "script_byte_code.h"
 #include "timer_manager.h"
 
 //---------------------------------------------------------------------------
@@ -61,7 +60,7 @@ void ScriptManager::Update(const ButtonState &newButtonState,
   SendButtonStateUpdate();
 }
 
-void ScriptManager::ExecuteScript(ScriptId scriptId) {
+void ScriptManager::ExecuteScript(ButtonScriptId scriptId) {
   if (Flash::IsUpdating()) {
     return;
   }
@@ -146,13 +145,13 @@ void ScriptManager::Reset() {
 
 void ScriptManager::EnableScriptEvents_Binding(void *context,
                                                const char *commandLine) {
-  ((Script *)context)->EnableScriptEvents();
+  ((ButtonScript *)context)->EnableScriptEvents();
   Console::SendOk();
 }
 
 void ScriptManager::DisableScriptEvents_Binding(void *context,
                                                 const char *commandLine) {
-  ((Script *)context)->DisableScriptEvents();
+  ((ButtonScript *)context)->DisableScriptEvents();
   Console::SendOk();
 }
 

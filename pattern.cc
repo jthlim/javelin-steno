@@ -423,11 +423,11 @@ TEST_END
 TEST_BEGIN("Pattern: Replace tests") {
   const Pattern pattern = Pattern::Compile("(a*)b");
   char *t1 = pattern.Match("aaaab").Replace("\\0\\1");
-  assert(strcmp(t1, "aaaabaaaa") == 0);
+  assert(Str::Eq(t1, "aaaabaaaa"));
   free(t1);
 
   char *t2 = pattern.Match("b").Replace("\\0\\1");
-  assert(strcmp(t2, "b") == 0);
+  assert(Str::Eq(t2, "b"));
   free(t2);
 }
 TEST_END
@@ -435,7 +435,7 @@ TEST_END
 TEST_BEGIN("Pattern: BackReference Test") {
   const Pattern pattern = Pattern::Compile("(.+(.))\\2ed");
   char *t1 = pattern.Match("planned").Replace("\\1");
-  assert(strcmp(t1, "plan") == 0);
+  assert(Str::Eq(t1, "plan"));
   free(t1);
 }
 TEST_END
@@ -451,7 +451,7 @@ TEST_BEGIN("Pattern: Orthography example test") {
       R"(^(.*(?:[bcdfghjklmnprstvwxyz]|qu)[aeiou])([bcdfgklmnprtvz]) \^ ([aeiouy].*)$)");
 
   char *t1 = pattern.Match("defer ^ ed").Replace(R"(\1\2\2\3)");
-  assert(strcmp(t1, "deferred") == 0);
+  assert(Str::Eq(t1, "deferred"));
   free(t1);
 }
 TEST_END

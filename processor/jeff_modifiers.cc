@@ -3,7 +3,6 @@
 #include "jeff_modifiers.h"
 #include "../console.h"
 #include "../key.h"
-#include <stddef.h>
 
 //---------------------------------------------------------------------------
 

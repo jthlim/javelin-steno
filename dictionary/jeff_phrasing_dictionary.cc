@@ -2,6 +2,7 @@
 
 #include "jeff_phrasing_dictionary.h"
 #include "../crc.h"
+#include "../list.h"
 #include "../pattern.h"
 #include "../str.h"
 #include "../stroke.h"

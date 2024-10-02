@@ -3,7 +3,6 @@
 #include "console.h"
 #include "engine.h"
 #include "host_layout.h"
-#include "key.h"
 #include "mem.h"
 #include "str.h"
 #include "utf8_pointer.h"

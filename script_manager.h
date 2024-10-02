@@ -1,8 +1,8 @@
 //---------------------------------------------------------------------------
 
 #pragma once
+#include "button_script.h"
 #include "button_state.h"
-#include "script.h"
 #include "static_allocate.h"
 
 //---------------------------------------------------------------------------
@@ -31,7 +31,7 @@ public:
 
   void SetAllowButtonStateUpdates(bool value);
 
-  static void ExecuteScript(ScriptId scriptId);
+  static void ExecuteScript(ButtonScriptId scriptId);
   static ScriptManager &GetInstance() { return container.value; }
 
   static void EnableScriptEvents_Binding(void *context,
@@ -58,7 +58,7 @@ private:
   // Controlled by scripts.
   bool allowButtonStateUpdates;
   ButtonState buttonState;
-  Script script;
+  ButtonScript script;
 
   void SendButtonStateUpdate() const;
   void SendButtonStateUpdate(const ButtonState &state) const;

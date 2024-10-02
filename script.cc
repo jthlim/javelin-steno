@@ -1,1237 +1,446 @@
 //---------------------------------------------------------------------------
 
 #include "script.h"
-
-#include JAVELIN_BOARD_CONFIG
-
-#include "clock.h"
-#include "console.h"
-#include "engine.h"
-#include "hal/ble.h"
-#include "hal/connection.h"
-#include "hal/display.h"
-#include "hal/gpio.h"
-#include "hal/mouse.h"
-#include "hal/power.h"
-#include "hal/rgb.h"
-#include "hal/sound.h"
-#include "hal/usb_status.h"
-#include "key.h"
-#include "keyboard_led_status.h"
-#include "malloc_allocate.h"
-#include "random.h"
-#include "script_byte_code.h"
-#include "script_manager.h"
-#include "split/split_usb_status.h"
-#include "str.h"
-#include "timer_manager.h"
+#include "mem.h"
 
 #include <assert.h>
 
 //---------------------------------------------------------------------------
 
-class Script::ExecutionContext {
-public:
-  void Run(Script &script, size_t offset);
-
-private:
-  intptr_t *base; // The stack point that the code needs to pop to to exit.
-  intptr_t *locals;
-  intptr_t *frame; // The working area for the current function
-};
-
-//---------------------------------------------------------------------------
-
-Script::Script(const uint8_t *byteCode) : byteCode(byteCode) {
-  keyState.ClearAll();
-}
-
 void Script::Reset() {
-  ReleaseAll();
-  inPressAllCount = 0;
-  inReleaseAllCount = 0;
-  pressCount = 0;
-  releaseCount = 0;
-  stenoState = 0;
-  eventHistory[0] = nullptr;
-  eventHistory[1] = nullptr;
-  eventHistory[2] = nullptr;
-  eventHistory[3] = nullptr;
   stackTop = stack;
-  Mem::Clear(scriptOffsets);
   Mem::Clear(globals);
 }
 
-bool Script::IsValid() const {
-  return ((StenoScriptByteCodeData *)byteCode)->IsValid();
+bool Script::IsScriptEmpty(size_t offset) const {
+  return offset == 0 ||
+         ((uint8_t *)byteCode)[offset] == StenoScriptByteCode::RETURN;
 }
 
-uint32_t Script::Crc() const {
-  return ((StenoScriptByteCodeData *)byteCode)->Crc();
-}
-
-void Script::ReleaseAll() {
-  for (const size_t keyIndex : keyState) {
-    Key::Release(uint32_t(keyIndex));
-  }
-  keyState.ClearAll();
-  stenoState = 0;
-  CancelAllStenoKeys();
-  for (const size_t mouseButtonIndex : mouseButtonState) {
-    Mouse::ReleaseButton(mouseButtonIndex);
-  }
-}
-
-void Script::Push(intptr_t value) {
-  assert(stackTop < stack + MAX_STACK_SIZE);
-  *stackTop++ = value;
-}
-
-intptr_t Script::Pop() {
-  assert(stackTop > stack);
-  return *--stackTop;
-}
-
-const intptr_t *Script::Pop(size_t count) {
-  assert(stackTop >= stack + count);
-  stackTop -= count;
-  return stackTop;
-}
-
-void Script::UnaryOp(intptr_t (*op)(intptr_t)) {
-  assert(stackTop > stack);
-  stackTop[-1] = op(stackTop[-1]);
-}
-
-void Script::BinaryOp(intptr_t (*op)(intptr_t, intptr_t)) {
-  assert(stackTop >= stack + 2);
-  --stackTop;
-  stackTop[-1] = op(stackTop[-1], stackTop[0]);
-}
-
-void Script::ExecuteScript(size_t offset, uint32_t scriptTime) {
+void Script::ExecuteScript(size_t offset) {
   if (offset == 0) {
     return;
   }
 
-  this->scriptTime = scriptTime;
-
 #if DEBUG
-  intptr_t *start = stackTop;
+  intptr_t *const start = stackTop;
 #endif
 
-  ExecutionContext context;
-  context.Run(*this, offset);
+  Run(offset);
 
 #if DEBUG
   assert(stackTop == start);
 #endif
 }
 
-void Script::ExecuteScriptId(ScriptId scriptId, uint32_t scriptTime) {
-  const size_t offset = scriptOffsets[(size_t)scriptId];
-  if (offset != 0) {
-    ExecuteScript(offset, scriptTime);
-  }
-}
-
-inline bool Script::IsScriptEmpty(size_t offset) const {
-  return offset == 0 || byteCode[offset] == StenoScriptByteCode::RETURN;
-}
-
-bool Script::IsScriptIndexEmpty(size_t index) const {
-  const StenoScriptByteCodeData *data =
-      (const StenoScriptByteCodeData *)byteCode;
-  return IsScriptEmpty(data->offsets[index]);
-}
-
-void Script::ExecuteScriptIndex(size_t index, uint32_t scriptTime) {
-  const StenoScriptByteCodeData *data =
-      (const StenoScriptByteCodeData *)byteCode;
-  ExecuteScript(data->offsets[index], scriptTime);
-}
-
-bool Script::CheckButtonState(const uint8_t *text) const {
-  size_t buttonIndex = 0;
-  while (*text) {
-    switch (*text) {
-    case '0':
-      // Must be 0.
-      if (buttonState.IsSet(buttonIndex)) {
-        return false;
-      }
-      break;
-
-    case ' ':
-      // Anything is fine.. skip.
-      break;
-
-    default:
-      // Must be 1.
-      if (!buttonState.IsSet(buttonIndex)) {
-        return false;
-      }
-      break;
-    }
-    ++buttonIndex;
-    ++text;
-  }
-  return true;
-}
-
 //---------------------------------------------------------------------------
 
-void Script::PrintInfo() const {
-  Console::Printf("Script\n");
+// This local class optimizes access to the stack, and places the pointer
+// in a register, which dramatically reduces the memory accesses when
+// executing a script.
+class Script::StackPointer {
+public:
+  StackPointer(Script &script) { SetStackTop(script.stackTop); }
 
-  Console::Printf("  Callbacks: [");
-  bool firstTime = true;
-  for (size_t i = 0; i < (size_t)ScriptId::COUNT; ++i) {
-    if (scriptOffsets[i] != 0) {
-      if (firstTime) {
-        firstTime = false;
-        Console::Printf("%zu", i);
-      } else {
-        Console::Printf(", %zu", i);
-      }
-    }
+  void WriteBack(Script &script) { script.stackTop = GetStackTop(); }
+  void Load(Script &script) { SetStackTop(script.stackTop); }
+
+  intptr_t *GetStackTop() const { return p; }
+  void SetStackTop(intptr_t *stackTop) { p = stackTop; }
+
+  intptr_t Pop() {
+#if JAVELIN_CPU_CORTEX_M4
+    intptr_t r;
+    asm("ldr %0, [%1, #-4]!" : "=r"(r), "+r"(p));
+    return r;
+#else
+    return *--p;
+#endif
   }
-  Console::Printf("]\n");
-}
-
-//---------------------------------------------------------------------------
-
-struct Script::ScriptTimerContext final : public TimerHandler,
-                                          public JavelinMallocAllocate {
-  ScriptTimerContext(Script *script, size_t offset)
-      : script(script), offset(offset) {}
-
-  Script *script;
-  size_t offset;
-
-  void Run(intptr_t id) final {
-    // A routine may or may not consume the id, so this code records the
-    // top of stack and reinstates it after.
-    intptr_t *const startingStackTop = script->stackTop;
-
-    // Take a local copy of the script
-    // executionContext.Run can cause this object to be destroyed, and a local
-    // copy is needed so that the last line does not corrupt memory.
-    Script *localScript = script;
-    *(localScript->stackTop++) = id;
-
-    ExecutionContext executionContext;
-    executionContext.Run(*script, offset);
-
-    localScript->stackTop = startingStackTop;
+  void Push(intptr_t v) {
+#if JAVELIN_CPU_CORTEX_M4
+    asm("stmia %0!, {%1}" : "+r"(p) : "r"(v));
+#else
+    *p++ = v;
+#endif
   }
 
-  void OnTimerRemovedFromManager() override final { delete this; }
+  void UnaryOp(intptr_t (*op)(intptr_t)) { Push(op(Pop())); }
+
+  template <typename T> void TwoParam(T op) {
+#if JAVELIN_CPU_CORTEX_M4
+    intptr_t a, b;
+    asm("ldrd %0, %1, [%r2, #-8]!" : "=r"(a), "=r"(b), "+r"(p));
+#else
+    const intptr_t b = Pop();
+    const intptr_t a = Pop();
+#endif
+    op(a, b);
+  }
+
+  template <typename T> void BinaryOp(T op) {
+#if JAVELIN_CPU_CORTEX_M4
+    intptr_t a, b;
+    asm("ldrd %0, %1, [%r2, #-8]!" : "=r"(a), "=r"(b), "+r"(p));
+#else
+    const intptr_t b = Pop();
+    const intptr_t a = Pop();
+#endif
+    Push(op(a, b));
+  }
+
+private:
+  intptr_t *p;
 };
 
-void Script::StopTimer(int32_t timerId) {
-  TimerManager::instance.StopTimer(timerId, scriptTime);
-}
+class Script::ProgramCounter {
+public:
+  ProgramCounter(const uint8_t *p) : p(p) {}
 
-void Script::StartTimer(int32_t timerId, uint32_t interval, bool isRepeating,
-                        size_t offset) {
-  ScriptTimerContext *context = new ScriptTimerContext(this, offset);
-  TimerManager::instance.StartTimer(timerId, interval, isRepeating, context,
-                                    scriptTime);
-}
+  uint32_t ReadU8() { return *p++; }
+  void Advance(intptr_t offset) { p += offset; }
 
-//---------------------------------------------------------------------------
+  uint32_t GetU16() const { return p[0] + (p[1] << 8); }
 
-#if RUN_TESTS
-__attribute__((weak)) void Script::OnStenoKeyPressed() {}
-__attribute__((weak)) void Script::OnStenoKeyReleased() {}
-__attribute__((weak)) void Script::CancelStenoKeys(StenoKeyState state) {}
-__attribute__((weak)) void Script::CancelAllStenoKeys() {}
-__attribute__((weak)) bool Script::ProcessScanCode(int scanCode,
-                                                   ScanCodeAction action) {
-  return false;
-}
-__attribute__((weak)) void Script::SendText(const uint8_t *text) {}
+  uint32_t ReadU16() {
+#if JAVELIN_CPU_CORTEX_M4
+    uint32_t r;
+    asm("ldrh %0, [%1], #2" : "=r"(r), "+r"(p));
+    return r;
 #else
-void Script::SendText(const uint8_t *text) {
-#if JAVELIN_USE_EMBEDDED_STENO
-  StenoEngine::GetInstance().SendText(text);
+    const uint32_t v = p[0] + (p[1] << 8);
+    p += 2;
+    return v;
 #endif
-}
+  }
 
-bool Script::ProcessScanCode(int scanCode, ScanCodeAction action) {
-#if JAVELIN_USE_EMBEDDED_STENO
-  const uint32_t modifiers =
-      keyState.GetRange(KeyCode::L_CTRL, KeyCode::L_CTRL + 8)
-      << MODIFIER_BIT_SHIFT;
-  return StenoEngine::GetInstance().ProcessScanCode(scanCode | modifiers,
-                                                    action);
+  int32_t ReadS16() {
+#if JAVELIN_CPU_CORTEX_M4
+    int32_t r;
+    asm("ldrsh %0, [%1], #2" : "=r"(r), "+r"(p));
+    return r;
 #else
-  return false;
+    int32_t value = p[0] + (p[1] << 8);
+    p += 2;
+    value <<= 16;
+    value >>= 16;
+    return value;
 #endif
-}
+  }
+
+  int32_t ReadS24() {
+#if JAVELIN_CPU_CORTEX_M4
+    int32_t r;
+    asm("ldr %0, [%1], #3\n\t"
+        "sbfx %0, %0, #0, #24\n\t"
+        : "=r"(r), "+r"(p));
+    return r;
+#else
+    int32_t value = p[0] + (p[1] << 8) + (p[2] << 16);
+    p += 3;
+    value <<= 8;
+    value >>= 8;
+    return value;
 #endif
+  }
 
-//---------------------------------------------------------------------------
+  int32_t ReadS32() {
+#if JAVELIN_CPU_CORTEX_M4
+    int32_t v;
+    asm("ldmia %1!, {%0}" : "=r"(v), "+r"(p));
+#else
+    const int32_t v = p[0] + (p[1] << 8) + (p[2] << 16) + (p[3] << 24);
+    p += 4;
+#endif
+    return v;
+  }
 
-void Script::ExecutionContext::Run(Script &script, size_t offset) {
+private:
+  const uint8_t *p;
+};
+
+void Script::Run(size_t offset) {
   using BC = StenoScriptByteCode;
   using OP = StenoScriptOperator;
-  using SF = StenoScriptFunction;
 
-  base = script.stackTop;
-  frame = script.stackTop;
+  intptr_t *locals;
 
-  const uint8_t *p = script.byteCode + offset;
+  // The stack point that the code needs to pop to to exit.
+  intptr_t *base = stackTop;
 
-  for (;;) {
-    switch (const uint8_t c = *p++; c) {
-    case BC::PUSH_CONSTANT_START... BC::PUSH_CONSTANT_END:
-      script.Push(c);
-      continue;
-    case BC::PUSH_BYTES_1U: {
-      int value = *p++;
-      if (value < 0x3c) {
-        value -= 0x3c;
-      }
-      script.Push(value);
-      continue;
+  // The working area for the current function
+  intptr_t *frame = stackTop;
+  StackPointer stack(*this);
+
+  const uint8_t *const byteCode = (const uint8_t *)this->byteCode;
+  void (*const *const functionTable)(Script &) = this->functionTable;
+  ProgramCounter p = byteCode + offset;
+
+#define CONTINUE goto next1;
+
+next1:
+  uint32_t c = p.ReadU8();
+
+next2:
+  switch (c) {
+  case BC::PUSH_CONSTANT_START... BC::PUSH_CONSTANT_END:
+    stack.Push(c);
+    CONTINUE;
+  case BC::PUSH_BYTES_1U: {
+    int value = p.ReadU8();
+    if (value < 0x3c) {
+      value -= 0x3c;
     }
-    case BC::PUSH_BYTES_2S: {
-      int value = p[0] + (p[1] << 8);
-      value <<= 16;
-      value >>= 16;
-      p += 2;
-      script.Push(value);
-      continue;
-    }
-    case BC::PUSH_BYTES_3S: {
-      int value = p[0] + (p[1] << 8) + (p[2] << 16);
-      value <<= 8;
-      value >>= 8;
-      p += 3;
-      script.Push(value);
-      continue;
-    }
-    case BC::PUSH_BYTES_4: {
-      const int value = p[0] + (p[1] << 8) + (p[2] << 16) + (p[3] << 24);
-      p += 4;
-      script.Push(value);
-      continue;
-    }
-    case BC::LOAD_GLOBAL_BEGIN... BC::LOAD_GLOBAL_END:
-      script.Push(script.globals[c - BC::LOAD_GLOBAL_BEGIN]);
-      continue;
-    case BC::LOAD_GLOBAL_VALUE: {
-      const int globalIndex = *p++;
-      script.Push(script.globals[globalIndex]);
-      continue;
-    }
-    case BC::LOAD_GLOBAL_INDEX: {
-      const intptr_t globalBaseIndex = *p++;
-      const intptr_t index = script.Pop();
-      script.Push(script.globals[globalBaseIndex + index]);
-      continue;
-    }
-    case BC::STORE_GLOBAL_BEGIN... BC::STORE_GLOBAL_END:
-      script.globals[c - BC::STORE_GLOBAL_BEGIN] = script.Pop();
-      continue;
-    case BC::STORE_GLOBAL_VALUE: {
-      const int globalIndex = *p++;
-      script.globals[globalIndex] = script.Pop();
-      continue;
-    }
-    case BC::STORE_GLOBAL_INDEX: {
-      const int globalBaseIndex = *p++;
-      const intptr_t value = script.Pop();
-      const intptr_t index = script.Pop();
-      script.globals[globalBaseIndex + index] = value;
-      continue;
-    }
-    case BC::LOAD_LOCAL_BEGIN... BC::LOAD_LOCAL_END:
-      script.Push(locals[c - BC::LOAD_LOCAL_BEGIN]);
-      continue;
-    case BC::LOAD_LOCAL_VALUE: {
-      const int localIndex = *p++;
-      script.Push(locals[localIndex]);
-      continue;
-    }
-    case BC::LOAD_LOCAL_INDEX: {
-      const int localBaseIndex = *p++;
-      const intptr_t index = script.Pop();
-      script.Push(locals[localBaseIndex + index]);
-      continue;
-    }
-    case BC::STORE_LOCAL_BEGIN... BC::STORE_LOCAL_END:
-      locals[c - BC::STORE_LOCAL_BEGIN] = script.Pop();
-      continue;
-    case BC::STORE_LOCAL_VALUE: {
-      const int localIndex = *p++;
-      locals[localIndex] = script.Pop();
-      continue;
-    }
-    case BC::STORE_LOCAL_INDEX: {
-      const int localBaseIndex = *p++;
-      const intptr_t value = script.Pop();
-      const intptr_t index = script.Pop();
+    stack.Push(value);
+    CONTINUE;
+  }
+  case BC::PUSH_BYTES_2S:
+    stack.Push(p.ReadS16());
+    CONTINUE;
+  case BC::PUSH_BYTES_3S:
+    stack.Push(p.ReadS24());
+    CONTINUE;
+  case BC::PUSH_BYTES_4:
+    stack.Push(p.ReadS32());
+    CONTINUE;
+  case BC::LOAD_GLOBAL_BEGIN... BC::LOAD_GLOBAL_END:
+    stack.Push(globals[c - BC::LOAD_GLOBAL_BEGIN]);
+    CONTINUE;
+  case BC::LOAD_GLOBAL_VALUE: {
+    const int globalIndex = p.ReadU8();
+    stack.Push(globals[globalIndex]);
+    CONTINUE;
+  }
+  case BC::LOAD_GLOBAL_INDEX: {
+    const intptr_t globalBaseIndex = p.ReadU8();
+    const intptr_t index = stack.Pop();
+    stack.Push(globals[globalBaseIndex + index]);
+    CONTINUE;
+  }
+  case BC::STORE_GLOBAL_BEGIN... BC::STORE_GLOBAL_END:
+    globals[c - BC::STORE_GLOBAL_BEGIN] = stack.Pop();
+    CONTINUE;
+  case BC::STORE_GLOBAL_VALUE: {
+    const int globalIndex = p.ReadU8();
+    globals[globalIndex] = stack.Pop();
+    CONTINUE;
+  }
+  case BC::STORE_GLOBAL_INDEX: {
+    const int globalBaseIndex = p.ReadU8();
+    stack.TwoParam([&, globalBaseIndex](intptr_t index, intptr_t value) {
+      globals[globalBaseIndex + index] = value;
+    });
+    CONTINUE;
+  }
+  case BC::LOAD_LOCAL_BEGIN... BC::LOAD_LOCAL_END:
+    stack.Push(locals[c - BC::LOAD_LOCAL_BEGIN]);
+    CONTINUE;
+  case BC::LOAD_LOCAL_VALUE: {
+    const int localIndex = p.ReadU8();
+    stack.Push(locals[localIndex]);
+    CONTINUE;
+  }
+  case BC::LOAD_LOCAL_INDEX: {
+    const int localBaseIndex = p.ReadU8();
+    const intptr_t index = stack.Pop();
+    stack.Push(locals[localBaseIndex + index]);
+    CONTINUE;
+  }
+  case BC::STORE_LOCAL_BEGIN... BC::STORE_LOCAL_END:
+    locals[c - BC::STORE_LOCAL_BEGIN] = stack.Pop();
+    CONTINUE;
+  case BC::STORE_LOCAL_VALUE: {
+    const int localIndex = p.ReadU8();
+    locals[localIndex] = stack.Pop();
+    CONTINUE;
+  }
+  case BC::STORE_LOCAL_INDEX: {
+    const int localBaseIndex = p.ReadU8();
+    stack.TwoParam([=](intptr_t index, intptr_t value) {
       locals[localBaseIndex + index] = value;
-      continue;
-    }
-    case BC::OPERATOR_START + (int)OP::NOT:
-      script.UnaryOp([](intptr_t a) -> intptr_t { return !a; });
-      continue;
-    case BC::OPERATOR_START + (int)OP::NEGATIVE:
-      script.UnaryOp([](intptr_t a) -> intptr_t { return -a; });
-      continue;
-    case BC::OPERATOR_START + (int)OP::MULTIPLY:
-      script.Push(script.Pop() * script.Pop());
-      continue;
-    case BC::OPERATOR_START + (int)OP::QUOTIENT:
-      script.BinaryOp([](intptr_t a, intptr_t b) -> intptr_t { return a / b; });
-      continue;
-    case BC::OPERATOR_START + (int)OP::REMAINDER:
-      script.BinaryOp([](intptr_t a, intptr_t b) -> intptr_t { return a % b; });
-      continue;
-    case BC::OPERATOR_START + (int)OP::ADD:
-      script.BinaryOp([](intptr_t a, intptr_t b) -> intptr_t { return a + b; });
-      continue;
-    case BC::OPERATOR_START + (int)OP::SUBTRACT:
-      script.BinaryOp([](intptr_t a, intptr_t b) -> intptr_t { return a - b; });
-      continue;
-    case BC::OPERATOR_START + (int)OP::EQUALS:
-      script.BinaryOp(
-          [](intptr_t a, intptr_t b) -> intptr_t { return a == b; });
-      continue;
-    case BC::OPERATOR_START + (int)OP::NOT_EQUALS:
-      script.BinaryOp(
-          [](intptr_t a, intptr_t b) -> intptr_t { return a != b; });
-      continue;
-    case BC::OPERATOR_START + (int)OP::LESS_THAN:
-      script.BinaryOp([](intptr_t a, intptr_t b) -> intptr_t { return a < b; });
-      continue;
-    case BC::OPERATOR_START + (int)OP::GREATER_THAN:
-      script.BinaryOp([](intptr_t a, intptr_t b) -> intptr_t { return a > b; });
-      continue;
-    case BC::OPERATOR_START + (int)OP::LESS_THAN_OR_EQUAL_TO:
-      script.BinaryOp(
-          [](intptr_t a, intptr_t b) -> intptr_t { return a <= b; });
-      continue;
-    case BC::OPERATOR_START + (int)OP::GREATER_THAN_OR_EQUAL_TO:
-      script.BinaryOp(
-          [](intptr_t a, intptr_t b) -> intptr_t { return a >= b; });
-      continue;
-    case BC::OPERATOR_START + (int)OP::BITWISE_AND:
-      script.BinaryOp([](intptr_t a, intptr_t b) -> intptr_t { return a & b; });
-      continue;
-    case BC::OPERATOR_START + (int)OP::BITWISE_OR:
-      script.BinaryOp([](intptr_t a, intptr_t b) -> intptr_t { return a | b; });
-      continue;
-    case BC::OPERATOR_START + (int)OP::BITWISE_XOR:
-      script.BinaryOp([](intptr_t a, intptr_t b) -> intptr_t { return a ^ b; });
-      continue;
-    case BC::OPERATOR_START + (int)OP::AND:
-      script.BinaryOp(
-          [](intptr_t a, intptr_t b) -> intptr_t { return a && b; });
-      continue;
-    case BC::OPERATOR_START + (int)OP::OR:
-      script.BinaryOp(
-          [](intptr_t a, intptr_t b) -> intptr_t { return a || b; });
-      continue;
-    case BC::OPERATOR_START + (int)OP::SHIFT_LEFT:
-      script.BinaryOp(
-          [](intptr_t a, intptr_t b) -> intptr_t { return a << b; });
-      continue;
-    case BC::OPERATOR_START + (int)OP::ARITHMETIC_SHIFT_RIGHT:
-      script.BinaryOp(
-          [](intptr_t a, intptr_t b) -> intptr_t { return a >> b; });
-      continue;
-    case BC::OPERATOR_START + (int)OP::LOGICAL_SHIFT_RIGHT:
-      script.BinaryOp(
-          [](intptr_t a, intptr_t b) -> intptr_t { return uintptr_t(a) >> b; });
-      continue;
-    case BC::OPERATOR_START + (int)OP::BYTE_LOOKUP: {
-      const intptr_t index = script.Pop();
-      const intptr_t offset = script.Pop();
-      const uint8_t *data = script.byteCode + offset;
-      script.Push(data[index]);
-      continue;
-    }
-    case BC::OPERATOR_START + (int)OP::WORD_LOOKUP: {
-      const intptr_t index = script.Pop();
-      const intptr_t offset = script.Pop();
-      const intptr_t *data = (const intptr_t *)(script.byteCode + offset);
-      script.Push(data[index]);
-      continue;
-    }
-    case BC::OPERATOR_START + (int)OP::INCREMENT:
-      script.UnaryOp([](intptr_t a) -> intptr_t { return a + 1; });
-      continue;
-    case BC::OPERATOR_START + (int)OP::DECREMENT:
-      script.UnaryOp([](intptr_t a) -> intptr_t { return a - 1; });
-      continue;
-    case BC::OPERATOR_START + (int)OP::HALF_WORD_LOOKUP: {
-      const intptr_t index = script.Pop();
-      const intptr_t offset = script.Pop();
-      const uint16_t *data = (const uint16_t *)(script.byteCode + offset);
-      script.Push(data[index]);
-      continue;
-    }
-    case BC::CALL_INTERNAL: {
-      const StenoScriptFunction function = StenoScriptFunction(*p++);
-
-      switch (function) {
-      case SF::PRESS_SCAN_CODE: {
-        const uint32_t key = (uint32_t)script.Pop();
-        if (key < 256 && !script.keyState.IsSet(key)) {
-          if (!script.ProcessScanCode(key, ScanCodeAction::PRESS)) {
-            script.keyState.Set(key);
-            Key::Press(key);
-          }
-        }
-        continue;
-      }
-      case SF::RELEASE_SCAN_CODE: {
-        const uint32_t key = (uint32_t)script.Pop();
-        if (key < 256 && script.keyState.IsSet(key)) {
-          if (!script.ProcessScanCode(key, ScanCodeAction::RELEASE)) {
-            script.keyState.Clear(key);
-            Key::Release(key);
-          }
-        }
-        continue;
-      }
-      case SF::TAP_SCAN_CODE: {
-        const uint32_t key = (uint32_t)script.Pop();
-        if (key < 256) {
-          if (!script.ProcessScanCode(key, ScanCodeAction::TAP)) {
-            if (script.keyState.IsSet(key)) {
-              script.keyState.Clear(key);
-            } else {
-              Key::Press(key);
-            }
-            Key::Release(key);
-          }
-        }
-        continue;
-      }
-      case SF::IS_SCAN_CODE_PRESSED: {
-        const uint32_t key = (uint32_t)script.Pop();
-        int isPressed = 0;
-        if (key < 256) {
-          isPressed = script.keyState.IsSet(key);
-        }
-        script.Push(isPressed);
-        continue;
-      }
-      case SF::PRESS_STENO_KEY: {
-        const uint32_t stenoKey = (uint32_t)script.Pop();
-        if (stenoKey < (uint32_t)StenoKey::COUNT) {
-          script.stenoState |= (1ULL << stenoKey);
-          script.OnStenoKeyPressed();
-        }
-        continue;
-      }
-      case SF::RELEASE_STENO_KEY: {
-        const uint32_t stenoKey = (uint32_t)script.Pop();
-        if (stenoKey < (uint32_t)StenoKey::COUNT) {
-          script.stenoState &= ~StenoKeyState(1ULL << stenoKey);
-          script.OnStenoKeyReleased();
-        }
-        continue;
-      }
-      case SF::IS_STENO_KEY_PRESSED: {
-        const uint32_t stenoKey = (uint32_t)script.Pop();
-        int isPressed = 0;
-        if (stenoKey < (uint32_t)StenoKey::COUNT) {
-          isPressed = (script.stenoState & (1ULL << stenoKey)).IsNotEmpty();
-        }
-        script.Push(isPressed);
-        continue;
-      }
-      case SF::RELEASE_ALL:
-        script.ReleaseAll();
-        continue;
-      case SF::IS_BUTTON_PRESSED: {
-        const uint32_t buttonIndex = (uint32_t)script.Pop();
-        int isPressed = 0;
-        if (buttonIndex < 256) {
-          isPressed = script.buttonState.IsSet(buttonIndex);
-        }
-        script.Push(isPressed);
-        continue;
-      }
-      case SF::PRESS_ALL:
-        script.inPressAllCount++;
-        for (const size_t buttonIndex : script.buttonState) {
-          script.CallPress(buttonIndex, script.scriptTime);
-        }
-        script.inPressAllCount--;
-        continue;
-      case SF::SEND_TEXT: {
-        const intptr_t offset = script.Pop();
-        const uint8_t *text = script.byteCode + offset;
-        script.SendText(text);
-        continue;
-      }
-      case SF::CONSOLE: {
-        const intptr_t offset = script.Pop();
-        const char *command = (const char *)script.byteCode + offset;
-        script.RunConsoleCommand(command);
-        continue;
-      }
-      case SF::CHECK_BUTTON_STATE: {
-        const intptr_t offset = script.Pop();
-        const uint8_t *text = script.byteCode + offset;
-        script.Push(script.CheckButtonState(text));
-        continue;
-      }
-      case SF::IS_IN_PRESS_ALL:
-        script.Push(script.inPressAllCount);
-        continue;
-      case SF::SET_RGB: {
-        const int b = script.Pop() & 0xff;
-        const int g = script.Pop() & 0xff;
-        const int r = script.Pop() & 0xff;
-        const int id = (int)script.Pop();
-        Rgb::SetRgb(id, r, g, b);
-        continue;
-      }
-      case SF::GET_TIME:
-        script.Push(script.scriptTime);
-        continue;
-      case SF::GET_LED_STATUS: {
-        const int index = (int)script.Pop();
-        script.Push(
-            Connection::GetActiveKeyboardLedStatus().GetLedStatus(index));
-        continue;
-      }
-      case SF::SET_GPIO_PIN: {
-        const int enable = script.Pop() != 0;
-        const int pin = (int)script.Pop();
-        Gpio::SetPin(pin, enable);
-        continue;
-      }
-      case SF::CLEAR_DISPLAY: {
-        const int displayId = (int)script.Pop();
-        Display::Clear(displayId);
-        continue;
-      }
-      case SF::SET_AUTO_DRAW: {
-        const int autoDrawId = (int)script.Pop();
-        const int displayId = (int)script.Pop();
-        Display::SetAutoDraw(displayId, autoDrawId);
-        continue;
-      }
-      case SF::SET_SCREEN_ON: {
-        const bool on = script.Pop() != 0;
-        const int displayId = (int)script.Pop();
-        Display::SetScreenOn(displayId, on);
-        continue;
-      }
-      case SF::SET_SCREEN_CONTRAST: {
-        const int contrast = (int)script.Pop();
-        const int displayId = (int)script.Pop();
-        Display::SetContrast(displayId, contrast);
-        continue;
-      }
-      case SF::DRAW_PIXEL: {
-        const int y = (int)script.Pop();
-        const int x = (int)script.Pop();
-        const int displayId = (int)script.Pop();
-        Display::DrawPixel(displayId, x, y);
-        continue;
-      }
-      case SF::DRAW_LINE: {
-        const int y2 = (int)script.Pop();
-        const int x2 = (int)script.Pop();
-        const int y1 = (int)script.Pop();
-        const int x1 = (int)script.Pop();
-        const int displayId = (int)script.Pop();
-        Display::DrawLine(displayId, x1, y1, x2, y2);
-        continue;
-      }
-      case SF::DRAW_IMAGE: {
-        const intptr_t offset = script.Pop();
-        const uint8_t *data = (const uint8_t *)script.byteCode + offset;
-        const int y = (int)script.Pop();
-        const int x = (int)script.Pop();
-        const int displayId = (int)script.Pop();
-        const int width = *data++;
-        const int height = *data++;
-        Display::DrawImage(displayId, x, y, width, height, data);
-        continue;
-      }
-      case SF::DRAW_TEXT: {
-        const intptr_t offset = script.Pop();
-        const char *text = (const char *)script.byteCode + offset;
-        const TextAlignment alignment = (TextAlignment)script.Pop();
-        const FontId fontId = (FontId)script.Pop();
-        const int y = (int)script.Pop();
-        const int x = (int)script.Pop();
-        const int displayId = (int)script.Pop();
-        Display::DrawText(displayId, x, y, fontId, alignment, text);
-        continue;
-      }
-      case SF::SET_DRAW_COLOR: {
-        const int color = (int)script.Pop();
-        const int displayId = (int)script.Pop();
-        Display::SetDrawColor(displayId, color);
-        continue;
-      }
-      case SF::DRAW_RECT: {
-        const int bottom = (int)script.Pop();
-        const int right = (int)script.Pop();
-        const int top = (int)script.Pop();
-        const int left = (int)script.Pop();
-        const int displayId = (int)script.Pop();
-        Display::DrawRect(displayId, left, top, right, bottom);
-        continue;
-      }
-      case SF::SET_HSV: {
-        const int v = (int)script.Pop();
-        const int s = (int)script.Pop();
-        const int h = (int)script.Pop();
-        const int id = (int)script.Pop();
-        Rgb::SetHsv(id, h, s, v);
-        continue;
-      }
-      case SF::RAND:
-        script.Push(Random::GenerateUint32());
-        continue;
-      case SF::IS_USB_MOUNTED:
-        script.Push(UsbStatus::instance.IsConnected() ||
-                    SplitUsbStatus::instance.IsConnected());
-        continue;
-      case SF::IS_USB_SUSPENDED:
-        script.Push(UsbStatus::instance.IsSleeping() ||
-                    SplitUsbStatus::instance.IsSleeping());
-        continue;
-      case SF::GET_PARAMETER: {
-        const intptr_t offset = script.Pop();
-        const char *parameter = (const char *)script.byteCode + offset;
-        script.RunGetParameterCommand(parameter);
-        continue;
-      }
-      case SF::IS_CONNECTED: {
-        const ConnectionId connectionId = (ConnectionId)script.Pop();
-        script.Push(Connection::IsConnected(connectionId));
-        continue;
-      }
-      case SF::GET_ACTIVE_CONNECTION:
-        script.Push((int)Connection::GetActiveConnection());
-        continue;
-      case SF::SET_PREFERRED_CONNECTION: {
-        const ConnectionId third = (ConnectionId)script.Pop();
-        const ConnectionId second = (ConnectionId)script.Pop();
-        const ConnectionId first = (ConnectionId)script.Pop();
-        Connection::SetPreferredConnection(first, second, third);
-        continue;
-      }
-      case SF::IS_PAIR_CONNECTED: {
-        const PairConnectionId pairConnectionId =
-            (PairConnectionId)script.Pop();
-        script.Push(Connection::IsPairConnected(pairConnectionId));
-        continue;
-      }
-      case SF::START_BLE_PAIRING:
-        Ble::StartPairing();
-        continue;
-      case SF::GET_BLE_PROFILE:
-        script.Push(Ble::GetProfile());
-        continue;
-      case SF::SET_BLE_PROFILE:
-        Ble::SetProfile((int)script.Pop());
-        continue;
-      case SF::IS_HOST_SLEEPING:
-        script.Push(Connection::IsHostSleeping());
-        continue;
-      case SF::IS_MAIN_POWERED:
-        script.Push(UsbStatus::instance.IsPowered());
-        continue;
-      case SF::IS_CHARGING:
-        script.Push(Power::IsCharging());
-        continue;
-      case SF::GET_BATTERY_PERCENTAGE:
-        script.Push(Power::GetBatteryPercentage());
-        continue;
-      case SF::GET_ACTIVE_PAIR_CONNECTION:
-        script.Push((int)Connection::GetActivePairConnection());
-        continue;
-      case SF::SET_BOARD_POWER:
-        Power::SetBoardPower(script.Pop() != 0);
-        continue;
-      case SF::SEND_EVENT: {
-        const intptr_t offset = script.Pop();
-        const char *text = (const char *)script.byteCode + offset;
-        for (size_t i = 0; i < EVENT_HISTORY_COUNT - 1; ++i) {
-          script.eventHistory[i] = script.eventHistory[i + 1];
-        }
-        script.eventHistory[EVENT_HISTORY_COUNT - 1] = text;
-        if (script.scriptEventsEnabled) {
-          Console::WriteScriptEvent(text);
-        }
-        continue;
-      }
-      case SF::IS_PAIR_POWERED:
-        script.Push(SplitUsbStatus::instance.IsPowered());
-        continue;
-      case SF::SET_INPUT_HINT:
-        // Deprecated. Just pop the parameter.
-        script.Pop();
-        continue;
-      case SF::SET_SCRIPT: {
-        const size_t scriptOffset = script.Pop();
-        const ScriptId scriptId = (ScriptId)script.Pop();
-        script.SetScript(scriptId, scriptOffset);
-        continue;
-      }
-      case SF::IS_BOARD_POWERED:
-        script.Push(Power::IsBoardPowered());
-        continue;
-      case SF::START_TIMER: {
-        const size_t scriptOffset = script.Pop();
-        const bool repeating = script.Pop() != 0;
-        const uint32_t interval = (uint32_t)script.Pop();
-        const int32_t id = script.Pop() & 0x7fffffff;
-        script.StartTimer(id, interval, repeating, scriptOffset);
-        continue;
-      }
-      case SF::STOP_TIMER: {
-        const int32_t id = script.Pop() & 0x7fffffff;
-        script.StopTimer(id);
-        continue;
-      }
-      case SF::IS_TIMER_ACTIVE: {
-        const int32_t id = script.Pop() & 0x7fffffff;
-        script.Push(TimerManager::instance.HasTimer(id));
-        continue;
-      }
-      case SF::IS_BLE_PROFILE_CONNECTED: {
-        const uint32_t profileId = (uint32_t)script.Pop();
-        script.Push(Ble::IsProfileConnected(profileId));
-        continue;
-      }
-      case SF::DISCONNECT_BLE:
-        Ble::Disconnect();
-        continue;
-      case SF::IS_BLE_PROFILE_PAIRED: {
-        const uint32_t profileId = (uint32_t)script.Pop();
-        script.Push(Ble::IsProfilePaired(profileId));
-        continue;
-      }
-      case SF::UNPAIR_BLE:
-        Ble::Unpair();
-        continue;
-      case SF::IS_BLE_PROFILE_SLEEPING: {
-        const uint32_t profileId = (uint32_t)script.Pop();
-        script.Push(Ble::IsProfileSleeping(profileId));
-        continue;
-      }
-      case SF::IS_BLE_ADVERTISING:
-        script.Push(Ble::IsAdvertising());
-        continue;
-      case SF::IS_BLE_SCANNING:
-        script.Push(Ble::IsScanning());
-        continue;
-      case SF::IS_WAITING_FOR_USER_PRESENCE:
-        script.Push(IsWaitingForUserPresence());
-        continue;
-      case SF::REPLY_USER_PRESENCE:
-        script.ReplyUserPresence(script.Pop() != 0);
-        continue;
-      case SF::SET_GPIO_INPUT_PIN: {
-        const Gpio::Pull pull = (Gpio::Pull)script.Pop();
-        const intptr_t pin = script.Pop();
-        Gpio::SetInputPin((int)pin, pull);
-        continue;
-      }
-      case SF::READ_GPIO_PIN: {
-        const intptr_t pin = script.Pop();
-        script.Push(Gpio::GetPin((int)pin));
-        continue;
-      }
-      case SF::DRAW_GRAYSCALE_RANGE: {
-        const int max = (int)script.Pop();
-        const int min = (int)script.Pop();
-        const intptr_t offset = script.Pop();
-        const uint8_t *data = (const uint8_t *)script.byteCode + offset;
-        const int y = (int)script.Pop();
-        const int x = (int)script.Pop();
-        const int displayId = (int)script.Pop();
-        const int width = *data++;
-        const int height = *data++;
-        Display::DrawGrayscaleRange(displayId, x, y, width, height, data, min,
-                                    max);
-        continue;
-      }
-      case SF::SET_GPIO_PIN_DUTY_CYCLE: {
-        const int dutyCycle = (int)script.Pop();
-        const int pin = (int)script.Pop();
-        Gpio::SetPinDutyCycle(pin, dutyCycle);
-        continue;
-      }
-      case SF::CANCEL_ALL_STENO_KEYS:
-        script.stenoState = 0;
-        script.CancelAllStenoKeys();
-        continue;
-      case SF::CANCEL_STENO_KEY: {
-        const uint32_t stenoKey = (uint32_t)script.Pop();
-        if (stenoKey < (uint32_t)StenoKey::COUNT) {
-          const StenoKeyState state = StenoKeyState(1ULL << stenoKey);
-          script.stenoState &= ~state;
-          script.CancelStenoKeys(state);
-        }
-        continue;
-      }
-      case SF::STOP_SOUND:
-        Sound::Stop();
-        continue;
-
-      case SF::PLAY_FREQUENCY: {
-        const uint32_t frequency = (uint32_t)script.Pop();
-        Sound::PlayFrequency(frequency);
-        continue;
-      }
-      case SF::PLAY_SEQUENCE: {
-        const intptr_t offset = script.Pop();
-        const SoundSequenceData *data =
-            (SoundSequenceData *)(script.byteCode + offset);
-        Sound::PlaySequence(data);
-        continue;
-      }
-      case SF::PLAY_WAVEFORM: {
-        const uint32_t sampleRate = (uint32_t)script.Pop();
-        const uint32_t length = (uint32_t)script.Pop();
-        const uint8_t *data = (const uint8_t *)script.Pop();
-        Sound::PlayWaveform(data, length, sampleRate);
-        continue;
-      }
-      case SF::CALL_ALL_RELEASE_SCRIPTS:
-        script.inReleaseAllCount++;
-        for (const size_t buttonIndex : script.buttonState) {
-          script.CallRelease(buttonIndex, script.scriptTime);
-        }
-        script.inReleaseAllCount--;
-        continue;
-      case SF::IS_IN_RELEASE_ALL:
-        script.Push(script.inReleaseAllCount);
-        continue;
-      case SF::GET_PRESS_COUNT:
-        script.Push(script.pressCount);
-        continue;
-      case SF::GET_RELEASE_COUNT:
-        script.Push(script.releaseCount);
-        continue;
-      case SF::IS_STENO_JOIN_NEXT:
-#if JAVELIN_USE_EMBEDDED_STENO
-        script.Push(StenoEngine::GetInstance().IsJoinNext());
-#else
-        script.Push(0);
-#endif
-        continue;
-      case SF::CALL_PRESS:
-        script.CallPress(script.Pop(), script.scriptTime);
-        continue;
-      case SF::CALL_RELEASE:
-        script.CallPress(script.Pop(), script.scriptTime);
-        continue;
-      case SF::PRESS_MOUSE_BUTTON: {
-        const uint32_t mouseButton = (uint32_t)script.Pop();
-        if (mouseButton < 32 && !script.mouseButtonState.IsSet(mouseButton)) {
-          script.mouseButtonState.Set(mouseButton);
-          Mouse::PressButton(mouseButton);
-        }
-        continue;
-      }
-      case SF::RELEASE_MOUSE_BUTTON: {
-        const uint32_t mouseButton = (uint32_t)script.Pop();
-        if (mouseButton < 32 && script.mouseButtonState.IsSet(mouseButton)) {
-          script.mouseButtonState.Clear(mouseButton);
-          Mouse::ReleaseButton(mouseButton);
-        }
-        continue;
-      }
-      case SF::TAP_MOUSE_BUTTON: {
-        const uint32_t mouseButton = (uint32_t)script.Pop();
-        if (mouseButton < 32) {
-          if (script.mouseButtonState.IsSet(mouseButton)) {
-            script.mouseButtonState.Clear(mouseButton);
-          } else {
-            Mouse::PressButton(mouseButton);
-          }
-          Mouse::ReleaseButton(mouseButton);
-        }
-        continue;
-      }
-      case SF::IS_MOUSE_BUTTON_PRESSED: {
-        const uint32_t mouseButton = (uint32_t)script.Pop();
-        int isPressed = 0;
-        if (mouseButton < 32) {
-          isPressed = script.mouseButtonState.IsSet(mouseButton);
-        }
-        script.Push(isPressed);
-        continue;
-      }
-      case SF::MOVE_MOUSE: {
-        const int32_t dy = (int32_t)script.Pop();
-        const int32_t dx = (int32_t)script.Pop();
-        Mouse::Move(dx, dy);
-        continue;
-      }
-      case SF::WHEEL_MOUSE: {
-        const int32_t delta = (int32_t)script.Pop();
-        Mouse::Wheel(delta);
-        continue;
-      }
-      case SF::SET_ENABLE_BUTTON_STATES:
-        ScriptManager::GetInstance().SetAllowButtonStateUpdates(script.Pop() !=
-                                                                0);
-        continue;
-      }
-      continue;
-    }
-    case BC::CALL: {
-      const size_t offset = p[0] + 256 * p[1];
-      p += 2;
-      ExecutionContext localContext;
-      localContext.Run(script, offset);
-      continue;
-    }
-    case BC::RETURN: {
-      intptr_t *p = base;
-      if (frame != script.stackTop) {
-        *p++ = *frame;
-      }
-      script.stackTop = p;
-      return;
-    }
-    case BC::POP:
-      script.Pop();
-      continue;
-    case BC::ENTER_FUNCTION: {
-      const size_t parameterCount = *p++;
-      const size_t localsCount = *p++;
-
-      locals = script.stackTop - parameterCount;
-      if (locals < base) {
-        base = locals;
-      }
-
-      frame = script.stackTop + localsCount;
-      script.stackTop = frame;
-      continue;
-    }
-    case BC::CALL_VALUE: {
-      const size_t offset = script.Pop();
-      if (offset != 0) {
-        ExecutionContext localContext;
-        localContext.Run(script, offset);
-      }
-      continue;
-    }
-    case BC::JUMP_VALUE:
-      p = script.byteCode + script.Pop();
-      continue;
-    case BC::JUMP_SHORT_BEGIN... BC::JUMP_SHORT_END: {
-      const int offset = c + 1 - BC::JUMP_SHORT_BEGIN;
-      p += offset;
-      continue;
-    }
-    case BC::JUMP_LONG:
-      p = script.byteCode + p[0] + 256 * p[1];
-      continue;
-    case BC::JUMP_IF_ZERO_SHORT_BEGIN... BC::JUMP_IF_ZERO_SHORT_END:
-      if (!script.Pop()) {
-        const int offset = c + 1 - BC::JUMP_IF_ZERO_SHORT_BEGIN;
-        p += offset;
-      }
-      continue;
-    case BC::JUMP_IF_ZERO_LONG: {
-      const size_t offset = p[0] + 256 * p[1];
-      p += 2;
-      if (!script.Pop()) {
-        p = script.byteCode + offset;
-      }
-      continue;
-    }
-    case BC::JUMP_IF_NOT_ZERO_SHORT_BEGIN... BC::JUMP_IF_NOT_ZERO_SHORT_END:
-      if (script.Pop()) {
-        const int offset = c + 1 - BC::JUMP_IF_NOT_ZERO_SHORT_BEGIN;
-        p += offset;
-      }
-      continue;
-    case BC::JUMP_IF_NOT_ZERO_LONG: {
-      const size_t offset = p[0] + 256 * p[1];
-      p += 2;
-      if (script.Pop()) {
-        p = script.byteCode + offset;
-      }
-      continue;
-    }
-    }
+    });
+    CONTINUE;
   }
-}
-
-void Script::PrintScriptHistory() {
-  Console::Printf("[");
-  bool first = true;
-  for (const char *event : eventHistory) {
-    if (first) {
-      first = false;
-    } else {
-      Console::Printf(",");
-    }
-    if (event) {
-      Console::Printf("\"%J\"", event);
-    } else {
-      Console::Printf("null");
-    }
+  case BC::OPERATOR_START + (int)OP::NOT:
+    stack.UnaryOp([](intptr_t a) -> intptr_t { return !a; });
+    CONTINUE;
+  case BC::OPERATOR_START + (int)OP::NEGATIVE:
+    stack.UnaryOp([](intptr_t a) -> intptr_t { return -a; });
+    CONTINUE;
+  case BC::OPERATOR_START + (int)OP::MULTIPLY:
+    stack.BinaryOp([](intptr_t a, intptr_t b) -> intptr_t { return a * b; });
+    CONTINUE;
+  case BC::OPERATOR_START + (int)OP::QUOTIENT:
+    stack.BinaryOp([](intptr_t a, intptr_t b) -> intptr_t { return a / b; });
+    // This should just be CONTINUE, but this form causes the compiler to
+    // generate much better code.
+    c = p.ReadU8();
+    goto next2;
+  case BC::OPERATOR_START + (int)OP::REMAINDER:
+    stack.BinaryOp([](intptr_t a, intptr_t b) -> intptr_t { return a % b; });
+    CONTINUE;
+  case BC::OPERATOR_START + (int)OP::ADD:
+    stack.BinaryOp([](intptr_t a, intptr_t b) -> intptr_t { return a + b; });
+    CONTINUE;
+  case BC::OPERATOR_START + (int)OP::SUBTRACT:
+    stack.BinaryOp([](intptr_t a, intptr_t b) -> intptr_t { return a - b; });
+    CONTINUE;
+  case BC::OPERATOR_START + (int)OP::EQUALS:
+    stack.BinaryOp([](intptr_t a, intptr_t b) -> intptr_t { return a == b; });
+    CONTINUE;
+  case BC::OPERATOR_START + (int)OP::NOT_EQUALS:
+    stack.BinaryOp([](intptr_t a, intptr_t b) -> intptr_t { return a != b; });
+    CONTINUE;
+  case BC::OPERATOR_START + (int)OP::LESS_THAN:
+    stack.BinaryOp([](intptr_t a, intptr_t b) -> intptr_t { return a < b; });
+    CONTINUE;
+  case BC::OPERATOR_START + (int)OP::GREATER_THAN:
+    stack.BinaryOp([](intptr_t a, intptr_t b) -> intptr_t { return a > b; });
+    CONTINUE;
+  case BC::OPERATOR_START + (int)OP::LESS_THAN_OR_EQUAL_TO:
+    stack.BinaryOp([](intptr_t a, intptr_t b) -> intptr_t { return a <= b; });
+    CONTINUE;
+  case BC::OPERATOR_START + (int)OP::GREATER_THAN_OR_EQUAL_TO:
+    stack.BinaryOp([](intptr_t a, intptr_t b) -> intptr_t { return a >= b; });
+    CONTINUE;
+  case BC::OPERATOR_START + (int)OP::BITWISE_AND:
+    stack.BinaryOp([](intptr_t a, intptr_t b) -> intptr_t { return a & b; });
+    CONTINUE;
+  case BC::OPERATOR_START + (int)OP::BITWISE_OR:
+    stack.BinaryOp([](intptr_t a, intptr_t b) -> intptr_t { return a | b; });
+    CONTINUE;
+  case BC::OPERATOR_START + (int)OP::BITWISE_XOR:
+    stack.BinaryOp([](intptr_t a, intptr_t b) -> intptr_t { return a ^ b; });
+    CONTINUE;
+  case BC::OPERATOR_START + (int)OP::AND:
+    stack.BinaryOp([](intptr_t a, intptr_t b) -> intptr_t { return a && b; });
+    CONTINUE;
+  case BC::OPERATOR_START + (int)OP::OR:
+    stack.BinaryOp([](intptr_t a, intptr_t b) -> intptr_t { return a || b; });
+    CONTINUE;
+  case BC::OPERATOR_START + (int)OP::SHIFT_LEFT:
+    stack.BinaryOp([](intptr_t a, intptr_t b) -> intptr_t { return a << b; });
+    CONTINUE;
+  case BC::OPERATOR_START + (int)OP::ARITHMETIC_SHIFT_RIGHT:
+    stack.BinaryOp([](intptr_t a, intptr_t b) -> intptr_t { return a >> b; });
+    CONTINUE;
+  case BC::OPERATOR_START + (int)OP::LOGICAL_SHIFT_RIGHT:
+    stack.BinaryOp(
+        [](intptr_t a, intptr_t b) -> intptr_t { return uintptr_t(a) >> b; });
+    CONTINUE;
+  case BC::OPERATOR_START + (int)OP::BYTE_LOOKUP:
+    stack.BinaryOp([=](intptr_t offset, intptr_t index) -> intptr_t {
+      const uint8_t *data = byteCode + offset;
+      return data[index];
+    });
+    CONTINUE;
+  case BC::OPERATOR_START + (int)OP::WORD_LOOKUP:
+    stack.BinaryOp([=](intptr_t offset, intptr_t index) -> intptr_t {
+      const intptr_t *data = (const intptr_t *)(byteCode + offset);
+      return data[index];
+    });
+    CONTINUE;
+  case BC::OPERATOR_START + (int)OP::INCREMENT:
+    stack.UnaryOp([](intptr_t a) -> intptr_t { return a + 1; });
+    CONTINUE;
+  case BC::OPERATOR_START + (int)OP::DECREMENT:
+    stack.UnaryOp([](intptr_t a) -> intptr_t { return a - 1; });
+    CONTINUE;
+  case BC::OPERATOR_START + (int)OP::HALF_WORD_LOOKUP:
+    stack.BinaryOp([=](intptr_t offset, intptr_t index) -> intptr_t {
+      const uint16_t *data = (const uint16_t *)(byteCode + offset);
+      return data[index];
+    });
+    CONTINUE;
+  case BC::CALL_INTERNAL: {
+    stack.WriteBack(*this);
+    const uint8_t function = p.ReadU8();
+    (*functionTable[function])(*this);
+    stack.Load(*this);
+    CONTINUE;
   }
-  Console::Printf("]\n\n");
-}
-
-void Script::RunConsoleCommand(const char *command) {
-  consoleWriter.Reset();
-
-  const uint8_t *result;
-  if (Console::RunCommand(command, consoleWriter)) {
-    consoleWriter.AddTrailingNull();
-    const StenoScriptByteCodeData *bc =
-        (const StenoScriptByteCodeData *)byteCode;
-    result = bc->FindStringOrReturnOriginal(consoleWriter.buffer);
-  } else {
-    result = (const uint8_t *)"Invalid console command";
+  case BC::CALL: {
+    const size_t offset = p.ReadU16();
+    stack.WriteBack(*this);
+    Run(offset);
+    stack.Load(*this);
+    CONTINUE;
   }
+  case BC::RETURN: {
+    intptr_t *p = base;
+    if (frame != stack.GetStackTop()) {
+      *p++ = *frame;
+    }
+    stackTop = p;
+    return;
+  }
+  case BC::POP:
+    stack.Pop();
+    CONTINUE;
+  case BC::ENTER_FUNCTION: {
+    const size_t parameterCount = p.ReadU8();
+    const size_t localsCount = p.ReadU8();
 
-  Push(intptr_t(result - byteCode));
-}
+    locals = stack.GetStackTop() - parameterCount;
 
-void Script::RunGetParameterCommand(const char *parameter) {
-  char *command = Str::Join("get_parameter ", parameter);
-  RunConsoleCommand(command);
-  free(command);
+    // This is necessary when a bytecode optimization changes a tail call
+    // to a jump -- in this case, the base should not be modified.
+    if (locals < base) {
+      base = locals;
+    }
+
+    frame = stack.GetStackTop() + localsCount;
+    stack.SetStackTop(frame);
+    CONTINUE;
+  }
+  case BC::CALL_VALUE: {
+    const size_t offset = stack.Pop();
+    if (offset != 0) {
+      stack.WriteBack(*this);
+      Run(offset);
+      stack.Load(*this);
+    }
+    CONTINUE;
+  }
+  case BC::JUMP_VALUE:
+    p = byteCode + stack.Pop();
+    CONTINUE;
+  case BC::JUMP_SHORT_BEGIN... BC::JUMP_SHORT_END: {
+    const int offset = c + 1 - BC::JUMP_SHORT_BEGIN;
+    p.Advance(offset);
+    CONTINUE;
+  }
+  case BC::JUMP_LONG:
+    p = byteCode + p.GetU16();
+    CONTINUE;
+  case BC::JUMP_IF_ZERO_SHORT_BEGIN... BC::JUMP_IF_ZERO_SHORT_END:
+    if (!stack.Pop()) {
+      const int offset = c + 1 - BC::JUMP_IF_ZERO_SHORT_BEGIN;
+      p.Advance(offset);
+    }
+    CONTINUE;
+  case BC::JUMP_IF_ZERO_LONG: {
+    const size_t offset = p.ReadU16();
+    if (!stack.Pop()) {
+      p = byteCode + offset;
+    }
+    CONTINUE;
+  }
+  case BC::JUMP_IF_NOT_ZERO_SHORT_BEGIN... BC::JUMP_IF_NOT_ZERO_SHORT_END:
+    if (stack.Pop()) {
+      const int offset = c + 1 - BC::JUMP_IF_NOT_ZERO_SHORT_BEGIN;
+      p.Advance(offset);
+    }
+    CONTINUE;
+  case BC::JUMP_IF_NOT_ZERO_LONG: {
+    const size_t offset = p.ReadU16();
+    if (stack.Pop()) {
+      p = byteCode + offset;
+    }
+    CONTINUE;
+  }
+  }
 }
 
 //---------------------------------------------------------------------------
-
-__attribute__((weak)) bool Script::IsWaitingForUserPresence() { return false; }
-__attribute__((weak)) void Script::ReplyUserPresence(bool present) {}
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-#include "unit_test.h"
-
-// Created from script:
-//
-// const SC_A = 4;
-// const SC_B = 5;
-// const SK_S1 = 0;
-//
-// var layer = 0;
-//
-// func onPress0() {
-//   if (layer == 1) {
-//     pressScanCode(SC_A);
-//   } else {
-//     pressStenoKey(SK_S1);
-//   }
-// }
-//
-// func onRelease0() {
-//   if (layer == 1) {
-//     releaseScanCode(SC_A);
-//   } else {
-//     releaseStenoKey(SK_S1);
-//   }
-// }
-//
-// // Mode switch key.
-// func onPress1() {
-//   releaseAll();
-//   layer = !layer;
-// }
-//
-// func onRelease1() {
-// }
-
-const uint8_t TEST_BYTE_CODE[] = {
-    0x4a, 0x53, 0x53, 0x33, 0x36, 0x00, 0x31, 0x00, 0x34, 0x00, 0x12,
-    0x00, 0x1e, 0x00, 0x2a, 0x00, 0x30, 0x00, 0x40, 0x01, 0x77, 0xc3,
-    0x04, 0x90, 0x00, 0x92, 0x00, 0x90, 0x04, 0x92, 0x40, 0x01, 0x77,
-    0xc3, 0x04, 0x90, 0x01, 0x92, 0x00, 0x90, 0x05, 0x92, 0x90, 0x07,
-    0x40, 0x70, 0x48, 0x92, 0x92, 0x00, 0x48, 0x92, 0x92, 0x00, 0x04,
-    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-};
-
-class ScriptTestHelper {
-public:
-  static void TestGlobalInitializer() {
-    Script script(TEST_BYTE_CODE);
-    script.globals[0] = 1;
-    script.globals[1] = 2;
-    script.globals[2] = 3;
-    script.globals[3] = 4;
-    script.ExecuteInitScript(0);
-    assert(script.globals[0] == 0);
-  }
-
-  static void TestPress0AndRelease0() {
-    Script script(TEST_BYTE_CODE);
-    script.ExecuteInitScript(0);
-
-    // Verify S1 is not pressed.
-    assert((script.stenoState & StenoKeyState(1)).IsEmpty());
-
-    script.HandlePress(0, 0);
-
-    // Verify S1 is pressed.
-    assert((script.stenoState & StenoKeyState(1)).IsNotEmpty());
-
-    script.HandleRelease(0, 0);
-
-    // Verify S1 is release.
-    assert((script.stenoState & StenoKeyState(1)).IsEmpty());
-  }
-
-  static void TestPress1ThenPress0() {
-    Script script(TEST_BYTE_CODE);
-    script.ExecuteInitScript(0);
-
-    // Verify S1 and A are not presed.
-    assert((script.stenoState & StenoKeyState(1)).IsEmpty());
-    assert(script.keyState.IsSet(KeyCode::A) == false);
-
-    script.HandlePress(1, 0);
-    script.HandlePress(0, 0);
-
-    // Verify S1 is not pressed.
-    assert((script.stenoState & StenoKeyState(1)).IsEmpty());
-
-    // Verify A is pressed.
-    assert(script.keyState.IsSet(KeyCode::A));
-
-    script.HandleRelease(0, 0);
-
-    // Verify S1 and A are not presed.
-    assert((script.stenoState & StenoKeyState(1)).IsEmpty());
-    assert(script.keyState.IsSet(KeyCode::A) == false);
-  }
-};
-
-TEST_BEGIN("Script: Initializes globals correctly") {
-  ScriptTestHelper::TestGlobalInitializer();
-}
-TEST_END
-
-TEST_BEGIN("Script: Press0 and Release0 causes S1 to toggle") {
-  ScriptTestHelper::TestPress0AndRelease0();
-}
-TEST_END
-
-TEST_BEGIN("Script: Press1 then Press0 causes A to be pressed") {
-  ScriptTestHelper::TestPress1ThenPress0();
-}
-TEST_END
-
 //---------------------------------------------------------------------------

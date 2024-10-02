@@ -1,9 +1,8 @@
 //---------------------------------------------------------------------------
 
 #include "jeff_numbers_dictionary.h"
-#include "../console.h"
+#include "../list.h"
 #include "../mem.h"
-#include "../steno_key_code.h"
 #include "../str.h"
 #include "../stroke.h"
 #include <assert.h>

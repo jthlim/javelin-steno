@@ -2,7 +2,6 @@
 
 #pragma once
 #include "../sized_list.h"
-#include "../stroke.h"
 #include "../xip_pointer.h"
 #include "orthospelling_data.h"
 #include <stddef.h>

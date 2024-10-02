@@ -1,7 +1,6 @@
 //---------------------------------------------------------------------------
 
 #include "split_usb_status.h"
-#include "../clock.h"
 #include "../script_manager.h"
 #include <assert.h>
 #include <string.h>
@@ -70,13 +69,13 @@ void SplitUsbStatus::OnDataReceived(const void *data, size_t length) {
   const UsbStatus oldStatus = instance;
   memcpy(&instance, data, sizeof(UsbStatus));
   if (instance.IsConnected() != oldStatus.IsConnected()) {
-    ScriptManager::ExecuteScript(ScriptId::CONNECTION_UPDATE);
+    ScriptManager::ExecuteScript(ButtonScriptId::CONNECTION_UPDATE);
   }
   if (instance.IsPowered() != oldStatus.IsPowered()) {
-    ScriptManager::ExecuteScript(ScriptId::BATTERY_UPDATE);
+    ScriptManager::ExecuteScript(ButtonScriptId::BATTERY_UPDATE);
   }
   if (instance.GetKeyboardLedStatus() != oldStatus.GetKeyboardLedStatus()) {
-    ScriptManager::ExecuteScript(ScriptId::KEYBOARD_LED_STATUS_UPDATE);
+    ScriptManager::ExecuteScript(ButtonScriptId::KEYBOARD_LED_STATUS_UPDATE);
   }
 }
 
@@ -84,7 +83,7 @@ void SplitUsbStatus::OnConnectionReset() {
   dirty = true;
   Mem::Clear(GetRemoteUsbStatus());
 
-  ScriptManager::ExecuteScript(ScriptId::CONNECTION_UPDATE);
+  ScriptManager::ExecuteScript(ButtonScriptId::CONNECTION_UPDATE);
 }
 
 //---------------------------------------------------------------------------

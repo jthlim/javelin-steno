@@ -11,7 +11,7 @@ UsbStatus UsbStatus::instance;
 
 void UsbStatus::SetKeyboardLedStatus(KeyboardLedStatus status) {
   ledStatus = status;
-  ScriptManager::ExecuteScript(ScriptId::KEYBOARD_LED_STATUS_UPDATE);
+  ScriptManager::ExecuteScript(ButtonScriptId::KEYBOARD_LED_STATUS_UPDATE);
 }
 
 //---------------------------------------------------------------------------
