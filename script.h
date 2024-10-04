@@ -29,6 +29,8 @@ public:
     return result;
   }
 
+  void PrintScriptGlobals() const;
+
   bool IsScriptEmpty(size_t offset) const;
   bool IsScriptIndexEmpty(size_t index) const {
     return IsScriptEmpty(byteCode->scriptOffsets[index]);

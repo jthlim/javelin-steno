@@ -98,8 +98,8 @@ private:
     AddToDataBlockResult(size_t offset, size_t length)
         : offset(offset), length(length) {}
 
-    size_t offset;
-    size_t length;
+    const size_t offset;
+    const size_t length;
   };
 
   AddToDataBlockResult AddToDataBlock(const StenoStroke *strokes,

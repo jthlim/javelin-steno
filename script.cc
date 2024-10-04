@@ -1,6 +1,7 @@
 //---------------------------------------------------------------------------
 
 #include "script.h"
+#include "console.h"
 #include "mem.h"
 
 #include <assert.h>
@@ -31,6 +32,22 @@ void Script::ExecuteScript(size_t offset) {
 #if DEBUG
   assert(stackTop == start);
 #endif
+}
+
+void Script::PrintScriptGlobals() const {
+  Console::Printf("{");
+  bool firstTime = true;
+  for (int i = 0; i < 256; ++i) {
+    if (globals[i]) {
+      if (firstTime) {
+        firstTime = false;
+      } else {
+        Console::Printf(",");
+      }
+      Console::Printf("\n\t\"%d\": \"%x\"", i, globals[i]);
+    }
+  }
+  Console::Printf("\n}\n\n");
 }
 
 //---------------------------------------------------------------------------
@@ -262,92 +279,91 @@ next2:
     CONTINUE;
   }
   case BC::OPERATOR_START + (int)OP::NOT:
-    stack.UnaryOp([](intptr_t a) -> intptr_t { return !a; });
+    stack.UnaryOp([](intptr_t a) { return (intptr_t)!a; });
     CONTINUE;
   case BC::OPERATOR_START + (int)OP::NEGATIVE:
-    stack.UnaryOp([](intptr_t a) -> intptr_t { return -a; });
+    stack.UnaryOp([](intptr_t a) { return -a; });
     CONTINUE;
   case BC::OPERATOR_START + (int)OP::MULTIPLY:
-    stack.BinaryOp([](intptr_t a, intptr_t b) -> intptr_t { return a * b; });
+    stack.BinaryOp([](intptr_t a, intptr_t b) { return a * b; });
     CONTINUE;
   case BC::OPERATOR_START + (int)OP::QUOTIENT:
-    stack.BinaryOp([](intptr_t a, intptr_t b) -> intptr_t { return a / b; });
+    stack.BinaryOp([](intptr_t a, intptr_t b) { return a / b; });
     // This should just be CONTINUE, but this form causes the compiler to
     // generate much better code.
     c = p.ReadU8();
     goto next2;
   case BC::OPERATOR_START + (int)OP::REMAINDER:
-    stack.BinaryOp([](intptr_t a, intptr_t b) -> intptr_t { return a % b; });
+    stack.BinaryOp([](intptr_t a, intptr_t b) { return a % b; });
     CONTINUE;
   case BC::OPERATOR_START + (int)OP::ADD:
-    stack.BinaryOp([](intptr_t a, intptr_t b) -> intptr_t { return a + b; });
+    stack.BinaryOp([](intptr_t a, intptr_t b) { return a + b; });
     CONTINUE;
   case BC::OPERATOR_START + (int)OP::SUBTRACT:
-    stack.BinaryOp([](intptr_t a, intptr_t b) -> intptr_t { return a - b; });
+    stack.BinaryOp([](intptr_t a, intptr_t b) { return a - b; });
     CONTINUE;
   case BC::OPERATOR_START + (int)OP::EQUALS:
-    stack.BinaryOp([](intptr_t a, intptr_t b) -> intptr_t { return a == b; });
+    stack.BinaryOp([](intptr_t a, intptr_t b) { return a == b; });
     CONTINUE;
   case BC::OPERATOR_START + (int)OP::NOT_EQUALS:
-    stack.BinaryOp([](intptr_t a, intptr_t b) -> intptr_t { return a != b; });
+    stack.BinaryOp([](intptr_t a, intptr_t b) { return a != b; });
     CONTINUE;
   case BC::OPERATOR_START + (int)OP::LESS_THAN:
-    stack.BinaryOp([](intptr_t a, intptr_t b) -> intptr_t { return a < b; });
+    stack.BinaryOp([](intptr_t a, intptr_t b) { return a < b; });
     CONTINUE;
   case BC::OPERATOR_START + (int)OP::GREATER_THAN:
-    stack.BinaryOp([](intptr_t a, intptr_t b) -> intptr_t { return a > b; });
+    stack.BinaryOp([](intptr_t a, intptr_t b) { return a > b; });
     CONTINUE;
   case BC::OPERATOR_START + (int)OP::LESS_THAN_OR_EQUAL_TO:
-    stack.BinaryOp([](intptr_t a, intptr_t b) -> intptr_t { return a <= b; });
+    stack.BinaryOp([](intptr_t a, intptr_t b) { return a <= b; });
     CONTINUE;
   case BC::OPERATOR_START + (int)OP::GREATER_THAN_OR_EQUAL_TO:
-    stack.BinaryOp([](intptr_t a, intptr_t b) -> intptr_t { return a >= b; });
+    stack.BinaryOp([](intptr_t a, intptr_t b) { return a >= b; });
     CONTINUE;
   case BC::OPERATOR_START + (int)OP::BITWISE_AND:
-    stack.BinaryOp([](intptr_t a, intptr_t b) -> intptr_t { return a & b; });
+    stack.BinaryOp([](intptr_t a, intptr_t b) { return a & b; });
     CONTINUE;
   case BC::OPERATOR_START + (int)OP::BITWISE_OR:
-    stack.BinaryOp([](intptr_t a, intptr_t b) -> intptr_t { return a | b; });
+    stack.BinaryOp([](intptr_t a, intptr_t b) { return a | b; });
     CONTINUE;
   case BC::OPERATOR_START + (int)OP::BITWISE_XOR:
-    stack.BinaryOp([](intptr_t a, intptr_t b) -> intptr_t { return a ^ b; });
+    stack.BinaryOp([](intptr_t a, intptr_t b) { return a ^ b; });
     CONTINUE;
   case BC::OPERATOR_START + (int)OP::AND:
-    stack.BinaryOp([](intptr_t a, intptr_t b) -> intptr_t { return a && b; });
+    stack.BinaryOp([](intptr_t a, intptr_t b) { return a && b; });
     CONTINUE;
   case BC::OPERATOR_START + (int)OP::OR:
-    stack.BinaryOp([](intptr_t a, intptr_t b) -> intptr_t { return a || b; });
+    stack.BinaryOp([](intptr_t a, intptr_t b) { return a || b; });
     CONTINUE;
   case BC::OPERATOR_START + (int)OP::SHIFT_LEFT:
-    stack.BinaryOp([](intptr_t a, intptr_t b) -> intptr_t { return a << b; });
+    stack.BinaryOp([](intptr_t a, intptr_t b) { return a << b; });
     CONTINUE;
   case BC::OPERATOR_START + (int)OP::ARITHMETIC_SHIFT_RIGHT:
-    stack.BinaryOp([](intptr_t a, intptr_t b) -> intptr_t { return a >> b; });
+    stack.BinaryOp([](intptr_t a, intptr_t b) { return a >> b; });
     CONTINUE;
   case BC::OPERATOR_START + (int)OP::LOGICAL_SHIFT_RIGHT:
-    stack.BinaryOp(
-        [](intptr_t a, intptr_t b) -> intptr_t { return uintptr_t(a) >> b; });
+    stack.BinaryOp([](intptr_t a, intptr_t b) { return uintptr_t(a) >> b; });
     CONTINUE;
   case BC::OPERATOR_START + (int)OP::BYTE_LOOKUP:
-    stack.BinaryOp([=](intptr_t offset, intptr_t index) -> intptr_t {
+    stack.BinaryOp([=](intptr_t offset, intptr_t index) {
       const uint8_t *data = byteCode + offset;
       return data[index];
     });
     CONTINUE;
   case BC::OPERATOR_START + (int)OP::WORD_LOOKUP:
-    stack.BinaryOp([=](intptr_t offset, intptr_t index) -> intptr_t {
+    stack.BinaryOp([=](intptr_t offset, intptr_t index) {
       const intptr_t *data = (const intptr_t *)(byteCode + offset);
       return data[index];
     });
     CONTINUE;
   case BC::OPERATOR_START + (int)OP::INCREMENT:
-    stack.UnaryOp([](intptr_t a) -> intptr_t { return a + 1; });
+    stack.UnaryOp([](intptr_t a) { return a + 1; });
     CONTINUE;
   case BC::OPERATOR_START + (int)OP::DECREMENT:
-    stack.UnaryOp([](intptr_t a) -> intptr_t { return a - 1; });
+    stack.UnaryOp([](intptr_t a) { return a - 1; });
     CONTINUE;
   case BC::OPERATOR_START + (int)OP::HALF_WORD_LOOKUP:
-    stack.BinaryOp([=](intptr_t offset, intptr_t index) -> intptr_t {
+    stack.BinaryOp([=](intptr_t offset, intptr_t index) {
       const uint16_t *data = (const uint16_t *)(byteCode + offset);
       return data[index];
     });

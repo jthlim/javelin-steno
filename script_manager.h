@@ -42,6 +42,8 @@ public:
                                                const char *commandLine);
   static void DisableButtonStateUpdates_Binding(void *context,
                                                 const char *commandLine);
+  static void PrintScriptGlobals_Binding(void *context,
+                                         const char *commandLine);
   void AddConsoleCommands(Console &console);
   void PrintScriptHistory() { script.PrintScriptHistory(); }
 

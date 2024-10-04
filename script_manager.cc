@@ -9,6 +9,7 @@
 //---------------------------------------------------------------------------
 
 #define CONSOLE_LOG_BUTTON_PRESSES 0
+#define ENABLE_PRINT_SCRIPT_GLOBALS_CONSOLE_COMMAND 0
 
 //---------------------------------------------------------------------------
 
@@ -34,9 +35,8 @@ void ScriptManager::Update(const ButtonState &newButtonState,
     return;
   }
 
-  const ButtonState changedButtons = buttonState ^ newButtonState;
-  const ButtonState pressedButtons = changedButtons & newButtonState;
-  const ButtonState releasedButtons = changedButtons ^ pressedButtons;
+  const ButtonState pressedButtons = newButtonState & ~buttonState;
+  const ButtonState releasedButtons = buttonState & ~newButtonState;
 
   buttonState = newButtonState;
 
@@ -168,6 +168,11 @@ void ScriptManager::DisableButtonStateUpdates_Binding(void *context,
   Console::SendOk();
 }
 
+void ScriptManager::PrintScriptGlobals_Binding(void *context,
+                                               const char *commandLine) {
+  ((ScriptManager *)context)->script.PrintScriptGlobals();
+}
+
 void ScriptManager::AddConsoleCommands(Console &console) {
   console.RegisterCommand("enable_script_events", "Enables events from scripts",
                           EnableScriptEvents_Binding, &script);
@@ -180,6 +185,11 @@ void ScriptManager::AddConsoleCommands(Console &console) {
   console.RegisterCommand("disable_button_state_updates",
                           "Disables button state updates",
                           DisableButtonStateUpdates_Binding, this);
+#if ENABLE_PRINT_SCRIPT_GLOBALS_CONSOLE_COMMAND
+  console.RegisterCommand("print_script_globals",
+                          "Prints non-zero script globals",
+                          PrintScriptGlobals_Binding, this);
+#endif
 }
 
 //---------------------------------------------------------------------------

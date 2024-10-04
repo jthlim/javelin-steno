@@ -9,12 +9,16 @@
 class BitFieldIterator {
 public:
   BitFieldIterator(const size_t *p, const size_t *end) : p(p), end(end) {
-    MoveNext();
+    UpdateValue();
   }
 
-  bool operator!=(const size_t *end) const { return value != 0 || p != end; }
+  bool operator!=(size_t _) const { return value != 0; }
 
-  void operator++() { MoveNext(); }
+  void operator++() {
+    // Pull off lowest bit.
+    value = value & (value - 1);
+    UpdateValue();
+  }
 
   size_t operator*() const {
     return Bit<sizeof(size_t)>::CountTrailingZeros(value) + bitOffset;
@@ -26,9 +30,7 @@ private:
   const size_t *p;
   const size_t *end;
 
-  void MoveNext() {
-    // Pull off lowest bit.
-    value = value & (value - 1);
+  void UpdateValue() {
     while (value == 0 && p < end) {
       value = *p++;
       bitOffset += 8 * sizeof(size_t);
@@ -65,9 +67,9 @@ public:
   // Returns the bitmask for the specified range [startIndex, endIndex).
   // Undefined results if it crosses a size_t boundary.
   size_t GetRange(size_t startIndex, size_t endIndex) const {
-    size_t value = data[startIndex / BITS_PER_WORD];
-    size_t topClearShift = BITS_PER_WORD - endIndex % BITS_PER_WORD;
-    size_t bottomClearShift = startIndex % BITS_PER_WORD;
+    const size_t value = data[startIndex / BITS_PER_WORD];
+    const size_t topClearShift = BITS_PER_WORD - endIndex % BITS_PER_WORD;
+    const size_t bottomClearShift = startIndex % BITS_PER_WORD;
     return value << topClearShift >> (bottomClearShift + topClearShift);
   }
 
@@ -143,7 +145,8 @@ public:
     return BitFieldIterator(b.data, b.data + WORD_COUNT);
   }
 
-  friend const size_t *end(const BitField &b) { return b.data + WORD_COUNT; }
+  // Dummy response, as BitFieldIterator does not use this.
+  friend const size_t end(const BitField &b) { return 0; }
 
   static const size_t BIT_COUNT = N;
 

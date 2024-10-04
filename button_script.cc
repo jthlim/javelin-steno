@@ -260,11 +260,12 @@ public:
   }
 
   static void PressAll(ButtonScript &script) {
-    script.inPressAllCount++;
+    const uint8_t pressAllCount = script.inPressAllCount;
+    script.inPressAllCount = pressAllCount + 1;
     for (const size_t buttonIndex : script.buttonState) {
       script.CallPress(buttonIndex, script.scriptTime);
     }
-    script.inPressAllCount--;
+    script.inPressAllCount = pressAllCount;
   }
 
   static void SendText(ButtonScript &script) {
@@ -651,11 +652,12 @@ public:
   }
 
   static void CallAllReleaseScripts(ButtonScript &script) {
-    script.inReleaseAllCount++;
+    const uint8_t releaseAllCount = script.inReleaseAllCount;
+    script.inReleaseAllCount = releaseAllCount + 1;
     for (const size_t buttonIndex : script.buttonState) {
       script.CallRelease(buttonIndex, script.scriptTime);
     }
-    script.inReleaseAllCount--;
+    script.inReleaseAllCount = releaseAllCount;
   }
 
   static void IsInReleaseAll(ButtonScript &script) {
