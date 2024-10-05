@@ -195,6 +195,15 @@ void Script::Run(size_t offset) {
 
 #define CONTINUE goto next1;
 
+#if JAVELIN_CPU_CORTEX_M4
+// This is the same effect as CONTINUE, but generates better code for M4.
+#define CONTINUE2                                                              \
+  c = p.ReadU8();                                                              \
+  goto next2;
+#else
+#define CONTINUE2 goto next1;
+#endif
+
 next1:
   uint32_t c = p.ReadU8();
 
@@ -289,10 +298,7 @@ next2:
     CONTINUE;
   case BC::OPERATOR_START + (int)OP::QUOTIENT:
     stack.BinaryOp([](intptr_t a, intptr_t b) { return a / b; });
-    // This should just be CONTINUE, but this form causes the compiler to
-    // generate much better code.
-    c = p.ReadU8();
-    goto next2;
+    CONTINUE2;
   case BC::OPERATOR_START + (int)OP::REMAINDER:
     stack.BinaryOp([](intptr_t a, intptr_t b) { return a % b; });
     CONTINUE;
