@@ -45,8 +45,7 @@ size_t StenoFullMapDictionaryStrokesDefinition::GetOffset(size_t index) const {
   const StenoFullHashMapEntryBlock &block = offsets[blockIndex];
 
   // Take advantage of sign bit to test presence.
-  uint32_t mask = block.mask;
-  mask <<= (31 - bitIndex);
+  const uint32_t mask = block.mask << (31 - bitIndex);
   if ((mask & 0x80000000) == 0) {
     return (size_t)-1;
   }

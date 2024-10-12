@@ -62,8 +62,7 @@ StenoCompactMapDictionaryStrokesDefinition::GetOffset(size_t index) const {
   const StenoCompactHashMapEntryBlock &block = offsets[blockIndex];
 
   // Take advantage of sign bit to test presence.
-  uint32_t mask = block.masks[maskIndex];
-  mask <<= (31 - bitIndex);
+  const uint32_t mask = block.masks[maskIndex] << (31 - bitIndex);
   if ((mask & 0x80000000) == 0) {
     return (size_t)-1;
   }

@@ -29,6 +29,23 @@ __attribute__((naked)) uint32_t Bit<4>::PopCount(uint32_t v) {
     bx   lr
   )");
 }
+#elif JAVELIN_CPU_CORTEX_M4
+
+__attribute__((noinline)) uint32_t Bit<4>::PopCount(uint32_t v) {
+  uint32_t temp;
+  asm volatile(R"(
+    bic %1, %0, #0x55555555
+    sub %0, %0, %1, lsr #1
+    bic %1, %0, #0x33333333
+    and %0, %0, #0x33333333
+    add %0, %0, %1, lsr #2
+    add %0, %0, %0, lsr #4
+    bic %1, %0, #0x0f0f0f0f
+    usad8 %0, %0, %1
+  )"
+               : "+r"(v), "=r"(temp));
+  return v;
+}
 #else
 
 uint32_t Bit<4>::PopCount(uint32_t v) {
