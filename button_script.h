@@ -23,6 +23,7 @@ enum class ButtonScriptId {
   U2F_WINK,
   STENO_MODE_UPDATE,
   BLE_PAIR_COMPLETE,
+  CONSOLE_HANDLER,
 
   COUNT,
 };

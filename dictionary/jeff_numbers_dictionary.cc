@@ -1,7 +1,6 @@
 //---------------------------------------------------------------------------
 
 #include "jeff_numbers_dictionary.h"
-#include "../list.h"
 #include "../mem.h"
 #include "../str.h"
 #include "../stroke.h"

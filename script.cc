@@ -88,6 +88,12 @@ public:
 #if JAVELIN_CPU_CORTEX_M4
     intptr_t a, b;
     asm("ldrd %0, %1, [%r2, #-8]!" : "=r"(a), "=r"(b), "+r"(p));
+#elif JAVELIN_CPU_CORTEX_M0
+    intptr_t a, b;
+    asm("sub %2, #8\n\t"
+        "ldr %0, [%2]\n\t"
+        "ldr %1, [%2, #4]\n\t"
+        : "=r"(a), "=r"(b), "+r"(p));
 #else
     const intptr_t b = Pop();
     const intptr_t a = Pop();
@@ -99,6 +105,12 @@ public:
 #if JAVELIN_CPU_CORTEX_M4
     intptr_t a, b;
     asm("ldrd %0, %1, [%r2, #-8]!" : "=r"(a), "=r"(b), "+r"(p));
+#elif JAVELIN_CPU_CORTEX_M0
+    intptr_t a, b;
+    asm("sub %2, #8\n\t"
+        "ldr %0, [%2]\n\t"
+        "ldr %1, [%2, #4]\n\t"
+        : "=r"(a), "=r"(b), "+r"(p));
 #else
     const intptr_t b = Pop();
     const intptr_t a = Pop();
@@ -195,7 +207,11 @@ void Script::Run(size_t offset) {
 
 #define CONTINUE goto next1;
 
+next1:
+  uint32_t c = p.ReadU8();
+
 #if JAVELIN_CPU_CORTEX_M4
+next2:
 // This is the same effect as CONTINUE, but generates better code for M4.
 #define CONTINUE2                                                              \
   c = p.ReadU8();                                                              \
@@ -204,10 +220,6 @@ void Script::Run(size_t offset) {
 #define CONTINUE2 goto next1;
 #endif
 
-next1:
-  uint32_t c = p.ReadU8();
-
-next2:
   switch (c) {
   case BC::PUSH_CONSTANT_START... BC::PUSH_CONSTANT_END:
     stack.Push(c);

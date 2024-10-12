@@ -2,16 +2,12 @@
 
 #include "engine.h"
 
-#include "clock.h"
 #include "console.h"
 #include "dictionary/user_dictionary.h"
 #include "flash.h"
 #include "hal/external_flash.h"
 #include "host_layout.h"
-#include "key.h"
-#include "list.h"
 #include "orthography.h"
-#include "pattern.h"
 #include "segment.h"
 #include "steno_key_code_buffer.h"
 #include "str.h"
@@ -185,7 +181,7 @@ void StenoEngine::SendText(const uint8_t *p) {
 
   nextConversionBuffer.keyCodeBuffer.Reset();
   nextConversionBuffer.keyCodeBuffer.AppendTextNoCaseModeOverride(
-      ccp, strlen(ccp), StenoCaseMode::NORMAL);
+      ccp, Str::Length(ccp), StenoCaseMode::NORMAL);
 
   emitter.Emit(nextConversionBuffer.keyCodeBuffer);
 }
@@ -218,6 +214,7 @@ __attribute__((weak)) void StenoEngine::Pump() {}
 
 #if RUN_TESTS
 
+#include "key.h"
 #include "key_code.h"
 #include "unit_test.h"
 #include <stdio.h>

@@ -106,11 +106,14 @@ void ButtonScript::PrintInfo() const {
 
 //---------------------------------------------------------------------------
 
-struct ButtonScript::TimerContext final : public TimerHandler,
-                                          public JavelinMallocAllocate {
+class ButtonScript::TimerContext final : public TimerHandler,
+                                         public JavelinMallocAllocate {
+
+public:
   TimerContext(ButtonScript *script, size_t offset)
       : script(script), offset(offset) {}
 
+private:
   ButtonScript *script;
   size_t offset;
 
