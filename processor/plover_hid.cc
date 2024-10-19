@@ -36,14 +36,14 @@ constexpr uint8_t PLOVER_HID_LOOKUP[] = {
     17, // NUM2
     17, // NUM3
     17, // NUM4
-    17, // NUM5
-    17, // NUM6
-    17, // NUM7
-    17, // NUM8
-    17, // NUM9
-    17, // NUM10
-    17, // NUM11
-    17, // NUM12
+    28, // NUM5
+    27, // NUM6
+    26, // NUM7
+    25, // NUM8
+    24, // NUM9
+    39, // NUM10
+    38, // NUM11
+    37, // NUM12
     16, // FUNCTION
     31, // POWER
     30, // RES1
