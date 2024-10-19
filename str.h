@@ -40,6 +40,10 @@ public:
     return strcmp(a, b) == 0;
   }
 
+  static inline int Compare(const char *a, const char *b) {
+    return strcmp(a, b);
+  }
+
   static inline bool ShortEq(const char *a, const char *b) {
     while (*a == *b) {
       if (!*a) {

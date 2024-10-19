@@ -3,8 +3,8 @@
 #include "key_press_parser.h"
 
 #include "key_code.h"
+#include "str.h"
 #include "unicode.h"
-#include <string.h>
 
 //---------------------------------------------------------------------------
 
@@ -224,7 +224,7 @@ static const KeyCodeName *GetKeyCodeName(const char *name) {
 
   while (left < right) {
     const size_t mid = (left + right) / 2;
-    const int comparison = strcmp(name, KEYS[mid].name);
+    const int comparison = Str::Compare(name, KEYS[mid].name);
     if (comparison < 0) {
       right = mid;
     } else if (comparison > 0) {
@@ -297,7 +297,7 @@ TEST_BEGIN("KeyPressParser tests") {
   assert(GetKeyCodeName("space")->keyCode == KeyCode::SPACE);
 
   const char *test = "Shift_L(h a p) p y";
-  StenoKeyPressTokenizer tokenizer(test, test + strlen(test));
+  StenoKeyPressTokenizer tokenizer(test, test + Str::Length(test));
   assert(tokenizer.GetNext() ==
          StenoKeyPressToken(StenoKeyPressToken::Type::KEY, KeyCode::L_SHIFT));
   assert(tokenizer.GetNext() ==

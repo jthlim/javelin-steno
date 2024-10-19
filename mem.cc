@@ -24,12 +24,25 @@ bool AlignedMem<1>::ConstantTimeEq(const void *p, const void *q,
 void AlignedMem<sizeof(size_t)>::Clear(void *p, size_t length) {
   assert(length % sizeof(size_t) == 0);
 
+#if JAVELIN_CPU_CORTEX_M4
+  register int r1 __asm__("r4") = 0;
+  register int r2 __asm__("r5") = 0;
+  register int r3 __asm__("r6") = 0;
+  register int r4 __asm__("r7") = 0;
+  while (length >= 16) {
+    asm volatile("stmia %0!, {%1, %2, %3, %4}"
+                 : "+r"(p)
+                 : "r"(r1), "r"(r2), "r"(r3), "r"(r4));
+    length -= 16;
+  }
+#else
   void *pEnd = (char *)p + length;
   size_t *sp = (size_t *)p;
 
   while (sp < pEnd) {
     *sp++ = 0;
   }
+#endif
 }
 
 bool AlignedMem<sizeof(size_t)>::ConstantTimeEq(const void *p, const void *q,

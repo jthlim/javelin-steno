@@ -76,10 +76,9 @@ void StenoDictionaryList::ReverseLookup(
   stats.reverseLookupCount++;
 #endif
   for (const StenoDictionaryListEntry &entry : dictionaries) {
-    if (!entry.IsEnabled()) {
-      continue;
+    if (entry.IsEnabled()) {
+      entry->ReverseLookup(lookup);
     }
-    entry->ReverseLookup(lookup);
   }
 }
 
@@ -145,7 +144,8 @@ void StenoDictionaryList::ListDictionaries() const {
   bool first = true;
   Console::Printf("[\n");
   for (const StenoDictionaryListEntry &entry : dictionaries) {
-    if (entry->GetName()[0] == '#') {
+    const char *name = entry->GetName();
+    if (name[0] == '#') {
       continue;
     }
     if (first) {
@@ -153,7 +153,7 @@ void StenoDictionaryList::ListDictionaries() const {
     } else {
       Console::Printf(",\n");
     }
-    Console::Printf(" {\"dictionary\":\"%J\",\"enabled\":%B}", entry->GetName(),
+    Console::Printf(" {\"dictionary\":\"%J\",\"enabled\":%B}", name,
                     entry.IsEnabled());
   }
   Console::Printf("\n]\n\n");

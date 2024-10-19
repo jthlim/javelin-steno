@@ -399,7 +399,7 @@ void StenoKeyCodeBuffer::ProcessOrthographicSuffix(const char *text,
     state.caseMode = GetNextLetterCaseMode(caseMode);
   }
 
-  AppendTextNoCaseModeOverride(pWord, strlen(pWord), state.caseMode);
+  AppendTextNoCaseModeOverride(pWord, Str::Length(pWord), state.caseMode);
   state.caseMode = state.GetNextWordCaseMode();
 
   free(word);
@@ -538,7 +538,7 @@ TEST_BEGIN("StenoKeyCodeBuffer tests") {
   StenoKeyCodeBuffer *buffer = new StenoKeyCodeBuffer();
 
   const char *test = "Shift_L(h a p) p y";
-  buffer->ProcessKeyPresses(test, test + strlen(test));
+  buffer->ProcessKeyPresses(test, test + Str::Length(test));
 
   // clang-format off
   assert(buffer->buffer[0] == StenoKeyCode::CreateRawKeyCodePress(KeyCode::L_SHIFT));

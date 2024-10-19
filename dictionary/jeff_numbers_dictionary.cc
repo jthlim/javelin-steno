@@ -216,7 +216,7 @@ StenoJeffNumbersDictionary::LookupInternal(
       result = ToWords(result);
       if ((control & StrokeMask::WL).IsNotEmpty()) {
         // Ordinal words
-        const size_t length = strlen(result);
+        const size_t length = Str::Length(result);
         if (EndsWith(result, length, "ty")) {
           // cSpell: disable-next-line
           result = ReplaceSuffix(result, length, 1, "ieth");

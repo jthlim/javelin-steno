@@ -416,7 +416,7 @@ bool StenoKeyCodeBuffer::ProcessFunction(const List<char *> &parameters) {
     const size_t mid = (left + right) >> 1;
 
     const KeyCodeFunctionEntry &entry = HANDLERS[mid];
-    const int compare = strcmp(parameters[0], entry.name);
+    const int compare = Str::Compare(parameters[0], entry.name);
     if (compare < 0) {
       right = mid;
     } else if (compare > 0) {

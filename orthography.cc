@@ -304,7 +304,7 @@ void StenoCompiledOrthography::AddCandidates(BestCandidate &bestCandidate,
                                              int defaultScore) const {
   const size_t MAXIMUM_PREFIX_LENGTH = 8;
 
-  const size_t wordLength = strlen(word);
+  const size_t wordLength = Str::Length(word);
   const size_t offset = wordLength > MAXIMUM_PREFIX_LENGTH
                             ? wordLength - MAXIMUM_PREFIX_LENGTH
                             : 0;
@@ -325,7 +325,7 @@ void StenoCompiledOrthography::AddCandidates(BestCandidate &bestCandidate,
 
     char *candidate = match.Replace(data.rules[i].replacement);
     if (offset != 0) {
-      const size_t candidateWithNulLength = strlen(candidate) + 1;
+      const size_t candidateWithNulLength = Str::Length(candidate) + 1;
       char *fullCandidate = (char *)malloc(offset + candidateWithNulLength);
       memcpy(fullCandidate, word, offset);
       memcpy(fullCandidate + offset, candidate, candidateWithNulLength);

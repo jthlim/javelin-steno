@@ -106,7 +106,7 @@ void Console::WriteAsJson(const char *data, char *buffer) {
 }
 
 void Console::WriteAsJson(const char *data) {
-  const size_t length = strlen(data);
+  const size_t length = Str::Length(data);
   char *buffer = (char *)malloc(2 * length);
   WriteAsJson(data, buffer);
   free(buffer);
@@ -212,7 +212,7 @@ void Console::ProcessLineBuffer() {
 const ConsoleCommand *Console::GetCommand(const char *buffer) {
   for (size_t i = 0; i < commandCount; ++i) {
     if (Str::HasPrefix(buffer, commands[i].command) &&
-        Unicode::IsWhitespace(buffer[strlen(commands[i].command)])) {
+        Unicode::IsWhitespace(buffer[Str::Length(commands[i].command)])) {
       return &commands[i];
     }
   }

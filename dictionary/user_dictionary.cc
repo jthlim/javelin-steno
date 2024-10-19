@@ -254,7 +254,7 @@ bool StenoUserDictionary::Add(const StenoStroke *strokes, size_t length,
 StenoUserDictionary::AddToDataBlockResult
 StenoUserDictionary::AddToDataBlock(const StenoStroke *strokes, uint32_t length,
                                     const char *word) {
-  const size_t wordLength = strlen(word);
+  const size_t wordLength = Str::Length(word);
 
   // Need to store null terminator + round up to nearest 4 bytes.
   const size_t wordStorageLength = (wordLength + 4) & -4;
@@ -333,7 +333,7 @@ bool StenoUserDictionary::AddToReverseHashTable(const char *word,
     return false;
   }
 
-  size_t entryIndex = Crc32(word, strlen(word));
+  size_t entryIndex = Crc32(word, Str::Length(word));
 
   for (int probeCount = 0; probeCount < 64; ++probeCount) {
     entryIndex &= activeDescriptor->data.hashTableSize - 1;
@@ -402,7 +402,7 @@ bool StenoUserDictionary::RemoveFromReverseHashTable(
   }
 
   const char *text = entryToDelete->GetText();
-  size_t entryIndex = Crc32(text, strlen(text));
+  size_t entryIndex = Crc32(text, Str::Length(text));
 
   for (;;) {
     entryIndex &= activeDescriptor->data.hashTableSize - 1;

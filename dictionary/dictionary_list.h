@@ -46,10 +46,7 @@ struct StenoDictionaryListEntry {
   }
 
   bool ShouldPrintDictionary(const char *name) const {
-    if (name) {
-      return Str::Eq(dictionary->GetName(), name);
-    }
-    return IsEnabled();
+    return name ? Str::Eq(dictionary->GetName(), name) : IsEnabled();
   }
 };
 

@@ -29,7 +29,7 @@ StenoReverseMapDictionary::FindMapDataLookup(const char *text) const {
   size_t indexRight = indexSize;
   while (indexLeft + 1 < indexRight) {
     const size_t mid = (indexLeft + indexRight) >> 1;
-    const int compare = strcmp(text, (const char *)index[mid]);
+    const int compare = Str::Compare(text, (const char *)index[mid]);
     if (compare < 0) {
       indexRight = mid;
     } else {
@@ -50,7 +50,7 @@ StenoReverseMapDictionary::FindMapDataLookup(const char *text) const {
 
     const uint8_t *wordStart = StenoTextBlock::FindPreviousWordStart(mid);
 
-    // Inline strcmp because the end of the match is useful.
+    // Inline Str::Compare because the end of the match is useful.
     const uint8_t *p = wordStart;
     const uint8_t *l = (const uint8_t *)text;
     int compare;

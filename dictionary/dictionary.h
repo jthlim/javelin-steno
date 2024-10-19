@@ -191,7 +191,7 @@ public:
   StenoReverseDictionaryLookup(const char *definition,
                                size_t strokeThreshold = MAX_STROKE_THRESHOLD)
       : strokeThreshold(strokeThreshold), definition(definition),
-        definitionLength(strlen(definition)) {}
+        definitionLength(Str::Length(definition)) {}
 
   bool HasResults() const { return results.IsNotEmpty(); }
 

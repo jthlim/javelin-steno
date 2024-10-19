@@ -379,8 +379,8 @@ Example usage:
 
 # Contributions
 
-Note that contributions are not currently being accepted until I get around
-to setting up a Contributor License Agreement.
+This project is a snapshot of internal repositories and is not accepting any
+pull requests.
 
 # Terms
 

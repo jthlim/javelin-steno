@@ -139,8 +139,8 @@ void ButtonScript::StopTimer(int32_t timerId) {
   TimerManager::instance.StopTimer(timerId, scriptTime);
 }
 
-void ButtonScript ::StartTimer(int32_t timerId, uint32_t interval,
-                               bool isRepeating, size_t offset) {
+void ButtonScript::StartTimer(int32_t timerId, uint32_t interval,
+                              bool isRepeating, size_t offset) {
   TimerContext *context = new TimerContext(this, offset);
   TimerManager::instance.StartTimer(timerId, interval, isRepeating, context,
                                     scriptTime);

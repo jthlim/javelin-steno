@@ -131,7 +131,7 @@ char *Str::DupN(const char *p, size_t length) {
 }
 
 char *Str::Dup(const char *p) {
-  const size_t length = strlen(p);
+  const size_t length = Length(p);
   char *buffer = (char *)malloc(length + 1);
   buffer[length] = '\0';
   return (char *)memcpy(buffer, p, length);
@@ -139,14 +139,13 @@ char *Str::Dup(const char *p) {
 
 bool Str::HasPrefix(const char *p, const char *prefix) {
   for (;;) {
-    if (*prefix == '\0') {
+    const int c = *prefix++;
+    if (c == '\0') {
       return true;
     }
-    if (*prefix != *p) {
+    if (c != *p++) {
       return false;
     }
-    ++prefix;
-    ++p;
   }
 }
 
@@ -239,7 +238,15 @@ const char *Str::ParseInteger(int *result, const char *p, bool allowNegative) {
 
 #include "unit_test.h"
 
-TEST_BEGIN("Str::Suffix returns correct results") {
+TEST_BEGIN("Str::HasPrefix returns correct results") {
+  assert(Str::HasPrefix("abcd", "ab"));
+  assert(Str::HasPrefix("abcd", "cd") == false);
+  assert(Str::HasPrefix("abcd", "") == true);
+  assert(Str::HasPrefix("abcd", "abcde") == false);
+}
+TEST_END
+
+TEST_BEGIN("Str::HasSuffix returns correct results") {
   assert(Str::HasSuffix("abcd", "cd"));
   assert(Str::HasSuffix("abcd", "de") == false);
   assert(Str::HasSuffix("abcd", "") == true);

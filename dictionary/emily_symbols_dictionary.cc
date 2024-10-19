@@ -418,7 +418,7 @@ static void BuildReverseLookupTable() {
 
   for (const EmilySymbolData &data : DATA) {
     for (size_t i = 0; i < 4; ++i) {
-      uint32_t hash = Crc32(data.text[i], strlen(data.text[i]));
+      uint32_t hash = Crc32(data.text[i], Str::Length(data.text[i]));
       size_t index = hash;
       for (;;) {
         index &= (hashTableSize - 1);
