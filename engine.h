@@ -186,7 +186,8 @@ private:
                                       const StenoSegmentList &nextSegments);
   void PrintSuggestion(const char *p, size_t arrowPrefixCount,
                        size_t strokeThreshold) const;
-  char *PrintSegmentSuggestion(size_t wordCount,
+  char *PrintSegmentSuggestion(size_t startSegmentIndex,
+                               size_t strokeThresholdCount,
                                const StenoSegmentList &segments,
                                char *lastLookup);
   void PrintTextLog(const StenoKeyCodeBuffer &previousKeyCodeBus,

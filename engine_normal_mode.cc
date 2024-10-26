@@ -483,17 +483,59 @@ void StenoEngine::PrintSuggestions(const StenoSegmentList &previousSegments,
   }
 
   // General suggestions. Search back up to 8 word segments.
+  size_t startSegmentIndex = nextSegments.GetCount();
+  if (startSegmentIndex == 0) {
+    return;
+  }
+
   char *lastLookup = nullptr;
+  size_t strokeThresholdCount = 0;
   for (size_t segmentCount = 1; segmentCount < 8; ++segmentCount) {
     Pump();
-    char *newLookup =
-        PrintSegmentSuggestion(segmentCount, nextSegments, lastLookup);
+    char *newLookup;
+
+    for (;;) {
+      if (startSegmentIndex == 0) {
+        goto exit;
+      }
+      --startSegmentIndex;
+
+      if (nextSegments.GetCount() - startSegmentIndex >=
+          PAPER_TAPE_SUGGESTION_SEGMENT_LIMIT) {
+        goto exit;
+      }
+
+      const StenoSegment &segment = nextSegments[startSegmentIndex];
+      if (segment.ContainsKeyCode() ||
+          segment.lookup == StenoDictionaryLookupResult::NO_OP) {
+        goto exit;
+      }
+      strokeThresholdCount += segment.strokeLength;
+
+      // Consider it a segment start if it isn't a suffix stroke and it isn't
+      // a fingerspelling joined to a previous fingerspelling.
+      // This will still give suggestions after prefixes, e.g.
+      //   overwatching: AUFR/WAFP/-G will suggest to combine WAFPG
+      const char *startSegmentText = segment.lookup.GetText();
+
+      if (!Str::IsJoinPrevious(startSegmentText) &&
+          (startSegmentIndex == 0 ||
+           !Str::IsFingerSpellingCommand(startSegmentText) ||
+           !Str::IsFingerSpellingCommand(
+               nextSegments[startSegmentIndex - 1].lookup.GetText()))) {
+        break;
+      }
+    }
+
+    newLookup = PrintSegmentSuggestion(startSegmentIndex, strokeThresholdCount,
+                                       nextSegments, lastLookup);
     free(lastLookup);
     lastLookup = newLookup;
     if (!lastLookup) {
       return;
     }
   }
+exit:
   free(lastLookup);
 }
 
@@ -592,57 +634,12 @@ static bool HasManualStateChange(const List<StenoSegment> &segments) {
   return false;
 }
 
-char *StenoEngine::PrintSegmentSuggestion(size_t segmentCount,
+char *StenoEngine::PrintSegmentSuggestion(size_t startSegmentIndex,
+                                          size_t strokeThresholdCount,
                                           const StenoSegmentList &segments,
                                           char *lastLookup) {
-
-  size_t startSegmentIndex = segments.GetCount();
-  StenoState lastState = state;
-  for (size_t i = 0; i < segmentCount; ++i) {
-    if (startSegmentIndex == 0) {
-      return nullptr;
-    }
-    while (startSegmentIndex != 0) {
-      --startSegmentIndex;
-      if (segments[startSegmentIndex].ContainsKeyCode()) {
-        return nullptr;
-      }
-
-      if (segments[startSegmentIndex].lookup ==
-          StenoDictionaryLookupResult::NO_OP) {
-        return nullptr;
-      }
-
-      // Consider it a segment start if it isn't a suffix stroke and it isn't
-      // a fingerspelling joined to a previous fingerspelling.
-      // This will still give suggestions after prefixes, e.g.
-      //   overwatching: AUFR/WAFP/-G will suggest to combine WAFPG
-      const char *startSegmentText =
-          segments[startSegmentIndex].lookup.GetText();
-
-      if (!Str::IsJoinPrevious(startSegmentText) &&
-          (startSegmentIndex == 0 ||
-           !Str::IsFingerSpellingCommand(startSegmentText) ||
-           !Str::IsFingerSpellingCommand(
-               segments[startSegmentIndex - 1].lookup.GetText()))) {
-        break;
-      }
-    }
-    lastState = *segments[startSegmentIndex].state;
-  }
-
-  if (segments.GetCount() - startSegmentIndex >=
-      PAPER_TAPE_SUGGESTION_SEGMENT_LIMIT) {
-    return nullptr;
-  }
-
   List<StenoSegment> testSegments;
   testSegments.AddCount(segments.Skip(startSegmentIndex));
-
-  size_t strokeThresholdCount = 0;
-  for (const StenoSegment &segment : segments.Skip(startSegmentIndex)) {
-    strokeThresholdCount += segment.strokeLength;
-  }
 
   StenoTokenizer *tokenizer = StenoTokenizer::Create(testSegments);
   previousConversionBuffer.keyCodeBuffer.Populate(tokenizer);
@@ -673,16 +670,14 @@ char *StenoEngine::PrintSegmentSuggestion(size_t segmentCount,
   if (state.joinNext) {
     bool usePrefixSyntax = true;
     if (segments.GetCount() >= 2) {
-      // If the previous state is the same, and the new state ends in a space,
-      // truncate the space and treat it as a non-space lookup.
-      if (*segments.Back().state == state) {
-        const size_t length = Str::Length(spaceRemoved);
-        if (length != 0 && spaceRemoved[length - 1] == ' ') {
-          spaceRemoved = Str::DupN(spaceRemoved, length - 1);
-          free(lookup);
-          lookup = spaceRemoved;
-          usePrefixSyntax = false;
-        }
+      // If the new state ends in a space, truncate the space and treat it
+      // as a non-space lookup.
+      const size_t length = Str::Length(spaceRemoved);
+      if (length != 0 && spaceRemoved[length - 1] == ' ') {
+        spaceRemoved = Str::DupN(spaceRemoved, length - 1);
+        free(lookup);
+        lookup = spaceRemoved;
+        usePrefixSyntax = false;
       }
     }
 

@@ -12,10 +12,10 @@ class Console;
 //---------------------------------------------------------------------------
 
 // Handles logical buttons -> key / steno presses.
-class ScriptManager {
+class ButtonScriptManager {
 public:
   static void Initialize(const uint8_t *scriptByteCode) {
-    new (container) ScriptManager(scriptByteCode);
+    new (container) ButtonScriptManager(scriptByteCode);
   }
 
   // Called when a new script is uploaded.
@@ -32,7 +32,7 @@ public:
   void SetAllowButtonStateUpdates(bool value);
 
   static void ExecuteScript(ButtonScriptId scriptId);
-  static ScriptManager &GetInstance() { return container.value; }
+  static ButtonScriptManager &GetInstance() { return container.value; }
 
   static void EnableScriptEvents_Binding(void *context,
                                          const char *commandLine);
@@ -45,12 +45,12 @@ public:
   static void PrintScriptGlobals_Binding(void *context,
                                          const char *commandLine);
   void AddConsoleCommands(Console &console);
-  void PrintScriptHistory() { script.PrintScriptHistory(); }
+  static void PrintEventHistory() { container->script.PrintEventHistory(); }
 
   uint32_t Crc() const { return isScriptValid ? script.Crc() : 0; }
 
 private:
-  ScriptManager(const uint8_t *scriptByteCode);
+  ButtonScriptManager(const uint8_t *scriptByteCode);
 
   bool isScriptValid;
 
@@ -65,7 +65,7 @@ private:
   void SendButtonStateUpdate() const;
   void SendButtonStateUpdate(const ButtonState &state) const;
 
-  static JavelinStaticAllocate<ScriptManager> container;
+  static JavelinStaticAllocate<ButtonScriptManager> container;
 };
 
 //---------------------------------------------------------------------------

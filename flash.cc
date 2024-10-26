@@ -2,9 +2,9 @@
 
 #include "flash.h"
 #include "base64.h"
+#include "button_script_manager.h"
 #include "console.h"
 #include "hal/external_flash.h"
-#include "script_manager.h"
 #include "unicode.h"
 #include <assert.h>
 #include <string.h>
@@ -119,7 +119,7 @@ void Flash::WriteRemaining() {
   }
 
   if (IsScriptMemory(writeStart, target)) {
-    ScriptManager::GetInstance().Reset();
+    ButtonScriptManager::GetInstance().Reset();
   }
   target = nullptr;
 }

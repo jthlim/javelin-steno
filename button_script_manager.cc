@@ -1,6 +1,6 @@
 //---------------------------------------------------------------------------
 
-#include "script_manager.h"
+#include "button_script_manager.h"
 #include "clock.h"
 #include "console.h"
 #include "flash.h"
@@ -13,11 +13,11 @@
 
 //---------------------------------------------------------------------------
 
-JavelinStaticAllocate<ScriptManager> ScriptManager::container;
+JavelinStaticAllocate<ButtonScriptManager> ButtonScriptManager::container;
 
 //---------------------------------------------------------------------------
 
-ScriptManager::ScriptManager(const uint8_t *scriptByteCode)
+ButtonScriptManager::ButtonScriptManager(const uint8_t *scriptByteCode)
     : script(scriptByteCode) {
   isScriptValid = script.IsValid();
   if (isScriptValid) {
@@ -25,8 +25,8 @@ ScriptManager::ScriptManager(const uint8_t *scriptByteCode)
   }
 }
 
-void ScriptManager::Update(const ButtonState &newButtonState,
-                           uint32_t scriptTime) {
+void ButtonScriptManager::Update(const ButtonState &newButtonState,
+                                 uint32_t scriptTime) {
   if (!isScriptValid) {
     return;
   }
@@ -60,11 +60,11 @@ void ScriptManager::Update(const ButtonState &newButtonState,
   SendButtonStateUpdate();
 }
 
-void ScriptManager::ExecuteScript(ButtonScriptId scriptId) {
+void ButtonScriptManager::ExecuteScript(ButtonScriptId scriptId) {
   if (Flash::IsUpdating()) {
     return;
   }
-  ScriptManager &instance = GetInstance();
+  ButtonScriptManager &instance = GetInstance();
   if (!instance.isScriptValid) {
     return;
   }
@@ -72,7 +72,7 @@ void ScriptManager::ExecuteScript(ButtonScriptId scriptId) {
   instance.script.ExecuteScriptId(scriptId, Clock::GetMilliseconds());
 }
 
-void ScriptManager::PressButton(size_t index, uint32_t scriptTime) {
+void ButtonScriptManager::PressButton(size_t index, uint32_t scriptTime) {
   if (buttonState.IsSet(index)) {
     return;
   }
@@ -81,7 +81,7 @@ void ScriptManager::PressButton(size_t index, uint32_t scriptTime) {
   SendButtonStateUpdate();
 }
 
-void ScriptManager::ReleaseButton(size_t index, uint32_t scriptTime) {
+void ButtonScriptManager::ReleaseButton(size_t index, uint32_t scriptTime) {
   if (!buttonState.IsSet(index)) {
     return;
   }
@@ -90,20 +90,21 @@ void ScriptManager::ReleaseButton(size_t index, uint32_t scriptTime) {
   SendButtonStateUpdate();
 }
 
-void ScriptManager::SendButtonStateUpdate(const ButtonState &state) const {
+void ButtonScriptManager::SendButtonStateUpdate(
+    const ButtonState &state) const {
   if (isButtonStateUpdatesEnabled) {
     Console::Printf("EV {\"event\":\"button_state\",\"data\":\"%D\"}\n\n",
                     &state, sizeof(state));
   }
 }
 
-void ScriptManager::SendButtonStateUpdate() const {
+void ButtonScriptManager::SendButtonStateUpdate() const {
   if (allowButtonStateUpdates) {
     SendButtonStateUpdate(buttonState);
   }
 }
 
-void ScriptManager::SetAllowButtonStateUpdates(bool value) {
+void ButtonScriptManager::SetAllowButtonStateUpdates(bool value) {
   if (value == allowButtonStateUpdates) {
     return;
   }
@@ -119,7 +120,7 @@ void ScriptManager::SetAllowButtonStateUpdates(bool value) {
 
 //---------------------------------------------------------------------------
 
-void ScriptManager::Tick(uint32_t scriptTime) {
+void ButtonScriptManager::Tick(uint32_t scriptTime) {
   if (Flash::IsUpdating()) {
     return;
   }
@@ -131,7 +132,7 @@ void ScriptManager::Tick(uint32_t scriptTime) {
 
 //---------------------------------------------------------------------------
 
-void ScriptManager::Reset() {
+void ButtonScriptManager::Reset() {
   script.Reset();
   TimerManager::instance.RemoveScriptTimers(Clock::GetMilliseconds());
 
@@ -143,37 +144,37 @@ void ScriptManager::Reset() {
 
 //---------------------------------------------------------------------------
 
-void ScriptManager::EnableScriptEvents_Binding(void *context,
-                                               const char *commandLine) {
+void ButtonScriptManager::EnableScriptEvents_Binding(void *context,
+                                                     const char *commandLine) {
   ((ButtonScript *)context)->EnableScriptEvents();
   Console::SendOk();
 }
 
-void ScriptManager::DisableScriptEvents_Binding(void *context,
-                                                const char *commandLine) {
+void ButtonScriptManager::DisableScriptEvents_Binding(void *context,
+                                                      const char *commandLine) {
   ((ButtonScript *)context)->DisableScriptEvents();
   Console::SendOk();
 }
 
-void ScriptManager::EnableButtonStateUpdates_Binding(void *context,
-                                                     const char *commandLine) {
-  ScriptManager *manager = (ScriptManager *)context;
+void ButtonScriptManager::EnableButtonStateUpdates_Binding(
+    void *context, const char *commandLine) {
+  ButtonScriptManager *manager = (ButtonScriptManager *)context;
   manager->isButtonStateUpdatesEnabled = true;
   Console::SendOk();
 }
 
-void ScriptManager::DisableButtonStateUpdates_Binding(void *context,
-                                                      const char *commandLine) {
-  ((ScriptManager *)context)->isButtonStateUpdatesEnabled = false;
+void ButtonScriptManager::DisableButtonStateUpdates_Binding(
+    void *context, const char *commandLine) {
+  ((ButtonScriptManager *)context)->isButtonStateUpdatesEnabled = false;
   Console::SendOk();
 }
 
-void ScriptManager::PrintScriptGlobals_Binding(void *context,
-                                               const char *commandLine) {
-  ((ScriptManager *)context)->script.PrintScriptGlobals();
+void ButtonScriptManager::PrintScriptGlobals_Binding(void *context,
+                                                     const char *commandLine) {
+  ((ButtonScriptManager *)context)->script.PrintScriptGlobals();
 }
 
-void ScriptManager::AddConsoleCommands(Console &console) {
+void ButtonScriptManager::AddConsoleCommands(Console &console) {
   console.RegisterCommand("enable_script_events", "Enables events from scripts",
                           EnableScriptEvents_Binding, &script);
   console.RegisterCommand("disable_script_events",

@@ -51,14 +51,15 @@ void StenoStrokeHistory::UpdateDefinitionBoundaries(
     const char *lookupText = segment.lookup.GetText();
     if (lookupText[0] == '{') {
       state.requestsHistoryExtending =
-          lookupText[1] == ':' &&
+          lookupText[1] == ':' && lookupText[2] == '=' &&
           (Str::HasPrefix(lookupText, "{:==set_value") ||
            Str::HasPrefix(lookupText, "{:==retro_transform"));
       state.isSpace = Str::IsSpace(lookupText);
       state.isHistoryExtending =
           Str::IsFingerSpellingCommand(lookupText) ||
           segment.lookup == StenoDictionaryLookupResult::NO_OP;
-      state.isSuffix = Str::HasPrefix(lookupText, "{^");
+      state.isSuffix =
+          lookupText[1] == '^'; // Str::HasPrefix(lookupText, "{^");
     } else {
       state.requestsHistoryExtending = false;
       state.isSpace = false;

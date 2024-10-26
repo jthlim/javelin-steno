@@ -1,9 +1,9 @@
 //---------------------------------------------------------------------------
 
 #include "split.h"
+#include "../button_script_manager.h"
 #include "../crc.h"
 #include "../hash.h"
-#include "../script_manager.h"
 #include <string.h>
 
 //---------------------------------------------------------------------------
@@ -101,14 +101,14 @@ void TxBuffer::Handlers::OnConnectionReset() const {
   for (size_t i = 0; i < handlerCount; ++i) {
     handlers[i]->OnTransmitConnectionReset();
   }
-  ScriptManager::ExecuteScript(ButtonScriptId::PAIR_CONNECTION_UPDATE);
+  ButtonScriptManager::ExecuteScript(ButtonScriptId::PAIR_CONNECTION_UPDATE);
 }
 
 void TxBuffer::Handlers::OnConnect() const {
   for (size_t i = 0; i < handlerCount; ++i) {
     handlers[i]->OnTransmitConnected();
   }
-  ScriptManager::ExecuteScript(ButtonScriptId::PAIR_CONNECTION_UPDATE);
+  ButtonScriptManager::ExecuteScript(ButtonScriptId::PAIR_CONNECTION_UPDATE);
 }
 
 //---------------------------------------------------------------------------

@@ -4,6 +4,7 @@
 
 #include JAVELIN_BOARD_CONFIG
 
+#include "button_script_manager.h"
 #include "console.h"
 #include "engine.h"
 #include "hal/ble.h"
@@ -19,7 +20,6 @@
 #include "keyboard_led_status.h"
 #include "malloc_allocate.h"
 #include "random.h"
-#include "script_manager.h"
 #include "split/split_usb_status.h"
 #include "str.h"
 #include "timer_manager.h"
@@ -740,7 +740,8 @@ public:
   }
 
   static void SetEnableButtonStates(ButtonScript &script) {
-    ScriptManager::GetInstance().SetAllowButtonStateUpdates(script.Pop() != 0);
+    ButtonScriptManager::GetInstance().SetAllowButtonStateUpdates(
+        script.Pop() != 0);
   }
 };
 
@@ -834,7 +835,7 @@ constexpr void (*ButtonScript::FUNCTION_TABLE[])(ButtonScript &) = {
     &Function::SetEnableButtonStates,
 };
 
-void ButtonScript::PrintScriptHistory() {
+void ButtonScript::PrintEventHistory() {
   Console::Printf("[");
   bool first = true;
   for (const char *event : eventHistory) {

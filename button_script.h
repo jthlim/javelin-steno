@@ -68,7 +68,7 @@ public:
   void EnableScriptEvents() { scriptEventsEnabled = true; }
   void DisableScriptEvents() { scriptEventsEnabled = false; }
 
-  void PrintScriptHistory();
+  void PrintEventHistory();
 
   void Reset();
 

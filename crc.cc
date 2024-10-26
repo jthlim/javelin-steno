@@ -61,6 +61,10 @@ static constexpr uint16_t CRC16_CCITT_TABLE[256] = {
     0x2e93, 0x3eb2, 0x0ed1, 0x1ef0,
 };
 
+#if JAVELIN_PLATFORM_NRF5_SDK
+// Putting the CRC32 table into data avoid constant XIP cache thrashing
+__attribute((section(".data")))
+#endif
 static constexpr uint32_t CRC32_TABLE[256] = {
     0x00000000, 0x77073096, 0xee0e612c, 0x990951ba, 0x076dc419, 0x706af48f,
     0xe963a535, 0x9e6495a3, 0x0edb8832, 0x79dcb8a4, 0xe0d5e91e, 0x97d2d988,
@@ -130,8 +134,18 @@ __attribute__((weak)) uint32_t Crc16Ccitt(const void *p, size_t count) {
 __attribute__((weak)) uint32_t Crc32(const void *p, size_t count) {
   const uint8_t *v = (const uint8_t *)p;
   uint32_t hash = 0xffffffff;
-  for (size_t i = 0; i < count; i++) {
-    hash = CRC32_TABLE[(hash ^ *v++) & 0xff] ^ (hash >> 8);
+  while (count >= 4) {
+    const uint32_t value = *(uint32_t *)v;
+    v += 4;
+    hash = CRC32_TABLE[uint8_t(hash ^ value)] ^ (hash >> 8);
+    hash = CRC32_TABLE[uint8_t(hash ^ (value >> 8))] ^ (hash >> 8);
+    hash = CRC32_TABLE[uint8_t(hash ^ (value >> 16))] ^ (hash >> 8);
+    hash = CRC32_TABLE[uint8_t(hash ^ (value >> 24))] ^ (hash >> 8);
+    count -= 4;
+  }
+  while (count) {
+    hash = CRC32_TABLE[uint8_t(hash ^ *v++)] ^ (hash >> 8);
+    --count;
   }
   return ~hash;
 }

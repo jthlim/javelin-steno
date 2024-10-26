@@ -5,7 +5,7 @@
 //---------------------------------------------------------------------------
 
 #if JAVELIN_U2F && JAVELIN_SPLIT
-#include "../script_manager.h"
+#include "../button_script_manager.h"
 
 //---------------------------------------------------------------------------
 
@@ -29,7 +29,7 @@ void SplitU2fScript::OnDataReceived(const void *data, size_t length) {
   }
 
   this->data = newData;
-  ScriptManager::ExecuteScript(ButtonScriptId::U2F_STATUS_UPDATE);
+  ButtonScriptManager::ExecuteScript(ButtonScriptId::U2F_STATUS_UPDATE);
 }
 
 void SplitU2fScript::OnReceiveConnectionReset() {
