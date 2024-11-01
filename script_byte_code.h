@@ -7,8 +7,8 @@
 
 //---------------------------------------------------------------------------
 
-const size_t SCRIPT_BYTE_CODE_REVISION = 3;
-const uint32_t SCRIPT_MAGIC = 0x3053534a + (SCRIPT_BYTE_CODE_REVISION << 24);
+const size_t SCRIPT_BYTE_CODE_VERSION = 4;
+const uint32_t SCRIPT_MAGIC = 0x3053534a + (SCRIPT_BYTE_CODE_VERSION << 24);
 
 //---------------------------------------------------------------------------
 
@@ -53,6 +53,8 @@ public:
     ENTER_FUNCTION = 0x94,
     CALL_VALUE = 0x95,
     JUMP_VALUE = 0x96,
+    RETURN_IF_ZERO = 0x97,
+    RETURN_IF_NOT_ZERO = 0x98,
 
     JUMP_SHORT_BEGIN = 0xa0,
     JUMP_SHORT_END = 0xbe,

@@ -400,7 +400,8 @@ next2:
     stack.Load(*this);
     CONTINUE;
   }
-  case BC::RETURN: {
+  case BC::RETURN:
+  exit: {
     intptr_t *p = base;
     if (frame != stack.GetStackTop()) {
       *p++ = *frame;
@@ -436,8 +437,23 @@ next2:
     }
     CONTINUE;
   }
-  case BC::JUMP_VALUE:
-    p = byteCode + stack.Pop();
+  case BC::JUMP_VALUE: {
+    const size_t offset = stack.Pop();
+    if (offset == 0) {
+      goto exit;
+    }
+    p = byteCode + offset;
+    CONTINUE;
+  }
+  case BC::RETURN_IF_ZERO:
+    if (!stack.Pop()) {
+      goto exit;
+    }
+    CONTINUE;
+  case BC::RETURN_IF_NOT_ZERO:
+    if (stack.Pop()) {
+      goto exit;
+    }
     CONTINUE;
   case BC::JUMP_SHORT_BEGIN... BC::JUMP_SHORT_END: {
     const int offset = c + 1 - BC::JUMP_SHORT_BEGIN;

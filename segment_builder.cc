@@ -421,7 +421,7 @@ struct RetroSetValueParameters {
 };
 
 bool RetroSetValueParameters::Parse(const char *command) {
-  const char *p = command + Str::Length<>("=set_value:");
+  const char *p = command + Str::ConstLength("=set_value:");
   p = Str::ParseInteger(&index, p);
   if (!p || *p != ':') {
     return false;
@@ -483,7 +483,7 @@ void StenoSegmentBuilder::HandleRetroSetValue(BuildSegmentContext &context,
   // Special case if followed by =transform
   if (Str::HasPrefix(format, "=transform:")) {
     CreateTransformString(writer, context,
-                          format + Str::Length<>("=transform:"));
+                          format + Str::ConstLength("=transform:"));
   } else {
     writer.WriteString(format);
   }
@@ -501,7 +501,7 @@ void StenoSegmentBuilder::HandleRetroTransform(BuildSegmentContext &context,
                                                size_t currentOffset,
                                                size_t length) {
 
-  const char *format = command + Str::Length<>("=retro_transform:");
+  const char *format = command + Str::ConstLength("=retro_transform:");
 
   size_t count = 0;
   if (Unicode::IsAsciiDigit(*format)) {

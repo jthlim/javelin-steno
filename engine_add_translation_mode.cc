@@ -130,12 +130,12 @@ void StenoEngine::UpdateAddTranslationModeTextBuffer(ConversionBuffer &buffer) {
 
   if (addTranslationText) {
     buffer.keyCodeBuffer.AppendText(ADD_TRANSLATION_PROMPT,
-                                    Str::Length<>(ADD_TRANSLATION_PROMPT),
+                                    Str::ConstLength(ADD_TRANSLATION_PROMPT),
                                     StenoCaseMode::NORMAL);
   } else {
     buffer.keyCodeBuffer.AppendText(
         ADD_DELETE_TRANSLATION_PROMPT,
-        Str::Length<>(ADD_DELETE_TRANSLATION_PROMPT), StenoCaseMode::NORMAL);
+        Str::ConstLength(ADD_DELETE_TRANSLATION_PROMPT), StenoCaseMode::NORMAL);
   }
 
   size_t i = 0;
@@ -159,7 +159,7 @@ void StenoEngine::UpdateAddTranslationModeTextBuffer(ConversionBuffer &buffer) {
   }
 
   buffer.keyCodeBuffer.AppendText(TRANSLATION_PROMPT,
-                                  Str::Length<>(TRANSLATION_PROMPT),
+                                  Str::ConstLength(TRANSLATION_PROMPT),
                                   StenoCaseMode::NORMAL);
 
   StenoSegmentList segments;

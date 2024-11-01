@@ -47,6 +47,8 @@ struct StenoOrthography {
   static const StenoOrthography emptyOrthography;
 
   void Print() const;
+
+  static void Print_Binding(void *context, const char *commandLine);
 };
 
 //---------------------------------------------------------------------------

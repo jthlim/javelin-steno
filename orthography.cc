@@ -190,6 +190,10 @@ void StenoOrthography::Print() const {
   Console::Printf("\n\t]\n}\n\n");
 }
 
+void StenoOrthography::Print_Binding(void *context, const char *commandLine) {
+  ((StenoOrthography *)context)->Print();
+}
+
 //---------------------------------------------------------------------------
 
 StenoCompiledOrthography::StenoCompiledOrthography(

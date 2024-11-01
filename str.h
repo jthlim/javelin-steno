@@ -66,9 +66,8 @@ public:
   // Always returns a newly allocated string.
   static char *Trim(const char *data);
 
-  // Needs to be invoked with Str::Length<>(...), otherwise the strlen()
-  // version is used instead.
-  template <size_t N> static size_t Length(const char (&text)[N]) {
+  template <size_t N>
+  static constexpr size_t ConstLength(const char (&text)[N]) {
     return N - 1;
   }
   static size_t Length(const uint8_t *p) { return strlen((const char *)p); }
