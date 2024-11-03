@@ -68,7 +68,8 @@ void SplitUsbStatus::OnDataReceived(const void *data, size_t length) {
   UsbStatus &instance = GetRemoteUsbStatus();
   const UsbStatus oldStatus = instance;
   memcpy(&instance, data, sizeof(UsbStatus));
-  if (instance.IsConnected() != oldStatus.IsConnected()) {
+  if (instance.IsConnected() != oldStatus.IsConnected() ||
+      instance.IsSleeping() != oldStatus.IsSleeping()) {
     ButtonScriptManager::ExecuteScript(ButtonScriptId::CONNECTION_UPDATE);
   }
   if (instance.IsPowered() != oldStatus.IsPowered()) {
