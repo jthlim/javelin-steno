@@ -11,7 +11,7 @@
 #define CONSOLE_LOG_BUTTON_PRESSES 0
 #define ENABLE_PRINT_SCRIPT_GLOBALS_CONSOLE_COMMAND 0
 
-//---------------------------------------------------------------------------
+//-------------------------------------------------------------------- th-------
 
 JavelinStaticAllocate<ButtonScriptManager> ButtonScriptManager::container;
 

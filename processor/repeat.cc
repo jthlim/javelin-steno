@@ -6,11 +6,18 @@
 
 //---------------------------------------------------------------------------
 
+const int TIMER_ID = -(('R' << 24) | ('E' << 16) | ('P' << 8) | 'T');
+
+//---------------------------------------------------------------------------
+
 void StenoRepeat::Process(const StenoKeyState &value, StenoAction action) {
-  next->Process(value, action);
+  super::Process(value, action);
 
   switch (action) {
   case StenoAction::PRESS:
+    if (isRepeating) {
+      TimerManager::instance.StopTimer(TIMER_ID, Clock::GetMilliseconds());
+    }
     isRepeating = false;
     wasLastEventAPress = true;
     pressedKeyState = value;
@@ -21,11 +28,15 @@ void StenoRepeat::Process(const StenoKeyState &value, StenoAction action) {
       releasedKeyState.Reset();
     } else if (pressedKeyState == releasedKeyState) {
       isRepeating = true;
-      nextTriggerTime = pressTime + INITIAL_REPEAT_DELAY;
+      TimerManager::instance.StartTimer(TIMER_ID, INITIAL_REPEAT_DELAY, false,
+                                        this, Clock::GetMilliseconds());
     }
     break;
 
   case StenoAction::RELEASE:
+    if (isRepeating) {
+      TimerManager::instance.StopTimer(TIMER_ID, Clock::GetMilliseconds());
+    }
     isRepeating = false;
     if (wasLastEventAPress) {
       wasLastEventAPress = false;
@@ -37,6 +48,9 @@ void StenoRepeat::Process(const StenoKeyState &value, StenoAction action) {
 
   case StenoAction::CANCEL_KEY:
   case StenoAction::CANCEL_ALL:
+    if (isRepeating) {
+      TimerManager::instance.StopTimer(TIMER_ID, Clock::GetMilliseconds());
+    }
     isRepeating = false;
     wasLastEventAPress = false;
     releasedKeyState.Reset();
@@ -47,80 +61,15 @@ void StenoRepeat::Process(const StenoKeyState &value, StenoAction action) {
   }
 }
 
-void StenoRepeat::Tick() {
-  next->Tick();
-
-  if (!isRepeating) {
-    return;
-  }
-
-  uint32_t now = Clock::GetMilliseconds();
-  if (now - nextTriggerTime >= (uint32_t)-INITIAL_REPEAT_DELAY) {
-    return;
-  }
-
-  nextTriggerTime = now + REPEAT_DELAY;
-  next->Process(pressedKeyState, StenoAction::TRIGGER);
-  now = Clock::GetMilliseconds();
-  if (nextTriggerTime < now + REPEAT_DELAY_MINIMUM) {
-    nextTriggerTime = now + REPEAT_DELAY_MINIMUM;
-  }
+void StenoRepeat::Run(intptr_t id) {
+  super::Process(pressedKeyState, StenoAction::TRIGGER);
+  TimerManager::instance.StartTimer(TIMER_ID, REPEAT_DELAY, false, this,
+                                    TimerManager::instance.GetLastUpdateTime());
 }
 
 void StenoRepeat::PrintInfo() const {
   Console::Printf("  Repeat\n");
-  next->PrintInfo();
+  super::PrintInfo();
 }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-#include "../unit_test.h"
-#include "fake_processor.h"
-
-#if RUN_TESTS
-
-TEST_BEGIN("Repeat tests") {
-  FakeStenoProcessor fakeProcessor;
-  StenoRepeat repeat(fakeProcessor);
-  StenoProcessor processor(repeat);
-
-  processor.Process(StenoKey::KL, true);
-  processor.Process(StenoKey::A, true);
-  processor.Process(StenoKey::TR, true);
-  const StenoKeyState katKeyState = processor.GetCurrentKeyState();
-
-  repeat.Tick();
-  assert(fakeProcessor.triggers.size() == 0);
-
-  processor.Process(StenoKey::A, false);
-  repeat.Tick();
-  assert(fakeProcessor.triggers.size() == 0);
-
-  processor.Process(StenoKey::A, true);
-  repeat.Tick();
-  assert(fakeProcessor.triggers.size() == 0);
-
-  Clock::AdvanceMilliseconds(100);
-  repeat.Tick();
-  assert(fakeProcessor.triggers.size() == 0);
-
-  Clock::AdvanceMilliseconds(100);
-  repeat.Tick();
-  assert(fakeProcessor.triggers.size() == 1);
-  assert(fakeProcessor.triggers[0] == katKeyState);
-
-  Clock::AdvanceMilliseconds(20);
-  repeat.Tick();
-  assert(fakeProcessor.triggers.size() == 1);
-
-  Clock::AdvanceMilliseconds(20);
-  repeat.Tick();
-  assert(fakeProcessor.triggers.size() == 2);
-  assert(fakeProcessor.triggers[0] == katKeyState);
-}
-TEST_END
-
-#endif
 
 //---------------------------------------------------------------------------

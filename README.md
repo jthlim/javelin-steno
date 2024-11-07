@@ -358,25 +358,6 @@ Example usage:
   {:toggle_dictionary:main.json}
 ```
 
-## `{:unicode:<unicode_mode>}`
-
-Sets the unicode output mode.
-
-Supported values:
-
-- none
-- macos_us
-- macos_hex
-- windows_alt
-- windows_hex
-- linux_ibus
-
-Example usage:
-
-```
-  {:unicode:windows_hex}
-```
-
 # Contributions
 
 This project is a snapshot of internal repositories and is not accepting any

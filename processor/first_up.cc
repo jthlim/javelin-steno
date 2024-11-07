@@ -6,7 +6,7 @@
 //---------------------------------------------------------------------------
 
 void StenoFirstUp::Process(const StenoKeyState &value, StenoAction action) {
-  next->Process(value, action);
+  super::Process(value, action);
 
   switch (action) {
   case StenoAction::PRESS:
@@ -18,7 +18,7 @@ void StenoFirstUp::Process(const StenoKeyState &value, StenoAction action) {
     if (wasLastEventAPress) {
       wasLastEventAPress = false;
       // Trigger the stroke from before the release.
-      next->Process(pressedKeyState, StenoAction::TRIGGER);
+      super::Process(pressedKeyState, StenoAction::TRIGGER);
     }
     break;
 
@@ -37,7 +37,7 @@ void StenoFirstUp::Process(const StenoKeyState &value, StenoAction action) {
 
 void StenoFirstUp::PrintInfo() const {
   Console::Printf("  FirstUp\n");
-  next->PrintInfo();
+  super::PrintInfo();
 }
 
 //---------------------------------------------------------------------------

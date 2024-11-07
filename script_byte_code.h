@@ -106,7 +106,7 @@ struct StenoScriptHashTable {
 
 struct ScriptByteCode {
   union {
-    uint8_t magic[4]; // JSS3
+    uint8_t magic[4]; // JSS4
     uint32_t magic4;
   };
   uint16_t stringHashTableOffset;

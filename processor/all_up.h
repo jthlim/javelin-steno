@@ -8,9 +8,11 @@
 //
 // The is the typical steno behavior.
 class StenoAllUp final : public StenoPassthrough {
+private:
+  using super = StenoPassthrough;
+
 public:
-  StenoAllUp(StenoProcessorElement &nextProcessor)
-      : StenoPassthrough(&nextProcessor) {}
+  StenoAllUp(StenoProcessorElement &nextProcessor) : super(&nextProcessor) {}
 
   void Process(const StenoKeyState &value, StenoAction action);
   void PrintInfo() const;

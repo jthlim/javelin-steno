@@ -11,12 +11,6 @@ void StenoProcessorList::Process(const StenoKeyState &value,
   }
 }
 
-void StenoProcessorList::Tick() {
-  for (StenoProcessorElement *processor : processors) {
-    processor->Tick();
-  }
-}
-
 void StenoProcessorList::PrintInfo() const {
   for (StenoProcessorElement *processor : processors) {
     processor->PrintInfo();

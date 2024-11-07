@@ -12,7 +12,6 @@ public:
       : processors({processorCount, processors}) {}
 
   void Process(const StenoKeyState &value, StenoAction action);
-  void Tick();
   void PrintInfo() const;
   bool ProcessScanCode(uint32_t scanCodeAndModifiers, ScanCodeAction action);
 

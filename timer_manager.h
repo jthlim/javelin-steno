@@ -27,6 +27,7 @@ public:
   bool HasTimer(int32_t timerId) const {
     return GetTimerIndex(timerId) != INVALID_TIMER_INDEX;
   }
+  uint32_t GetLastUpdateTime() const { return lastUpdateTime; }
 
   void RemoveScriptTimers(uint32_t currentTime);
 

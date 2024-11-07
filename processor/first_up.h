@@ -8,9 +8,11 @@
 //
 // This enable easy repeat with navigation.
 class StenoFirstUp final : public StenoPassthrough {
+private:
+  using super = StenoPassthrough;
+
 public:
-  StenoFirstUp(StenoProcessorElement &nextProcessor)
-      : StenoPassthrough(&nextProcessor) {}
+  StenoFirstUp(StenoProcessorElement &nextProcessor) : super(&nextProcessor) {}
 
   void Process(const StenoKeyState &value, StenoAction action);
   void PrintInfo() const;

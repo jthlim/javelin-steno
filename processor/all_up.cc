@@ -6,7 +6,7 @@
 //---------------------------------------------------------------------------
 
 void StenoAllUp::Process(const StenoKeyState &value, StenoAction action) {
-  next->Process(value, action);
+  super::Process(value, action);
 
   switch (action) {
   case StenoAction::PRESS:
@@ -15,7 +15,7 @@ void StenoAllUp::Process(const StenoKeyState &value, StenoAction action) {
 
   case StenoAction::RELEASE:
     if (value.IsEmpty()) {
-      next->Process(pressedKeyState, StenoAction::TRIGGER);
+      super::Process(pressedKeyState, StenoAction::TRIGGER);
       pressedKeyState.Reset();
     }
     break;
@@ -35,7 +35,7 @@ void StenoAllUp::Process(const StenoKeyState &value, StenoAction action) {
 
 void StenoAllUp::PrintInfo() const {
   Console::Printf("  AllUp\n");
-  next->PrintInfo();
+  super::PrintInfo();
 }
 
 //---------------------------------------------------------------------------

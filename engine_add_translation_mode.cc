@@ -270,7 +270,8 @@ bool StenoEngine::IsNewline(StenoStroke stroke) const {
   }
 
   // Handle 'enter' in qwerty mode press.
-  if (stroke == StenoStroke(StrokeMask::UNICODE | '\n')) {
+  if (stroke == StenoStroke(StrokeMask::UNICODE | '\n') ||
+      stroke == StenoStroke(StrokeMask::UNICODE | '\r')) {
     return true;
   }
 

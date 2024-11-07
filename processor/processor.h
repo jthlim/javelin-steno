@@ -21,7 +21,6 @@ public:
   StenoProcessorElement() {}
 
   virtual void Process(const StenoKeyState &value, StenoAction action) = 0;
-  virtual void Tick() {}
   virtual void PrintInfo() const = 0;
   virtual bool ProcessScanCode(uint32_t scanCodeAndModifiers,
                                ScanCodeAction action);
@@ -41,7 +40,6 @@ public:
 
   void Process(StenoKey key, bool isPress);
   void Process(const StenoKeyState &newState);
-  void Tick() { next.Tick(); }
   void PrintInfo() const;
 
   const StenoKeyState &GetCurrentKeyState() const { return state; }

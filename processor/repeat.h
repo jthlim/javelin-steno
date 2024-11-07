@@ -1,13 +1,16 @@
 //---------------------------------------------------------------------------
 
+#include "../timer_manager.h"
 #include "passthrough.h"
 
 //---------------------------------------------------------------------------
 
-class StenoRepeat final : public StenoPassthrough {
+class StenoRepeat final : public StenoPassthrough, public TimerHandler {
+private:
+  using super = StenoPassthrough;
+
 public:
-  StenoRepeat(StenoProcessorElement &nextProcessor)
-      : StenoPassthrough(&nextProcessor) {}
+  StenoRepeat(StenoProcessorElement &nextProcessor) : super(&nextProcessor) {}
 
   void Process(const StenoKeyState &value, StenoAction action);
   void Tick();
@@ -22,10 +25,11 @@ private:
   bool wasLastEventAPress = false;
 
   bool isRepeating = false;
-  uint32_t nextTriggerTime = 0;
 
   uint32_t pressTime = 0;
   uint32_t releaseTime = 0;
+
+  virtual void Run(intptr_t id);
 
   StenoKeyState pressedKeyState;
   StenoKeyState releasedKeyState;
