@@ -264,11 +264,6 @@ bool StenoEngine::HandleAddTranslationModeScanCode(
 //---------------------------------------------------------------------------
 
 bool StenoEngine::IsNewline(StenoStroke stroke) const {
-  // Special case R-R from plover theory.
-  if (stroke == StenoStroke(StrokeMask::LR | StrokeMask::RR)) {
-    return true;
-  }
-
   // Handle 'enter' in qwerty mode press.
   if (stroke == StenoStroke(StrokeMask::UNICODE | '\n') ||
       stroke == StenoStroke(StrokeMask::UNICODE | '\r')) {
@@ -282,10 +277,7 @@ bool StenoEngine::IsNewline(StenoStroke stroke) const {
   }
 
   static const char *const VALID_NEWLINES[] = {
-      "{#Return}",
-      "{#Return}{^}",
-      "{^\n^}",
-      "{^~|\n^}",
+      "{#Return}", "{#Return}{^}", "\n", "{^}\n{^}", "{^\n^}", "{^~|\n^}",
   };
 
   const char *text = lookup.GetText();

@@ -34,6 +34,7 @@ struct HostLayout {
 
   const char *GetName() const { return name; }
   const HostLayoutEntry *GetSequenceForUnicode(uint32_t unicode) const;
+  uint32_t GetUnicodeForScancode(uint32_t scanCode) const;
 
   static const HostLayout ansi;
 };
@@ -52,6 +53,7 @@ public:
 
   static void SetHostLayout_Binding(void *context, const char *commandLine);
   static void ListHostLayouts();
+  static void GetHostLayout();
 
 private:
   StaticList<const HostLayout *> layouts;

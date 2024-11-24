@@ -2,6 +2,7 @@
 
 #pragma once
 #include "hal/connection.h"
+#include "static_list.h"
 #include "writer.h"
 #include <stddef.h>
 
@@ -55,6 +56,10 @@ private:
 
 class Console {
 public:
+  Console();
+
+  int AllocateChannelId();
+
   void HandleInput(const char *data, size_t length);
   static void SendOk();
 
@@ -86,7 +91,9 @@ public:
     Write(text, N - 1);
   }
 
-  static void Dump(const void *data, size_t length);
+  static void Dump(const void *data, size_t length) {
+    ConsoleWriter::instance.GetActiveWriter()->Dump(data, length);
+  }
   static void Flush();
 
 #if RUN_TESTS
@@ -96,12 +103,50 @@ public:
   static Console instance;
 
 private:
-  bool isTooLong = false;
-  size_t lineBufferCount = 0;
-  char lineBuffer[256];
+  struct Channel {
+    bool isTooLong;
+    bool usedChannelId;
+    int32_t id;
+    size_t bufferCount;
+    char buffer[256];
 
-  void ProcessLineBuffer();
+    void Reset(uint32_t channelId, bool hasChannelId) {
+      id = channelId;
+      usedChannelId = hasChannelId;
+      isTooLong = false;
+      bufferCount = 0;
+    }
 
+    void AddByte(uint8_t c) {
+      if (bufferCount >= sizeof(buffer)) {
+        isTooLong = true;
+        return;
+      }
+      buffer[bufferCount++] = c;
+    }
+  };
+
+  class ChannelHistory {
+  public:
+    int AllocateId();
+    void Touch(int channelId);
+
+  private:
+    void AddHistoryEntry(int channelId);
+
+    StaticList<uint8_t, 16> history;
+  };
+
+  static const size_t CHANNEL_COUNT = 4;
+  StaticList<Channel *, CHANNEL_COUNT> freeBuffers;
+  StaticList<Channel *, CHANNEL_COUNT> activeBuffers;
+
+  ChannelHistory channelHistory;
+
+  Channel channels[CHANNEL_COUNT];
+
+  Channel *GetChannel(int channelId, bool hasChannelId);
+  void ProcessChannelCommand(Channel &channel);
   static void PrintfInternal(const char *format, ...);
 
   static const ConsoleCommand *GetCommand(const char *buffer);

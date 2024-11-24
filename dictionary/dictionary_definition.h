@@ -115,7 +115,7 @@ struct StenoDictionaryDefinition {
   bool defaultEnabled;
   uint8_t maximumOutlineLength;
   StenoDictionaryType type;
-  uint8_t _padding3;
+  uint8_t options;
 
   StenoDictionary *Create() const;
 };

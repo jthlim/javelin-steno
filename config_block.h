@@ -6,20 +6,13 @@
 //---------------------------------------------------------------------------
 
 struct StenoConfigBlock {
+  bool hidCompatibilityMode;
+  bool useSpaceAfter;
   bool useFirstUp;
   bool useRepeat;
   bool useJeffModifiers;
-  bool _deprecatedUseJeffShowStroke;
-  bool _deprecatedUseJeffNumbers;
-  bool _deprecatedUseEmilySymbols;
-  bool _deprecatedUseJeffPhrasing;
-  uint8_t _deprecatedUnicodeMode;
-  uint8_t _deprecatedKeyboardLayout;
-  bool hidCompatibilityMode;
-  bool useSpaceAfter;
-  bool _deprecatedAllowButtonStateUpdates;
 
-  bool _reserved[20];
+  bool _reserved[27];
 
   int8_t keyMap[(int)StenoKey::COUNT];
 };

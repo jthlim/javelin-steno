@@ -34,6 +34,7 @@ public:
   static void ExecuteScript(ButtonScriptId scriptId);
   static ButtonScriptManager &GetInstance() { return container.value; }
 
+  static void CallScript_Binding(void *context, const char *commandLine);
   static void EnableScriptEvents_Binding(void *context,
                                          const char *commandLine);
   static void DisableScriptEvents_Binding(void *context,
@@ -64,6 +65,7 @@ private:
 
   void SendButtonStateUpdate() const;
   void SendButtonStateUpdate(const ButtonState &state) const;
+  void CallScript(ButtonScriptId scriptId, const char *p);
 
   static JavelinStaticAllocate<ButtonScriptManager> container;
 };

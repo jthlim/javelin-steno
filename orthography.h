@@ -5,6 +5,7 @@
 #include "pattern.h"
 #include "sized_list.h"
 #include "stroke.h"
+#include "xip_pointer.h"
 #include <stddef.h>
 
 //---------------------------------------------------------------------------
@@ -29,7 +30,7 @@ struct StenoOrthographyAutoSuffix {
 };
 
 struct StenoOrthographyReverseAutoSuffix {
-  StenoOrthographyAutoSuffix *autoSuffix;
+  XipPointer<StenoOrthographyAutoSuffix> autoSuffix;
   StenoStroke suppressMask;
   const char *testPattern;
   const char *replacement;

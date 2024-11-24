@@ -10,7 +10,9 @@ private:
   static const size_t MAXIMUM_OUTLINE_LENGTH = 1;
 
 public:
-  StenoEmilySymbolsDictionary() : StenoDictionary(MAXIMUM_OUTLINE_LENGTH) {}
+  StenoEmilySymbolsDictionary(bool isSpecifySpacesMode)
+      : StenoDictionary(MAXIMUM_OUTLINE_LENGTH),
+        isSpecifySpacesMode(isSpecifySpacesMode) {}
 
   virtual StenoDictionaryLookupResult
   Lookup(const StenoDictionaryLookup &lookup) const;
@@ -24,7 +26,12 @@ public:
   virtual const char *GetName() const;
   virtual void PrintDictionary(PrintDictionaryContext &context) const;
 
-  static StenoEmilySymbolsDictionary instance;
+  static StenoEmilySymbolsDictionary specifySpacesInstance;
+  static StenoEmilySymbolsDictionary specifyGlueInstance;
+
+private:
+  // Whether pressing A or E specifies spaces (vs. specifying glue).
+  bool isSpecifySpacesMode;
 };
 
 //---------------------------------------------------------------------------

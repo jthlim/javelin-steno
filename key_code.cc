@@ -1,6 +1,7 @@
 //---------------------------------------------------------------------------
 
 #include "key_code.h"
+#include "host_layout.h"
 #include "steno_key_code.h"
 #include <stdint.h>
 
@@ -125,6 +126,17 @@ uint32_t KeyCode::ConvertToUnicode(uint32_t keyCodeAndModifiers) {
     // If there's a non-shift modifier held, don't try and convert to unicode.
     return 0;
   }
+
+  const uint32_t hostScanCode =
+      (keyCodeAndModifiers & MODIFIER_SHIFT_FLAG)
+          ? MODIFIER_L_SHIFT_FLAG | (keyCodeAndModifiers & 0xff)
+          : (keyCodeAndModifiers & 0xff);
+  const uint32_t hostUnicode =
+      HostLayouts::GetActiveLayout().GetUnicodeForScancode(hostScanCode);
+  if (hostUnicode != 0) {
+    return hostUnicode;
+  }
+
   const uint32_t caseIndex =
       (keyCodeAndModifiers & MODIFIER_SHIFT_FLAG) ? 1 : 0;
   const uint32_t keyCodeIndex = keyCodeAndModifiers & 0xff;

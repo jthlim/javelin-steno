@@ -4,12 +4,13 @@
 #include "clock.h"
 #include "console.h"
 #include "flash.h"
+#include "str.h"
 #include "timer_manager.h"
+#include "unicode.h"
 
 //---------------------------------------------------------------------------
 
 #define CONSOLE_LOG_BUTTON_PRESSES 0
-#define ENABLE_PRINT_SCRIPT_GLOBALS_CONSOLE_COMMAND 0
 
 //-------------------------------------------------------------------- th-------
 
@@ -144,6 +145,53 @@ void ButtonScriptManager::Reset() {
 
 //---------------------------------------------------------------------------
 
+void ButtonScriptManager::CallScript(ButtonScriptId scriptId, const char *p) {
+  while (*p) {
+    if (Unicode::IsWhitespace(*p)) {
+      ++p;
+      continue;
+    }
+
+    int parameter;
+    const char *next = Str::ParseInteger(&parameter, p);
+    if (!next) {
+      Console::Printf("ERR Unable to parse parameter %s\n\n", p);
+      return;
+    }
+    script.Push(parameter);
+    p = next;
+  }
+
+  Console::SendOk();
+
+  ExecuteScript(scriptId);
+}
+
+void ButtonScriptManager::CallScript_Binding(void *context,
+                                             const char *commandLine) {
+  const char *p = strchr(commandLine, ' ');
+  if (!p) {
+    Console::Printf("ERR No scriptId specified\n\n");
+    return;
+  }
+
+  ButtonScriptId scriptId;
+  p = Str::ParseInteger((int *)&scriptId, p + 1, false);
+  if (!p) {
+    Console::Printf("ERR Unable to parse scriptId\n\n");
+    return;
+  }
+  if (scriptId >= ButtonScriptId::COUNT) {
+    Console::Printf("ERR Invalid scriptId\n\n");
+    return;
+  }
+
+  ButtonScriptManager *manager = (ButtonScriptManager *)context;
+  intptr_t *stackTop = manager->script.GetStackTop();
+  manager->CallScript(scriptId, p);
+  manager->script.SetStackTop(stackTop);
+}
+
 void ButtonScriptManager::EnableScriptEvents_Binding(void *context,
                                                      const char *commandLine) {
   ((ButtonScript *)context)->EnableScriptEvents();
@@ -175,6 +223,9 @@ void ButtonScriptManager::PrintScriptGlobals_Binding(void *context,
 }
 
 void ButtonScriptManager::AddConsoleCommands(Console &console) {
+  console.RegisterCommand("call_script",
+                          "Call scripts registered with setScript",
+                          CallScript_Binding, this);
   console.RegisterCommand("enable_script_events", "Enables events from scripts",
                           EnableScriptEvents_Binding, &script);
   console.RegisterCommand("disable_script_events",
@@ -186,11 +237,9 @@ void ButtonScriptManager::AddConsoleCommands(Console &console) {
   console.RegisterCommand("disable_button_state_updates",
                           "Disables button state updates",
                           DisableButtonStateUpdates_Binding, this);
-#if ENABLE_PRINT_SCRIPT_GLOBALS_CONSOLE_COMMAND
   console.RegisterCommand("print_script_globals",
                           "Prints non-zero script globals",
                           PrintScriptGlobals_Binding, this);
-#endif
 }
 
 //---------------------------------------------------------------------------

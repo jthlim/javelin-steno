@@ -238,7 +238,7 @@ static StenoCompactMapDictionary mainDictionary(TestDictionary::definition);
 static StenoCompactMapDictionary testDictionary(TestDictionary::definition);
 
 StenoDictionary *const DICTIONARIES[] = {
-    &StenoEmilySymbolsDictionary::instance,
+    &StenoEmilySymbolsDictionary::specifySpacesInstance,
     &mainDictionary,
 };
 
@@ -389,7 +389,7 @@ TEST_BEGIN("Engine: Random spam") {
       &StenoJeffShowStrokeDictionary::instance,
       &StenoJeffPhrasingDictionary::instance,
       &StenoJeffNumbersDictionary::instance,
-      &StenoEmilySymbolsDictionary::instance,
+      &StenoEmilySymbolsDictionary::specifySpacesInstance,
       &mainDictionary,
       &testDictionary,
   };

@@ -74,6 +74,20 @@ public:
   friend T *begin(StaticList &list) { return list.data; }
   friend T *end(StaticList &list) { return list.data + list.count; }
 
+  void Remove(T v) {
+    for (size_t i = 0; i < count; ++i) {
+      if (data[i] != v) {
+        continue;
+      }
+
+      --count;
+      for (; i < count; ++i) {
+        data[i] = data[i + 1];
+      }
+      return;
+    }
+  }
+
 private:
   size_t count = 0;
   T data[CAPACITY];

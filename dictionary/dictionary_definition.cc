@@ -33,7 +33,8 @@ StenoDictionary *StenoDictionaryDefinition::Create() const {
     return &StenoJeffPhrasingDictionary::instance;
 
   case StenoDictionaryType::EMILY_SYMBOLS:
-    return &StenoEmilySymbolsDictionary::instance;
+    return (options & 1) ? &StenoEmilySymbolsDictionary::specifyGlueInstance
+                         : &StenoEmilySymbolsDictionary::specifySpacesInstance;
 
   case StenoDictionaryType::ORTHOSPELLING:
     return new StenoOrthospellingDictionary(

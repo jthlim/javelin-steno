@@ -11,7 +11,7 @@
 
 //---------------------------------------------------------------------------
 
-enum class ButtonScriptId {
+enum class ButtonScriptId : int {
   DISPLAY_OVERLAY,
   BATTERY_UPDATE,
   CONNECTION_UPDATE,
@@ -23,7 +23,15 @@ enum class ButtonScriptId {
   U2F_WINK,
   STENO_MODE_UPDATE,
   BLE_PAIR_COMPLETE,
-  CONSOLE_HANDLER,
+
+  USER1,
+  USER2,
+  USER3,
+  USER4,
+  USER5,
+  USER6,
+  USER7,
+  USER8,
 
   COUNT,
 };

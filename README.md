@@ -348,7 +348,7 @@ Text: `This is a test`
 
 Output: `This i-s a t-e-s-t`
 
-## `{:disable_dictionary:<dictionary_name>}`
+## `{:toggle_dictionary:<dictionary_name>}`
 
 Toggles a dictionary between enabled and disabled.
 

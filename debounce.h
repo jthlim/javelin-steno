@@ -1,6 +1,7 @@
 //---------------------------------------------------------------------------
 
 #pragma once
+#include JAVELIN_BOARD_CONFIG
 #include "clock.h"
 #include <stdint.h>
 

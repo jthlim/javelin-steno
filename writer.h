@@ -15,6 +15,8 @@ public:
   virtual void WriteByte(char c) { Write(&c, 1); }
   virtual void Write(const char *data, size_t length) = 0;
 
+  void Dump(const void *data, size_t length);
+
   void WriteString(const char *s);
   void WriteBase64(const void *data, size_t length);
 

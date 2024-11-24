@@ -187,11 +187,11 @@ void StenoKeyCodeEmitter::EmitterContext::EmitMacOsUnicodeHex(
 }
 
 void StenoKeyCodeEmitter::EmitterContext::EmitIBus(uint32_t unicode) {
-  const uint32_t uKeyCode = hostLayout.asciiKeyCodes['u'];
+  const uint32_t uKeyCode = hostLayout.asciiKeyCodes[uint32_t('u')];
 
   EmitKeyCode(MODIFIER_L_CTRL_FLAG | MODIFIER_L_SHIFT_FLAG | uKeyCode);
   RecurseEmitIBus(unicode);
-  EmitKeyCode(hostLayout.asciiKeyCodes['\n']);
+  EmitKeyCode(hostLayout.asciiKeyCodes[uint32_t('\n')]);
   EmitIBusDelay();
 }
 
@@ -207,7 +207,8 @@ StenoKeyCodeEmitter::EmitterContext::RecurseEmitIBus(uint32_t code) {
   if (quotient != 0) {
     RecurseEmitIBus(quotient);
   }
-  EmitKeyCode(hostLayout.asciiKeyCodes["0123456789abcdef"[remainder]]);
+  EmitKeyCode(
+      hostLayout.asciiKeyCodes[uint32_t("0123456789abcdef"[remainder])]);
 }
 
 void StenoKeyCodeEmitter::EmitterContext::EmitWindowsHex(uint32_t unicode) {

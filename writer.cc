@@ -41,6 +41,38 @@ static char *WriteReversedHex(char *p, T v, const char *alphabet) {
   return p;
 }
 
+__attribute__((noinline)) void IWriter::Dump(const void *data, size_t length) {
+  const uint8_t *p = (const uint8_t *)data;
+
+  // clang-format off
+  // 0         1         2         3         4         5         6         7        7
+  // 0         0         0         0         0         0         0         0        9
+  // 00000000:  00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00  |................|↵
+  // clang-format on
+  char line[80];
+  line[78] = '|';
+  line[79] = '\n';
+
+  for (size_t i = 0; i < length; ++i) {
+    const size_t pos = i & 15;
+    if (pos == 0) {
+      if (i != 0) {
+        Write(line, 80);
+      }
+      line[61] = '|';
+      Str::Sprintf(line, "%08x:", p + i);
+      memset(line + 9, ' ', 78 - 9);
+    }
+    const size_t offset = 11 + 3 * pos + (pos >= 8);
+    const uint8_t c = p[i];
+    line[offset] = "0123456789ABCDEF"[c >> 4];
+    line[offset + 1] = "0123456789ABCDEF"[c & 0xf];
+    line[62 + pos] = 32 <= c && c < 128 ? c : '.';
+  }
+
+  Write(line, 80);
+}
+
 void IWriter::WriteString(const char *s) { Write(s, Str::Length(s)); }
 
 void IWriter::WriteBase64(const void *data, size_t length) {

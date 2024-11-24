@@ -1,8 +1,10 @@
 //---------------------------------------------------------------------------
 
 #include "orthography.h"
+
 #include "console.h"
 #include "crc.h"
+#include "hal/external_flash.h"
 #include "mem.h"
 #include "str.h"
 #include "unicode.h"
@@ -191,6 +193,7 @@ void StenoOrthography::Print() const {
 }
 
 void StenoOrthography::Print_Binding(void *context, const char *commandLine) {
+  const ExternalFlashSentry sentry;
   ((StenoOrthography *)context)->Print();
 }
 
@@ -346,6 +349,8 @@ void StenoCompiledOrthography::AddCandidates(BestCandidate &bestCandidate,
 //---------------------------------------------------------------------------
 
 void StenoCompiledOrthography::PrintInfo() const {
+  const ExternalFlashSentry sentry;
+
   Console::Printf("    Orthography\n");
   Console::Printf("      Rules: %zu\n", data.rules.GetCount());
   Console::Printf("      Aliases: %zu\n", data.aliases.GetCount());

@@ -2,6 +2,7 @@
 
 #include "host_layout.h"
 #include "console.h"
+#include "hal/external_flash.h"
 #include "key_code.h"
 #include "steno_key_code_emitter.h"
 #include "str.h"
@@ -87,6 +88,15 @@ HostLayout::GetSequenceForUnicode(uint32_t unicode) const {
   return nullptr;
 }
 
+uint32_t HostLayout::GetUnicodeForScancode(uint32_t scanCode) const {
+  for (size_t i = 0; i < sizeof(asciiKeyCodes) / sizeof(*asciiKeyCodes); ++i) {
+    if (asciiKeyCodes[i] == scanCode) {
+      return i;
+    }
+  }
+  return 0;
+}
+
 //---------------------------------------------------------------------------
 
 void HostLayouts::SetData(const HostLayouts &layouts) {
@@ -117,6 +127,7 @@ void HostLayouts::SetHostLayout_Binding(void *context,
   }
   ++layoutName;
 
+  const ExternalFlashSentry sentry;
   if (SetActiveLayout(layoutName)) {
     Console::SendOk();
   } else {
@@ -125,6 +136,8 @@ void HostLayouts::SetHostLayout_Binding(void *context,
 }
 
 void HostLayouts::ListHostLayouts() {
+  const ExternalFlashSentry sentry;
+
   Console::Printf("[");
   const char *format = "\"%J\"";
   for (const HostLayout *layout : instance->layouts) {
@@ -132,6 +145,11 @@ void HostLayouts::ListHostLayouts() {
     format = ",\"%J\"";
   }
   Console::Printf("]\n\n");
+}
+
+void HostLayouts::GetHostLayout() {
+  const ExternalFlashSentry sentry;
+  Console::Printf("%s\n\n", HostLayouts::GetActiveLayout().GetName());
 }
 
 //---------------------------------------------------------------------------

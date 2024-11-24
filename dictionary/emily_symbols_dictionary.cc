@@ -32,7 +32,10 @@ const StenoStroke DATA_MASK(StrokeMask::FR | StrokeMask::RR | StrokeMask::PR |
 
 //---------------------------------------------------------------------------
 
-StenoEmilySymbolsDictionary StenoEmilySymbolsDictionary::instance;
+StenoEmilySymbolsDictionary
+    StenoEmilySymbolsDictionary::specifySpacesInstance(true);
+StenoEmilySymbolsDictionary
+    StenoEmilySymbolsDictionary::specifyGlueInstance(false);
 
 //---------------------------------------------------------------------------
 
@@ -285,8 +288,10 @@ StenoEmilySymbolsDictionary::Lookup(const StenoDictionaryLookup &lookup) const {
   const char *text = data->text[variant];
 
   const char *capitalize = (s & CAPITALIZE_MASK).IsNotEmpty() ? "{-|}" : "";
-  const char *leftSpace = (s & LEFT_SPACE_MASK).IsNotEmpty() ? "{}" : "{^}";
-  const char *rightSpace = (s & RIGHT_SPACE_MASK).IsNotEmpty() ? "{}" : "{^}";
+  const char *leftSpace =
+      (s & LEFT_SPACE_MASK).IsNotEmpty() == isSpecifySpacesMode ? "{}" : "{^}";
+  const char *rightSpace =
+      (s & RIGHT_SPACE_MASK).IsNotEmpty() == isSpecifySpacesMode ? "{}" : "{^}";
 
   if (text[0] == '{' && (Str::Eq(text, "{*!}") || Str::Eq(text, "{*?}"))) {
     leftSpace = "";
@@ -395,7 +400,8 @@ static void VerifyStroke(const char *stroke, const char *result) {
   StenoStroke stenoStroke;
   stenoStroke.Set(stroke);
 
-  auto lookup = StenoEmilySymbolsDictionary::instance.Lookup(&stenoStroke, 1);
+  auto lookup = StenoEmilySymbolsDictionary::specifySpacesInstance.Lookup(
+      &stenoStroke, 1);
   assert(lookup.IsValid());
   assert(Str::Eq(lookup.GetText(), result));
   lookup.Destroy();
@@ -473,7 +479,7 @@ TEST_BEGIN("EmilySymbolsDictionary Reverse Lookup") {
 #endif
   StenoReverseDictionaryLookup lookup("!");
 
-  StenoEmilySymbolsDictionary::instance.ReverseLookup(lookup);
+  StenoEmilySymbolsDictionary::specifySpacesInstance.ReverseLookup(lookup);
   assert(lookup.HasResults());
   assert(lookup.results[0].length == 1);
 

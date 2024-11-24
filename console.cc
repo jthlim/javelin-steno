@@ -1,10 +1,12 @@
 //---------------------------------------------------------------------------
 
 #include "console.h"
+#include "bit_field.h"
 #include "mem.h"
 #include "str.h"
 #include "unicode.h"
 #include <assert.h>
+#include <cstdlib>
 #include <stdarg.h>
 #include <stdio.h>
 
@@ -49,7 +51,51 @@ ConsoleWriter::SetConnection(ConnectionId connectionId,
 
 //---------------------------------------------------------------------------
 
+int Console::ChannelHistory::AllocateId() {
+  BitField<100> used;
+  used.ClearAll();
+  for (const uint8_t h : history) {
+    used.Set(h);
+  }
+
+  for (size_t i = 1; i < 100; ++i) {
+    if (!used.IsSet(i)) {
+      AddHistoryEntry(i);
+      return i;
+    }
+  }
+  return 0;
+}
+
+void Console::ChannelHistory::Touch(int channelId) {
+  if (channelId <= 0 || channelId > 99) {
+    return;
+  }
+
+  if (history.Back() == channelId) {
+    return;
+  }
+  history.Remove(channelId);
+  AddHistoryEntry(channelId);
+}
+
+void Console::ChannelHistory::AddHistoryEntry(int channelId) {
+  if (history.IsFull()) {
+    history.PopFront();
+  }
+  history.Add(channelId);
+}
+
+//---------------------------------------------------------------------------
+
 Console Console::instance;
+
+Console::Console() {
+  freeBuffers.Add(&channels[0]);
+  freeBuffers.Add(&channels[1]);
+  freeBuffers.Add(&channels[2]);
+  freeBuffers.Add(&channels[3]);
+}
 
 static const ConsoleCommand HELP_COMMAND = {
     .command = "help",
@@ -116,94 +162,104 @@ void Console::WriteScriptEvent(const char *text) {
   Console::Printf("EV {\"event\":\"script_event\",\"text\":\"%J\"}\n\n", text);
 }
 
-void Console::Dump(const void *data, size_t length) {
-  const uint8_t *p = (const uint8_t *)data;
-
-  // clang-format off
-  // 0         1         2         3         4         5         6         7        7
-  // 0         0         0         0         0         0         0         0        9
-  // 00000000:  00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00  |................|
-  // clang-format on
-  char line[80];
-  line[78] = '|';
-  line[79] = '\n';
-
-  for (size_t i = 0; i < length; ++i) {
-    const size_t pos = i & 15;
-    if (pos == 0) {
-      if (i != 0) {
-        Console::Write(line, 80);
-      }
-      memset(line, ' ', 78);
-      line[61] = '|';
-      Str::Sprintf(line, "%08x: ", p + i);
-      line[10] = ' ';
-    }
-    const size_t offset = 11 + 3 * pos + (pos >= 8);
-    const uint8_t c = p[i];
-    line[offset] = "0123456789ABCDEF"[c >> 4];
-    line[offset + 1] = "0123456789ABCDEF"[c & 0xf];
-    line[62 + pos] = c < 32 || c >= 128 ? '.' : c;
-  }
-
-  Console::Write(line, 80);
-}
-
 __attribute__((weak)) void Console::Flush() {}
 
 //---------------------------------------------------------------------------
 
+Console::Channel *Console::GetChannel(int channelId, bool hasChannelId) {
+  if (channelId >= 0) {
+    for (Channel *c : activeBuffers) {
+      if (c->id == channelId) {
+        return c;
+      }
+    }
+  }
+  // No channel ID? Return the last active buffer if there is one.
+  if (channelId < 0 && activeBuffers.IsNotEmpty()) {
+    return activeBuffers.Back();
+  }
+
+  Channel *result;
+  if (freeBuffers.IsEmpty()) {
+    // No free buffers?
+    // This could happen if multiple messages were aborted mid-message for
+    // whatever reason. Best is to just return the oldest in the activeBuffers
+    // and move it to the top.
+    result = activeBuffers.Front();
+    activeBuffers.PopFront();
+  } else {
+    result = freeBuffers.PopBack();
+  }
+  activeBuffers.Add(result);
+  result->Reset(channelId, hasChannelId);
+  return result;
+}
+
+int Console::AllocateChannelId() { return channelHistory.AllocateId(); }
+
 void Console::HandleInput(const char *data, size_t length) {
-  for (size_t i = 0; i < length; ++i) {
-    if (data[i] == 0) {
+  int channelId = -1;
+  const char *end = data + length;
+  bool hasChannelId = false;
+
+  // If the input starts with 'c##<space>', then treat it as channel input.
+  if (length > 4 && data[0] == 'c' && Unicode::IsAsciiDigit(data[1]) &&
+      Unicode::IsAsciiDigit(data[2]) && data[3] == ' ') {
+    channelId = 10 * (data[1] - '0') + data[2] - '0';
+    channelHistory.Touch(channelId);
+    hasChannelId = true;
+    data += 4;
+  } else {
+    // If preceeded by digits, treat that as the channelId
+    const char *endParse = Str::ParseInteger(&channelId, data, false);
+    if (endParse) {
+      if (*endParse == ' ') {
+        data = endParse + 1;
+      } else {
+        channelId = -1;
+      }
+    }
+  }
+
+  Channel *channel = GetChannel(channelId, hasChannelId);
+  for (const char *p = data; p < end; ++p) {
+    const uint8_t c = *p;
+    if (c == '\0') {
       continue;
     }
 
-    if (data[i] == '\n') {
-      ProcessLineBuffer();
+    if (c == '\n') {
+      channel->AddByte('\0');
+      ProcessChannelCommand(*channel);
+      channel->Reset(channelId, hasChannelId);
       continue;
     }
 
-    if (lineBufferCount == sizeof(lineBuffer) - 1) {
-      isTooLong = true;
-      continue;
-    }
-
-    lineBuffer[lineBufferCount++] = data[i];
+    channel->AddByte(c);
+  }
+  if (channel->bufferCount == 0) {
+    activeBuffers.Remove(channel);
+    freeBuffers.Add(channel);
   }
 }
 
-void Console::ProcessLineBuffer() {
-  if (lineBufferCount == 0) {
+void Console::ProcessChannelCommand(Channel &channel) {
+  if (channel.bufferCount == 0) {
     return;
   }
 
-  lineBuffer[lineBufferCount] = '\0';
-  lineBufferCount = 0;
-
-  size_t commandOffset = 0;
-  while (commandOffset < 12 &&
-         Unicode::IsAsciiDigit(lineBuffer[commandOffset])) {
-    ++commandOffset;
-  }
-  if (lineBuffer[commandOffset] == ' ') {
-    commandOffset++;
-    Write(lineBuffer, commandOffset);
-  } else {
-    commandOffset = 0;
+  if (channel.id >= 0) {
+    Printf(channel.usedChannelId ? "c%02d " : "%d ", channel.id);
   }
 
-  if (isTooLong) {
-    isTooLong = false;
+  if (channel.isTooLong) {
     Printf("ERR Command too long.\n\n");
     return;
   }
 
-  char *lineBufferWithoutId = lineBuffer + commandOffset;
-
-  const ConsoleCommand *command = GetCommand(lineBufferWithoutId);
+  const ConsoleCommand *command = GetCommand(channel.buffer);
   if (command) {
-    (*command->handler)(command->context, lineBufferWithoutId);
+    (*command->handler)(command->context, channel.buffer);
   } else {
     Printf("ERR Invalid command. Use \"help\" for a list of commands\n\n");
   }
@@ -236,10 +292,9 @@ void Console::SendOk() { Write("OK\n\n", 4); }
 
 // Used to flush the output buffer and ensure a stable connection.
 void Console::HelloCommand(void *context, const char *line) {
-  uint32_t buffer[256 / 4];
-  Mem::Clear(buffer);
-  Write((const char *)buffer, 256);
-  Write("ID Hello\n\n", 10);
+  const char *suffix = strchr(line, ' ');
+  Printf("c%02d ID Hello%s\n\n", instance.AllocateChannelId(),
+         suffix == nullptr ? "" : suffix);
 }
 
 void Console::HelpCommand(void *context, const char *line) {

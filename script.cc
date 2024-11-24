@@ -23,31 +23,62 @@ void Script::ExecuteScript(size_t offset) {
     return;
   }
 
-#if DEBUG
   intptr_t *const start = stackTop;
-#endif
-
   Run(offset);
-
-#if DEBUG
   assert(stackTop == start);
-#endif
+}
+
+static uint32_t ZigZagEncode(int32_t value) {
+  return (value << 1) ^ (value >> 31);
+}
+
+static void WriteVarInt(char *&p, uint32_t x) {
+  if (x < 0x80) {
+    *p++ = x << 1;
+  } else if (x < 0x4000) {
+    *p++ = (x << 2) | 1;
+    *p++ = x >> 6;
+  } else if (x < 0x200000) {
+    *p++ = (x << 3) | 3;
+    *p++ = x >> 5;
+    *p++ = x >> 13;
+  } else if (x < 0x10000000) {
+    *p++ = (x << 4) | 7;
+    *p++ = x >> 4;
+    *p++ = x >> 12;
+    *p++ = x >> 20;
+  } else {
+    *p++ = (x << 5) | 15;
+    *p++ = x >> 3;
+    *p++ = x >> 11;
+    *p++ = x >> 19;
+    *p++ = x >> 27;
+  }
 }
 
 void Script::PrintScriptGlobals() const {
-  Console::Printf("{");
-  bool firstTime = true;
-  for (int i = 0; i < 256; ++i) {
-    if (globals[i]) {
-      if (firstTime) {
-        firstTime = false;
-      } else {
-        Console::Printf(",");
-      }
-      Console::Printf("\n\t\"%d\": \"%x\"", i, globals[i]);
+  char buffer[256 * 5 + 4];
+  char *p = buffer;
+
+  int i = 0;
+  while (i < 256) {
+    int j = i;
+    while (j < 256 && globals[j] == 0) {
+      ++j;
+    }
+    WriteVarInt(p, j - i);
+    i = j;
+
+    while (j < 256 && globals[j] != 0) {
+      ++j;
+    }
+    WriteVarInt(p, j - i);
+    for (; i < j; ++i) {
+      WriteVarInt(p, ZigZagEncode(globals[i]));
     }
   }
-  Console::Printf("\n}\n\n");
+
+  Console::Printf("%D\n\n", buffer, size_t(p - buffer));
 }
 
 //---------------------------------------------------------------------------
@@ -68,7 +99,7 @@ public:
   intptr_t Pop() {
 #if JAVELIN_CPU_CORTEX_M4
     intptr_t r;
-    asm("ldr %0, [%1, #-4]!" : "=r"(r), "+r"(p));
+    asm("ldr %0, [%1, #-4]!" : "=l"(r), "+l"(p));
     return r;
 #else
     return *--p;
@@ -76,7 +107,7 @@ public:
   }
   void Push(intptr_t v) {
 #if JAVELIN_CPU_CORTEX_M4
-    asm("stmia %0!, {%1}" : "+r"(p) : "r"(v));
+    asm("stmia %0!, {%1}" : "+l"(p) : "l"(v));
 #else
     *p++ = v;
 #endif
@@ -87,13 +118,13 @@ public:
   template <typename T> void TwoParam(T op) {
 #if JAVELIN_CPU_CORTEX_M4
     intptr_t a, b;
-    asm("ldrd %0, %1, [%r2, #-8]!" : "=r"(a), "=r"(b), "+r"(p));
+    asm("ldrd %0, %1, [%r2, #-8]!" : "=l"(a), "=l"(b), "+l"(p));
 #elif JAVELIN_CPU_CORTEX_M0
     intptr_t a, b;
     asm("sub %2, #8\n\t"
         "ldr %0, [%2]\n\t"
         "ldr %1, [%2, #4]\n\t"
-        : "=r"(a), "=r"(b), "+r"(p));
+        : "=l"(a), "=l"(b), "+l"(p));
 #else
     const intptr_t b = Pop();
     const intptr_t a = Pop();
@@ -104,13 +135,13 @@ public:
   template <typename T> void BinaryOp(T op) {
 #if JAVELIN_CPU_CORTEX_M4
     intptr_t a, b;
-    asm("ldrd %0, %1, [%r2, #-8]!" : "=r"(a), "=r"(b), "+r"(p));
+    asm("ldrd %0, %1, [%r2, #-8]!" : "=l"(a), "=l"(b), "+l"(p));
 #elif JAVELIN_CPU_CORTEX_M0
     intptr_t a, b;
     asm("sub %2, #8\n\t"
         "ldr %0, [%2]\n\t"
         "ldr %1, [%2, #4]\n\t"
-        : "=r"(a), "=r"(b), "+r"(p));
+        : "=l"(a), "=l"(b), "+l"(p));
 #else
     const intptr_t b = Pop();
     const intptr_t a = Pop();
@@ -134,7 +165,7 @@ public:
   uint32_t ReadU16() {
 #if JAVELIN_CPU_CORTEX_M4
     uint32_t r;
-    asm("ldrh %0, [%1], #2" : "=r"(r), "+r"(p));
+    asm("ldrh %0, [%1], #2" : "=l"(r), "+l"(p));
     return r;
 #else
     const uint32_t v = p[0] + (p[1] << 8);
@@ -146,7 +177,7 @@ public:
   int32_t ReadS16() {
 #if JAVELIN_CPU_CORTEX_M4
     int32_t r;
-    asm("ldrsh %0, [%1], #2" : "=r"(r), "+r"(p));
+    asm("ldrsh %0, [%1], #2" : "=l"(r), "+l"(p));
     return r;
 #else
     int32_t value = p[0] + (p[1] << 8);
@@ -162,7 +193,7 @@ public:
     int32_t r;
     asm("ldr %0, [%1], #3\n\t"
         "sbfx %0, %0, #0, #24\n\t"
-        : "=r"(r), "+r"(p));
+        : "=l"(r), "+l"(p));
     return r;
 #else
     int32_t value = p[0] + (p[1] << 8) + (p[2] << 16);
@@ -176,7 +207,7 @@ public:
   int32_t ReadS32() {
 #if JAVELIN_CPU_CORTEX_M4
     int32_t v;
-    asm("ldmia %1!, {%0}" : "=r"(v), "+r"(p));
+    asm("ldr %0, [%1], #4" : "=l"(v), "+l"(p));
 #else
     const int32_t v = p[0] + (p[1] << 8) + (p[2] << 16) + (p[3] << 24);
     p += 4;
@@ -226,9 +257,16 @@ next2:
     CONTINUE;
   case BC::PUSH_BYTES_1U: {
     int value = p.ReadU8();
+#if JAVELIN_CPU_CORTEX_M4
+    asm volatile("cmp %0, #0x3c\n\t"
+                 "it lt\n\t"
+                 "sublt %0, #0x3c\n\t"
+                 : "+l"(value));
+#else
     if (value < 0x3c) {
       value -= 0x3c;
     }
+#endif
     stack.Push(value);
     CONTINUE;
   }

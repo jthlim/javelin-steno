@@ -24,6 +24,11 @@ public:
     return result;
   }
 
+  const T *operator->() const {
+    const T *p = (*this);
+    return p;
+  }
+
   XipPointer operator+(int t) { return XipPointer(p + t); }
   XipPointer operator+(size_t t) { return XipPointer(p + t); }
   void operator+=(size_t t) { p += t; }

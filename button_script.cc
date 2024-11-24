@@ -72,10 +72,6 @@ void ButtonScript::ExecuteScriptId(ButtonScriptId scriptId,
   }
 
   const size_t offset = scriptOffsets[(size_t)scriptId];
-  if (offset == 0) {
-    return;
-  }
-
   ExecuteScript(offset, scriptTime);
 }
 
@@ -90,15 +86,11 @@ void ButtonScript::PrintInfo() const {
   Console::Printf("Script\n");
 
   Console::Printf("  Callbacks: [");
-  bool firstTime = true;
+  const char *prefix = "";
   for (size_t i = 0; i < (size_t)ButtonScriptId::COUNT; ++i) {
     if (scriptOffsets[i] != 0) {
-      if (firstTime) {
-        firstTime = false;
-        Console::Printf("%zu", i);
-      } else {
-        Console::Printf(", %zu", i);
-      }
+      Console::Printf("%s%zu: 0x%zx", prefix, i, scriptOffsets[i]);
+      prefix = ", ";
     }
   }
   Console::Printf("]\n");

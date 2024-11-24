@@ -855,7 +855,7 @@ void StenoSegmentBuilder::HandleRepeatLastStroke(BuildSegmentContext &context,
 TEST_BEGIN("StrokeHistory: Test single segment") {
   StenoCompactMapDictionary mainDictionary(TestDictionary::definition);
   StenoDictionary *const DICTIONARIES[] = {
-      &StenoEmilySymbolsDictionary::instance,
+      &StenoEmilySymbolsDictionary::specifySpacesInstance,
       &mainDictionary,
   };
   StenoDictionaryList dictionary(DICTIONARIES, 2);
@@ -881,7 +881,7 @@ TEST_END
 TEST_BEGIN("StrokeHistory: Test two segments, with multi-stroke") {
   StenoCompactMapDictionary mainDictionary(TestDictionary::definition);
   StenoDictionary *const DICTIONARIES[] = {
-      &StenoEmilySymbolsDictionary::instance,
+      &StenoEmilySymbolsDictionary::specifySpacesInstance,
       &mainDictionary,
   };
   StenoDictionaryList dictionary(DICTIONARIES, 2);
@@ -910,7 +910,7 @@ TEST_END
 TEST_BEGIN("StrokeHistory: Test *? splits strokes") {
   StenoCompactMapDictionary mainDictionary(TestDictionary::definition);
   StenoDictionary *const DICTIONARIES[] = {
-      &StenoEmilySymbolsDictionary::instance,
+      &StenoEmilySymbolsDictionary::specifySpacesInstance,
       &mainDictionary,
   };
   StenoDictionaryList dictionary(DICTIONARIES, 2);
@@ -982,7 +982,7 @@ TEST_BEGIN("StrokeHistory: Test {*?} behaves properly") {
 
   StenoCompactMapDictionary mainDictionary(TestDictionary::definition);
   StenoDictionary *const DICTIONARIES[] = {
-      &StenoEmilySymbolsDictionary::instance,
+      &StenoEmilySymbolsDictionary::specifySpacesInstance,
       &mainDictionary,
   };
   StenoDictionaryList dictionary(DICTIONARIES, 2);
