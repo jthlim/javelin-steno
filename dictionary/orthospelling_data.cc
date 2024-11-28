@@ -34,6 +34,10 @@ bool OrthospellingData::ResolveStroke(StenoStroke stroke, Context context,
     }
 
     context.Add(&letter);
+    if (i + 1 < letters.count && letter.HasSameActivation(letters[i + 1])) {
+      continue;
+    }
+
     stroke &= ~letter.stroke;
 
     if (stroke.IsEmpty()) {

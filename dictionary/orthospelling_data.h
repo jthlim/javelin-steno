@@ -22,6 +22,10 @@ struct OrthospellingData {
     StenoStroke mask;
     uint8_t order; // 0-2 inclusive, representing the buffer used in
     const char data[7];
+
+    bool HasSameActivation(const Letter &other) const {
+      return stroke == other.stroke && mask == other.mask;
+    }
   };
 
   struct Exit {
