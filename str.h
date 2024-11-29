@@ -67,7 +67,7 @@ public:
   static char *Trim(const char *data);
 
   template <size_t N>
-  static constexpr size_t ConstLength(const char (&text)[N]) {
+  static consteval size_t ConstLength(const char (&text)[N]) {
     return N - 1;
   }
   static size_t Length(const uint8_t *p) { return strlen((const char *)p); }

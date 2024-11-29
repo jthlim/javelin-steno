@@ -58,7 +58,7 @@ int Console::ChannelHistory::AllocateId() {
     used.Set(h);
   }
 
-  for (size_t i = 1; i < 100; ++i) {
+  for (int i = 1; i < 100; ++i) {
     if (!used.IsSet(i)) {
       AddHistoryEntry(i);
       return i;

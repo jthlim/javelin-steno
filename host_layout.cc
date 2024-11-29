@@ -91,7 +91,7 @@ HostLayout::GetSequenceForUnicode(uint32_t unicode) const {
 uint32_t HostLayout::GetUnicodeForScancode(uint32_t scanCode) const {
   for (size_t i = 0; i < sizeof(asciiKeyCodes) / sizeof(*asciiKeyCodes); ++i) {
     if (asciiKeyCodes[i] == scanCode) {
-      return i;
+      return (uint32_t) i;
     }
   }
   return 0;

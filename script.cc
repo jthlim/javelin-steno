@@ -74,7 +74,7 @@ void Script::PrintScriptGlobals() const {
     }
     WriteVarInt(p, j - i);
     for (; i < j; ++i) {
-      WriteVarInt(p, ZigZagEncode(globals[i]));
+      WriteVarInt(p, ZigZagEncode((int32_t) globals[i]));
     }
   }
 
