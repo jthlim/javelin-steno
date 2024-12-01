@@ -9,7 +9,7 @@
 // bloat of using std::nothrow.
 class JavelinMallocAllocate {
 public:
-  constexpr JavelinMallocAllocate() = default;
+  consteval JavelinMallocAllocate() = default;
 
   static inline void *operator new(size_t size) noexcept {
     return malloc(size);

@@ -51,14 +51,14 @@ struct JeffPhrasingVariant {
     MAP,
   };
 
-  constexpr JeffPhrasingVariant() : type(Type::UNKNOWN), text(nullptr) {}
-  constexpr JeffPhrasingVariant(const char *text)
+  consteval JeffPhrasingVariant() : type(Type::UNKNOWN), text(nullptr) {}
+  consteval JeffPhrasingVariant(const char *text)
       : type(Type::TEXT), text(text) {}
-  constexpr JeffPhrasingVariant(const JeffPhrasingMap *map)
+  consteval JeffPhrasingVariant(const JeffPhrasingMap *map)
       : type(Type::MAP), map(map) {}
 
   template <size_t N>
-  constexpr JeffPhrasingVariant(const JeffPhrasingMapData<N> *mapData)
+  consteval JeffPhrasingVariant(const JeffPhrasingMapData<N> *mapData)
       : type(Type::MAP), mapData(mapData) {}
 
   const JeffPhrasingVariant *Lookup(uint32_t key) const;

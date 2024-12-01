@@ -3,6 +3,7 @@
 #include "script.h"
 #include "console.h"
 #include "mem.h"
+#include "varint_writer.h"
 
 #include <assert.h>
 
@@ -28,37 +29,9 @@ void Script::ExecuteScript(size_t offset) {
   assert(stackTop == start);
 }
 
-static uint32_t ZigZagEncode(int32_t value) {
-  return (value << 1) ^ (value >> 31);
-}
-
-static void WriteVarInt(char *&p, uint32_t x) {
-  if (x < 0x80) {
-    *p++ = x << 1;
-  } else if (x < 0x4000) {
-    *p++ = (x << 2) | 1;
-    *p++ = x >> 6;
-  } else if (x < 0x200000) {
-    *p++ = (x << 3) | 3;
-    *p++ = x >> 5;
-    *p++ = x >> 13;
-  } else if (x < 0x10000000) {
-    *p++ = (x << 4) | 7;
-    *p++ = x >> 4;
-    *p++ = x >> 12;
-    *p++ = x >> 20;
-  } else {
-    *p++ = (x << 5) | 15;
-    *p++ = x >> 3;
-    *p++ = x >> 11;
-    *p++ = x >> 19;
-    *p++ = x >> 27;
-  }
-}
-
 void Script::PrintScriptGlobals() const {
   char buffer[256 * 5 + 4];
-  char *p = buffer;
+  VarintWriter writer(buffer);
 
   int i = 0;
   while (i < 256) {
@@ -66,19 +39,19 @@ void Script::PrintScriptGlobals() const {
     while (j < 256 && globals[j] == 0) {
       ++j;
     }
-    WriteVarInt(p, j - i);
+    writer.Write(j - i);
     i = j;
 
     while (j < 256 && globals[j] != 0) {
       ++j;
     }
-    WriteVarInt(p, j - i);
+    writer.Write(j - i);
     for (; i < j; ++i) {
-      WriteVarInt(p, ZigZagEncode((int32_t) globals[i]));
+      writer.Write(VarintWriter::ZigZagEncode((int32_t)globals[i]));
     }
   }
 
-  Console::Printf("%D\n\n", buffer, size_t(p - buffer));
+  Console::Printf("%D\n\n", buffer, size_t(writer.p - buffer));
 }
 
 //---------------------------------------------------------------------------

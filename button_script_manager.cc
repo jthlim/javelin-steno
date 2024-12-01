@@ -222,6 +222,36 @@ void ButtonScriptManager::PrintScriptGlobals_Binding(void *context,
   ((ButtonScriptManager *)context)->script.PrintScriptGlobals();
 }
 
+void ButtonScriptManager::SetScriptGlobal_Binding(void *context,
+                                                  const char *commandLine) {
+  const char *p = strchr(commandLine, ' ');
+  if (!p) {
+    Console::Printf("ERR Missing globalIndex\n\n");
+    return;
+  }
+
+  int globalIndex;
+  p = Str::ParseInteger(&globalIndex, p + 1, false);
+  if (!p) {
+    Console::Printf("ERR Unable to parse globalIndex\n\n");
+    return;
+  }
+  if (*p == '\0') {
+    Console::Printf("ERR Missing value\n\n");
+    return;
+  }
+
+  int value;
+  p = Str::ParseInteger(&value, p + 1, true);
+  if (!p) {
+    Console::Printf("ERR Unable to parse value\n\n");
+    return;
+  }
+
+  ((ButtonScriptManager *)context)->script.SetGlobal(globalIndex, value);
+  Console::SendOk();
+}
+
 void ButtonScriptManager::AddConsoleCommands(Console &console) {
   console.RegisterCommand("call_script",
                           "Call scripts registered with setScript",
@@ -240,6 +270,9 @@ void ButtonScriptManager::AddConsoleCommands(Console &console) {
   console.RegisterCommand("print_script_globals",
                           "Prints non-zero script globals",
                           PrintScriptGlobals_Binding, this);
+  console.RegisterCommand("set_script_global",
+                          "Set script global index to a value",
+                          SetScriptGlobal_Binding, this);
 }
 
 //---------------------------------------------------------------------------

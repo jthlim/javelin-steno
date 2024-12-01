@@ -45,6 +45,7 @@ public:
                                                 const char *commandLine);
   static void PrintScriptGlobals_Binding(void *context,
                                          const char *commandLine);
+  static void SetScriptGlobal_Binding(void *context, const char *commandLine);
   void AddConsoleCommands(Console &console);
   static void PrintEventHistory() { container->script.PrintEventHistory(); }
 

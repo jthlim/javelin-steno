@@ -132,6 +132,9 @@ __attribute__((weak)) uint32_t Crc16Ccitt(const void *p, size_t count) {
   return hash;
 }
 
+#if JAVELIN_PLATFORM_NRF5_SDK
+__attribute((section(".code_ram")))
+#endif
 __attribute__((weak)) uint32_t Crc32(const void *p, size_t count) {
   const uint8_t *v = (const uint8_t *)p;
   uint32_t hash = 0xffffffff;
