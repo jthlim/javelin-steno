@@ -282,7 +282,7 @@ void StenoKeyPressTokenizer::ProcessNextToken() {
     return;
   }
   nextToken.type = StenoKeyPressToken::Type::KEY;
-  nextToken.keyCode = entry->keyCode;
+  nextToken.keyCode = entry->keyCode.TranslateForHostLayout();
 }
 
 //---------------------------------------------------------------------------

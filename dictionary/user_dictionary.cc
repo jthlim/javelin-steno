@@ -227,9 +227,12 @@ bool StenoUserDictionary::Add(const StenoStroke *strokes, size_t length,
   StenoDictionaryLookupResult lookup =
       Lookup(StenoDictionaryLookup(strokes, length));
 
-  if (lookup.IsValid() && Str::Eq(lookup.GetText(), word)) {
-    lookup.Destroy();
-    return true;
+  if (lookup.IsValid()) {
+    if (Str::Eq(lookup.GetText(), word)) {
+      lookup.Destroy();
+      return true;
+    }
+    Remove(strokes, length);
   }
   lookup.Destroy();
 

@@ -144,4 +144,14 @@ uint32_t KeyCode::ConvertToUnicode(uint32_t keyCodeAndModifiers) {
   return KEY_CODE_TO_UNICODE[keyCodeIndex][caseIndex];
 }
 
+KeyCode KeyCode::TranslateForHostLayout() const {
+  if (value < KeyCode::A || value > KeyCode::Z) {
+    return *this;
+  }
+
+  return HostLayouts::GetActiveLayout()
+             .asciiKeyCodes['a' + value - KeyCode::A] &
+         0xff;
+}
+
 //---------------------------------------------------------------------------

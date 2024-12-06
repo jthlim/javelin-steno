@@ -85,7 +85,8 @@ bool StenoCompactMapDictionaryStrokesDefinition::HasEntry(size_t index) const {
 
 size_t StenoCompactMapDictionaryStrokesDefinition::GetEntryCount() const {
   size_t entryCount = 0;
-  for (size_t i = 0; i < hashMapSize / 128; ++i) {
+  const size_t end = (hashMapMask + 1) / 128;
+  for (size_t i = 0; i < end; ++i) {
     entryCount += offsets[i].PopCount();
   }
   return entryCount;
@@ -128,11 +129,11 @@ StenoCompactMapDictionary::Lookup(const StenoDictionaryLookup &lookup) const {
   const StenoCompactMapDictionaryStrokesDefinition &strokesDefinition =
       strokes[lookup.length];
 
-  if (strokesDefinition.hashMapSize == 0) {
+  if (strokesDefinition.hashMapMask == 0) {
     return StenoDictionaryLookupResult::CreateInvalid();
   }
 
-  size_t entryIndex = lookup.hash & (strokesDefinition.hashMapSize - 1);
+  size_t entryIndex = lookup.hash & strokesDefinition.hashMapMask;
   const size_t offset = strokesDefinition.GetOffset(entryIndex);
   if (offset == (size_t)-1) {
     return StenoDictionaryLookupResult::CreateInvalid();
@@ -153,7 +154,7 @@ StenoCompactMapDictionary::Lookup(const StenoDictionaryLookup &lookup) const {
     }
 
     dataIndex += entrySize;
-    if (++entryIndex >= strokesDefinition.hashMapSize) {
+    if (++entryIndex > strokesDefinition.hashMapMask) {
       entryIndex = 0;
       dataIndex = 0;
     }
@@ -170,11 +171,11 @@ const StenoDictionary *StenoCompactMapDictionary::GetDictionaryForOutline(
   const StenoCompactMapDictionaryStrokesDefinition &strokesDefinition =
       strokes[lookup.length];
 
-  if (strokesDefinition.hashMapSize == 0) {
+  if (strokesDefinition.hashMapMask == 0) {
     return nullptr;
   }
 
-  size_t entryIndex = lookup.hash & (strokesDefinition.hashMapSize - 1);
+  size_t entryIndex = lookup.hash & strokesDefinition.hashMapMask;
   const size_t offset = strokesDefinition.GetOffset(entryIndex);
   if (offset == (size_t)-1) {
     return nullptr;
@@ -193,7 +194,7 @@ const StenoDictionary *StenoCompactMapDictionary::GetDictionaryForOutline(
     }
 
     dataIndex += entrySize;
-    if (++entryIndex >= strokesDefinition.hashMapSize) {
+    if (++entryIndex > strokesDefinition.hashMapMask) {
       entryIndex = 0;
       dataIndex = 0;
     }
@@ -254,12 +255,12 @@ bool StenoCompactMapDictionary::Remove(const char *name,
   const StenoCompactMapDictionaryStrokesDefinition &strokesDefinition =
       this->strokes[length];
 
-  if (strokesDefinition.hashMapSize == 0) {
+  if (strokesDefinition.hashMapMask == 0) {
     return false;
   }
 
   const uint32_t hash = StenoStroke::Hash(strokes, length);
-  size_t entryIndex = hash & (strokesDefinition.hashMapSize - 1);
+  size_t entryIndex = hash & strokesDefinition.hashMapMask;
   const size_t offset = strokesDefinition.GetOffset(entryIndex);
   if (offset == (size_t)-1) {
     return false;
@@ -280,7 +281,7 @@ bool StenoCompactMapDictionary::Remove(const char *name,
     }
 
     dataIndex += entrySize;
-    if (++entryIndex >= strokesDefinition.hashMapSize) {
+    if (++entryIndex > strokesDefinition.hashMapMask) {
       entryIndex = 0;
       dataIndex = 0;
     }
@@ -303,7 +304,7 @@ void StenoCompactMapDictionary::PrintInfo(int depth) const {
   const uint8_t *start = (const uint8_t *)&definition;
   const uint8_t *end =
       (const uint8_t *)(lastStrokeDefinition.offsets +
-                        lastStrokeDefinition.hashMapSize / 128);
+                        (lastStrokeDefinition.hashMapMask + 1) / 128);
 
   Console::Printf("%s%s: %zu bytes\n", Spaces(depth), GetName(), end - start);
 }

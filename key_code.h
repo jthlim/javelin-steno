@@ -223,6 +223,8 @@ struct KeyCode {
   // Returns 0 if there's no simple conversion.
   static uint32_t ConvertToUnicode(uint32_t keyCodeAndModifiers);
 
+  KeyCode TranslateForHostLayout() const;
+
   bool operator==(const KeyCode &other) const { return value == other.value; }
   bool operator!=(const KeyCode &other) const { return value != other.value; }
 
