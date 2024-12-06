@@ -109,7 +109,7 @@ void StenoDictionaryList::UpdateMaximumOutlineLength() {
 }
 
 size_t StenoDictionaryList::GetMaximumOutlineLength(
-    const FastIterator<StenoDictionaryListEntry> &dictionaries) {
+    const FastIterable<StenoDictionaryListEntry> &dictionaries) {
   size_t max = 0;
   for (const StenoDictionaryListEntry &entry : dictionaries) {
     if (entry.combinedMaximumOutlineLength > max) {

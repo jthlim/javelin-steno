@@ -1,7 +1,7 @@
 //---------------------------------------------------------------------------
 
 #pragma once
-#include "../fast_iterator.h"
+#include "../fast_iterable.h"
 #include "../list.h"
 #include "dictionary.h"
 
@@ -98,14 +98,14 @@ public:
                                               const char *commandLine);
 
 private:
-  FastIterator<StenoDictionaryListEntry> dictionaries;
+  FastIterable<StenoDictionaryListEntry> dictionaries;
 
   static bool isSendDictionaryStatusEnabled;
 
   void SendDictionaryStatus(const char *name, bool enabled) const;
 
   static size_t GetMaximumOutlineLength(
-      const FastIterator<StenoDictionaryListEntry> &dictionaries);
+      const FastIterable<StenoDictionaryListEntry> &dictionaries);
 };
 
 //---------------------------------------------------------------------------
