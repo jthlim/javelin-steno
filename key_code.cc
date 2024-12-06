@@ -145,13 +145,23 @@ uint32_t KeyCode::ConvertToUnicode(uint32_t keyCodeAndModifiers) {
 }
 
 KeyCode KeyCode::TranslateForHostLayout() const {
-  if (value < KeyCode::A || value > KeyCode::Z) {
+  // Don't try and translate keypad items.
+  if (KeyCode::KP_SLASH <= value && value <= KeyCode::KP_EQUAL) {
     return *this;
   }
 
-  return HostLayouts::GetActiveLayout()
-             .asciiKeyCodes['a' + value - KeyCode::A] &
-         0xff;
+  const uint32_t unicode = KEY_CODE_TO_UNICODE[value][0];
+  if (unicode == 0 || unicode >= 128) {
+    return *this;
+  }
+
+  const uint32_t hostLayoutCode =
+      HostLayouts::GetActiveLayout().asciiKeyCodes[unicode];
+  if (hostLayoutCode == 0) {
+    return *this;
+  }
+
+  return hostLayoutCode;
 }
 
 //---------------------------------------------------------------------------

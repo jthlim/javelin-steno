@@ -232,9 +232,9 @@ bool StenoUserDictionary::Add(const StenoStroke *strokes, size_t length,
       lookup.Destroy();
       return true;
     }
+    lookup.Destroy();
     Remove(strokes, length);
   }
-  lookup.Destroy();
 
   const AddToDataBlockResult data =
       AddToDataBlock(strokes, (uint32_t)length, word);

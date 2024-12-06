@@ -1,6 +1,7 @@
 //---------------------------------------------------------------------------
 
 #pragma once
+#include "../fast_iterator.h"
 #include "../list.h"
 #include "dictionary.h"
 
@@ -14,7 +15,7 @@ struct StenoDictionaryListEntry {
         dictionary(dictionary) {}
 
   bool enabled;
-  size_t combinedMaximumOutlineLength;
+  uint16_t combinedMaximumOutlineLength;
   StenoDictionary *dictionary;
 
   StenoDictionary *operator->() const { return dictionary; }
@@ -97,14 +98,14 @@ public:
                                               const char *commandLine);
 
 private:
-  List<StenoDictionaryListEntry> &dictionaries;
+  FastIterator<StenoDictionaryListEntry> dictionaries;
 
   static bool isSendDictionaryStatusEnabled;
 
   void SendDictionaryStatus(const char *name, bool enabled) const;
 
-  static size_t
-  GetMaximumOutlineLength(const List<StenoDictionaryListEntry> &dictionaries);
+  static size_t GetMaximumOutlineLength(
+      const FastIterator<StenoDictionaryListEntry> &dictionaries);
 };
 
 //---------------------------------------------------------------------------

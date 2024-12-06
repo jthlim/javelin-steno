@@ -5,7 +5,6 @@
 #include "../console.h"
 #include "../flash.h"
 #include "../mem.h"
-#include "../str.h"
 
 //---------------------------------------------------------------------------
 
@@ -51,7 +50,15 @@ size_t StenoFullMapDictionaryStrokesDefinition::GetOffset(size_t index) const {
   }
 
   // mask << 1 prevents counting the current bit.
-  return Bit<sizeof(uint32_t)>::PopCount(mask << 1) + block.baseOffset;
+  const size_t result =
+      Bit<sizeof(uint32_t)>::PopCount(mask << 1) + block.baseOffset;
+
+  // This check saves comparison/branch instructions after inlining.
+  if (result == (size_t)-1) {
+    __builtin_unreachable();
+  }
+
+  return result;
 }
 
 bool StenoFullMapDictionaryStrokesDefinition::HasEntry(size_t index) const {
@@ -298,6 +305,7 @@ StenoFullMapDictionary::CreateStrokeCache(
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+#include "../str.h"
 #include "../unit_test.h"
 #include "test_dictionary.h"
 #include <assert.h>
