@@ -28,6 +28,7 @@ A value could be:
 - A pointer to a function
   - Named function: `@functionName` 
   - Anonymous function: `@{ <instructions> }`
+  - Anonymous function with parameters: `@(a, b) { <instructions> }`
   - Anonymous function with return value: `@var { <instructions> }`
   - Anonymous function with parameters and return value: `@(a, b) var { <instructions> }`
   - The programmer will need to ensure pointers to functions are called
@@ -80,7 +81,7 @@ Example:
 - `continue`
 
 Single statements can be used instead of blocks (`{ ... }`) for flow control
-statements, but function definitions must use curly braces.
+statements.
 
 ## Operators
 - `+` Add
@@ -113,8 +114,10 @@ right hand _expr_ if the identifier is not defined.
   - _scanCode_ constants can be found below.
   - Any pressed scan code should be accompanied by a `releaseScanCode`
     at some point in the future.
+
 - `func releaseScanCode(<scanCode>)`
   - Releasing a scan code that is not already pressed is a no-op.
+
 - `func tapScanCode(<scanCode>)`
   - Triggers a press and release of _scanCode_ immediately.
   - Note that on macOS, Caps Lock will not work with a tap, as it needs
@@ -123,14 +126,22 @@ right hand _expr_ if the identifier is not defined.
     pressScanCode(SC_CAPS);
     startTimer(<timerId>, 200, 0, @{ releaseScanCode(SC_CAPS); });
     ```
+
 - `func isScanCodePressed(<scanCode>) var`
   - Returns whether _scanCode_ is currently pressed.
+
 - `func moveMouse(<dx>, <dy>)`
+
 - `func wheelMouse(<delta>)`
+
 - `func pressMouseButton(<buttonIndex>)`
+
 - `func releaseMouseButton(<buttonIndex>)`
+
 - `func tapMouseButton(<buttonIndex>)`
+
 - `func isMouseButtonPressed(<buttonIndex>) var`
+
 - `func sendText("Example")`
   - Sends all of the key presses required to emit the specified string.
   - e.g.,
@@ -462,16 +473,16 @@ By convention, boards with per-key rgb lights have each key rgb id match
 the button index, then underglow lights after.
 
 ## Drawing Functions
-- `func clearDisplay(displayId)`
+- `func clearDisplay(<displayId>)`
   - Sets _displayId_ to a blank canvas.
   - _displayId_ is 0 for single screen keyboards.
   - _displayId_ is 0 for main side; and 1 for pair side of split keyboards.
 
-- `func setDrawColor(displayId, color)`
+- `func setDrawColor(<displayId>, <color>)`
   - Sets the current draw color for _displayId_.
   - For monochrome displays, 0 is empty, 1 is set.
 
-- `func setAutoDraw(displayId, autoDraw)`
+- `func setAutoDraw(<displayId>, <autoDraw>)`
   - Sets _displayId_ to be auto-drawn by Javelin.
   - Constants:
     ```
@@ -480,37 +491,42 @@ the button index, then underglow lights after.
     const AUTO_DRAW_STENO_LAYOUT = 2;
     const AUTO_DRAW_WPM = 3;
     ```
-- `func setScreenOn(displayId, on)`
+- `func setScreenOn(<displayId>, <on>)`
   - Enables screen display.
 
-- `func setScreenContrast(displayId, contrast)`
+- `func setScreenContrast(<displayId>, <contrast>)`
   - Sets the screen contrast from 0-255
 
-- `func drawPixel(displayId, x, y)`
-  - Sets the pixel at (x, y) to the current draw color
+- `func drawPixel(<displayId>, <x>, <y>)`
+  - Sets the pixel at (_x_, _y_) to the current draw color
 
-- `func drawLine(displayId, x1, y1, x2, y2)`
+- `func drawLine(<displayId>, <x1>, <y1>, <x2>, <y2>)`
   - Draws a line from (x1, y1) to (x2, y2) using the current draw color.
 
-- `func drawImage(displayId, x, y, image)`
+- `func drawImage(<displayId>, <x>, <y>, <image>)`
   - Draws an image at (x, y) using the current draw color.
 
-- `func drawText(displayId, x, y, fontId, alignment, text)`
+- `func drawText(<displayId>, <x>, <y>, <fontId>, <alignment>, <text>)`
   - Constants
     ```
     const TEXT_ALIGNMENT_LEFT = 0;
     const TEXT_ALIGNMENT_MIDDLE = 1;
     const TEXT_ALIGNMENT_RIGHT = 2;
+
+    const FONT_ID_DEFAULT = 0;
+    const FONT_ID_SMALL_DIGITS = 1;
+    const FONT_ID_MEDIUM_DIGITS = 2;
+    const FONT_ID_LARGE_DIGITS = 3;
     ```
-- `func drawRect(displayId, left, top, right, bottom)`
+- `func drawRect(<displayId>, <left>, <top>, <right>, <bottom>)`
   - Draws a rectangle using the current draw color
 
-- `func drawGrayscaleRange(displayId, x, y, data, minValue, maxValue)`
+- `func drawGrayscaleRange(<displayId>, <x>, <y>, <data>, <minValue>, <maxValue>)`
   - Draws pixels on the screen when the pixel value is in range
     [_minValue_, _maxValue_).
 
 ## Host Connectivity Functions
-- `func isConnected(connectionId)`
+- `func isConnected(<connectionId>)`
   - Returns whether _connectionId_ is active.
   - Use _CONNECTION_ID_ACTIVE_ to determine if actions will reach any host.
 
@@ -547,13 +563,13 @@ the button index, then underglow lights after.
   - If paired but disconnected, this will also initiate a reconnect.
 
 - `func isBleProfileConnected(profileId) var`
-  - Returns whether the BLE profile ID is connected.
+  - Returns whether the BLE _profileId_ is connected.
 
 - `func isBleProfilePaired(profileId) var`
-  - Returns whether the BLE profile ID has paired.
+  - Returns whether the BLE _profileId_ is paired.
 
 - `func isBleProfileSleeping(profileId) var`
-  - Returns whether the BLE profile ID has paired.
+  - Returns whether the BLE _profileId_'s host is sleeping.
 
 - `func isUsbMounted() var` [deprecated]
   - Returns whether any usb port is connected.
@@ -595,17 +611,22 @@ const CONNECTION_ID_USB2 = 3;
 - `func isMainPowered() var`
   - Returns whether the main (typically left) side of a split keyboard
     is externally powered.
+
 - `func isPairPowered() var`
   - Returns whether the pair (typically right) side of a split keyboard
     is externally powered.
+
 - `func isCharging() var`
   - Returns whether the current device is being charged.
   - In split keyboards, will return false if the side the script is running
     on not charging, even if the partner side is being charged.
+
 - `func getBatteryPercentage() var`
   - Returns value from 0-100.
-- `func setBoardPower(enable)`
+
+- `func setBoardPower(<enable>)`
   - If the board supports separate power domains, control power to RGB lights.
+
 - `func isBoardPowered() var`
   - If the board supports separate power domains, returns whether power is
     being supplied to the RGB lights.
@@ -613,40 +634,41 @@ const CONNECTION_ID_USB2 = 3;
 ## Timer Functions
 - `func getTime() var`
   - Returns milliseconds since start up.
-- `func startTimer(timerId, delayInMilliseconds, isRepeating, handler)`
+- `func startTimer(<timerId>, <delayInMilliseconds>, <isRepeating>, <handler>)`
   - Starts a timer that will call _handler_ after _delayInMilliseconds_.
   - _timerId_ is any chosen unique id for future calls to `stopTimer` and `isTimerActive` and must be positive.
-- `func stopTimer(timerId)`
+  - If _isRepeating_ is `1`, the timer should be stopped with `stopTimer`.
+- `func stopTimer(<timerId>)`
   - Cancels the specified _timerId_ if active.
   - If no timer with _timerId_ is running, this is a no-op.
-- `func isTimerActive(timerId) var`
+- `func isTimerActive(<timerId>) var`
   - Returns whether _timerId_ is currently active.
 
 ## GPIO Functions
-- `func setGpioPin(pin, zeroOrOne)`
-  - Sets a GPIO pin to 0 or 1.
-- `func setGpioInputPin(pin, pull)`
-  - Marks an pin for input.
+- `func setGpioPin(<pin>, <zeroOrOne>)`
+  - Sets a GPIO _pin_ to 0 or 1.
+- `func setGpioInputPin(<pin>, <pull>)`
+  - Marks a _pin_ for input with specified _pull_ configuration.
   - Constants:
     ```
     const PULL_NONE = 0;
     const PULL_DOWN = 1;
     const PULL_UP = 2;
     ```
-- `func readGpioPin(pin) var`
-  - Returns whether a GPIO is logic high level.
+- `func readGpioPin(<pin>) var`
+  - Returns whether a GPIO _pin_ is logic high level.
   - setGpioInputPin must be called before hand for the pin.
 
-- `func setGpioPinDutyCycle(pin, dutyCycle)`
+- `func setGpioPinDutyCycle(<pin>, <dutyCycle>)`
   - _dutyCycle_ ranges from 0 to 100.
-  - Sets pin to be on _dutyCycle_% of the time.
+  - Sets GPIO _pin_ to be on _dutyCycle_% of the time.
 
 ## Audio Functions
 - `func stopSound()`
   - Stops all sound playback.
-- `func playFrequency(frequencyInHz)`
-  - Plays a sound at the specified frequency.
-- `func playSequence(sequenceByteList)`
+- `func playFrequency(<frequencyInHz>)`
+  - Plays a sound at the specified _frequencyInHz_.
+- `func playSequence(<sequenceByteList>)`
   - Plays a sequence and automatically stops upon completion.
   - A sequence is a series of notes that have the following encoding:
     - noteIndex: 7 bits
@@ -659,7 +681,7 @@ const CONNECTION_ID_USB2 = 3;
   - Example:
      - C8 for 100ms, E8 for 100ms repeated 3 times is:
      - `playSequence([[62 05 66 05 62 05 66 05 62 05 66 05 00 00]])`
-- `func playWaveform(data, length, frequency)`
+- `func playWaveform(<data>, <length>, <frequency>)`
   - Placeholder, currently not available on any platform.
 
 ## Security Key Functions
@@ -668,8 +690,9 @@ These methods are only available on chips with secure storage.
 
 - `func isWaitingForUserPresence() var`
   - Returns whether user presence has been requested.
-- `func replyUserPresence(isPresent)`
+- `func replyUserPresence(<isPresent>)`
   - Responds whether a user is present or not.
+  - `replyUserPresence(1);` is the equivalent of touching other security keys.
 
 ## Miscellaneous Functions
 - `func rand() var`
@@ -683,11 +706,11 @@ These methods are only available on chips with secure storage.
   - The string returned is matched and replaced with the script's string pool
     so that direct equals and not equals comparisons can be performed.
 
-- `func getParameter(parameterName) var`
-  - Shortcut to `console("get_parameter parameterName")`
+- `func getParameter(<parameterName>) var`
+  - Shortcut to `console("get_parameter <parameterName>")`
 
-- `func getLedStatus(id) var`
-  - Returns whether the led status is on.
+- `func getLedStatus(<ledStatus>) var`
+  - Returns whether the keyboard LED status is on.
   - Constants:
 
     ```
@@ -698,7 +721,7 @@ These methods are only available on chips with secure storage.
     const LED_STATUS_KANA = 4;
     ```
 
-- `func setScript(scriptId, callbackFunc)`
+- `func setScript(<scriptId>, <callbackFunc>)`
   - Sets callback script to the specified function:
   - Constants:
     ```
@@ -724,7 +747,7 @@ These methods are only available on chips with secure storage.
     const SCRIPT_ID_USER8 = 18;
     ```
 
-- `func printValue(name, value)`
+- `func printValue(<name>, <value>)`
   - Used for debugging -- _value_ will be printed to the console, with
     "Show All Data" enabled.
   - Example:
@@ -736,8 +759,10 @@ These methods are only available on chips with secure storage.
     ```
     value: 123 (0x7b)
     ```
-- `func sendEvent(eventString)`
+
+- `func sendEvent(<eventString>)`
   - Sends a script event to the console.
+  - This is used by the web tools to identify the active layer.
   - This will only be sent if script events have been enabled in the console.
 
 - `func setEnableButtonStates(enabled)`
@@ -745,9 +770,9 @@ These methods are only available on chips with secure storage.
   - This will only be sent if button state updates have also been enabled in
     the console.
 
-- `func getWpm(windowDurationInSeconds) var`
-  - Returns the average wpm in the window.
+- `func getWpm(<windowDurationInSeconds>) var`
+  - Returns the average wpm in the time window.
 
-- `func setInputHint(hint)` [deprecated]
+- `func setInputHint(<hint>)` [deprecated]
   - This function is deprecated and no longer has any implementation.
 
