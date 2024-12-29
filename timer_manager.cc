@@ -46,7 +46,7 @@ void TimerManager::OnTimersUpdated(uint32_t currentTime) {
   UpdateTickDelay(tickDelay);
 }
 
-__attribute__((weak)) void TimerManager::UpdateTickDelay(int ms) {}
+[[gnu::weak]] void TimerManager::UpdateTickDelay(int ms) {}
 
 size_t TimerManager::GetTimerIndex(int32_t timerId) const {
   for (size_t i = 0; i < timerCount; ++i) {

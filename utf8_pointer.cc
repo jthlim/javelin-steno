@@ -74,7 +74,7 @@ inline uint32_t bfi(uint32_t previous, uint32_t v, int lsb, int width) {
   return previous;
 }
 
-uint32_t Utf8Pointer::operator*() const {
+uint32_t Utf8Pointer::Read() const {
   switch (DECODE_TABLE[*p]) {
   case 0:
     return 0;
@@ -98,7 +98,7 @@ uint32_t Utf8Pointer::operator*() const {
 
 #else
 
-uint32_t Utf8Pointer::operator*() const {
+uint32_t Utf8Pointer::Read() const {
   switch (DECODE_TABLE[*p]) {
   case 0:
     return 0;

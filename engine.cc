@@ -207,7 +207,7 @@ char *StenoEngine::ConvertText(StenoSegmentList &segments,
   return keyCodeBuffer.ToString();
 }
 
-__attribute__((weak)) void StenoEngine::Pump() {}
+[[gnu::weak]] void StenoEngine::Pump() {}
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -483,7 +483,7 @@ void StenoEngineTester::TestRetroInsertSpace(StenoEngine &engine) {
   VerifyTextBuffer(engine, " test -D");
 
   engine.ProcessStroke(StenoStroke("TEFT"));
-  VerifyTextBuffer(engine, " -D test");
+  VerifyTextBuffer(engine, " test -D test");
 }
 
 TEST_BEGIN("Engine: Verify =retro_insert_space") {

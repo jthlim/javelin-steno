@@ -48,10 +48,32 @@ int8_t StenoKeyState::STROKE_BIT_INDEX_LOOKUP[] = {
     StrokeBitIndex::NUM,  // NUM10
     StrokeBitIndex::NUM,  // NUM11
     StrokeBitIndex::NUM,  // NUM12
-    StrokeBitIndex::NONE, // FUNCTION
-    StrokeBitIndex::NONE, // POWER
-    StrokeBitIndex::NONE, // RES1
-    StrokeBitIndex::NONE, // RES2
+    StrokeBitIndex::NONE, // X1 / FUNCTION
+    StrokeBitIndex::NONE, // X2 / POWER
+    StrokeBitIndex::NONE, // X3 / RES1
+    StrokeBitIndex::NONE, // X4 / RES2
+    StrokeBitIndex::NONE, // X5
+    StrokeBitIndex::NONE, // X6
+    StrokeBitIndex::NONE, // X7
+    StrokeBitIndex::NONE, // X8
+    StrokeBitIndex::NONE, // X9
+    StrokeBitIndex::NONE, // X10
+    StrokeBitIndex::NONE, // X11
+    StrokeBitIndex::NONE, // X12
+    StrokeBitIndex::NONE, // X13
+    StrokeBitIndex::NONE, // X14
+    StrokeBitIndex::NONE, // X15
+    StrokeBitIndex::NONE, // X16
+    StrokeBitIndex::NONE, // X17
+    StrokeBitIndex::NONE, // X18
+    StrokeBitIndex::NONE, // X19
+    StrokeBitIndex::NONE, // X20
+    StrokeBitIndex::NONE, // X21
+    StrokeBitIndex::NONE, // X22
+    StrokeBitIndex::NONE, // X23
+    StrokeBitIndex::NONE, // X24
+    StrokeBitIndex::NONE, // X25
+    StrokeBitIndex::NONE, // X26
 };
 
 static_assert(sizeof(StenoKeyState::STROKE_BIT_INDEX_LOOKUP) ==

@@ -38,7 +38,7 @@ struct StenoState {
   bool isSpace : 1;                  // {^ ^}
   bool requestsHistoryExtending : 1; // e.g. =set_value, =retro_transform
   bool isSuffix : 1;
-  uint8_t _reserved : 1;
+  bool isNonAffixCommand : 1;
   uint32_t spaceLength : 4;
   uint32_t spaceOffset : 6;
 
@@ -53,10 +53,6 @@ struct StenoState {
 
   bool IsDefinitionStart() const {
     return lookupType != SegmentLookupType::UNKNOWN;
-  }
-
-  bool operator==(const StenoState &a) const {
-    return memcmp(this, &a, sizeof(*this)) == 0;
   }
 
   void SetSpace(const char *space);
@@ -74,8 +70,21 @@ struct StenoState {
     char data[64];
   };
 
+  bool ShouldStopProcessingLookupType(SegmentLookupType type) const {
+    return lookupType != SegmentLookupType::UNKNOWN && lookupType != type;
+  }
+
   const char *GetSpace() const {
     return SpaceBuffer::instance.data + spaceOffset;
+  }
+
+  StenoState GetPersistentState() const {
+    StenoState result = *this;
+    result.shouldCombineUndo = false;
+    result.isManualStateChange = false;
+    result.isNonAffixCommand = false;
+    result.lookupType = SegmentLookupType::UNKNOWN;
+    return result;
   }
 };
 

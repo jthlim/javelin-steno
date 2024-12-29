@@ -1,7 +1,6 @@
 //---------------------------------------------------------------------------
 
 #include "str.h"
-#include "hint.h"
 #include "unicode.h"
 #include "writer.h"
 #include <stdarg.h>
@@ -100,7 +99,7 @@ bool Str::ContainsKeyCode(const char *p) {
   return false;
 }
 
-__attribute__((noinline)) char *Str::Join(const char *const *data, size_t n) {
+[[gnu::noinline]] char *Str::Join(const char *const *data, size_t n) {
   char *result = (char *)malloc(64);
   char *d = result;
   char *guard = result + 64;
@@ -178,7 +177,7 @@ char *Str::Trim(const char *data) {
 char *Str::WriteJson(char *p, const char *text) {
   while (*text) {
     const int c = *text++;
-    if (JAVELIN_UNLIKELY(c < 32)) {
+    if (c < 32) [[unlikely]] {
       switch (c) {
       case '\f':
         *p++ = '\\';
@@ -206,7 +205,7 @@ char *Str::WriteJson(char *p, const char *text) {
         continue;
       }
       continue;
-    } else if (JAVELIN_UNLIKELY(c == '\\' || c == '\"')) {
+    } else if (c == '\\' || c == '\"') [[unlikely]] {
       *p++ = '\\';
     }
     *p++ = c;

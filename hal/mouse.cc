@@ -4,9 +4,9 @@
 
 //---------------------------------------------------------------------------
 
-__attribute__((weak)) void Mouse::PressButton(size_t index) {}
-__attribute__((weak)) void Mouse::ReleaseButton(size_t index) {}
-__attribute__((weak)) void Mouse::Move(int dx, int dy) {}
-__attribute__((weak)) void Mouse::Wheel(int delta) {}
+[[gnu::weak]] void Mouse::PressButton(size_t index) {}
+[[gnu::weak]] void Mouse::ReleaseButton(size_t index) {}
+[[gnu::weak]] void Mouse::Move(int dx, int dy) {}
+[[gnu::weak]] void Mouse::Wheel(int delta) {}
 
 //---------------------------------------------------------------------------

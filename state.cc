@@ -62,8 +62,8 @@ void StenoState::SetSpace(const char *space) {
   SpaceBuffer &buffer = SpaceBuffer::instance;
   for (size_t i = 0; i + length <= buffer.count; ++i) {
     if (Mem::Eq(buffer.data + i, space, length)) {
-      spaceLength = (uint32_t) length;
-      spaceOffset = (uint32_t) i;
+      spaceLength = (uint32_t)length;
+      spaceOffset = (uint32_t)i;
       return;
     }
   }
@@ -77,7 +77,7 @@ void StenoState::SetSpace(const char *space) {
   }
 
   spaceOffset = buffer.count;
-  spaceLength = (uint32_t) length;
+  spaceLength = (uint32_t)length;
   memcpy(buffer.data + buffer.count, space, length);
   buffer.count += length;
 }

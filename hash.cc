@@ -10,8 +10,8 @@ inline uint32_t RotateLeft(uint32_t v, int shift) {
 
 //---------------------------------------------------------------------------
 
-__attribute__((noinline)) uint32_t JavelinHash::Hash(const uint32_t *data,
-                                                     size_t wordCount) {
+[[gnu::noinline]] uint32_t JavelinHash::Hash(const uint32_t *data,
+                                             size_t wordCount) {
   uint32_t s0 = prime0;
   uint32_t s1 = prime0 + prime1;
 

@@ -1,112 +1,86 @@
 //---------------------------------------------------------------------------
 
 #include "word_list.h"
+#include "bit.h"
+#include "crc.h"
+#include "str.h"
 
 //---------------------------------------------------------------------------
 
-#if JAVELIN_CPU_CORTEX_M4
-static uint32_t uqsub8(uint32_t a, uint32_t b) {
-  uint32_t result;
-  asm("uqsub8 %0, %1, %2" : "=r"(result) : "r"(a), "r"(b));
+void WordList::SetData(const WordListData &data) {
+  if (data.magic != WORD_LIST_MAGIC) {
+    return;
+  }
+#if RUN_TESTS
+  if (data.wordCount == 0) {
+    hashMapMask = 31;
+    blocks = &EMPTY_BLOCK;
+    return;
+  }
+#endif
+  hashMapMask = data.hashMapSize - 1;
+  blocks = data.blocks;
+  entries = (const WordListDataEntry *)(data.blocks + data.hashMapSize / 32);
+  textData = (const uint8_t *)(entries + data.wordCount);
+}
+
+//---------------------------------------------------------------------------
+
+size_t WordList::GetOffset(size_t index) const {
+  const size_t blockIndex = index / 32;
+  const size_t bitIndex = index % 32;
+
+  const WordListHashMapBlock &block = blocks[blockIndex];
+
+  // Take advantage of sign bit to test presence.
+  const uint32_t mask = block.mask << (31 - bitIndex);
+  if ((mask & 0x80000000) == 0) {
+    return (size_t)-1;
+  }
+
+  // mask << 1 prevents counting the current bit.
+  const size_t result =
+      Bit<sizeof(uint32_t)>::PopCount(mask << 1) + block.baseOffset;
+
+  // This check saves comparison/branch instructions after inlining.
+  if (result == (size_t)-1) {
+    __builtin_unreachable();
+  }
+
   return result;
 }
-#endif
 
-inline const uint8_t *WordList::FindWordStart(const uint8_t *p) {
-#if JAVELIN_CPU_CORTEX_M4
-  uint32_t mask;
-  do {
-    // Note: The word list data is preceded by a length value, which is 4 bytes
-    // long. Reading 4 bytes behind will never cause an invalid memory access in
-    // practice.
-    p -= 4;
-    const uint32_t v = *(const uint32_t *)p;
-    mask = uqsub8(v, 0xefefefef);
-  } while (mask == 0);
-  return (p + 4) - (__builtin_clz(mask) >> 3);
-#else
-  while (!IsValueByte(p[-1])) {
-    --p;
+bool WordList::Equals(const uint8_t *a, const uint8_t *b, size_t length) {
+  while (length) {
+    if (*a++ != *b++) {
+      return false;
+    }
+    --length;
   }
-  return p;
-#endif
-}
-
-inline const uint8_t *WordList::FindValueByteForward(const uint8_t *p) {
-#if JAVELIN_CPU_CORTEX_M4
-  uint32_t mask;
-  do {
-    const uint32_t v = *(const uint32_t *)p;
-    p += 4;
-    mask = uqsub8(v, 0xefefefef);
-  } while (mask == 0);
-  return (p - 4) + (__builtin_clz(__builtin_bswap32((mask))) >> 3);
-#else
-  while (!IsValueByte(*p)) {
-    ++p;
-  }
-  return p;
-#endif
+  return true;
 }
 
 int WordList::GetWordRank(const uint8_t *word, int defaultRank) {
-  if (ContainsEmoji(word)) {
-    return defaultRank;
-  }
+  const size_t wordLength = Str::Length(word);
+  uint32_t hash = Crc32(word, wordLength);
 
-  const uint8_t *left = instance.data.min;
-  const uint8_t *right = instance.data.max;
-
-  while (left < right) {
-#if JAVELIN_PLATFORM_PICO_SDK || JAVELIN_PLATFORM_NRF5_SDK
-    // Optimization when top bit of pointer cannot be set.
-    const uint8_t *mid = (const uint8_t *)((size_t(left) + size_t(right)) / 2);
-#else
-    const uint8_t *mid = left + size_t(right - left) / 2;
-#endif
-    const uint8_t *wordStart = FindWordStart(mid);
-
-    const int compare = Compare(word, wordStart);
-    if (compare < 0) {
-      right = wordStart;
-    } else {
-      const uint8_t *wordEnd = FindValueByteForward(mid);
-
-      if (compare > 0) {
-        left = wordEnd + 1;
-      } else {
-        return *wordEnd & 0xf;
-      }
+  for (;; ++hash) {
+    const size_t offset = GetOffset(hash & hashMapMask);
+    if (offset == (size_t)-1) {
+      return defaultRank;
     }
-  }
 
-  return defaultRank;
-}
+    const WordListDataEntry &dataEntry = entries[offset];
+    if (dataEntry.wordLength != wordLength) {
+      continue;
+    }
 
-bool WordList::ContainsEmoji(const uint8_t *word) {
-  while (*word) {
-    if (*word >= 0xf0) {
-      return true;
+    const uint8_t *wordBlock = textData + dataEntry.offset;
+    if (!Equals(word, wordBlock, wordLength)) {
+      continue;
     }
-    ++word;
-  }
-  return false;
-}
 
-int WordList::Compare(const uint8_t *word, const uint8_t *data) {
-  for (;;) {
-    if (IsValueByte(*data)) {
-      return *word;
-    }
-    // This case folds into the below case.
-    // if (*word == '\0') {
-    //   return -1;
-    // }
-    if (*word != *data) {
-      return (int)*word - (int)*data;
-    }
-    ++word;
-    ++data;
+    return dataEntry.priority;
   }
 }
 

@@ -137,9 +137,6 @@ public:
   bool operator==(const BitField &other) const {
     return Mem::Eq(data, other.data, sizeof(data));
   }
-  bool operator!=(const BitField &other) const {
-    return !Mem::Eq(data, other.data, sizeof(data));
-  }
 
   friend BitFieldIterator begin(const BitField &b) {
     return BitFieldIterator(b.data, b.data + WORD_COUNT);

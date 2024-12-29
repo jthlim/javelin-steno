@@ -12,6 +12,11 @@ class StenoKeyCodeEmitter {
 public:
   struct EmitterContext;
 
+  // Processes previous and current keycode buffers and determines what
+  // differences to emit.
+  //
+  // Returns true if the last stroke should be combined with previous for undo
+  // purposes.
   bool Process(const StenoKeyCode *previous, size_t previousLength,
                const StenoKeyCode *value, size_t valueLength) const;
 

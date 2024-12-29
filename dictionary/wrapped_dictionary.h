@@ -9,18 +9,15 @@ class StenoWrappedDictionary : public StenoDictionary {
 private:
   using super = StenoDictionary;
 
-  StenoDictionary *dictionary;
-
 public:
-  StenoWrappedDictionary(StenoDictionary *dictionary)
-      : super(dictionary->GetMaximumOutlineLength()), dictionary(dictionary) {}
+  StenoWrappedDictionary(StenoDictionary *dictionary);
 
   virtual StenoDictionaryLookupResult
-  Lookup(const StenoDictionaryLookup &lookup) const;
+  Lookup(const StenoDictionaryLookup &lookup) const final;
   using super::Lookup;
 
   virtual const StenoDictionary *
-  GetDictionaryForOutline(const StenoDictionaryLookup &lookup) const;
+  GetDictionaryForOutline(const StenoDictionaryLookup &lookup) const final;
   using super::GetDictionaryForOutline;
 
   virtual void ReverseLookup(StenoReverseDictionaryLookup &lookup) const;
@@ -39,6 +36,14 @@ public:
   virtual bool EnableDictionary(const char *name);
   virtual bool DisableDictionary(const char *name);
   virtual bool ToggleDictionary(const char *name);
+
+private:
+  StenoDictionary *lookupDictionary;
+  StenoDictionary *dictionary;
+
+  virtual StenoDictionary *GetWrappedLookupDictionary() const final {
+    return lookupDictionary;
+  }
 };
 
 //---------------------------------------------------------------------------

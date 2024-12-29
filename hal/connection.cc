@@ -80,8 +80,7 @@ void Connection::SetPreferredConnection(ConnectionId first, ConnectionId second,
   preferredConnections[2] = third;
 }
 
-__attribute__((weak)) bool
-Connection::IsPairConnected(PairConnectionId pairConnectionId) {
+bool Connection::IsPairConnected(PairConnectionId pairConnectionId) {
   switch (pairConnectionId) {
   case PairConnectionId::ACTIVE:
     return Split::IsPairConnected() || Ble::IsPairConnected();
@@ -93,7 +92,7 @@ Connection::IsPairConnected(PairConnectionId pairConnectionId) {
   return false;
 }
 
-__attribute__((weak)) PairConnectionId Connection::GetActivePairConnection() {
+PairConnectionId Connection::GetActivePairConnection() {
   if (Split::IsPairConnected()) {
     return PairConnectionId::CABLE;
   }
@@ -103,7 +102,7 @@ __attribute__((weak)) PairConnectionId Connection::GetActivePairConnection() {
   return PairConnectionId::NONE;
 }
 
-__attribute__((weak)) bool Connection::IsHostSleeping() {
+bool Connection::IsHostSleeping() {
   const ConnectionId activeConnectionId = GetActiveConnection();
   switch (activeConnectionId) {
   case ConnectionId::ACTIVE:

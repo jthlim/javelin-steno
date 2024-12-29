@@ -194,6 +194,7 @@ private:
                     const StenoKeyCodeBuffer &nextKeyCodeBuffer) const;
 
   size_t GetStartingStrokeForNormalModeProcessing() const;
+  size_t GetStartingStrokeForNormalModeUndoProcessing(size_t undoCount) const;
 
   static void SetSpacePosition_Binding(void *context, const char *commandLine);
   static void ListDictionaries_Binding(void *context, const char *commandLine);

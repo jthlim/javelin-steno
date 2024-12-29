@@ -120,10 +120,9 @@ void StenoKeyCodeEmitter::EmitterContext::ProcessStenoKeyCode(
 
     if (unicode < 128) {
       EmitAscii(unicode);
-      return;
+    } else {
+      EmitNonAscii(unicode);
     }
-
-    EmitNonAscii(unicode);
   }
 }
 
@@ -191,7 +190,7 @@ void StenoKeyCodeEmitter::EmitterContext::EmitIBus(uint32_t unicode) {
 
   EmitKeyCode(MODIFIER_L_CTRL_FLAG | MODIFIER_L_SHIFT_FLAG | uKeyCode);
   RecurseEmitIBus(unicode);
-  EmitKeyCode(hostLayout.asciiKeyCodes[uint32_t('\n')]);
+  EmitAscii('\n');
   EmitIBusDelay();
 }
 
@@ -200,15 +199,14 @@ void StenoKeyCodeEmitter::EmitterContext::EmitIBusDelay() {
   Key::Flush();
 }
 
-__attribute__((noinline)) void
+[[gnu::noinline]] void
 StenoKeyCodeEmitter::EmitterContext::RecurseEmitIBus(uint32_t code) {
   const uint32_t quotient = code / 16;
   const uint32_t remainder = code % 16;
   if (quotient != 0) {
     RecurseEmitIBus(quotient);
   }
-  EmitKeyCode(
-      hostLayout.asciiKeyCodes[uint32_t("0123456789abcdef"[remainder])]);
+  EmitAscii("0123456789abcdef"[remainder]);
 }
 
 void StenoKeyCodeEmitter::EmitterContext::EmitWindowsHex(uint32_t unicode) {
@@ -239,7 +237,7 @@ void StenoKeyCodeEmitter::EmitterContext::EmitUCS2AltHex(uint32_t unicode) {
   }
 }
 
-__attribute__((weak)) void
+[[gnu::weak]] void
 StenoKeyCodeEmitter::EmitterContext::EmitKeyCode(uint32_t keyCode) {
   ReleaseModifiers(modifiers & ~keyCode);
   PressModifiers((keyCode & ~modifiers) & MODIFIER_MASK);

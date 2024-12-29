@@ -6,8 +6,9 @@
 
 WordList WordList::instance;
 
-const uint8_t WordList::DATA[] = {
-  0xf0, 0xf0,
-};
+//---------------------------------------------------------------------------
+
+const WordListData WordList::EMPTY = {WORD_LIST_MAGIC, 32, 0, 0};
+const WordListHashMapBlock WordList::EMPTY_BLOCK = {0, 0};
 
 //---------------------------------------------------------------------------

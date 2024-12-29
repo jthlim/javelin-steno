@@ -69,9 +69,9 @@ void Rgb::SetHsv(size_t id, int h, int s, int v) {
   SetRgb(id, r + m, g + m, b + m);
 }
 
-__attribute__((weak)) void Rgb::SetRgb(size_t id, int r, int g, int b) {}
+[[gnu::weak]] void Rgb::SetRgb(size_t id, int r, int g, int b) {}
 
-__attribute__((weak)) size_t Rgb::GetCount() { return 0; }
+[[gnu::weak]] size_t Rgb::GetCount() { return 0; }
 
 //---------------------------------------------------------------------------
 

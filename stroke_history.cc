@@ -14,11 +14,8 @@ void StenoStrokeHistory::Prune() {
 
 //---------------------------------------------------------------------------
 
-size_t StenoStrokeHistory::GetUndoCount(size_t maxCount) const {
-  size_t count = GetCount();
-  if (maxCount < count) {
-    count = maxCount;
-  }
+size_t StenoStrokeHistory::GetUndoCount() const {
+  const size_t count = GetCount();
   if (count == 0) {
     return 0;
   }
@@ -44,27 +41,26 @@ void StenoStrokeHistory::UpdateDefinitionBoundaries(
   }
   const StenoState *firstState = segments[0].state;
   for (const StenoSegment &segment : segments) {
-    StenoState &state =
-        (*this)[startingOffset + segment.GetStrokeIndex(firstState)].state;
+    const size_t strokeIndex = segment.GetStrokeIndex(firstState);
+    StenoState &state = (*this)[startingOffset + strokeIndex].state;
     state.lookupType = segment.lookupType;
 
     const char *lookupText = segment.lookup.GetText();
     if (lookupText[0] == '{') {
       state.requestsHistoryExtending =
-          lookupText[1] == ':' && lookupText[2] == '=' &&
-          (Str::HasPrefix(lookupText, "{:==set_value") ||
-           Str::HasPrefix(lookupText, "{:==retro_transform"));
+          lookupText[1] == ':' && lookupText[2] == '=';
       state.isSpace = Str::IsSpace(lookupText);
-      state.isHistoryExtending =
-          Str::IsFingerSpellingCommand(lookupText) ||
-          segment.lookup == StenoDictionaryLookupResult::NO_OP;
+      state.isHistoryExtending = Str::IsFingerSpellingCommand(lookupText);
       state.isSuffix =
           lookupText[1] == '^'; // Str::HasPrefix(lookupText, "{^");
+      state.isNonAffixCommand =
+          !state.isSuffix && lookupText[Str::Length(lookupText) - 2] != '^';
     } else {
       state.requestsHistoryExtending = false;
       state.isSpace = false;
       state.isHistoryExtending = false;
       state.isSuffix = false;
+      state.isNonAffixCommand = false;
     }
   }
 }
@@ -80,6 +76,17 @@ size_t StenoStrokeHistory::GetStartingStroke(size_t maximumCount) const {
     }
   }
   return count - maximumCount;
+}
+
+size_t StenoStrokeHistory::GetStartingStrokeAfterUndo(size_t undoCount) const {
+  const size_t count = GetCount();
+  for (size_t i = undoCount; i < count; ++i) {
+    const StenoState state = Back(i + 1).state;
+    if (state.IsDefinitionStart() && !state.isSuffix) {
+      return count - (i + 1);
+    }
+  }
+  return 0;
 }
 
 size_t StenoStrokeHistory::GetIndexOfWordStart(size_t index) const {

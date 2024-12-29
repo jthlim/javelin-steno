@@ -14,6 +14,10 @@
 
 #define ENABLE_PROFILE 0
 
+#if ENABLE_PROFILE
+#include "arm/systick.h"
+#endif
+
 //---------------------------------------------------------------------------
 
 #if JAVELIN_THREADS
@@ -42,6 +46,8 @@ struct StenoEngine::UpdateNormalModeTextBufferThreadData {
 
 #endif
 
+const size_t MAX_EXTRA_STROKES = 4;
+
 size_t StenoEngine::GetStartingStrokeForNormalModeProcessing() const {
   const size_t maximumConversionStrokes = dictionary.GetMaximumOutlineLength();
   if (history.GetCount() < maximumConversionStrokes) {
@@ -59,7 +65,6 @@ size_t StenoEngine::GetStartingStrokeForNormalModeProcessing() const {
   if (!lastState.isSpace && !lastState.isHistoryExtending &&
       !lastState.requestsHistoryExtending) {
     // Not fingerspelling -- trace back extra prefixes and suffixes up to limit.
-    const size_t MAX_EXTRA_STROKES = 4;
     const size_t limit = startingStrokeIndex > MAX_EXTRA_STROKES
                              ? startingStrokeIndex - MAX_EXTRA_STROKES
                              : 0;
@@ -106,6 +111,22 @@ size_t StenoEngine::GetStartingStrokeForNormalModeProcessing() const {
                                                : startingStrokeIndex;
 }
 
+size_t StenoEngine::GetStartingStrokeForNormalModeUndoProcessing(
+    size_t undoCount) const {
+  const size_t lastSegmentStartStrokeIndex =
+      history.GetIndexOfWordStart(history.GetCount() - undoCount);
+
+  const StenoState state = history[lastSegmentStartStrokeIndex].state;
+
+  size_t conversionStrokes = undoCount;
+  if (state.isNonAffixCommand) {
+    conversionStrokes =
+        dictionary.GetMaximumOutlineLength() + undoCount + MAX_EXTRA_STROKES;
+  }
+
+  return history.GetStartingStrokeAfterUndo(conversionStrokes);
+}
+
 void StenoEngine::ProcessNormalModeStroke(StenoStroke stroke) {
 #if ENABLE_DICTIONARY_STATS
   StenoDictionary::ResetStats();
@@ -114,17 +135,16 @@ void StenoEngine::ProcessNormalModeStroke(StenoStroke stroke) {
   history.PruneIfFull();
 
 #if ENABLE_PROFILE
-  uint32_t t0 = Clock::GetMicroseconds();
+  sysTick->EnableCycleCount();
+  const uint32_t t0 = sysTick->ReadCycleCount();
 #endif
 
   const size_t previousSourceStrokeCount = history.GetCount();
   const size_t startingStroke = GetStartingStrokeForNormalModeProcessing();
 
-  // ConversionCount adds one as a stroke is added below, but that call
-  // also needs to be provided with the conversion count.
-  const size_t conversionCount = history.GetCount() + 1 - startingStroke;
+  history.Add(stroke, state);
 
-  history.Add(stroke, state, conversionCount);
+  const size_t conversionCount = history.GetCount() - startingStroke;
 
   StenoSegmentList nextSegments;
   CreateSegments(history.GetCount(), nextConversionBuffer, conversionCount,
@@ -133,7 +153,7 @@ void StenoEngine::ProcessNormalModeStroke(StenoStroke stroke) {
                                      nextSegments);
 
 #if ENABLE_PROFILE
-  uint32_t t1 = Clock::GetMicroseconds();
+  const uint32_t t1 = sysTick->ReadCycleCount();
 #endif
 
   StenoSegmentList previousSegments;
@@ -148,7 +168,7 @@ void StenoEngine::ProcessNormalModeStroke(StenoStroke stroke) {
   }
 
 #if ENABLE_PROFILE
-  uint32_t t2 = Clock::GetMicroseconds();
+  const uint32_t t2 = sysTick->ReadCycleCount();
 #endif
 
   size_t startingOffset = StenoSegmentList::GetCommonStartingSegmentsCount(
@@ -158,7 +178,7 @@ void StenoEngine::ProcessNormalModeStroke(StenoStroke stroke) {
   }
 
 #if ENABLE_PROFILE
-  uint32_t t3 = Clock::GetMicroseconds();
+  const uint32_t t3 = sysTick->ReadCycleCount();
 #endif
 
 #if JAVELIN_THREADS
@@ -179,16 +199,21 @@ void StenoEngine::ProcessNormalModeStroke(StenoStroke stroke) {
 #endif
 
 #if ENABLE_PROFILE
-  uint32_t t4 = Clock::GetMicroseconds();
+  const uint32_t t4 = sysTick->ReadCycleCount();
 #endif
 
-  state = nextConversionBuffer.keyCodeBuffer.state;
-  state.shouldCombineUndo = false;
-  state.isManualStateChange = false;
+  state = nextConversionBuffer.keyCodeBuffer.GetPersistentState();
 
   bool printSuggestions = true;
-  if (emitter.Process(previousConversionBuffer.keyCodeBuffer,
-                      nextConversionBuffer.keyCodeBuffer)) {
+  const bool canCombine =
+      emitter.Process(previousConversionBuffer.keyCodeBuffer,
+                      nextConversionBuffer.keyCodeBuffer);
+
+#if ENABLE_PROFILE
+  const uint32_t t5 = sysTick->ReadCycleCount();
+#endif
+
+  if (canCombine && previousSegments.GetCount() < nextSegments.GetCount()) {
     history.SetBackCombineUndo();
 
     if (previousConversionBuffer.keyCodeBuffer.count ==
@@ -232,7 +257,7 @@ void StenoEngine::ProcessNormalModeStroke(StenoStroke stroke) {
   }
 
 #if ENABLE_PROFILE
-  uint32_t t5 = Clock::GetMicroseconds();
+  const uint32_t t6 = sysTick->ReadCycleCount();
 #endif
 
   if (printSuggestions) {
@@ -241,7 +266,7 @@ void StenoEngine::ProcessNormalModeStroke(StenoStroke stroke) {
   }
 
 #if ENABLE_PROFILE
-  uint32_t t6 = Clock::GetMicroseconds();
+  const uint32_t t7 = sysTick->ReadCycleCount();
 #endif
 
 #if ENABLE_PROFILE
@@ -249,7 +274,9 @@ void StenoEngine::ProcessNormalModeStroke(StenoStroke stroke) {
   Console::Printf("Previous Segments: %u\n", t2 - t1);
   Console::Printf("Common Check: %u\n", t3 - t2);
   Console::Printf("Text Conversion: %u\n", t4 - t3);
-  Console::Printf("Suggestions: %u\n", t6 - t5);
+  Console::Printf("Text Emitter: %u\n", t5 - t4);
+  Console::Printf("Other handling: %u\n", t6 - t5);
+  Console::Printf("Suggestions: %u\n", t7 - t6);
 #endif
 
 #if ENABLE_DICTIONARY_STATS
@@ -266,10 +293,11 @@ void StenoEngine::ProcessNormalModeStroke(StenoStroke stroke) {
 }
 
 void StenoEngine::ProcessNormalModeUndo() {
-  const size_t maximumConversionStrokes =
-      history.IsEmpty() ? 0 : history.Back().conversionCount;
+#if ENABLE_PROFILE
+  const uint32_t t0 = sysTick->ReadCycleCount();
+#endif
 
-  const size_t undoCount = history.GetUndoCount(maximumConversionStrokes);
+  const size_t undoCount = history.GetUndoCount();
   if (undoCount == 0) {
     Key::Tap(KeyCode::BACKSPACE);
     PrintPaperTapeUndo(0);
@@ -277,16 +305,18 @@ void StenoEngine::ProcessNormalModeUndo() {
   }
 
   const size_t startingStroke =
-      history.GetStartingStroke(maximumConversionStrokes);
+      GetStartingStrokeForNormalModeUndoProcessing(undoCount);
   const size_t conversionCount = history.GetCount() - startingStroke;
 
   StenoSegmentList previousSegments;
   CreateSegments(history.GetCount(), previousConversionBuffer, conversionCount,
                  previousSegments, false);
 
-  state = history.Back(undoCount).state;
-  state.shouldCombineUndo = false;
-  state.isManualStateChange = false;
+#if ENABLE_PROFILE
+  const uint32_t t1 = sysTick->ReadCycleCount();
+#endif
+
+  state = history.Back(undoCount).state.GetPersistentState();
   history.RemoveBack(undoCount);
 
   const size_t nextConversionCount =
@@ -303,6 +333,10 @@ void StenoEngine::ProcessNormalModeUndo() {
                                     previousConversionBuffer, previousSegments);
   }
 
+#if ENABLE_PROFILE
+  const uint32_t t2 = sysTick->ReadCycleCount();
+#endif
+
   history.UpdateDefinitionBoundaries(history.GetCount() - nextConversionCount,
                                      nextSegments);
 
@@ -311,6 +345,10 @@ void StenoEngine::ProcessNormalModeUndo() {
   if (startingOffset > 0 && placeSpaceAfter) {
     --startingOffset;
   }
+
+#if ENABLE_PROFILE
+  const uint32_t t3 = sysTick->ReadCycleCount();
+#endif
 
 #if JAVELIN_THREADS
   UpdateNormalModeTextBufferThreadData previousThreadData(
@@ -329,12 +367,28 @@ void StenoEngine::ProcessNormalModeUndo() {
   ConvertText(nextConversionBuffer.keyCodeBuffer, nextSegments, startingOffset);
 #endif
 
+#if ENABLE_PROFILE
+  const uint32_t t4 = sysTick->ReadCycleCount();
+#endif
+
   emitter.Process(previousConversionBuffer.keyCodeBuffer,
                   nextConversionBuffer.keyCodeBuffer);
+
+#if ENABLE_PROFILE
+  const uint32_t t5 = sysTick->ReadCycleCount();
+#endif
 
   PrintTextLog(previousConversionBuffer.keyCodeBuffer,
                nextConversionBuffer.keyCodeBuffer);
   PrintPaperTapeUndo(undoCount);
+
+#if ENABLE_PROFILE
+  Console::Printf("Previous Segments: %u\n", t1 - t0);
+  Console::Printf("Next Segments: %u\n", t2 - t1);
+  Console::Printf("Common Check: %u\n", t3 - t2);
+  Console::Printf("Text Conversion: %u\n", t4 - t3);
+  Console::Printf("Text Emitter: %u\n\n", t5 - t4);
+#endif
 }
 
 void StenoEngine::CreateSegments(size_t sourceStrokeCount,
@@ -641,13 +695,13 @@ char *StenoEngine::PrintSegmentSuggestion(size_t startSegmentIndex,
   List<StenoSegment> testSegments;
   testSegments.AddCount(segments.Skip(startSegmentIndex));
 
-  StenoTokenizer *tokenizer = StenoTokenizer::Create(testSegments);
-  previousConversionBuffer.keyCodeBuffer.Populate(tokenizer);
-  delete tokenizer;
-
   if (!ShouldShowSuggestions(testSegments)) {
     return Str::Dup("");
   }
+
+  StenoTokenizer *tokenizer = StenoTokenizer::Create(testSegments);
+  previousConversionBuffer.keyCodeBuffer.Populate(tokenizer);
+  delete tokenizer;
 
   char *lookup =
       HasManualStateChange(testSegments) ||

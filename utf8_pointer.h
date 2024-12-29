@@ -12,7 +12,12 @@ public:
   Utf8Pointer(const char *p) : p((uint8_t *)p) {}
   Utf8Pointer(const uint8_t *p) : p((uint8_t *)p) {}
 
-  uint32_t operator*() const;
+  uint32_t operator*() const {
+    if (*p < 0x80) {
+      return *p;
+    }
+    return Read();
+  }
   void operator++() { p += DECODE_TABLE[*p]; }
   Utf8Pointer operator++(int) {
     Utf8Pointer snapshot(p);
@@ -35,6 +40,8 @@ private:
   uint8_t *p;
 
   static const uint8_t DECODE_TABLE[];
+
+  uint32_t Read() const;
 };
 
 //---------------------------------------------------------------------------

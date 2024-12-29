@@ -36,9 +36,7 @@ private:
   struct Data {
     bool isWaitingForUserPresence;
 
-    bool operator==(const Data &other) {
-      return isWaitingForUserPresence == other.isWaitingForUserPresence;
-    }
+    bool operator==(const Data &other) const = default;
   };
   Data data;
 

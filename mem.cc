@@ -25,34 +25,32 @@ void AlignedMem<sizeof(size_t)>::Clear(void *p, size_t length) {
   assert(length % sizeof(size_t) == 0);
 
 #if JAVELIN_CPU_CORTEX_M4
-  register int r1 __asm__("r4") = 0;
-  register int r2 __asm__("r5") = 0;
-  register int r3 __asm__("r6") = 0;
-  register int r4 __asm__("r7") = 0;
+  register int r1 __asm__("r2") = 0;
+  register int r2 __asm__("r3") = 0;
+  register int r3 __asm__("r4") = 0;
+  register int r4 __asm__("r5") = 0;
   while (length >= 32) {
     asm volatile("stmia %0!, {%1, %2, %3, %4}"
-                 : "+r"(p)
-                 : "r"(r1), "r"(r2), "r"(r3), "r"(r4)
+                 : "+l"(p)
+                 : "l"(r1), "l"(r2), "l"(r3), "l"(r4)
                  : "memory");
     asm volatile("stmia %0!, {%1, %2, %3, %4}"
-                 : "+r"(p)
-                 : "r"(r1), "r"(r2), "r"(r3), "r"(r4)
+                 : "+l"(p)
+                 : "l"(r1), "l"(r2), "l"(r3), "l"(r4)
                  : "memory");
     length -= 32;
   }
-  if (length >= 16) {
+  if (length & 16) {
     asm volatile("stmia %0!, {%1, %2, %3, %4}"
-                 : "+r"(p)
-                 : "r"(r1), "r"(r2), "r"(r3), "r"(r4)
+                 : "+l"(p)
+                 : "l"(r1), "l"(r2), "l"(r3), "l"(r4)
                  : "memory");
-    length -= 16;
   }
-  if (length >= 8) {
-    asm volatile("stmia %0!, {%1, %2}" : "+r"(p) : "r"(r1), "r"(r2) : "memory");
-    length -= 8;
+  if (length & 8) {
+    asm volatile("stmia %0!, {%1, %2}" : "+l"(p) : "l"(r1), "l"(r2) : "memory");
   }
-  if (length >= 4) {
-    asm volatile("str %1, [%0]" : : "r"(p), "r"(r1) : "memory");
+  if (length & 4) {
+    asm volatile("str %1, [%0]" : : "l"(p), "l"(r1) : "memory");
   }
 #else
   void *pEnd = (char *)p + length;
@@ -83,42 +81,32 @@ void AlignedMem<sizeof(size_t)>::Copy(void *d, const void *s, size_t length) {
   assert(length % sizeof(size_t) == 0);
 
 #if JAVELIN_CPU_CORTEX_M4
-  register int r1 __asm__("r4");
-  register int r2 __asm__("r5");
-  register int r3 __asm__("r6");
-  register int r4 __asm__("r7");
   while (length >= 32) {
-    asm volatile("ldmia %0!, {%1, %2, %3, %4}"
-                 : "+r"(s), "=r"(r1), "=r"(r2), "=r"(r3), "=r"(r4));
-    asm volatile("stmia %0!, {%1, %2, %3, %4}"
-                 : "+r"(d)
-                 : "r"(r1), "r"(r2), "r"(r3), "r"(r4)
-                 : "memory");
-    asm volatile("ldmia %0!, {%1, %2, %3, %4}"
-                 : "+r"(s), "=r"(r1), "=r"(r2), "=r"(r3), "=r"(r4));
-    asm volatile("stmia %0!, {%1, %2, %3, %4}"
-                 : "+r"(d)
-                 : "r"(r1), "r"(r2), "r"(r3), "r"(r4)
-                 : "memory");
+    asm volatile("vldmia %0!, {s0-s7}\n\t"
+                 "vstmia %1!, {s0-s7}\n\t"
+                 : "+r"(s), "+r"(d)
+                 :
+                 : "s0", "s1", "s2", "s3", "s4", "s5", "s6", "s7", "memory");
     length -= 32;
   }
-  if (length >= 16) {
-    asm volatile("ldmia %0!, {%1, %2, %3, %4}"
-                 : "+r"(s), "=r"(r1), "=r"(r2), "=r"(r3), "=r"(r4));
-    asm volatile("stmia %0!, {%1, %2, %3, %4}"
-                 : "+r"(d)
-                 : "r"(r1), "r"(r2), "r"(r3), "r"(r4)
-                 : "memory");
-    length -= 16;
+  if (length & 16) {
+    asm volatile("vldmia %0!, {s0-s3}\n\t"
+                 "vstmia %1!, {s0-s3}\n\t"
+                 : "+r"(s), "+r"(d)
+                 :
+                 : "s0", "s1", "s2", "s3", "memory");
   }
-  if (length >= 8) {
-    asm volatile("ldmia %0!, {%1, %2}" : "+r"(s), "=r"(r1), "=r"(r2));
-    asm volatile("stmia %0!, {%1, %2}" : "+r"(d) : "r"(r1), "r"(r2) : "memory");
-    length -= 8;
+  if (length & 8) {
+    asm volatile("vldmia %0!, {s0-s1}\n\t"
+                 "vstmia %1!, {s0-s1}\n\t"
+                 : "+r"(s), "+r"(d)
+                 :
+                 : "s0", "s1", "memory");
   }
-  if (length >= 4) {
-    asm volatile("ldr %0, [%1]" : "=r"(r1) : "r"(s));
-    asm volatile("str %0, [%1]" : : "r"(r1), "r"(d) : "memory");
+  if (length & 4) {
+    int temp;
+    asm volatile("ldr %0, [%1]" : "=l"(temp) : "l"(s));
+    asm volatile("str %0, [%1]" : : "l"(temp), "l"(d) : "memory");
   }
 #else
   void *sEnd = (char *)s + length;

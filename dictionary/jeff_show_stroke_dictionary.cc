@@ -26,7 +26,7 @@ StenoDictionaryLookupResult StenoJeffShowStrokeDictionary::Lookup(
 }
 
 // Split off to no-inline to help gcc generate better early-out code.
-__attribute__((noinline)) StenoDictionaryLookupResult
+[[gnu::noinline]] StenoDictionaryLookupResult
 StenoJeffShowStrokeDictionary::LookupInternal(
     const StenoDictionaryLookup &lookup) const {
   const StenoStroke *strokes = lookup.strokes;

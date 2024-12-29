@@ -11,6 +11,7 @@
 //---------------------------------------------------------------------------
 
 #define CONSOLE_LOG_BUTTON_PRESSES 0
+#define PROFILE_BUTTON_ACTIVITY 0
 
 //-------------------------------------------------------------------- th-------
 
@@ -42,21 +43,37 @@ void ButtonScriptManager::Update(const ButtonState &newButtonState,
   buttonState = newButtonState;
 
   for (const size_t buttonIndex : releasedButtons) {
+#if PROFILE_BUTTON_ACTIVITY
+    const uint32_t start = Clock::GetMicroseconds();
+#endif
 #if CONSOLE_LOG_BUTTON_PRESSES
     Console::Printf("Release %zu at %u ms, now: %u ms\n\n", buttonIndex,
                     scriptTime, Clock::GetMilliseconds());
 #endif
     script.IncrementReleaseCount();
     script.HandleRelease(buttonIndex, scriptTime);
+
+#if PROFILE_BUTTON_ACTIVITY
+    const uint32_t end = Clock::GetMicroseconds();
+    Console::Printf("Release %zu: %u us\n\n", buttonIndex, end - start);
+#endif
   }
 
   for (const size_t buttonIndex : pressedButtons) {
+#if PROFILE_BUTTON_ACTIVITY
+    const uint32_t start = Clock::GetMicroseconds();
+#endif
 #if CONSOLE_LOG_BUTTON_PRESSES
     Console::Printf("Press %zu at %u ms, now: %u ms\n\n", buttonIndex,
                     scriptTime, Clock::GetMilliseconds());
 #endif
     script.IncrementPressCount();
     script.HandlePress(buttonIndex, scriptTime);
+
+#if PROFILE_BUTTON_ACTIVITY
+    const uint32_t end = Clock::GetMicroseconds();
+    Console::Printf("Press %zu: %u us\n\n", buttonIndex, end - start);
+#endif
   }
   SendButtonStateUpdate();
 }

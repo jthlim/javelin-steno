@@ -68,7 +68,7 @@ StenoSegmentBuilder::GetFirstDefinitionBoundaryLength(size_t offset,
       return i;
     }
   }
-  return 0;
+  return length - 1;
 }
 
 size_t StenoSegmentBuilder::GetStartingDefinitionLength(
@@ -95,10 +95,10 @@ bool StenoSegmentBuilder::DirectLookup(BuildSegmentContext &context,
         context.dictionary.Lookup(strokes + offset, length);
 
     if (!lookup.IsValid()) {
-      if (hasModifiedStrokeHistory ||
-          !states[offset + length - 1].IsDefinitionStart()) {
+      if (hasModifiedStrokeHistory) {
         --length;
-      } else if (states[offset].lookupType != SegmentLookupType::DIRECT) {
+      } else if (states[offset].ShouldStopProcessingLookupType(
+                     SegmentLookupType::DIRECT)) {
         return false;
       } else {
         length = GetFirstDefinitionBoundaryLength(offset, length);
@@ -115,11 +115,10 @@ bool StenoSegmentBuilder::DirectLookup(BuildSegmentContext &context,
               StenoSegment(length, SegmentLookupType::DIRECT, states + offset,
                            StenoDictionaryLookupResult::CreateDynamicString(
                                EscapeCommand(lookupText))));
-          offset += length;
         } else {
           HandleRetroTransform(context, lookupText, offset, length);
-          offset += length;
         }
+        offset += length;
 
         lookup.Destroy();
         return true;
@@ -130,11 +129,10 @@ bool StenoSegmentBuilder::DirectLookup(BuildSegmentContext &context,
               StenoSegment(length, SegmentLookupType::DIRECT, states + offset,
                            StenoDictionaryLookupResult::CreateDynamicString(
                                EscapeCommand(lookupText))));
-          offset += length;
         } else {
           HandleRetroSetValue(context, lookupText, offset, length);
-          offset += length;
         }
+        offset += length;
 
         lookup.Destroy();
         return true;
@@ -333,10 +331,10 @@ StenoSegment StenoSegmentBuilder::AutoSuffixTest(BuildSegmentContext &context,
         }
       }
     }
-    if (hasModifiedStrokeHistory ||
-        !states[offset + length - 1].IsDefinitionStart()) {
+    if (hasModifiedStrokeHistory) {
       --length;
-    } else if (states[offset].lookupType != SegmentLookupType::AUTO_SUFFIX) {
+    } else if (states[offset].ShouldStopProcessingLookupType(
+                   SegmentLookupType::AUTO_SUFFIX)) {
       break;
     } else {
       length = GetFirstDefinitionBoundaryLength(offset, length);
@@ -348,14 +346,24 @@ StenoSegment StenoSegmentBuilder::AutoSuffixTest(BuildSegmentContext &context,
 
 void StenoSegmentBuilder::AddRawStroke(BuildSegmentContext &context,
                                        size_t &offset) {
-  hasRawStroke = true;
+  if (strokes[offset].IsEmpty()) {
+    // The only time empty strokes are introduced are when there's
+    // stroke buffer modifications. The NO_OP is used to extend the translation
+    // buffer size.
+    context.segments.Add(StenoSegment(1, SegmentLookupType::STROKE,
+                                      states + offset,
+                                      StenoDictionaryLookupResult::NO_OP));
+  } else {
 
-  char buffer[StenoStroke::MAX_STRING_LENGTH];
+    hasRawStroke = true;
 
-  char *end = strokes[offset].ToString(buffer);
-  context.segments.Add(StenoSegment(
-      1, SegmentLookupType::STROKE, states + offset,
-      StenoDictionaryLookupResult::CreateDupN(buffer, end - buffer)));
+    char buffer[StenoStroke::MAX_STRING_LENGTH];
+    char *end = strokes[offset].ToString(buffer);
+    context.segments.Add(StenoSegment(
+        1, SegmentLookupType::STROKE, states + offset,
+        StenoDictionaryLookupResult::CreateDupN(buffer, end - buffer)));
+  }
+
   ++offset;
 }
 
@@ -364,11 +372,17 @@ void StenoSegmentBuilder::ReevaluateSegments(BuildSegmentContext &context,
   // Removes all segments that could be affected and updates offset to
   // reprocess them.
   const size_t currentOffset = offset;
+  size_t maximumOutlineLength = context.maximumOutlineLength;
   while (context.segments.IsNotEmpty()) {
     StenoSegment &lastSegment = context.segments.Back();
     const size_t lastOffset = lastSegment.GetStrokeIndex(states);
-    if (lastOffset + context.maximumOutlineLength < currentOffset) {
+    if (lastOffset + maximumOutlineLength < currentOffset) {
       return;
+    }
+
+    // Empty strokes are used by buffer-modifying commands.
+    if (strokes[lastOffset].IsEmpty()) {
+      ++maximumOutlineLength;
     }
     lastSegment.lookup.Destroy();
     context.segments.Pop();
@@ -813,11 +827,13 @@ void StenoSegmentBuilder::HandleRetroToggleAsterisk(
 
   ResetStrokes(currentOffset, length);
 
-  if (currentOffset == 0) {
-    return;
+  while (currentOffset != 0) {
+    --currentOffset;
+    if (strokes[currentOffset].IsNotEmpty()) {
+      strokes[currentOffset] ^= StrokeMask::STAR;
+      return;
+    }
   }
-
-  strokes[currentOffset - 1] ^= StrokeMask::STAR;
 }
 
 void StenoSegmentBuilder::HandleRepeatLastStroke(BuildSegmentContext &context,
@@ -932,7 +948,7 @@ TEST_BEGIN("StrokeHistory: Test *? splits strokes") {
 
   assert(segments.GetCount() == 3);
   assert(Str::Eq(segments[0].lookup.GetText(), "test"));
-  assert(Str::Eq(segments[1].lookup.GetText(), ""));
+  assert(Str::Eq(segments[1].lookup.GetText(), "{:=}"));
   assert(Str::Eq(segments[2].lookup.GetText(), "{:=\\{*?\\}}-D"));
 }
 TEST_END
@@ -957,7 +973,7 @@ TEST_BEGIN("StrokeHistory: Test * toggles lookup") {
 
   assert(segments.GetCount() == 2);
   assert(Str::Eq(segments[0].lookup.GetText(), "T*EFT"));
-  assert(Str::Eq(segments[1].lookup.GetText(), "{:=\\{*\\}}"));
+  assert(Str::Eq(segments[1].lookup.GetText(), "{:=\\{*\\}}{:=}"));
 }
 TEST_END
 
@@ -992,7 +1008,7 @@ TEST_BEGIN("StrokeHistory: Test {*?} behaves properly") {
 
   assert(segments.GetCount() == 10);
   assert(Str::Eq(segments[0].lookup.GetText(), "test"));
-  assert(Str::Eq(segments[1].lookup.GetText(), ""));
+  assert(Str::Eq(segments[1].lookup.GetText(), "{:=}"));
   assert(Str::Eq(segments[2].lookup.GetText(), "test"));
   assert(Str::Eq(segments[3].lookup.GetText(), "test"));
   assert(Str::Eq(segments[4].lookup.GetText(), "test"));

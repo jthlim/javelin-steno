@@ -4,9 +4,9 @@
 
 //---------------------------------------------------------------------------
 
-__attribute__((weak)) bool Power::IsCharging() { return false; }
-__attribute__((weak)) int Power::GetBatteryPercentage() { return 0; }
-__attribute__((weak)) bool Power::IsBoardPowered() { return true; }
-__attribute__((weak)) void Power::SetBoardPower(bool on) {}
+[[gnu::weak]] bool Power::IsCharging() { return false; }
+[[gnu::weak]] int Power::GetBatteryPercentage() { return 0; }
+[[gnu::weak]] bool Power::IsBoardPowered() { return true; }
+[[gnu::weak]] void Power::SetBoardPower(bool on) {}
 
 //---------------------------------------------------------------------------

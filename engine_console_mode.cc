@@ -36,10 +36,10 @@ void StenoEngine::ProcessConsoleModeStroke(StenoStroke stroke) {
     return;
   }
 
-  altTranslationHistory.Add(stroke, altTranslationState, 0);
+  altTranslationHistory.Add(stroke, altTranslationState);
 
   UpdateConsoleModeTextBuffer(nextConversionBuffer);
-  altTranslationState = nextConversionBuffer.keyCodeBuffer.state;
+  altTranslationState = nextConversionBuffer.keyCodeBuffer.GetPersistentState();
 
   if (emitter.Process(previousConversionBuffer.keyCodeBuffer,
                       nextConversionBuffer.keyCodeBuffer)) {
@@ -55,10 +55,9 @@ void StenoEngine::ProcessConsoleModeUndo() {
 
   UpdateConsoleModeTextBuffer(previousConversionBuffer);
 
-  const size_t undoCount =
-      altTranslationHistory.GetUndoCount(StenoSegmentBuilder::BUFFER_SIZE);
-  altTranslationState = altTranslationHistory.Back(undoCount).state;
-  altTranslationState.shouldCombineUndo = false;
+  const size_t undoCount = altTranslationHistory.GetUndoCount();
+  altTranslationState =
+      altTranslationHistory.Back(undoCount).state.GetPersistentState();
   altTranslationHistory.RemoveBack(undoCount);
 
   UpdateConsoleModeTextBuffer(nextConversionBuffer);

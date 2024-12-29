@@ -44,15 +44,43 @@ enum class StenoKey : int8_t {
   NUM10,
   NUM11,
   NUM12,
-  FUNCTION,
-  POWER,
-  RES1,
-  RES2,
+  FUNCTION, // X1
+  POWER,    // X2
+  RES1,     // X3
+  RES2,     // X4
+  X1 = FUNCTION,
+  X2,
+  X3,
+  X4,
+  X5,
+  X6,
+  X7,
+  X8,
+  X9,
+  X10,
+  X11,
+  X12,
+  X13,
+  X14,
+  X15,
+  X16,
+  X17,
+  X18,
+  X19,
+  X20,
+  X21,
+  X22,
+  X23,
+  X24,
+  X25,
+  X26,
 
   COUNT,
 
   NONE = -1
 };
+
+static_assert(int(StenoKey::COUNT) == 64, "Expect StenoKey to have 64 bits");
 
 //---------------------------------------------------------------------------
 
@@ -68,12 +96,8 @@ public:
   bool IsEmpty() const { return keyState == 0; }
   bool IsNotEmpty() const { return keyState != 0; }
 
-  bool operator==(const StenoKeyState &other) const {
-    return keyState == other.keyState;
-  }
-  bool operator!=(const StenoKeyState &other) const {
-    return keyState != other.keyState;
-  }
+  bool operator==(const StenoKeyState &other) const = default;
+
   StenoKeyState operator~() const { return StenoKeyState(~keyState); }
   StenoKeyState operator&(const StenoKeyState &other) const {
     return StenoKeyState(keyState & other.keyState);

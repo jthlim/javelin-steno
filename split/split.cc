@@ -150,7 +150,7 @@ RxBufferValidateResult RxBuffer::Validate(size_t totalWordsReceived,
   return RxBufferValidateResult::OK;
 }
 
-__attribute__((weak)) void RxBuffer::OnDataReceived() {}
+[[gnu::weak]] void RxBuffer::OnDataReceived() {}
 
 void RxBuffer::Process() const {
   if (header.wordCount == 0) {
@@ -188,7 +188,7 @@ void RxBuffer::OnConnectionReset() {
 
 //---------------------------------------------------------------------------
 
-__attribute__((weak)) bool Split::IsPairConnected() { return false; }
+[[gnu::weak]] bool Split::IsPairConnected() { return false; }
 
 //---------------------------------------------------------------------------
 

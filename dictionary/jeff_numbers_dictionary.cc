@@ -76,7 +76,7 @@ StenoJeffNumbersDictionary::Lookup(const StenoDictionaryLookup &lookup) const {
 }
 
 // Split off to no-inline to help gcc generate better early-out code.
-__attribute__((noinline)) StenoDictionaryLookupResult
+[[gnu::noinline]] StenoDictionaryLookupResult
 StenoJeffNumbersDictionary::LookupInternal(
     const StenoDictionaryLookup &lookup) const {
   char *result = nullptr;

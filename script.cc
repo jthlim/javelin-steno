@@ -192,7 +192,7 @@ private:
   const uint8_t *p;
 };
 
-void Script::Run(size_t offset) {
+[[gnu::weak]] void Script::Run(size_t offset) {
   using BC = StenoScriptByteCode;
   using OP = StenoScriptOperator;
 

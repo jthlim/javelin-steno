@@ -15,12 +15,10 @@ class StenoSegmentList;
 struct StenoStrokeHistoryEntry {
   StenoStroke stroke;
   StenoState state;
-  size_t conversionCount;
 
-  void Set(StenoStroke stroke, StenoState state, size_t conversionCount) {
+  void Set(StenoStroke stroke, StenoState state) {
     this->stroke = stroke;
     this->state = state;
-    this->conversionCount = conversionCount;
   }
 };
 
@@ -36,18 +34,19 @@ public:
     }
   }
 
-  void Add(StenoStroke stroke, StenoState state, size_t conversionCount) {
+  void Add(StenoStroke stroke, StenoState state) {
     assert(IsNotFull());
-    CyclicQueue::Add().Set(stroke, state, conversionCount);
+    CyclicQueue::Add().Set(stroke, state);
   }
 
   // When undo is pressed, returns how many items should be removed
-  // from the list up to maxCount.
-  size_t GetUndoCount(size_t maxCount) const;
+  // from the list.
+  size_t GetUndoCount() const;
 
   void UpdateDefinitionBoundaries(size_t startingOffset,
                                   const StenoSegmentList &segments);
   size_t GetStartingStroke(size_t maximumCount) const;
+  size_t GetStartingStrokeAfterUndo(size_t undoCount) const;
 
   // Returns the offset of the word start. result <= index.
   size_t GetIndexOfWordStart(size_t index) const;

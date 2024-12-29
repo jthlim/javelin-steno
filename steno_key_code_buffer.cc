@@ -77,7 +77,7 @@ void StenoKeyCodeBuffer::AppendTextNoCaseModeOverride(const char *p, size_t n,
   while (utf8p < end) {
     uint32_t c = *utf8p++;
 
-    if (c == '\\' && utf8p < end) {
+    if (c == '\\' && utf8p < end) [[unlikely]] {
       c = *utf8p++;
       switch (c) {
       case '{':
@@ -106,7 +106,7 @@ void StenoKeyCodeBuffer::AppendTextNoCaseModeOverride(const char *p, size_t n,
       }
     }
 
-    if (c == '\b') {
+    if (c == '\b') [[unlikely]] {
       Backspace(1);
     } else {
       buffer[count++] = StenoKeyCode(c, caseMode, StenoCaseMode::NORMAL);
@@ -409,15 +409,7 @@ void StenoKeyCodeBuffer::ProcessOrthographicSuffix(const char *text,
 //---------------------------------------------------------------------------
 
 char *StenoKeyCodeBuffer::ToString(size_t startingOffset) const {
-  // Start with space for the terminating null.
-  size_t length = 1;
-  for (size_t i = startingOffset; i < count; ++i) {
-    if (!buffer[i].IsRawKeyCode()) {
-      length +=
-          Utf8Pointer::BytesForCharacterCode(buffer[i].ResolveOutputUnicode());
-    }
-  }
-  char *result = (char *)malloc(length);
+  char *result = (char *)malloc(count * 4 + 1);
   Utf8Pointer utf8p(result);
   for (size_t i = startingOffset; i < count; ++i) {
     if (!buffer[i].IsRawKeyCode()) {
@@ -430,14 +422,7 @@ char *StenoKeyCodeBuffer::ToString(size_t startingOffset) const {
 }
 
 char *StenoKeyCodeBuffer::ToUnresolvedString() const {
-  size_t length = 1;
-  for (size_t i = 0; i < count; ++i) {
-    if (!buffer[i].IsRawKeyCode()) {
-      length += Utf8Pointer::BytesForCharacterCode(
-          buffer[i].ResolveSelectedUnicode());
-    }
-  }
-  char *result = (char *)malloc(length);
+  char *result = (char *)malloc(count * 4 + 1);
   Utf8Pointer utf8p(result);
   for (size_t i = 0; i < count; ++i) {
     if (!buffer[i].IsRawKeyCode()) {

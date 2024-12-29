@@ -16,15 +16,15 @@ Flash Flash::instance;
 //---------------------------------------------------------------------------
 
 #if RUN_TESTS
-__attribute((weak)) void Flash::EraseBlock(const void *target, size_t size) {
+[[gnu::weak]] void Flash::EraseBlock(const void *target, size_t size) {
   assert((size & (BLOCK_SIZE - 1)) == 0);
 
   instance.erasedBytes += size;
   memset((void *)target, 0xff, size);
 }
 
-__attribute((weak)) void Flash::WriteBlock(const void *target, const void *data,
-                                           size_t size) {
+[[gnu::weak]] void Flash::WriteBlock(const void *target, const void *data,
+                                     size_t size) {
   assert(target != data);
   assert((size & (BLOCK_SIZE - 1)) == 0);
 
@@ -124,8 +124,8 @@ void Flash::WriteRemaining() {
   target = nullptr;
 }
 
-__attribute__((noinline)) void Flash::Write(const void *target,
-                                            const void *data, size_t size) {
+[[gnu::noinline]] void Flash::Write(const void *target, const void *data,
+                                    size_t size) {
   const ExternalFlashSentry sentry;
 
   instance.BeginWrite((const uint8_t *)target);
@@ -135,8 +135,7 @@ __attribute__((noinline)) void Flash::Write(const void *target,
 
 //---------------------------------------------------------------------------
 
-__attribute__((weak)) bool Flash::IsScriptMemory(const void *start,
-                                                 const void *end) {
+[[gnu::weak]] bool Flash::IsScriptMemory(const void *start, const void *end) {
   return false;
 }
 

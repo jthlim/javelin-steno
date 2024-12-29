@@ -23,6 +23,7 @@
 #include "split/split_usb_status.h"
 #include "str.h"
 #include "timer_manager.h"
+#include "wpm_tracker.h"
 
 #include <assert.h>
 
@@ -141,15 +142,15 @@ void ButtonScript::StartTimer(int32_t timerId, uint32_t interval,
 //---------------------------------------------------------------------------
 
 #if RUN_TESTS
-__attribute__((weak)) void ButtonScript::OnStenoKeyPressed() {}
-__attribute__((weak)) void ButtonScript::OnStenoKeyReleased() {}
-__attribute__((weak)) void ButtonScript::CancelStenoKeys(StenoKeyState state) {}
-__attribute__((weak)) void ButtonScript::CancelAllStenoKeys() {}
-__attribute__((weak)) bool
-ButtonScript::ProcessScanCode(int scanCode, ScanCodeAction action) {
+[[gnu::weak]] void ButtonScript::OnStenoKeyPressed() {}
+[[gnu::weak]] void ButtonScript::OnStenoKeyReleased() {}
+[[gnu::weak]] void ButtonScript::CancelStenoKeys(StenoKeyState state) {}
+[[gnu::weak]] void ButtonScript::CancelAllStenoKeys() {}
+[[gnu::weak]] bool ButtonScript::ProcessScanCode(int scanCode,
+                                                 ScanCodeAction action) {
   return false;
 }
-__attribute__((weak)) void ButtonScript::SendText(const uint8_t *text) {}
+[[gnu::weak]] void ButtonScript::SendText(const uint8_t *text) {}
 #else
 void ButtonScript::SendText(const uint8_t *text) {
 #if JAVELIN_USE_EMBEDDED_STENO
@@ -735,6 +736,18 @@ public:
     ButtonScriptManager::GetInstance().SetAllowButtonStateUpdates(
         script.Pop() != 0);
   }
+
+  static void PrintValue(ButtonScript &script) {
+    const intptr_t value = script.Pop();
+    const intptr_t offset = script.Pop();
+    const uint8_t *text = script.GetScriptData<uint8_t>(offset);
+    Console::Printf("%s: %zd (0x%zx)\n\n", text, value, value);
+  }
+
+  static void GetWpm(ButtonScript &script) {
+    const int seconds = (int)script.Pop();
+    script.Push(WpmTracker::instance.GetWpm(seconds));
+  }
 };
 
 constexpr void (*ButtonScript::FUNCTION_TABLE[])(ButtonScript &) = {
@@ -825,6 +838,8 @@ constexpr void (*ButtonScript::FUNCTION_TABLE[])(ButtonScript &) = {
     &Function::MoveMouse,
     &Function::WheelMouse,
     &Function::SetEnableButtonStates,
+    &Function::PrintValue,
+    &Function::GetWpm,
 };
 
 void ButtonScript::PrintEventHistory() {
@@ -861,10 +876,8 @@ void ButtonScript::RunConsoleCommand(const char *command) {
 
 //---------------------------------------------------------------------------
 
-__attribute__((weak)) bool ButtonScript::IsWaitingForUserPresence() {
-  return false;
-}
-__attribute__((weak)) void ButtonScript::ReplyUserPresence(bool present) {}
+[[gnu::weak]] bool ButtonScript::IsWaitingForUserPresence() { return false; }
+[[gnu::weak]] void ButtonScript::ReplyUserPresence(bool present) {}
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

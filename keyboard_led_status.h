@@ -25,9 +25,6 @@ public:
   bool operator==(const KeyboardLedStatus &other) const {
     return value == other.value;
   }
-  bool operator!=(const KeyboardLedStatus &other) const {
-    return value != other.value;
-  }
 
 private:
   union {

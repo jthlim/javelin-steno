@@ -4,15 +4,27 @@
 
 //---------------------------------------------------------------------------
 
+StenoWrappedDictionary::StenoWrappedDictionary(StenoDictionary *dictionary)
+    : super(dictionary->GetMaximumOutlineLength()), dictionary(dictionary) {
+  lookupDictionary = dictionary->GetWrappedLookupDictionary();
+  if (lookupDictionary == nullptr) {
+    lookupDictionary = dictionary;
+  }
+}
+
+//---------------------------------------------------------------------------
+
 StenoDictionaryLookupResult
 StenoWrappedDictionary::Lookup(const StenoDictionaryLookup &lookup) const {
-  return dictionary->Lookup(lookup);
+  return lookupDictionary->Lookup(lookup);
 }
 
 const StenoDictionary *StenoWrappedDictionary::GetDictionaryForOutline(
     const StenoDictionaryLookup &lookup) const {
-  return dictionary->GetDictionaryForOutline(lookup);
+  return lookupDictionary->GetDictionaryForOutline(lookup);
 }
+
+//---------------------------------------------------------------------------
 
 void StenoWrappedDictionary::ReverseLookup(
     StenoReverseDictionaryLookup &lookup) const {

@@ -132,13 +132,19 @@ StenoToken StenoSegmentListTokenizer::GetNext() {
   assert(p != nullptr);
   const char *start = p;
   if (*p == '{') {
-    while (*p != '}' && *p != '\0') {
-      if (p[0] == '\\' && p[1] != '\0') {
-        ++p;
+    while (*p != '}') [[likely]] {
+      if (*p == '\0') [[unlikely]] {
+        break;
+      }
+      if (p[0] == '\\') [[unlikely]] {
+        if (p[1] != '\0') [[likely]] {
+          p += 2;
+          continue;
+        }
       }
       ++p;
     }
-    if (*p == '\0') {
+    if (*p == '\0') [[unlikely]] {
       // Unterminated command... drop it.
       PrepareNextP();
       return StenoToken("{}", 2, state);

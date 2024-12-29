@@ -24,7 +24,7 @@ constexpr StenoDictionaryLookupResult
 
 #if JAVELIN_CPU_CORTEX_M0
 
-__attribute__((naked)) void
+[[gnu::naked]] void
 StenoDictionaryLookupResult::DestroyInternal(const char *text) {
   asm volatile(R"(
     lsl r1, r0, #2
@@ -57,7 +57,7 @@ const char *StenoDictionaryLookupResult::CloneInternal(const char *text) {
 #else
 
 const StenoDictionaryLookupResult StenoDictionaryLookupResult::NO_OP =
-    StenoDictionaryLookupResult::CreateStaticString("{~|}");
+    StenoDictionaryLookupResult::CreateStaticString("{:=}");
 
 void StenoDictionaryLookupResult::Nop(StenoDictionaryLookupResult *) {}
 
@@ -180,9 +180,9 @@ StenoDictionaryLookupResult::CreateFromBuffer(BufferWriter &writer) {
 
 //---------------------------------------------------------------------------
 
-__attribute__((noinline)) void
-PrintDictionaryContext::Print(const StenoStroke *strokes, size_t length,
-                              const char *definition) {
+[[gnu::noinline]] void PrintDictionaryContext::Print(const StenoStroke *strokes,
+                                                     size_t length,
+                                                     const char *definition) {
   if (!hasData) {
     hasData = true;
     Console::Printf("\n\t");

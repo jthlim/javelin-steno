@@ -76,11 +76,11 @@ void Sound::StopSound_Binding(void *context, const char *commandLine) {
 
 //---------------------------------------------------------------------------
 
-__attribute__((weak)) void Sound::Stop() {}
-__attribute__((weak)) void Sound::PlayFrequency(uint32_t frequency) {}
-__attribute__((weak)) void Sound::PlaySequence(const SoundSequenceData *data) {}
-__attribute__((weak)) void
-Sound::PlayWaveform(const uint8_t *data, size_t length, uint32_t sampleRate) {}
+[[gnu::weak]] void Sound::Stop() {}
+[[gnu::weak]] void Sound::PlayFrequency(uint32_t frequency) {}
+[[gnu::weak]] void Sound::PlaySequence(const SoundSequenceData *data) {}
+[[gnu::weak]] void Sound::PlayWaveform(const uint8_t *data, size_t length,
+                                       uint32_t sampleRate) {}
 
 //---------------------------------------------------------------------------
 

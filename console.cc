@@ -6,9 +6,9 @@
 #include "str.h"
 #include "unicode.h"
 #include <assert.h>
-#include <cstdlib>
 #include <stdarg.h>
 #include <stdio.h>
+#include <stdlib.h>
 
 //---------------------------------------------------------------------------
 
@@ -26,8 +26,7 @@ ConsoleWriter ConsoleWriter::instance;
 
 std::vector<char> Console::history;
 
-__attribute__((weak)) void ConsoleWriter::Write(const char *data,
-                                                size_t length) {
+[[gnu::weak]] void ConsoleWriter::Write(const char *data, size_t length) {
   std::copy(data, data + length, std::back_inserter(Console::history));
 }
 
@@ -45,9 +44,8 @@ void ConsoleWriter::Pop() {
   classData.active = classData.data[--classData.count];
 }
 
-__attribute__((weak)) void
-ConsoleWriter::SetConnection(ConnectionId connectionId,
-                             uint16_t connectionHandle) {}
+[[gnu::weak]] void ConsoleWriter::SetConnection(ConnectionId connectionId,
+                                                uint16_t connectionHandle) {}
 
 //---------------------------------------------------------------------------
 
@@ -162,7 +160,7 @@ void Console::WriteScriptEvent(const char *text) {
   Console::Printf("EV {\"event\":\"script_event\",\"text\":\"%J\"}\n\n", text);
 }
 
-__attribute__((weak)) void Console::Flush() {}
+[[gnu::weak]] void Console::Flush() {}
 
 //---------------------------------------------------------------------------
 

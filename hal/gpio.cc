@@ -4,9 +4,9 @@
 
 //---------------------------------------------------------------------------
 
-__attribute__((weak)) void Gpio::SetInputPin(int pin, Pull pull) {}
-__attribute__((weak)) bool Gpio::GetPin(int pin) { return false; }
-__attribute__((weak)) void Gpio::SetPin(int pin, bool value) {}
-__attribute__((weak)) void Gpio::SetPinDutyCycle(int pin, int dutyCycle) {}
+[[gnu::weak]] void Gpio::SetInputPin(int pin, Pull pull) {}
+[[gnu::weak]] bool Gpio::GetPin(int pin) { return false; }
+[[gnu::weak]] void Gpio::SetPin(int pin, bool value) {}
+[[gnu::weak]] void Gpio::SetPinDutyCycle(int pin, int dutyCycle) {}
 
 //---------------------------------------------------------------------------

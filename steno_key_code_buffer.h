@@ -49,6 +49,8 @@ public:
 
   void Reset();
 
+  StenoState GetPersistentState() const { return state.GetPersistentState(); }
+
   void ProcessText(const char *text, size_t length);
   void ProcessCommand(const char *command, size_t length);
   void ProcessOrthographicSuffix(const char *text, size_t length);

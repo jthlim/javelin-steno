@@ -312,6 +312,13 @@ public:
 
   virtual const char *GetName() const = 0;
 
+  // Returns the lookup dictionary within a WrappedDictionary.
+  //
+  // This optimization avoids multiple wrapped chain calls.
+  virtual StenoDictionary *GetWrappedLookupDictionary() const {
+    return nullptr;
+  }
+
   virtual void PrintInfo(int depth) const;
   virtual void PrintDictionary(PrintDictionaryContext &context) const {}
 

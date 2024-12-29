@@ -7,7 +7,7 @@
 #if JAVELIN_USE_CUSTOM_POP_COUNT
 
 #if JAVELIN_CPU_CORTEX_M0
-__attribute__((naked)) uint32_t Bit<4>::PopCount(uint32_t v) {
+[[gnu::naked]] uint32_t Bit<4>::PopCount(uint32_t v) {
   asm volatile(R"(
     ldr  r1, =#0x49249249
     lsr  r2, r0, #1
@@ -31,7 +31,7 @@ __attribute__((naked)) uint32_t Bit<4>::PopCount(uint32_t v) {
 }
 #elif JAVELIN_CPU_CORTEX_M4
 
-__attribute__((noinline)) uint32_t Bit<4>::PopCount(uint32_t v) {
+[[gnu::noinline]] uint32_t Bit<4>::PopCount(uint32_t v) {
   uint32_t temp;
   asm volatile(R"(
     bic %1, %0, #0x55555555

@@ -41,7 +41,7 @@ static char *WriteReversedHex(char *p, T v, const char *alphabet) {
   return p;
 }
 
-__attribute__((noinline)) void IWriter::Dump(const void *data, size_t length) {
+[[gnu::noinline]] void IWriter::Dump(const void *data, size_t length) {
   const uint8_t *p = (const uint8_t *)data;
 
   // clang-format off

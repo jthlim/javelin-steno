@@ -580,7 +580,7 @@ void StenoUserDictionary::AddConsoleCommands(Console &console) {
 #include "../str.h"
 #include "../unit_test.h"
 
-__attribute__((aligned(4096))) static uint8_t userDictionaryBuffer[512 * 1024];
+[[gnu::aligned(4096)]] static uint8_t userDictionaryBuffer[512 * 1024];
 
 TEST_BEGIN("StenoUserDictionary will reset if descriptor is invalid") {
   const StenoUserDictionaryData layout(userDictionaryBuffer,

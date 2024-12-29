@@ -63,7 +63,7 @@ static constexpr uint16_t CRC16_CCITT_TABLE[256] = {
 
 #if JAVELIN_PLATFORM_NRF5_SDK
 // Putting the CRC32 table into data avoid constant XIP cache thrashing
-__attribute((section(".data"))) static uint32_t CRC32_TABLE[256] = {
+[[gnu::section(".data")]] static uint32_t CRC32_TABLE[256] = {
 #else
 static constexpr uint32_t CRC32_TABLE[256] = {
 #endif
@@ -114,7 +114,7 @@ static constexpr uint32_t CRC32_TABLE[256] = {
 
 //---------------------------------------------------------------------------
 
-__attribute__((weak)) uint8_t Crc8(const void *p, size_t count) {
+[[gnu::weak]] uint8_t Crc8(const void *p, size_t count) {
   const uint8_t *v = (const uint8_t *)p;
   uint8_t hash = 0xff;
   for (size_t i = 0; i < count; i++) {
@@ -123,7 +123,7 @@ __attribute__((weak)) uint8_t Crc8(const void *p, size_t count) {
   return hash;
 }
 
-__attribute__((weak)) uint32_t Crc16Ccitt(const void *p, size_t count) {
+[[gnu::weak]] uint32_t Crc16Ccitt(const void *p, size_t count) {
   const uint8_t *v = (const uint8_t *)p;
   uint32_t hash = 0xffff;
   for (size_t i = 0; i < count; i++) {
@@ -133,9 +133,10 @@ __attribute__((weak)) uint32_t Crc16Ccitt(const void *p, size_t count) {
 }
 
 #if JAVELIN_PLATFORM_NRF5_SDK
-__attribute((section(".code_ram")))
+[[gnu::section(".code_ram")]]
 #endif
-__attribute__((weak)) uint32_t Crc32(const void *p, size_t count) {
+[[gnu::weak]] uint32_t
+Crc32(const void *p, size_t count) {
   const uint8_t *v = (const uint8_t *)p;
   uint32_t hash = 0xffffffff;
   while (count >= 4) {

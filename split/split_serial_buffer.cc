@@ -44,7 +44,7 @@ void SplitSerialBuffer::SplitSerialBufferData::UpdateBuffer(TxBuffer &buffer) {
   }
 }
 
-__attribute__((weak)) void
+[[gnu::weak]] void
 SplitSerialBuffer::SplitSerialBufferData::OnDataReceived(const void *data,
                                                          size_t length) {}
 

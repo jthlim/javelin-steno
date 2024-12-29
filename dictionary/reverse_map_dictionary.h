@@ -25,7 +25,7 @@ private:
   const uint8_t *baseAddress;
   const SizedList<uint8_t> textBlock;
 
-  static const size_t INDEX_SIZE = 128;
+  static const size_t INDEX_SIZE = 256;
   size_t indexSize = 0;
   const uint8_t *index[INDEX_SIZE + 1];
 

@@ -41,7 +41,7 @@ void UnitTest::main() {
          passedCount + failedCount, passedCount, failedCount);
 }
 
-__attribute__((weak)) int main(int argc, const char **argv) {
+[[gnu::weak]] int main(int argc, const char **argv) {
   UnitTest::main();
   return 0;
 }

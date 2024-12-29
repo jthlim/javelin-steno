@@ -191,6 +191,7 @@ bool StenoReverseAutoSuffixDictionary::HasValidLookup(
           return true;
         }
         strokes += i;
+        i = length;
         break;
       } else if (--i == 0) {
         return false;

@@ -229,13 +229,13 @@ void StenoEngine::LookupStroke_Binding(void *context, const char *commandLine) {
 
   const ExternalFlashSentry externalFlashSentry;
   StenoEngine *engine = (StenoEngine *)context;
-  const StenoDictionaryLookupResult result =
-      engine->dictionary.Lookup(parser.strokes, parser.length);
+  const StenoDictionary *dictionary =
+      engine->dictionary.GetDictionaryForOutline(parser.strokes, parser.length);
 
-  if (result.IsValid()) {
-    const StenoDictionary *dictionary =
-        engine->dictionary.GetDictionaryForOutline(parser.strokes,
-                                                   parser.length);
+  if (dictionary != nullptr) {
+    const StenoDictionaryLookupResult result =
+        dictionary->Lookup(parser.strokes, parser.length);
+
     Console::Printf("{\"definition\":\"%J\",\"dictionary\":\"%J\"",
                     result.GetText(), dictionary->GetName());
 

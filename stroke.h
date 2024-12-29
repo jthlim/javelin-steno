@@ -91,7 +91,6 @@ public:
   char *ToWideString(char *buffer) const;
 
   bool operator==(const StenoStroke &o) const { return keyState == o.keyState; }
-  bool operator!=(const StenoStroke &o) const { return keyState != o.keyState; }
 
   StenoStroke operator&(const StenoStroke &o) const {
     return StenoStroke(keyState & o.keyState);

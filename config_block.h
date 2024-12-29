@@ -17,7 +17,7 @@ struct StenoConfigBlock {
   int8_t keyMap[(int)StenoKey::COUNT];
 };
 
-static_assert(sizeof(StenoConfigBlock) == 74,
+static_assert(sizeof(StenoConfigBlock) == 96,
               "Config block is of unexpected size");
 
 //---------------------------------------------------------------------------
