@@ -946,10 +946,10 @@ TEST_BEGIN("JeffPhrasing: Enders tests") {
   VerifyStroke("SWR-ERZ", "I am caring");
   VerifyStroke("SWR-FRZ", "I have cared");
   VerifyStroke("KWHR-RZ", "he cares");
-  VerifyStroke("SWR-RZD", "I cared");
-  VerifyStroke("SWR-ERZD", "I was caring");
-  VerifyStroke("SWR-FRZD", "I had cared");
-  VerifyStroke("KWHR-RZD", "he cared");
+  VerifyStroke("SWR-RDZ", "I cared");
+  VerifyStroke("SWR-ERDZ", "I was caring");
+  VerifyStroke("SWR-FRDZ", "I had cared");
+  VerifyStroke("KWHR-RDZ", "he cared");
 
   VerifyStroke("SWR-PBGZ", "I change");
   VerifyStroke("SWR-EPBGZ", "I am changing");
@@ -1392,14 +1392,14 @@ TEST_BEGIN("JeffPhrasing: Enders tests") {
   VerifyStroke("SWR-FPSZ", "I had put");
   VerifyStroke("KWHR-PSZ", "he put");
 
-  VerifyStroke("SWR-PST", "I put it");
-  VerifyStroke("SWR-EPST", "I am putting it");
-  VerifyStroke("SWR-FPST", "I have put it");
-  VerifyStroke("KWHR-PST", "he puts it");
-  VerifyStroke("SWR-PSTDZ", "I put it");
-  VerifyStroke("SWR-EPSTDZ", "I was putting it");
-  VerifyStroke("SWR-FPSTDZ", "I had put it");
-  VerifyStroke("KWHR-PSTDZ", "he put it");
+  VerifyStroke("SWR-PTS", "I put it");
+  VerifyStroke("SWR-EPTS", "I am putting it");
+  VerifyStroke("SWR-FPTS", "I have put it");
+  VerifyStroke("KWHR-PTS", "he puts it");
+  VerifyStroke("SWR-PTSDZ", "I put it");
+  VerifyStroke("SWR-EPTSDZ", "I was putting it");
+  VerifyStroke("SWR-FPTSDZ", "I had put it");
+  VerifyStroke("KWHR-PTSDZ", "he put it");
 
   VerifyStroke("SWR-RS", "I read");
   VerifyStroke("SWR-ERS", "I am reading");

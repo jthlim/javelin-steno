@@ -35,6 +35,7 @@ public:
 
   // Threadsafe version of strdup.
   static char *Dup(const char *p);
+  static char *CreateEmpty();
 
   static inline bool Eq(const char *a, const char *b) {
     return strcmp(a, b) == 0;

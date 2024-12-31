@@ -523,7 +523,7 @@ char *ToWords(char *digits) {
     return Str::Dup(NUMBER_WORDS[0]);
   }
 
-  char *result = Str::Dup("");
+  char *result = Str::CreateEmpty();
   const size_t length = Str::Length(p);
   char *end = p + length;
   bool needsAnd = false;
@@ -705,7 +705,7 @@ TEST_BEGIN("JeffNumbers: Test percents") {
 
   const StenoStroke strokes[] = {
       StenoStroke("#ST*"),
-      StenoStroke("#PKHR"),
+      StenoStroke("#KPHR"),
   };
   // spellchecker: enable
   TestLookup(strokes, 2, "12.34%");
@@ -743,10 +743,10 @@ TEST_BEGIN("JeffNumbers: Test ordinals") {
   TestLookup("#SPW", "13th");
   TestLookup("#TPW", "23rd");
 
-  TestLookup("#HW", "4th");
+  TestLookup("#WH", "4th");
   TestLookup("#H-B", "4th");
-  TestLookup("#SHW", "14th");
-  TestLookup("#THW", "24th");
+  TestLookup("#SWH", "14th");
+  TestLookup("#TWH", "24th");
   // spellchecker: enable
 }
 TEST_END
@@ -852,7 +852,7 @@ TEST_BEGIN("JeffNumbers: Test words") {
   TestLookup("#W-FG", "sixth");
   TestLookup("#W-PG", "seventh");
   TestLookup("#W-LG", "eighth");
-  TestLookup("#W-TG", "ninth");
+  TestLookup("#W-GT", "ninth");
   TestLookup("#SWOG", "tenth");
   TestLookup("#SWGD", "eleventh");
   TestLookup("#STWG", "twelfth");

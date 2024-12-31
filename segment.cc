@@ -101,7 +101,7 @@ public:
                             size_t startingOffset)
       : list(list), elementIndex(startingOffset) {
     if (list.IsEmpty()) {
-      p = elementText = nullptr;
+      p = nullptr;
     } else {
       p = "";
       PrepareNextP();
@@ -116,7 +116,6 @@ public:
 private:
   const List<StenoSegment> &list;
   size_t elementIndex;
-  const char *elementText;
   const char *p;
   const StenoState *nextState = nullptr;
 
@@ -131,78 +130,81 @@ StenoToken StenoSegmentListTokenizer::GetNext() {
 
   assert(p != nullptr);
   const char *start = p;
-  if (*p == '{') {
-    while (*p != '}') [[likely]] {
-      if (*p == '\0') [[unlikely]] {
+  const char *workingP = p;
+  if (*workingP == '{') {
+    while (*workingP != '}') [[likely]] {
+      if (*workingP == '\0') [[unlikely]] {
         break;
       }
-      if (p[0] == '\\') [[unlikely]] {
-        if (p[1] != '\0') [[likely]] {
-          p += 2;
+      if (workingP[0] == '\\') [[unlikely]] {
+        if (workingP[1] != '\0') [[likely]] {
+          workingP += 2;
           continue;
         }
       }
-      ++p;
+      ++workingP;
     }
-    if (*p == '\0') [[unlikely]] {
+    if (*workingP == '\0') [[unlikely]] {
       // Unterminated command... drop it.
+      p = workingP;
       PrepareNextP();
       return StenoToken("{}", 2, state);
     }
-    ++p;
+    ++workingP;
   } else {
     for (;;) {
-      switch (*p) {
+      switch (*workingP) {
       case '\0':
       case ' ':
       case '{':
         goto ReturnSpan;
 
       case '\\':
-        if (p[1] == '\0') {
+        if (workingP[1] == '\0') {
           free(scratch);
-          const size_t length = p - start;
+          const size_t length = workingP - start;
           scratch = Str::DupN(start, length);
-          ++p;
+          p = workingP + 1;
           PrepareNextP();
           return StenoToken(scratch, length, state);
         }
-        p += 2;
+        workingP += 2;
         break;
 
-      default:
-        ++p;
+      [[likely]] default:
+        ++workingP;
       }
     }
   }
 
 ReturnSpan:
-  const char *result = elementText;
-  const size_t length = p - start;
-  if (start != elementText || *p != '\0') {
+  const char *result = start;
+  const size_t length = workingP - start;
+  if (*workingP != '\0') {
     free(scratch);
     result = scratch = Str::DupN(start, length);
   }
 
+  p = workingP;
   PrepareNextP();
   return StenoToken(result, length, state);
 }
 
 void StenoSegmentListTokenizer::PrepareNextP() {
   for (;;) {
-    while (*p == ' ') {
+    while (*p == ' ') [[unlikely]] {
       ++p;
     }
-    if (*p != '\0') {
+    if (*p != '\0') [[unlikely]] {
       return;
     }
-    if (elementIndex == list.GetCount()) {
-      p = elementText = nullptr;
+    if (elementIndex == list.GetCount()) [[unlikely]] {
+      p = nullptr;
       return;
     }
 
     const StenoSegment &segment = list[elementIndex++];
-    p = elementText = segment.lookup.GetText();
+    p = segment.lookup.GetText();
     nextState = segment.state;
   }
 }

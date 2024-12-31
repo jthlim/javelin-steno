@@ -21,18 +21,24 @@ int WpmTracker::GetWpm(int seconds) {
   const uint32_t now = Clock::GetMilliseconds() / 1000;
   UpdateToNow(now);
 
+  if (seconds > NUMBER_OF_SECONDS) {
+    seconds = NUMBER_OF_SECONDS;
+  }
+
   int tally = 0;
   uint32_t bucket = now;
-  for (int i = 0; i < seconds; ++i) {
+  for (int i = seconds; i > 0; --i) {
     // Start one bucket earlier to avoid this second influencing the score too
     // much.
     --bucket;
-    tally += charactersTyped[bucket % NUMBER_OF_SECONDS];
+
+    // Use a linear weighting to prioritize more recent speed.
+    tally += i * charactersTyped[bucket % NUMBER_OF_SECONDS];
   }
-  if (tally < 0) {
+  if (tally <= 0) {
     return 0;
   }
-  return tally * (60 / 5) / seconds;
+  return tally * (2 * 60 / 5) / (seconds * (seconds + 1));
 }
 
 void WpmTracker::UpdateToNow(uint32_t now) {

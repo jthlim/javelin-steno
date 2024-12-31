@@ -13,8 +13,9 @@
 //---------------------------------------------------------------------------
 
 #define ENABLE_PROFILE 0
+#define ENABLE_PROFILE_SUGGESTIONS 0
 
-#if ENABLE_PROFILE
+#if ENABLE_PROFILE || ENABLE_PROFILE_SUGGESTIONS
 #include "arm/systick.h"
 #endif
 
@@ -522,6 +523,11 @@ void StenoEngine::PrintPaperTape(StenoStroke stroke,
 
 void StenoEngine::PrintSuggestions(const StenoSegmentList &previousSegments,
                                    const StenoSegmentList &nextSegments) {
+#if ENABLE_PROFILE_SUGGESTIONS
+  sysTick->EnableCycleCount();
+  const uint32_t t0 = sysTick->ReadCycleCount();
+#endif
+
   if (!IsSuggestionsEnabled()) {
     return;
   }
@@ -542,10 +548,22 @@ void StenoEngine::PrintSuggestions(const StenoSegmentList &previousSegments,
     return;
   }
 
+#if ENABLE_PROFILE_SUGGESTIONS
+  const uint32_t t1 = sysTick->ReadCycleCount();
+  Console::Printf("PrintSuggestions t01: %u\n\n", t1 - t0);
+#endif
+
   char *lastLookup = nullptr;
   size_t strokeThresholdCount = 0;
   for (size_t segmentCount = 1; segmentCount < 8; ++segmentCount) {
+#if ENABLE_PROFILE_SUGGESTIONS
+    const uint32_t t20 = sysTick->ReadCycleCount();
+#endif
     Pump();
+
+#if ENABLE_PROFILE_SUGGESTIONS
+    const uint32_t t21 = sysTick->ReadCycleCount();
+#endif
     char *newLookup;
 
     for (;;) {
@@ -581,10 +599,25 @@ void StenoEngine::PrintSuggestions(const StenoSegmentList &previousSegments,
       }
     }
 
+#if ENABLE_PROFILE_SUGGESTIONS
+    const uint32_t t22 = sysTick->ReadCycleCount();
+#endif
+
     newLookup = PrintSegmentSuggestion(startSegmentIndex, strokeThresholdCount,
                                        nextSegments, lastLookup);
+
+#if ENABLE_PROFILE_SUGGESTIONS
+    const uint32_t t23 = sysTick->ReadCycleCount();
+#endif
     free(lastLookup);
     lastLookup = newLookup;
+
+#if ENABLE_PROFILE_SUGGESTIONS
+    const uint32_t t24 = sysTick->ReadCycleCount();
+    Console::Printf("PrintSuggestions %zu: %u, %u, %u, %u\n\n", segmentCount,
+                    t21 - t20, t22 - t21, t23 - t22, t24 - t23);
+#endif
+
     if (!lastLookup) {
       return;
     }
@@ -666,21 +699,24 @@ void StenoEngine::PrintSuggestion(const char *p, size_t arrowPrefixCount,
   Console::Printf("}\n\n");
 }
 
-static bool ShouldShowSuggestions(const List<StenoSegment> &segments) {
+static bool ShouldShowSuggestions(const List<StenoSegment> &segments,
+                                  size_t startSegmentIndex) {
   // Count the number of suffix "{*!}" entries.
   // There must be more that number of entries before that.
   size_t joinPreviousCount = 0;
-  for (const StenoSegment &segment : segments.Reverse()) {
-    if (!Str::Eq(segment.lookup.GetText(), "{*!}")) {
+  for (size_t i = segments.GetCount(); i > startSegmentIndex;) {
+    --i;
+    if (!Str::Eq(segments[i].lookup.GetText(), "{*!}")) {
       break;
     }
     ++joinPreviousCount;
   }
-  return segments.GetCount() > 2 * joinPreviousCount;
+  return (segments.GetCount() - startSegmentIndex) > 2 * joinPreviousCount;
 }
 
-static bool HasManualStateChange(const List<StenoSegment> &segments) {
-  for (const StenoSegment &segment : segments) {
+static bool HasManualStateChange(const List<StenoSegment> &segments,
+                                 size_t startSegmentIndex) {
+  for (const StenoSegment &segment : segments.Skip(startSegmentIndex)) {
     if (segment.state->isManualStateChange) {
       return true;
     }
@@ -692,34 +728,51 @@ char *StenoEngine::PrintSegmentSuggestion(size_t startSegmentIndex,
                                           size_t strokeThresholdCount,
                                           const StenoSegmentList &segments,
                                           char *lastLookup) {
-  List<StenoSegment> testSegments;
-  testSegments.AddCount(segments.Skip(startSegmentIndex));
+#if ENABLE_PROFILE_SUGGESTIONS
+  const uint32_t t0 = sysTick->ReadCycleCount();
+#endif
 
-  if (!ShouldShowSuggestions(testSegments)) {
-    return Str::Dup("");
+  if (!ShouldShowSuggestions(segments, startSegmentIndex)) {
+    return Str::CreateEmpty();
   }
 
-  StenoTokenizer *tokenizer = StenoTokenizer::Create(testSegments);
+#if ENABLE_PROFILE_SUGGESTIONS
+  const uint32_t t1 = sysTick->ReadCycleCount();
+#endif
+
+  StenoTokenizer *tokenizer =
+      StenoTokenizer::Create(segments, startSegmentIndex);
   previousConversionBuffer.keyCodeBuffer.Populate(tokenizer);
   delete tokenizer;
 
+#if ENABLE_PROFILE_SUGGESTIONS
+  const uint32_t t2 = sysTick->ReadCycleCount();
+#endif
+
   char *lookup =
-      HasManualStateChange(testSegments) ||
-              Str::HasPrefix(testSegments.Back().lookup.GetText(), "{:")
+      HasManualStateChange(segments, startSegmentIndex) ||
+              Str::HasPrefix(segments.Back().lookup.GetText(), "{:")
           ? previousConversionBuffer.keyCodeBuffer.ToString()
           : previousConversionBuffer.keyCodeBuffer.ToUnresolvedString();
 
-  char *spaceRemoved = *lookup == ' ' ? lookup + 1 : lookup;
-
   // Special case {*!} and function calls at the start to avoid suggestions.
-  if (Str::Eq(testSegments[0].lookup.GetText(), "{*!}") ||
-      Str::HasPrefix(testSegments[0].lookup.GetText(), "{:")) {
+
+  if (const char *firstSegmentText =
+          segments[startSegmentIndex].lookup.GetText();
+      firstSegmentText[0] == '{' &&
+      (firstSegmentText[1] == ':' || // HasPrefix("{:")
+       Str::Eq(firstSegmentText, "{*!}"))) {
     return lookup;
   }
 
+  char *spaceRemoved = *lookup == ' ' ? lookup + 1 : lookup;
   bool printSuggestion =
       *spaceRemoved != '\0' && (startSegmentIndex != segments.GetCount() - 1 ||
                                 strokeThresholdCount != 1);
+
+#if ENABLE_PROFILE_SUGGESTIONS
+  const uint32_t t3 = sysTick->ReadCycleCount();
+#endif
 
   if (state.joinNext) {
     bool usePrefixSyntax = true;
@@ -750,9 +803,19 @@ char *StenoEngine::PrintSegmentSuggestion(size_t startSegmentIndex,
     printSuggestion = !Str::Eq(spaceRemoved, lastLookupSpaceRemoved);
   }
 
+#if ENABLE_PROFILE_SUGGESTIONS
+  const uint32_t t4 = sysTick->ReadCycleCount();
+#endif
+
   if (printSuggestion) {
     PrintSuggestion(spaceRemoved, strokeThresholdCount, strokeThresholdCount);
   }
+
+#if ENABLE_PROFILE_SUGGESTIONS
+  const uint32_t t5 = sysTick->ReadCycleCount();
+  Console::Printf("PrintSegmentSuggestions: %u, %u, %u, %u, %u\n\n", t1 - t0,
+                  t2 - t1, t3 - t2, t4 - t3, t5 - t4);
+#endif
 
   return lookup;
 }

@@ -5,6 +5,20 @@
 
 //---------------------------------------------------------------------------
 
+enum StrokeKeyType : uint8_t {
+  MASK,
+  SEPARATOR,
+  SEPARATOR_FOLLOW_MASK,
+};
+
+struct StrokeKey {
+  char c;
+  StrokeKeyType type;
+  uint32_t mask;
+};
+
+//---------------------------------------------------------------------------
+
 struct StrokeBitIndex {
   enum {
     NUM,
@@ -77,7 +91,6 @@ class StenoStroke {
 public:
   constexpr StenoStroke(uint32_t keyState = 0) : keyState(keyState) {}
 
-  // Only for use in tests.
   void Set(const char *string);
   template <size_t N> StenoStroke(const char (&s)[N]) { Set(s); }
 
@@ -133,14 +146,10 @@ public:
     }
   }
 
-  static const size_t MAX_STRING_LENGTH = 32;
+  static const size_t MAX_STRING_LENGTH = 33;
 
 private:
   uint32_t keyState;
-
-  // Returns pointer to the first character after vowels, '*' or '-'.
-  // Points to a null if it doesn't exist.
-  static const char *RightStart(const char *p);
 
   bool ProcessCharacter(int c, const char *symbols, const uint32_t *masks);
 };

@@ -33,28 +33,6 @@ const uint8_t Utf8Pointer::DECODE_TABLE[] = {
     4, 4, 4, 4, 4, 4, 4, 4, 0, 0, 0, 0, 0, 0, 0, 0 //
 };
 
-void Utf8Pointer::SetAndAdvance(uint32_t c) __restrict {
-  if (c < 0x80) {
-    p[0] = c;
-    ++p;
-  } else if (c < 0x800) {
-    p[0] = 0xc0 | (c >> 6);
-    p[1] = 0x80 | (c & 0x3f);
-    p += 2;
-  } else if (c < 0x10000) {
-    p[0] = 0xe0 | (c >> 12);
-    p[1] = 0x80 | ((c >> 6) & 0x3f);
-    p[2] = 0x80 | (c & 0x3f);
-    p += 3;
-  } else {
-    p[0] = 0xf0 | (c >> 18);
-    p[1] = 0x80 | ((c >> 12) & 0x3f);
-    p[2] = 0x80 | ((c >> 6) & 0x3f);
-    p[3] = 0x80 | (c & 0x3f);
-    p += 4;
-  }
-}
-
 uint32_t Utf8Pointer::BytesForCharacterCode(uint32_t c) {
   if (c < 0x80) {
     return 1;

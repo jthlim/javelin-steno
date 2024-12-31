@@ -50,6 +50,10 @@ void StenoReverseAutoSuffixDictionary::ReverseLookup(
     return;
   }
 
+  if (Str::Contains(lookup.definition, ' ')) {
+    return;
+  }
+
   const char *quickRejectText =
       lookup.definitionLength > 8
           ? lookup.definition + lookup.definitionLength - 8

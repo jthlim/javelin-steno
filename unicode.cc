@@ -44,7 +44,7 @@ static bool Lookup(uint32_t c, const UnicodeRange *data, size_t length) {
 //---------------------------------------------------------------------------
 
 uint32_t Unicode::ToUpper(uint32_t c) {
-  if (c < 128) {
+  if (c < 128) [[likely]] {
     if (c < 'a' || c > 'z') {
       return c;
     }
@@ -54,7 +54,7 @@ uint32_t Unicode::ToUpper(uint32_t c) {
 }
 
 uint32_t Unicode::ToLower(uint32_t c) {
-  if (c < 128) {
+  if (c < 128) [[likely]] {
     if (c < 'A' || c > 'Z') {
       return c;
     }
@@ -64,7 +64,7 @@ uint32_t Unicode::ToLower(uint32_t c) {
 }
 
 bool Unicode::IsLetter(uint32_t c) {
-  if (c < 128) {
+  if (c < 128) [[likely]] {
     c |= 0x20;
     return 'a' <= c && c <= 'z';
   }

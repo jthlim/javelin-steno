@@ -57,29 +57,28 @@ size_t Str::Sprintf(char *target, const char *p, ...) {
 }
 
 bool Str::IsFingerSpellingCommand(const char *p) {
-  bool result = false;
-
   while (*p) {
     const int c = *p++;
-    if (c == ' ') {
+    if (c == ' ') [[unlikely]] {
       continue;
     }
-    result = false;
-    if (c == '{') {
+    if (c == '{') [[unlikely]] {
       if (*p == '&') {
         p++;
-        result = true;
+        return true;
       }
       while (*p) {
         const int c = *p++;
-        if (c == '}') {
+        if (c == '\\' && *p != '\0') {
+          ++p;
+        } else if (c == '}') {
           break;
         }
       }
     }
   }
 
-  return result;
+  return false;
 }
 
 bool Str::IsJoinPrevious(const char *p) {
@@ -89,8 +88,8 @@ bool Str::IsJoinPrevious(const char *p) {
 bool Str::ContainsKeyCode(const char *p) {
   while (*p) {
     const int c = *p++;
-    if (c == '{') {
-      if (*p == '#') {
+    if (c == '{') [[unlikely]] {
+      if (*p == '#') [[unlikely]] {
         return true;
       }
     }
@@ -134,6 +133,12 @@ char *Str::Dup(const char *p) {
   char *buffer = (char *)malloc(length + 1);
   buffer[length] = '\0';
   return (char *)memcpy(buffer, p, length);
+}
+
+char *Str::CreateEmpty() {
+  char *buffer = (char *)malloc(1);
+  buffer[0] = '\0';
+  return buffer;
 }
 
 bool Str::HasPrefix(const char *p, const char *prefix) {

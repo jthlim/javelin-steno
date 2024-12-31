@@ -7,6 +7,77 @@
 
 //---------------------------------------------------------------------------
 
+constexpr StrokeKey ENGLISH_STROKE_DISPLAY[] = {
+    {'^', StrokeKeyType::MASK, 0x00800000},
+    {'+', StrokeKeyType::MASK, 0x01000000},
+    {'#', StrokeKeyType::MASK, 0x00000001},
+    {'S', StrokeKeyType::MASK, 0x00000002},
+    {'T', StrokeKeyType::MASK, 0x00000004},
+    {'K', StrokeKeyType::MASK, 0x00000008},
+    {'P', StrokeKeyType::MASK, 0x00000010},
+    {'W', StrokeKeyType::MASK, 0x00000020},
+    {'H', StrokeKeyType::MASK, 0x00000040},
+    {'R', StrokeKeyType::MASK, 0x00000080},
+    {'A', StrokeKeyType::MASK, 0x00000100},
+    {'O', StrokeKeyType::MASK, 0x00000200},
+    {'*', StrokeKeyType::MASK, 0x00000400},
+    {'-', StrokeKeyType::SEPARATOR, 0x00001f00},
+    {'-', StrokeKeyType::SEPARATOR_FOLLOW_MASK, 0x007fe000},
+    {'E', StrokeKeyType::MASK, 0x00000800},
+    {'U', StrokeKeyType::MASK, 0x00001000},
+    {'F', StrokeKeyType::MASK, 0x00002000},
+    {'R', StrokeKeyType::MASK, 0x00004000},
+    {'P', StrokeKeyType::MASK, 0x00008000},
+    {'B', StrokeKeyType::MASK, 0x00010000},
+    {'L', StrokeKeyType::MASK, 0x00020000},
+    {'G', StrokeKeyType::MASK, 0x00040000},
+    {'T', StrokeKeyType::MASK, 0x00080000},
+    {'S', StrokeKeyType::MASK, 0x00100000},
+    {'D', StrokeKeyType::MASK, 0x00200000},
+    {'Z', StrokeKeyType::MASK, 0x00400000},
+};
+
+constexpr StrokeKey ENGLISH_STROKE_PARSER[] = {
+    {'^', StrokeKeyType::MASK, 0x00800000},
+    {'+', StrokeKeyType::MASK, 0x01000000},
+    {'#', StrokeKeyType::MASK, 0x00000001},
+    {'1', StrokeKeyType::MASK, 0x00000003},
+    {'S', StrokeKeyType::MASK, 0x00000002},
+    {'2', StrokeKeyType::MASK, 0x00000005},
+    {'T', StrokeKeyType::MASK, 0x00000004},
+    {'K', StrokeKeyType::MASK, 0x00000008},
+    {'3', StrokeKeyType::MASK, 0x00000011},
+    {'P', StrokeKeyType::MASK, 0x00000010},
+    {'W', StrokeKeyType::MASK, 0x00000020},
+    {'4', StrokeKeyType::MASK, 0x00000041},
+    {'H', StrokeKeyType::MASK, 0x00000040},
+    {'R', StrokeKeyType::MASK, 0x00000080},
+    {'5', StrokeKeyType::MASK, 0x00000101},
+    {'A', StrokeKeyType::MASK, 0x00000100},
+    {'0', StrokeKeyType::MASK, 0x00000201},
+    {'O', StrokeKeyType::MASK, 0x00000200},
+    {'*', StrokeKeyType::MASK, 0x00000400},
+    {'-', StrokeKeyType::SEPARATOR, 0x00000000},
+    {'E', StrokeKeyType::MASK, 0x00000800},
+    {'U', StrokeKeyType::MASK, 0x00001000},
+    {'6', StrokeKeyType::MASK, 0x00002001},
+    {'F', StrokeKeyType::MASK, 0x00002000},
+    {'R', StrokeKeyType::MASK, 0x00004000},
+    {'7', StrokeKeyType::MASK, 0x00008001},
+    {'P', StrokeKeyType::MASK, 0x00008000},
+    {'B', StrokeKeyType::MASK, 0x00010000},
+    {'8', StrokeKeyType::MASK, 0x00020001},
+    {'L', StrokeKeyType::MASK, 0x00020000},
+    {'G', StrokeKeyType::MASK, 0x00040000},
+    {'9', StrokeKeyType::MASK, 0x00080001},
+    {'T', StrokeKeyType::MASK, 0x00080000},
+    {'S', StrokeKeyType::MASK, 0x00100000},
+    {'D', StrokeKeyType::MASK, 0x00200000},
+    {'Z', StrokeKeyType::MASK, 0x00400000},
+};
+
+//---------------------------------------------------------------------------
+
 bool StenoStroke::ProcessCharacter(int c, const char *symbols,
                                    const uint32_t *masks) {
   const char *p = strchr(symbols, c);
@@ -19,133 +90,46 @@ bool StenoStroke::ProcessCharacter(int c, const char *symbols,
 }
 
 void StenoStroke::Set(const char *string) {
-  // cspell: disable
-  static const char LEFT_SYMBOLS[] = "#1234506789STKPWHRAO*-EU";
-  static const char RIGHT_SYMBOLS[] = "6789FRPBLGTSDZ";
-  // cspell: enable
-
-  static const uint32_t LEFT_MASKS[] = {
-      StrokeMask::NUM,
-      StrokeMask::NUM | StrokeMask::SL,
-      StrokeMask::NUM | StrokeMask::TL,
-      StrokeMask::NUM | StrokeMask::PL,
-      StrokeMask::NUM | StrokeMask::HL,
-      StrokeMask::NUM | StrokeMask::A,
-      StrokeMask::NUM | StrokeMask::O,
-      StrokeMask::NUM | StrokeMask::FR,
-      StrokeMask::NUM | StrokeMask::PR,
-      StrokeMask::NUM | StrokeMask::LR,
-      StrokeMask::NUM | StrokeMask::TR,
-      StrokeMask::SL,
-      StrokeMask::TL,
-      StrokeMask::KL,
-      StrokeMask::PL,
-      StrokeMask::WL,
-      StrokeMask::HL,
-      StrokeMask::RL,
-      StrokeMask::A,
-      StrokeMask::O,
-      StrokeMask::STAR,
-      0,
-      StrokeMask::E,
-      StrokeMask::U,
-  };
-
-  static const uint32_t RIGHT_MASKS[] = {
-      StrokeMask::NUM | StrokeMask::FR,
-      StrokeMask::NUM | StrokeMask::PR,
-      StrokeMask::NUM | StrokeMask::LR,
-      StrokeMask::NUM | StrokeMask::TR,
-      StrokeMask::FR,
-      StrokeMask::RR,
-      StrokeMask::PR,
-      StrokeMask::BR,
-      StrokeMask::LR,
-      StrokeMask::GR,
-      StrokeMask::TR,
-      StrokeMask::SR,
-      StrokeMask::DR,
-      StrokeMask::ZR,
-  };
-
-  keyState = 0;
-  const char *rightStart = RightStart(string);
-  const char *p = string;
-
-  while (p < rightStart) {
-    if (!ProcessCharacter(*p++, LEFT_SYMBOLS, LEFT_MASKS)) {
-      keyState = 0;
-      return;
+  uint32_t value = 0;
+  for (const StrokeKey &display : ENGLISH_STROKE_PARSER) {
+    if (display.c == *string) {
+      value |= display.mask;
+      ++string;
     }
   }
 
-  while (*p) {
-    if (!ProcessCharacter(*p++, RIGHT_SYMBOLS, RIGHT_MASKS)) {
-      keyState = 0;
-      return;
-    }
-  }
-}
-
-const char *StenoStroke::RightStart(const char *p) {
-  // cspell: disable
-  static const char MIDDLE_SYMBOLS[] = "AEOU-*";
-  static const char RIGHT_ONLY_SYMBOLS[] = "FBLGDZ";
-  // cspell: enable
-
-  bool foundMiddle = false;
-  for (;;) {
-    if (!*p) {
-      return p;
-    }
-
-    if (strchr(MIDDLE_SYMBOLS, *p)) {
-      foundMiddle = true;
-    } else if (strchr(RIGHT_ONLY_SYMBOLS, *p)) {
-      return p;
-    } else if (foundMiddle) {
-      return p;
-    }
-    ++p;
-  }
+  keyState = value;
 }
 
 char *StenoStroke::ToString(char *buffer) const {
-  // cspell: disable-next-line
-  const char *keys = "#STKPWHRAO*EUFRPBLGTSDZ";
 
-  constexpr uint32_t startMask =
-      StrokeMask::NUM | StrokeMask::SL | StrokeMask::TL | StrokeMask::KL |
-      StrokeMask::PL | StrokeMask::WL | StrokeMask::HL | StrokeMask::RL |
-      StrokeMask::A | StrokeMask::O;
-
-  if (keyState & startMask) {
-    for (int i = 0; i < StrokeBitIndex::STAR; ++i) {
-      if (keyState & (1UL << i)) {
-        *buffer++ = keys[i];
+  const StrokeKey *end =
+      ENGLISH_STROKE_DISPLAY +
+      (sizeof(ENGLISH_STROKE_DISPLAY) / sizeof(ENGLISH_STROKE_DISPLAY[0]));
+  for (const StrokeKey *p = ENGLISH_STROKE_DISPLAY; p != end;) {
+    switch (p->type) {
+    [[unlikely]] case StrokeKeyType::SEPARATOR:
+      // Only draw the separator if the mask is zero, and there's some
+      // characters after.
+      //
+      // Rather than adding 32 bits to every structure, use two consecutive
+      // entries for separators
+      //
+      assert(p[1].type == StrokeKeyType::SEPARATOR_FOLLOW_MASK);
+      if ((keyState & p[0].mask) == 0 && (keyState & p[1].mask) != 0) {
+        *buffer++ = p->c;
       }
-    }
-  }
-
-  constexpr uint32_t remainderMask =
-      StrokeMask::STAR | StrokeMask::E | StrokeMask::U | StrokeMask::FR |
-      StrokeMask::RR | StrokeMask::PR | StrokeMask::BR | StrokeMask::LR |
-      StrokeMask::GR | StrokeMask::TR | StrokeMask::SR | StrokeMask::DR |
-      StrokeMask::ZR;
-
-  if (keyState & remainderMask) {
-    constexpr uint32_t centralKeyMask = StrokeMask::A | StrokeMask::O |
-                                        StrokeMask::STAR | StrokeMask::E |
-                                        StrokeMask::U;
-
-    if ((keyState & centralKeyMask) == 0) {
-      *buffer++ = '-';
-    }
-
-    for (int i = StrokeBitIndex::STAR; i < StrokeBitIndex::COUNT; ++i) {
-      if (keyState & (1UL << i)) {
-        *buffer++ = keys[i];
+      p += 2;
+      break;
+    [[likely]] case StrokeKeyType::MASK:
+      if ((keyState & p->mask) == p->mask) {
+        *buffer++ = p->c;
       }
+      ++p;
+      break;
+    default:
+      __builtin_unreachable();
+      break;
     }
   }
 
@@ -154,12 +138,13 @@ char *StenoStroke::ToString(char *buffer) const {
 }
 
 char *StenoStroke::ToWideString(char *buffer) const {
-  // cspell: disable-next-line
-  const char *keys = "#STKPWHRAO*EUFRPBLGTSDZ";
-
-  for (int i = 0; i < StrokeBitIndex::COUNT; ++i) {
-    *buffer++ = (keyState & (1UL << i)) ? keys[i] : ' ';
+  for (const StrokeKey &display : ENGLISH_STROKE_DISPLAY) {
+    if (display.type != StrokeKeyType::MASK) [[unlikely]] {
+      continue;
+    }
+    *buffer++ = (keyState & display.mask) ? display.c : ' ';
   }
+
   *buffer = '\0';
   return buffer;
 }
@@ -180,6 +165,14 @@ uint32_t StenoStroke::Hash(const StenoStroke *strokes, size_t length) {
 
 #include "unit_test.h"
 
+bool VerifyParse(const char *text, const char *expected) {
+  StenoStroke stroke;
+  stroke.Set(text);
+  char buffer[StenoStroke::MAX_STRING_LENGTH];
+  stroke.ToString(buffer);
+  return Str::Eq(buffer, expected);
+}
+
 TEST_BEGIN("Stroke tests") {
   char buffer[StenoStroke::MAX_STRING_LENGTH];
 
@@ -187,13 +180,11 @@ TEST_BEGIN("Stroke tests") {
   hello.ToString(buffer);
   assert(Str::Eq(buffer, "H-L"));
 
-  const StenoStroke cat("KAT");
-  cat.ToString(buffer);
-  assert(Str::Eq(buffer, "KAT"));
-
-  const StenoStroke star("STA*R");
-  star.ToString(buffer);
-  assert(Str::Eq(buffer, "STA*R"));
+  VerifyParse("S", "S");
+  VerifyParse("KAT", "KAT");
+  VerifyParse("STA*R", "STA*R");
+  VerifyParse("19", "#S-T");
+  VerifyParse("^KAT", "^KAT");
 }
 TEST_END
 

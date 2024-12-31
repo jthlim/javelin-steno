@@ -61,6 +61,11 @@ void StenoCompiledOrthography::UnlockCache() {}
 
 #endif
 
+void StenoCompiledOrthography::CacheEntry::Reset() {
+  free(base);
+  base = nullptr;
+}
+
 inline char *StenoCompiledOrthography::CacheEntry::DupResult() const {
   return Str::DupN(GetResult(), resultLength);
 }
@@ -118,6 +123,16 @@ void StenoCompiledOrthography::CacheBlock::AddEntry(const char *word,
   const size_t entryIndex = entries[0].blockIndex++ & (CACHE_ASSOCIATIVITY - 1);
   CacheEntry &entry = entries[entryIndex];
   entry.Set(word, suffix, result);
+
+  UnlockCache();
+}
+
+void StenoCompiledOrthography::CacheBlock::Reset() {
+  LockCache();
+
+  for (CacheEntry &entry : entries) {
+    entry.Reset();
+  }
 
   UnlockCache();
 }
@@ -347,6 +362,14 @@ void StenoCompiledOrthography::AddCandidates(BestCandidate &bestCandidate,
 }
 
 //---------------------------------------------------------------------------
+
+#if USE_ORTHOGRAPHY_CACHE
+void StenoCompiledOrthography::ResetCache() {
+  for (CacheBlock &block : cache) {
+    block.Reset();
+  }
+}
+#endif
 
 void StenoCompiledOrthography::PrintInfo() const {
   const ExternalFlashSentry sentry;

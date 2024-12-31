@@ -63,6 +63,10 @@ public:
 
   void PrintInfo() const;
 
+#if USE_ORTHOGRAPHY_CACHE
+  void ResetCache();
+#endif
+
   const StenoOrthography &data;
 
 private:
@@ -78,6 +82,8 @@ private:
     const char *GetSuffix() const { return base + suffixOffset; }
     const char *GetResult() const { return base + resultOffset; }
     char *DupResult() const;
+
+    void Reset();
 
   private:
     char *base;
@@ -110,6 +116,7 @@ private:
 
     char *Lookup(const char *word, const char *suffix) const;
     void AddEntry(const char *word, const char *suffix, const char *result);
+    void Reset();
   };
 
   mutable CacheBlock cache[CACHE_BLOCK_COUNT];
