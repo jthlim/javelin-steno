@@ -150,8 +150,6 @@ public:
 
 private:
   uint32_t keyState;
-
-  bool ProcessCharacter(int c, const char *symbols, const uint32_t *masks);
 };
 
 static_assert(sizeof(StenoStroke) == 4);

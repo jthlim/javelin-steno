@@ -78,17 +78,6 @@ constexpr StrokeKey ENGLISH_STROKE_PARSER[] = {
 
 //---------------------------------------------------------------------------
 
-bool StenoStroke::ProcessCharacter(int c, const char *symbols,
-                                   const uint32_t *masks) {
-  const char *p = strchr(symbols, c);
-  if (!p) {
-    return false;
-  }
-
-  keyState |= masks[p - symbols];
-  return true;
-}
-
 void StenoStroke::Set(const char *string) {
   uint32_t value = 0;
   for (const StrokeKey &display : ENGLISH_STROKE_PARSER) {
@@ -112,9 +101,8 @@ char *StenoStroke::ToString(char *buffer) const {
       // Only draw the separator if the mask is zero, and there's some
       // characters after.
       //
-      // Rather than adding 32 bits to every structure, use two consecutive
-      // entries for separators
-      //
+      // Rather than adding 32 bits to every instance of the structure,
+      // use two consecutive entries for separators.
       assert(p[1].type == StrokeKeyType::SEPARATOR_FOLLOW_MASK);
       if ((keyState & p[0].mask) == 0 && (keyState & p[1].mask) != 0) {
         *buffer++ = p->c;

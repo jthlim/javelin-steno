@@ -139,6 +139,9 @@ static constexpr uint32_t CRC32_TABLE[256] = {
 Crc32(const void *p, size_t count) {
   const uint8_t *v = (const uint8_t *)p;
   uint32_t hash = 0xffffffff;
+
+#if JAVELIN_CPU_CORTEX_M4
+  // Process 4 bytes at a time on cortex m4 as it allows unaligned access.
   while (count >= 4) {
     const uint32_t value = *(uint32_t *)v;
     v += 4;
@@ -148,6 +151,7 @@ Crc32(const void *p, size_t count) {
     hash = CRC32_TABLE[uint8_t(hash ^ (value >> 24))] ^ (hash >> 8);
     count -= 4;
   }
+#endif
   while (count) {
     hash = CRC32_TABLE[uint8_t(hash ^ *v++)] ^ (hash >> 8);
     --count;
