@@ -7,7 +7,7 @@
 
 //---------------------------------------------------------------------------
 
-constexpr StrokeKey ENGLISH_STROKE_DISPLAY[] = {
+constexpr StrokeKey ENGLISH_STROKE_FORMATTER[] = {
     {'^', StrokeKeyType::MASK, 0x00800000},
     {'+', StrokeKeyType::MASK, 0x01000000},
     {'#', StrokeKeyType::MASK, 0x00000001},
@@ -78,9 +78,16 @@ constexpr StrokeKey ENGLISH_STROKE_PARSER[] = {
 
 //---------------------------------------------------------------------------
 
+FastIterable<const StrokeKey> StenoStroke::formatter =
+    FastIterable<const StrokeKey>(ENGLISH_STROKE_FORMATTER);
+FastIterable<const StrokeKey> StenoStroke::parser =
+    FastIterable<const StrokeKey>(ENGLISH_STROKE_PARSER);
+
+//---------------------------------------------------------------------------
+
 void StenoStroke::Set(const char *string) {
   uint32_t value = 0;
-  for (const StrokeKey &display : ENGLISH_STROKE_PARSER) {
+  for (const StrokeKey &display : parser) {
     if (display.c == *string) {
       value |= display.mask;
       ++string;
@@ -91,11 +98,8 @@ void StenoStroke::Set(const char *string) {
 }
 
 char *StenoStroke::ToString(char *buffer) const {
-
-  const StrokeKey *end =
-      ENGLISH_STROKE_DISPLAY +
-      (sizeof(ENGLISH_STROKE_DISPLAY) / sizeof(ENGLISH_STROKE_DISPLAY[0]));
-  for (const StrokeKey *p = ENGLISH_STROKE_DISPLAY; p != end;) {
+  const StrokeKey *pEnd = end(formatter);
+  for (const StrokeKey *p = begin(formatter); p != pEnd;) {
     switch (p->type) {
     [[unlikely]] case StrokeKeyType::SEPARATOR:
       // Only draw the separator if the mask is zero, and there's some
@@ -126,7 +130,7 @@ char *StenoStroke::ToString(char *buffer) const {
 }
 
 char *StenoStroke::ToWideString(char *buffer) const {
-  for (const StrokeKey &display : ENGLISH_STROKE_DISPLAY) {
+  for (const StrokeKey &display : formatter) {
     if (display.type != StrokeKeyType::MASK) [[unlikely]] {
       continue;
     }

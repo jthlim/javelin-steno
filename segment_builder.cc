@@ -308,15 +308,14 @@ StenoSegment StenoSegmentBuilder::AutoSuffixTest(BuildSegmentContext &context,
 
   size_t length = startLength;
   while (length >= minimumLength) {
-    if ((strokes[offset + length - 1] & orthography.autoSuffixMask)
-            .IsNotEmpty()) {
+    const StenoStroke endStroke = strokes[offset + length - 1];
+    if ((endStroke & orthography.autoSuffixMask).IsNotEmpty()) {
       for (const StenoOrthographyAutoSuffix &suffix :
            orthography.autoSuffixes) {
-        if ((strokes[offset + length - 1] & suffix.stroke).IsEmpty()) {
+        if ((endStroke & suffix.stroke).IsEmpty()) {
           continue;
         }
-        localStrokes[length - 1] =
-            strokes[offset + length - 1] & ~suffix.stroke;
+        localStrokes[length - 1] = endStroke & ~suffix.stroke;
 
         StenoDictionaryLookupResult lookup =
             context.dictionary.Lookup(localStrokes, length);

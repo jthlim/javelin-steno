@@ -12,6 +12,8 @@
 template <typename T> class FastIterable {
 public:
   FastIterable() = default;
+  FastIterable(T *p, T *pEnd) : p(p), pEnd(pEnd) {}
+  template <size_t N> FastIterable(T (&t)[N]) : p(t), pEnd((T *)t + N) {}
   template <typename S> FastIterable(S &s) : p(begin(s)), pEnd(end(s)) {}
 
   bool IsEmpty() const { return p == pEnd; }

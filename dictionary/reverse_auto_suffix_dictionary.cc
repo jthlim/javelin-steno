@@ -133,8 +133,10 @@ void StenoReverseAutoSuffixDictionary::ProcessReverseAutoSuffix(
 
       bool hasAdded = false;
 
-      if ((strokes[length - 1] & reverseAutoSuffix->suppressMask).IsEmpty()) {
-        strokes[length - 1] |= reverseAutoSuffix->autoSuffix->stroke;
+      const StenoStroke previousStroke = strokes[length - 1];
+      if ((previousStroke & reverseAutoSuffix->suppressMask).IsEmpty()) {
+        strokes[length - 1] =
+            previousStroke | reverseAutoSuffix->autoSuffix->stroke;
 
         if (lookup.HasResult(strokes, length)) {
           hasAdded = true;
@@ -155,20 +157,22 @@ void StenoReverseAutoSuffixDictionary::ProcessReverseAutoSuffix(
               break;
             }
 
-            if ((strokes[length - 1] & autoSuffix.stroke).IsEmpty()) {
+            const StenoStroke previousAutoSuffixedStroke = strokes[length - 1];
+            if ((previousAutoSuffixedStroke & autoSuffix.stroke).IsEmpty()) {
               continue;
             }
 
-            strokes[length - 1] &= ~autoSuffix.stroke;
+            strokes[length - 1] =
+                previousAutoSuffixedStroke & ~autoSuffix.stroke;
             const bool hasValidLookup = HasValidLookup(strokes, length);
-            strokes[length - 1] |= autoSuffix.stroke;
+            strokes[length - 1] = previousAutoSuffixedStroke;
             if (hasValidLookup) {
               break;
             }
           }
         }
 
-        strokes[length - 1] &= ~reverseAutoSuffix->autoSuffix->stroke;
+        strokes[length - 1] = previousStroke;
       }
 
       if (!hasAdded && length + 1 < lookup.strokeThreshold) {
@@ -186,20 +190,18 @@ void StenoReverseAutoSuffixDictionary::ProcessReverseAutoSuffix(
 
 bool StenoReverseAutoSuffixDictionary::HasValidLookup(
     const StenoStroke *strokes, size_t length) const {
+  size_t i = length;
   for (;;) {
-    size_t i = length;
-    for (;;) {
-      if (super::HasOutline(strokes, i)) {
-        length -= i;
-        if (length == 0) {
-          return true;
-        }
-        strokes += i;
-        i = length;
-        break;
-      } else if (--i == 0) {
-        return false;
+    if (super::HasOutline(strokes, i)) {
+      length -= i;
+      if (length == 0) {
+        return true;
       }
+      strokes += i;
+      i = length;
+      continue;
+    } else if (--i == 0) {
+      return false;
     }
   }
 }

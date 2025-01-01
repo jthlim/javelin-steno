@@ -2,6 +2,7 @@
 
 #pragma once
 #include "bit.h"
+#include "fast_iterable.h"
 
 //---------------------------------------------------------------------------
 
@@ -150,6 +151,9 @@ public:
 
 private:
   uint32_t keyState;
+
+  static FastIterable<const StrokeKey> formatter;
+  static FastIterable<const StrokeKey> parser;
 };
 
 static_assert(sizeof(StenoStroke) == 4);
