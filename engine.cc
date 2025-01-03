@@ -2,6 +2,8 @@
 
 #include "engine.h"
 
+#include JAVELIN_BOARD_CONFIG
+
 #include "console.h"
 #include "dictionary/user_dictionary.h"
 #include "flash.h"
@@ -16,7 +18,9 @@
 
 //---------------------------------------------------------------------------
 
+#if JAVELIN_USE_EMBEDDED_STENO
 JavelinStaticAllocate<StenoEngine> StenoEngine::container;
+#endif
 const StenoStroke StenoEngine::UNDO_STROKE(StrokeMask::STAR);
 
 //---------------------------------------------------------------------------

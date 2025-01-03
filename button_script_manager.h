@@ -31,6 +31,11 @@ public:
 
   void SetAllowButtonStateUpdates(bool value);
 
+  void ExecuteScriptIndex(size_t index, uint32_t scriptTime,
+                          const intptr_t *parameters, size_t parameterCount) {
+    script.ExecuteScriptIndex(index, scriptTime, parameters, parameterCount);
+  }
+
   static void ExecuteScript(ButtonScriptId scriptId);
   static ButtonScriptManager &GetInstance() { return container.value; }
 

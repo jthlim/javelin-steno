@@ -29,6 +29,20 @@ void Script::ExecuteScript(size_t offset) {
   assert(stackTop == start);
 }
 
+void Script::ExecuteScript(size_t offset, const intptr_t *parameters,
+                           size_t parameterCount) {
+  if (offset == 0) {
+    return;
+  }
+
+  intptr_t *const start = stackTop;
+  for (size_t i = 0; i < parameterCount; ++i) {
+    Push(parameters[i]);
+  }
+  Run(offset);
+  assert(stackTop == start);
+}
+
 void Script::PrintScriptGlobals() const {
   char buffer[256 * 5 + 4];
   VarintWriter writer(buffer);

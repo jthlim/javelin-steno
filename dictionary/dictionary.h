@@ -213,9 +213,9 @@ public:
   // These are used as an optimization for map lookup.
   // Since the first step of all map lookups is the same, do it once and
   // pass it down
-  StaticList<const void *, 24> mapDataLookups;
+  StaticList<const void *, 24> mapLookupData;
 
-  void AddMapDataLookup(MapDataLookup mapDataLookup,
+  void AddMapLookupData(MapDataLookup mapDataLookup,
                         const uint8_t *baseAddress);
 
   void SortResults();

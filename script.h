@@ -41,6 +41,13 @@ public:
     ExecuteScript(byteCode->scriptOffsets[index]);
   }
 
+  void ExecuteScript(size_t offset, const intptr_t *parameters,
+                     size_t parameterCount);
+  void ExecuteScriptIndex(size_t index, const intptr_t *parameters,
+                          size_t parameterCount) {
+    ExecuteScript(byteCode->scriptOffsets[index], parameters, parameterCount);
+  }
+
   void Reset();
   bool IsValid() const { return byteCode->IsValid(); }
 

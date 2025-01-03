@@ -16,7 +16,7 @@ StenoReverseMapDictionary::StenoReverseMapDictionary(
 
 void StenoReverseMapDictionary::ReverseLookup(
     StenoReverseDictionaryLookup &lookup) const {
-  if (lookup.mapDataLookups.IsEmpty()) {
+  if (lookup.mapLookupData.IsEmpty()) {
     AddMapDictionaryData(lookup);
   }
   super::ReverseLookup(lookup);
@@ -84,7 +84,7 @@ void StenoReverseMapDictionary::AddMapDictionaryData(
   const uint8_t *p = FindMapDataLookup(lookup.definition);
 
   if (p) {
-    lookup.AddMapDataLookup(p, baseAddress);
+    lookup.AddMapLookupData(p, baseAddress);
   }
 }
 

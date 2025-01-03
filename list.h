@@ -50,12 +50,15 @@ private:
 
 // Optimized for code size. Only usable with PODs.
 template <typename T> class List : public _ListBase {
+private:
+  using super = _ListBase;
+
 public:
   List() = default;
-  List(List &&other) : _ListBase((_ListBase &&) other) {}
+  List(List &&other) : super((super &&)other) {}
 
-  void Add(const T &v) { _ListBase::Add(&v, sizeof(T)); }
-  void AddCount(const T *v, size_t n) { _ListBase::AddCount(v, n, sizeof(T)); }
+  void Add(const T &v) { super::Add(&v, sizeof(T)); }
+  void AddCount(const T *v, size_t n) { super::AddCount(v, n, sizeof(T)); }
   template <typename D> void AddCount(const IterableData<D> &data) {
     AddCount(data.data, data.count);
   }
@@ -65,7 +68,7 @@ public:
     }
   }
 
-  void InsertAt(size_t i, const T &v) { _ListBase::InsertAt(&v, i, sizeof(T)); }
+  void InsertAt(size_t i, const T &v) { super::InsertAt(&v, i, sizeof(T)); }
 
   void Sort(int (*comparator)(const T *, const T *)) {
     qsort(buffer, count, sizeof(T),
@@ -73,14 +76,6 @@ public:
   }
 
   void Pop() { --count; }
-
-  void RemoveFront() {
-    memmove(buffer, buffer + sizeof(T), --count * sizeof(T));
-  }
-  void RemoveFront(size_t n) {
-    count -= n;
-    memmove(buffer, buffer + n * sizeof(T), count * sizeof(T));
-  }
 
   bool Contains(const T &v) const {
     for (const T &x : *this) {

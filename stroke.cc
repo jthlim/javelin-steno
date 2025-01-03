@@ -129,18 +129,6 @@ char *StenoStroke::ToString(char *buffer) const {
   return buffer;
 }
 
-char *StenoStroke::ToWideString(char *buffer) const {
-  for (const StrokeKey &display : formatter) {
-    if (display.type != StrokeKeyType::MASK) [[unlikely]] {
-      continue;
-    }
-    *buffer++ = (keyState & display.mask) ? display.c : ' ';
-  }
-
-  *buffer = '\0';
-  return buffer;
-}
-
 uint32_t StenoStroke::PopCount(const StenoStroke *strokes, size_t length) {
   uint32_t result = 0;
   for (size_t i = 0; i < length; ++i) {

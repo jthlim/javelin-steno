@@ -207,19 +207,19 @@ const StenoDictionary *StenoCompactMapDictionary::GetDictionaryForOutline(
 
 void StenoCompactMapDictionary::ReverseLookup(
     StenoReverseDictionaryLookup &lookup) const {
-  if (lookup.mapDataLookups.IsEmpty()) {
+  if (lookup.mapLookupData.IsEmpty()) {
     return;
   }
 
-  if (lookup.mapDataLookups.Front() >= dataRange.max) {
+  if (lookup.mapLookupData.Front() >= dataRange.max) {
     return;
   }
 
-  if (lookup.mapDataLookups.Back() < dataRange.min) {
+  if (lookup.mapLookupData.Back() < dataRange.min) {
     return;
   }
 
-  for (const void *data : lookup.mapDataLookups) {
+  for (const void *data : lookup.mapLookupData) {
     if (data < dataRange.min) {
       continue;
     }

@@ -2,6 +2,7 @@
 
 #pragma once
 #include "bit_field.h"
+#include "button_state.h"
 #include "scan_code_action.h"
 #include "script.h"
 #include "steno_key_state.h"
@@ -48,6 +49,9 @@ public:
   void ExecuteTickScript(uint32_t scriptTime) {
     ExecuteScriptIndex(1, scriptTime);
   }
+  void ExecuteScriptIndex(size_t index, uint32_t scriptTime);
+  void ExecuteScriptIndex(size_t index, uint32_t scriptTime,
+                          const intptr_t *parameters, size_t parameterCount);
 
   void ExecuteScriptId(ButtonScriptId scriptId, uint32_t scriptTime);
 
@@ -99,12 +103,11 @@ private:
   StenoKeyState stenoState;
   const char *eventHistory[EVENT_HISTORY_COUNT] = {};
   size_t scriptOffsets[(size_t)ButtonScriptId::COUNT];
-  BitField<256> buttonState;
+  ButtonState buttonState;
   BitField<256> keyState;
   BitField<32> mouseButtonState;
   LimitedBufferWriter consoleWriter;
 
-  void ExecuteScriptIndex(size_t index, uint32_t scriptTime);
   void ExecuteScript(size_t offset, uint32_t scriptTime);
 
   bool IsScriptEmpty(size_t offset) const;

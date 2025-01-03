@@ -8,6 +8,9 @@ template <typename T> struct Interval {
   T min;
   T max;
 
+  Interval() = default;
+  Interval(T min, T max) : min(min), max(max) {}
+
   void Set(T min, T max) {
     this->min = min;
     this->max = max;

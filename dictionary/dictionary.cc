@@ -128,15 +128,15 @@ bool StenoReverseDictionaryLookup::HasResult(const StenoStroke *strokes,
   return false;
 }
 
-void StenoReverseDictionaryLookup::AddMapDataLookup(
+void StenoReverseDictionaryLookup::AddMapLookupData(
     MapDataLookup mapDataLookup, const uint8_t *baseAddress) {
   while ((mapDataLookup.HasData())) {
     // This should never happen if the converter limits work.
-    if (mapDataLookups.IsFull()) {
+    if (mapLookupData.IsFull()) {
       return;
     }
 
-    mapDataLookups.Add(mapDataLookup.GetData(baseAddress));
+    mapLookupData.Add(mapDataLookup.GetData(baseAddress));
     ++mapDataLookup;
   }
 }

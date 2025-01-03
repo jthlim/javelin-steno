@@ -101,9 +101,6 @@ public:
   // Buffer must be at least MAX_STRING_LENGTH characters wide.
   char *ToString(char *buffer) const;
 
-  // Buffer must be at least MAX_STRING_LENGTH characters wide.
-  char *ToWideString(char *buffer) const;
-
   bool operator==(const StenoStroke &o) const { return keyState == o.keyState; }
 
   StenoStroke operator&(const StenoStroke &o) const {

@@ -358,6 +358,10 @@ Example usage:
   {:toggle_dictionary:main.json}
 ```
 
+# Script Reference
+
+A reference for Javelin Script is available [here](script.md).
+
 # Contributions
 
 This project is a snapshot of internal repositories and is not accepting any

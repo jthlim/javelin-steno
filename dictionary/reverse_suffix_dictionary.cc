@@ -25,7 +25,7 @@ struct StenoReverseSuffixDictionary::Suffix {
     return Str::DupN(text + 2, suffix - text - 1);
   }
 
-  const uint8_t *GetMapDataLookup() const { return suffix + 3; };
+  const uint8_t *GetMapLookupData() const { return suffix + 3; };
 };
 
 //---------------------------------------------------------------------------
@@ -205,7 +205,7 @@ void StenoReverseSuffixDictionary::AddSuffixReverseLookup(
                 lookup.strokeThreshold - minimumPrefixStrokeCount);
 
         // Add map lookup hints.
-        suffixLookup->AddMapDataLookup(test.suffix->GetMapDataLookup(),
+        suffixLookup->AddMapLookupData(test.suffix->GetMapLookupData(),
                                        baseAddress);
 
         super::ReverseLookup(*suffixLookup);

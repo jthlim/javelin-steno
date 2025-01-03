@@ -37,8 +37,8 @@ uint16_t TxRxHeader::Hash(const uint32_t *data, size_t wordCount) {
 
 void TxBuffer::Build() {
   Reset();
-  for (size_t i = 0; i < handlers.handlerCount; ++i) {
-    handlers.handlers[i]->UpdateBuffer(*this);
+  for (SplitTxHandler *handler : handlers) {
+    handler->UpdateBuffer(*this);
   }
   UpdateHash();
 }
@@ -98,15 +98,15 @@ uint8_t *TxBuffer::Add(SplitHandlerId id, size_t length) {
 }
 
 void TxBuffer::Handlers::OnConnectionReset() const {
-  for (size_t i = 0; i < handlerCount; ++i) {
-    handlers[i]->OnTransmitConnectionReset();
+  for (SplitTxHandler *handler : *this) {
+    handler->OnTransmitConnectionReset();
   }
   ButtonScriptManager::ExecuteScript(ButtonScriptId::PAIR_CONNECTION_UPDATE);
 }
 
 void TxBuffer::Handlers::OnConnect() const {
-  for (size_t i = 0; i < handlerCount; ++i) {
-    handlers[i]->OnTransmitConnected();
+  for (SplitTxHandler *handler : *this) {
+    handler->OnTransmitConnected();
   }
   ButtonScriptManager::ExecuteScript(ButtonScriptId::PAIR_CONNECTION_UPDATE);
 }

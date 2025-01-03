@@ -6,7 +6,8 @@ RGB lighting and screen displays.
 # Language Reference
 
 Javelin Script is a C-like syntax language that is very rudimentary by design.
-It generates an intermediate bytecode, that can be inspected in the web tools.
+It generates an intermediate bytecode, that can be inspected in the Web Tools ->
+Script Tool -> Edit Script -> View Disassembly.
 
 ## Values
 
@@ -16,17 +17,20 @@ ensure that values of the right type are being used.
 A value could be:
 
 - An integer value.
+
   - `1234` (decimal)
   - `0x1234` (hex)
 
 - A pointer to a string.
+
   - `"Test"`
 
 - A pointer to a byte list.
+
   - `[[00 ff 12 34]]`
 
 - A pointer to a function
-  - Named function: `@functionName` 
+  - Named function: `@functionName`
   - Anonymous function: `@{ <instructions> }`
   - Anonymous function with parameters: `@(a, b) { <instructions> }`
   - Anonymous function with return value: `@var { <instructions> }`
@@ -34,6 +38,9 @@ A value could be:
   - The programmer will need to ensure pointers to functions are called
     with the right number of parameters, and that return values are used;
     no checks are provided by the compiler.
+
+There are no explicit boolean values -- for conditions (e.g. `if` statements)
+only the value 0 is considered falsy. All other values are truthy.
 
 Floating point numbers are not supported as the rp2040 does not have
 floating point hardware.
@@ -55,16 +62,19 @@ determinable at the point of declaration.
 Array sizes must be constant at the point of declaration.
 
 Variables can be declared at global or local scope.
+
 - Global variables can be inspected and changed in Global Values tool,
   available from the Visual Editor menu.
 - Local Variables can not be automatically inspected, but the `printValue`
   method can be used to help debug if necessary.
-  
+
 ## Functions
+
 - `func funcName(params) { ... }`
 - `func funcWithReturnValueName(params) var { ... }`
 
 Example:
+
 ```go
   func isValid(x, y) var {
     return x != 10 && x != 20 && x != y;
@@ -72,6 +82,7 @@ Example:
 ```
 
 ## Flow Control
+
 - `if (<condition>) { ... }`
 - `if (<condition>) { ... } else if (<condition>) { .... } else { ... }`
 - `for (<initializer>; <condition>; <update>) { ... }`
@@ -84,6 +95,7 @@ Single statements can be used instead of blocks (`{ ... }`) for flow control
 statements.
 
 ## Operators
+
 - `+` Add
 - `-` Negate / Subtract
 - `*` Multiply
@@ -107,18 +119,25 @@ statements.
 The fallback operator `<identifier> ?? <expr>` specifies to use the
 right hand _expr_ if the identifier is not defined.
 
+`&&` and `||` are short circuiting, meaning that if the left hand side is
+sufficient to determine the result, the right hand side will not be executed.
+
 # Function Reference
 
 ## Control Functions
+
 - `func pressScanCode(<scanCode>)`
+
   - _scanCode_ constants can be found below.
   - Any pressed scan code should be accompanied by a `releaseScanCode`
     at some point in the future.
 
 - `func releaseScanCode(<scanCode>)`
+
   - Releasing a scan code that is not already pressed is a no-op.
 
 - `func tapScanCode(<scanCode>)`
+
   - Triggers a press and release of _scanCode_ immediately.
   - Note that on macOS, Caps Lock will not work with a tap, as it needs
     to be held for a certain amount of time before it activates. This can be handled with:
@@ -128,6 +147,7 @@ right hand _expr_ if the identifier is not defined.
     ```
 
 - `func isScanCodePressed(<scanCode>) var`
+
   - Returns whether _scanCode_ is currently pressed.
 
 - `func moveMouse(<dx>, <dy>)`
@@ -333,12 +353,17 @@ const MOUSE_BUTTON_MIDDLE = 2;
 ## Stenography Functions
 
 - `func pressStenoKey(<stenoKey>)`
+
 - `func releaseStenoKey(<stenoKey>)`
+
 - `func isStenoKeyPressed(<stenoKey>) var`
+
 - `func cancelAllStenoKeys()`
+
 - `func cancelStenoKey(<stenoKey>)`
+
 - `func isStenoJoinNext() var`
-  - Returns whether the next input will join to the previous without 
+  - Returns whether the next input will join to the previous without
     adding whitespace.
 
 ### Constants
@@ -416,33 +441,43 @@ const SK_X26 = 63;
 ```
 
 ## Support functions
+
 - `func pressAll()`
+
   - Calls all press scripts for buttons that are pressed.
 
 - `func isInPressAll() var`
+
   - Returns whether the function is currently within a `pressAll()`
 
 - `func releaseAll()`
-  - Releases all pressed scan codes and steno keys. 
+
+  - Releases all pressed scan codes and steno keys.
   - This does not call any scripts
 
 - `func callAllReleaseScripts()`
+
   - Calls all release scripts for buttons that are pressed.
 
 - `func isInReleaseAll() var`
+
   - Returns whether the function is currently within a `callAllReleaseScripts()`.
 
 - `func callPress(<buttonIndex>)`
+
   - Calls the press script for _buttonIndex_.
 
 - `func callRelease(<buttonIndex>)`
   - Calls the release script for _buttonIndex_.
 
 ## Button State Functions
+
 - `func isButtonPressed(buttonIndex) var`
+
   - Returns if the physical button is pressed.
 
 - `func checkButtonState("01 10") var`
+
   - Returns if the current button state matches the string.
   - 0 = not pressed, space = ignore, all others = pressed.
     - The example string checks that:
@@ -453,32 +488,38 @@ const SK_X26 = 63;
   - The string should be the same length as the number of buttons.
 
 - `func getPressCount()`
+
   - Returns the number of times buttons have been pressed since startup.
 
 - `func getReleaseCount()`
   - Returns the number of times buttons have been released since startup.
 
 ## RGB Functions
+
 - `func setRgb(id, r, g, b)`
+
   - For boards with rgb lights, sets an individual light to r, g, b.
 
 - `func setHsv(id, h, s, v)`
   - For boards with rgb lights, sets an individual light to h, s, v.
-      - h = hue,        0-65536 represents 0°  - 360°
-        - Internally wraps if values out of range provided.
-      - s = saturation, 0-256   represents 0.0 - 1.0
-      - v = value,      0-255   represents 0.0 - 1.0
+    - h = hue, 0-65536 represents 0° - 360°
+      - Internally wraps if values out of range provided.
+    - s = saturation, 0-256 represents 0.0 - 1.0
+    - v = value, 0-255 represents 0.0 - 1.0
 
 By convention, boards with per-key rgb lights have each key rgb id match
 the button index, then underglow lights after.
 
 ## Drawing Functions
+
 - `func clearDisplay(<displayId>)`
+
   - Sets _displayId_ to a blank canvas.
   - _displayId_ is 0 for single screen keyboards.
   - _displayId_ is 0 for main side; and 1 for pair side of split keyboards.
 
 - `func setDrawColor(<displayId>, <color>)`
+
   - Sets the current draw color for _displayId_.
   - For monochrome displays, 0 is empty, 1 is set.
 
@@ -492,22 +533,29 @@ the button index, then underglow lights after.
     const AUTO_DRAW_WPM = 3;
     ```
 - `func setScreenOn(<displayId>, <on>)`
+
   - Enables screen display.
 
 - `func setScreenContrast(<displayId>, <contrast>)`
+
   - Sets the screen contrast from 0-255
 
 - `func drawPixel(<displayId>, <x>, <y>)`
+
   - Sets the pixel at (_x_, _y_) to the current draw color
 
 - `func drawLine(<displayId>, <x1>, <y1>, <x2>, <y2>)`
+
   - Draws a line from (x1, y1) to (x2, y2) using the current draw color.
 
 - `func drawImage(<displayId>, <x>, <y>, <image>)`
+
   - Draws an image at (x, y) using the current draw color.
 
 - `func drawText(<displayId>, <x>, <y>, <fontId>, <alignment>, <text>)`
+
   - Constants
+
     ```
     const TEXT_ALIGNMENT_LEFT = 0;
     const TEXT_ALIGNMENT_MIDDLE = 1;
@@ -518,7 +566,9 @@ the button index, then underglow lights after.
     const FONT_ID_MEDIUM_DIGITS = 2;
     const FONT_ID_LARGE_DIGITS = 3;
     ```
+
 - `func drawRect(<displayId>, <left>, <top>, <right>, <bottom>)`
+
   - Draws a rectangle using the current draw color
 
 - `func drawGrayscaleRange(<displayId>, <x>, <y>, <data>, <minValue>, <maxValue>)`
@@ -526,52 +576,68 @@ the button index, then underglow lights after.
     [_minValue_, _maxValue_).
 
 ## Host Connectivity Functions
+
 - `func isConnected(<connectionId>)`
+
   - Returns whether _connectionId_ is active.
   - Use _CONNECTION_ID_ACTIVE_ to determine if actions will reach any host.
 
 - `func getActiveConnection() var`
+
   - Returns the connection ID of the active host.
 
 - `func setPreferredConnection(firstPreferenceConnectionId, secondPreferenceConnectionId, thirdPreferenceConnectionId)`
+
   - On multi-device firmware, sets the preferred order in which to use
     connections.
 
 - `func isHostSleeping() var`
+
   - Returns true if the current active host is suspended.
 
 - `func startBlePairing()`
+
   - Initiate pairing for the currently active BLE profile.
 
 - `func isBleAdvertising() var`
+
   - Returns whether the device is advertising to establish a BLE connection.
 
 - `func isBleScanning() var`
+
   - Returns whether the device is scanning to accept a BLE connection.
 
 - `func disconnectBle()`
+
   - Disconnects the currently active BLE profile.
 
 - `func unpairBle()`
+
   - Disconnects and deletes pairing for the currently active BLE profile.
 
 - `func getBleProfile() var`
+
   - Returns the BLE profile ID (0-4) that is currently active.
 
 - `func setBleProfile()`
+
   - Sets the current BLE profile (0-4)
   - If paired but disconnected, this will also initiate a reconnect.
 
 - `func isBleProfileConnected(profileId) var`
+
   - Returns whether the BLE _profileId_ is connected.
 
 - `func isBleProfilePaired(profileId) var`
+
   - Returns whether the BLE _profileId_ is paired.
 
 - `func isBleProfileSleeping(profileId) var`
+
   - Returns whether the BLE _profileId_'s host is sleeping.
 
 - `func isUsbMounted() var` [deprecated]
+
   - Returns whether any usb port is connected.
   - Superseded by `isConnected(CONNECTION_ID_ANY)`.
 
@@ -580,6 +646,7 @@ the button index, then underglow lights after.
   - Superseded by `isHostSleeping()`.
 
 Constants
+
 ```
 const CONNECTION_ID_NONE = 0;
 const CONNECTION_ID_ANY = 0;
@@ -589,7 +656,9 @@ const CONNECTION_ID_USB2 = 3;
 ```
 
 ## Pair Connectivity Functions
+
 - `func getActivePairConnection() var`
+
   - Returns the active pair connection ID
   - Constants
     ```
@@ -608,23 +677,29 @@ const CONNECTION_ID_USB2 = 3;
     ```
 
 ## Power Related Functions
+
 - `func isMainPowered() var`
+
   - Returns whether the main (typically left) side of a split keyboard
     is externally powered.
 
 - `func isPairPowered() var`
+
   - Returns whether the pair (typically right) side of a split keyboard
     is externally powered.
 
 - `func isCharging() var`
+
   - Returns whether the current device is being charged.
   - In split keyboards, will return false if the side the script is running
     on not charging, even if the partner side is being charged.
 
 - `func getBatteryPercentage() var`
+
   - Returns value from 0-100.
 
 - `func setBoardPower(<enable>)`
+
   - If the board supports separate power domains, control power to RGB lights.
 
 - `func isBoardPowered() var`
@@ -632,19 +707,27 @@ const CONNECTION_ID_USB2 = 3;
     being supplied to the RGB lights.
 
 ## Timer Functions
+
 - `func getTime() var`
+
   - Returns milliseconds since start up.
+
 - `func startTimer(<timerId>, <delayInMilliseconds>, <isRepeating>, <handler>)`
+
   - Starts a timer that will call _handler_ after _delayInMilliseconds_.
   - _timerId_ is any chosen unique id for future calls to `stopTimer` and `isTimerActive` and must be positive.
   - If _isRepeating_ is `1`, the timer should be stopped with `stopTimer`.
+
 - `func stopTimer(<timerId>)`
+
   - Cancels the specified _timerId_ if active.
   - If no timer with _timerId_ is running, this is a no-op.
+
 - `func isTimerActive(<timerId>) var`
   - Returns whether _timerId_ is currently active.
 
 ## GPIO Functions
+
 - `func setGpioPin(<pin>, <zeroOrOne>)`
   - Sets a GPIO _pin_ to 0 or 1.
 - `func setGpioInputPin(<pin>, <pull>)`
@@ -656,6 +739,7 @@ const CONNECTION_ID_USB2 = 3;
     const PULL_UP = 2;
     ```
 - `func readGpioPin(<pin>) var`
+
   - Returns whether a GPIO _pin_ is logic high level.
   - setGpioInputPin must be called before hand for the pin.
 
@@ -664,6 +748,7 @@ const CONNECTION_ID_USB2 = 3;
   - Sets GPIO _pin_ to be on _dutyCycle_% of the time.
 
 ## Audio Functions
+
 - `func stopSound()`
   - Stops all sound playback.
 - `func playFrequency(<frequencyInHz>)`
@@ -674,13 +759,13 @@ const CONNECTION_ID_USB2 = 3;
     - noteIndex: 7 bits
     - duration: 9 bits, the duration in 10ms increments.
   - noteIndex is:
-     - 00: End of sequence
-     - 01: Pause
-     - 02+: Note, with middle-C at 50, concert A at 59, each increment is one
-       semitone.
+    - 00: End of sequence
+    - 01: Pause
+    - 02+: Note, with middle-C at 50, concert A at 59, each increment is one
+      semitone.
   - Example:
-     - C8 for 100ms, E8 for 100ms repeated 3 times is:
-     - `playSequence([[62 05 66 05 62 05 66 05 62 05 66 05 00 00]])`
+    - C8 for 100ms, E8 for 100ms repeated 3 times is:
+    - `playSequence([[62 05 66 05 62 05 66 05 62 05 66 05 00 00]])`
 - `func playWaveform(<data>, <length>, <frequency>)`
   - Placeholder, currently not available on any platform.
 
@@ -689,16 +774,21 @@ const CONNECTION_ID_USB2 = 3;
 These methods are only available on chips with secure storage.
 
 - `func isWaitingForUserPresence() var`
+
   - Returns whether user presence has been requested.
+
 - `func replyUserPresence(<isPresent>)`
   - Responds whether a user is present or not.
   - `replyUserPresence(1);` is the equivalent of touching other security keys.
 
 ## Miscellaneous Functions
+
 - `func rand() var`
+
   - Returns a 32-bit pseudo-random value.
 
 - `func console(<commandString>) var`
+
   - Sends commandString to the console.
   - Use `help` in the Console Tool on the web to find the available commands.
   - The string returned by the console command is overwritten by other console
@@ -707,9 +797,11 @@ These methods are only available on chips with secure storage.
     so that direct equals and not equals comparisons can be performed.
 
 - `func getParameter(<parameterName>) var`
+
   - Shortcut to `console("get_parameter <parameterName>")`
 
 - `func getLedStatus(<ledStatus>) var`
+
   - Returns whether the keyboard LED status is on.
   - Constants:
 
@@ -722,8 +814,10 @@ These methods are only available on chips with secure storage.
     ```
 
 - `func setScript(<scriptId>, <callbackFunc>)`
+
   - Sets callback script to the specified function:
   - Constants:
+
     ```
     const SCRIPT_ID_DISPLAY_OVERLAY = 0;
     const SCRIPT_ID_BATTERY_UPDATE = 1;
@@ -748,6 +842,7 @@ These methods are only available on chips with secure storage.
     ```
 
 - `func printValue(<name>, <value>)`
+
   - Used for debugging -- _value_ will be printed to the console, with
     "Show All Data" enabled.
   - Example:
@@ -761,18 +856,30 @@ These methods are only available on chips with secure storage.
     ```
 
 - `func sendEvent(<eventString>)`
+
   - Sends a script event to the console.
   - This is used by the web tools to identify the active layer.
   - This will only be sent if script events have been enabled in the console.
 
 - `func setEnableButtonStates(enabled)`
+
   - Enables sending of button states to the console.
   - This will only be sent if button state updates have also been enabled in
     the console.
 
 - `func getWpm(<windowDurationInSeconds>) var`
+
   - Returns the average wpm in the time window.
 
 - `func setInputHint(<hint>)` [deprecated]
   - This function is deprecated and no longer has any implementation.
 
+# Visual Editor Script Templates
+
+This section is TODO
+
+```
+#option(<attributeName>, <displayCategory>, <optionName>, <functionName>)
+#dispatch(<"local" | "per_layer">, <attributeName>, <displayCategory>, <defaultFunctionName>)
+#flag(<"local" | "per_layer">, <displayCategory>, <default: "true" | "false">)
+```

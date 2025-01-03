@@ -459,10 +459,8 @@ void StenoEngine::PrintPaperTapeUndo(size_t undoCount) const {
     return;
   }
 
-  char buffer[StenoStroke::MAX_STRING_LENGTH];
-  UNDO_STROKE.ToWideString(buffer);
   Console::Printf(
-      "EV {\"event\":\"paper_tape\",\"data\":\"%s\",\"undo\":%zu}\n\n", buffer,
+      "EV {\"event\":\"paper_tape\",\"data\":\"*\",\"undo\":%zu}\n\n",
       undoCount);
 }
 
@@ -474,7 +472,7 @@ void StenoEngine::PrintPaperTape(StenoStroke stroke,
   }
 
   char buffer[256];
-  stroke.ToWideString(buffer);
+  stroke.ToString(buffer);
   Console::Printf("EV {\"event\":\"paper_tape\",\"data\":\"%s\"", buffer);
 
   size_t undoCount = 0;

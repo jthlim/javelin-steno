@@ -98,10 +98,15 @@ StenoStroke StenoKeyState::ToStroke() const {
   while (localKeyState) {
     const int index = __builtin_ctzll(localKeyState);
     const int shift = STROKE_BIT_INDEX_LOOKUP[index];
+
+#if JAVELIN_CPU_CORTEX_M0 || JAVELIN_CPU_CORTEX_M4
+    // On arm, shifting by more than the width results in 0.
+    strokeKeyState |= 1UL << shift;
+#else
     if (shift != -1) {
       strokeKeyState |= 1UL << shift;
     }
-
+#endif
     // Zero the lowest bit.
     localKeyState &= localKeyState - 1;
   }

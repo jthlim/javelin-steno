@@ -14,7 +14,7 @@ struct StenoReversePrefixDictionary::Prefix {
 
   const char *GetText() const { return (const char *)text; }
 
-  const uint8_t *GetMapDataLookup(size_t prefixLength) const {
+  const uint8_t *GetMapLookupData(size_t prefixLength) const {
     return text + prefixLength + 4;
   }
 };
@@ -165,8 +165,8 @@ void StenoReversePrefixDictionary::AddPrefixReverseLookup(
 
         // Add map lookup hints.
         const size_t prefixLength = test.suffix - lookup.definition;
-        prefixLookup->AddMapDataLookup(
-            test.prefix->GetMapDataLookup(prefixLength), baseAddress);
+        prefixLookup->AddMapLookupData(
+            test.prefix->GetMapLookupData(prefixLength), baseAddress);
 
         super::ReverseLookup(*prefixLookup);
 

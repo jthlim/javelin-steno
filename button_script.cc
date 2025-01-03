@@ -81,6 +81,13 @@ void ButtonScript::ExecuteScriptIndex(size_t index, uint32_t scriptTime) {
   Script::ExecuteScriptIndex(index);
 }
 
+void ButtonScript::ExecuteScriptIndex(size_t index, uint32_t scriptTime,
+                                      const intptr_t *parameters,
+                                      size_t parameterCount) {
+  this->scriptTime = scriptTime;
+  Script::ExecuteScriptIndex(index, parameters, parameterCount);
+}
+
 //---------------------------------------------------------------------------
 
 void ButtonScript::PrintInfo() const {
@@ -249,7 +256,7 @@ public:
   static void IsButtonPressed(ButtonScript &script) {
     const uint32_t buttonIndex = (uint32_t)script.Pop();
     int isPressed = 0;
-    if (buttonIndex < 256) {
+    if (buttonIndex < script.buttonState.BIT_COUNT) {
       isPressed = script.buttonState.IsSet(buttonIndex);
     }
     script.Push(isPressed);
