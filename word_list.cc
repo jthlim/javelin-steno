@@ -38,9 +38,10 @@ size_t WordList::GetOffset(size_t index) const {
     return (size_t)-1;
   }
 
-  // mask << 1 prevents counting the current bit.
+  // The dictionary builder decrements baseOffset to account for
+  // the current mask bit being 1
   const size_t result =
-      Bit<sizeof(uint32_t)>::PopCount(mask << 1) + block.baseOffset;
+      Bit<sizeof(uint32_t)>::PopCount(mask) + block.baseOffset;
 
   // This check saves comparison/branch instructions after inlining.
   if (result == (size_t)-1) {

@@ -18,7 +18,7 @@ const uint8_t data1[24] = {
     0x01, 0x00, 0x00, 0x0c, 0x90, 0x08, 0x14, 0x00, 0x00, 0x80, 0x40, 0x00,
 };
 const StenoCompactHashMapEntryBlock offsets1[] = {
-    {{0x09000000, 0x00000000, 0x10000000, 0x00000080}, 0},
+    {{0x09000000, 0x00000000, 0x10000000, 0x00000080}, 0xffffffff},
 };
 
 const size_t hashMapSize2 = 128;
@@ -26,15 +26,17 @@ const uint8_t data2[9] = {
     0x23, 0x00, 0x00, 0x04, 0x28, 0x08, 0x00, 0x00, 0x20,
 };
 const StenoCompactHashMapEntryBlock offsets2[] = {
-    {{0x00000000, 0x00000080, 0x00000000, 0x00000000}, 0},
+    {{0x00000000, 0x00000080, 0x00000000, 0x00000000}, 0xffffffff},
 };
 
 const StenoCompactMapDictionaryStrokesDefinition strokes[] = {
-    {.hashMapMask = hashMapSize1-1, .data = data1, .offsets = offsets1},
-    {.hashMapMask = hashMapSize2-1, .data = data2, .offsets = offsets2},
+    {.hashMapMask = hashMapSize1 - 1, .data = data1, .offsets = offsets1},
+    {.hashMapMask = hashMapSize2 - 1, .data = data2, .offsets = offsets2},
 };
 
 constexpr StenoCompactMapDictionaryDefinition TestDictionary::definition = {
-    {true, 2, StenoDictionaryType::COMPACT_MAP, 0}, "main.json",
-    textBlock, strokes,
+    {true, 2, StenoDictionaryType::COMPACT_MAP, 0},
+    "main.json",
+    textBlock,
+    strokes,
 };

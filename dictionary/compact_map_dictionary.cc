@@ -67,8 +67,9 @@ StenoCompactMapDictionaryStrokesDefinition::GetOffset(size_t index) const {
     return (size_t)-1;
   }
 
-  // mask << 1 prevents counting the current bit.
-  size_t result = Bit<sizeof(uint32_t)>::PopCount(mask << 1) + block.baseOffset;
+  // The dictionary builder decrements baseOffset to account for
+  // the current mask bit being 1
+  size_t result = Bit<sizeof(uint32_t)>::PopCount(mask) + block.baseOffset;
   for (size_t i = 0; i < maskIndex; ++i) {
     result += Bit<sizeof(uint32_t)>::PopCount(block.masks[i]);
   }

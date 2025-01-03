@@ -19,10 +19,10 @@ const uint8_t data1[32] = {
     0x08, 0x00, 0x14, 0x00, 0x00, 0x00, 0x80, 0x40, 0x00, 0x00,
 };
 const StenoFullHashMapEntryBlock offsets1[] = {
-    {0x09000000, 0},
-    {0x00000000, 2},
-    {0x10000000, 2},
-    {0x00000080, 3},
+    {0x09000000, 0xffffffff},
+    {0x00000000, 1},
+    {0x10000000, 1},
+    {0x00000080, 2},
 };
 
 const size_t hashMapSize2 = 128;
@@ -30,17 +30,20 @@ const uint8_t data2[12] = {
     0x23, 0x00, 0x00, 0x00, 0x04, 0x28, 0x08, 0x00, 0x00, 0x00, 0x20, 0x00,
 };
 const StenoFullHashMapEntryBlock offsets2[] = {
+    {0x00000000, 0xffffffff},
+    {0x00000080, 0xffffffff},
     {0x00000000, 0},
-    {0x00000080, 0},
-    {0x00000000, 1},
-    {0x00000000, 1},
+    {0x00000000, 0},
 };
 
 const StenoFullMapDictionaryStrokesDefinition strokes[] = {
-    {.hashMapMask = hashMapSize1-1, .data = data1, .offsets = offsets1},
-    {.hashMapMask = hashMapSize2-1, .data = data2, .offsets = offsets2},
+    {.hashMapMask = hashMapSize1 - 1, .data = data1, .offsets = offsets1},
+    {.hashMapMask = hashMapSize2 - 1, .data = data2, .offsets = offsets2},
 };
 
 constexpr StenoFullMapDictionaryDefinition TestDictionary::fullDefinition = {
-    {true, 2, StenoDictionaryType::FULL_MAP, 0}, "main.json", textBlock, strokes,
+    {true, 2, StenoDictionaryType::FULL_MAP, 0},
+    "main.json",
+    textBlock,
+    strokes,
 };

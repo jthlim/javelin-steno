@@ -120,7 +120,7 @@ The fallback operator `<identifier> ?? <expr>` specifies to use the
 right hand _expr_ if the identifier is not defined.
 
 `&&` and `||` are short circuiting, meaning that if the left hand side is
-sufficient to determine the result, the right hand side will not be executed.
+sufficient to determine the result, the right hand side will not be evaluated.
 
 # Function Reference
 
