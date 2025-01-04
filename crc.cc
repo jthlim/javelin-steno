@@ -160,3 +160,35 @@ Crc32(const void *p, size_t count) {
 }
 
 //---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+#include "str.h"
+#include "unit_test.h"
+
+//---------------------------------------------------------------------------
+
+TEST_BEGIN("Crc32: Verify test vectors") {
+  struct TestVector {
+    const char *text;
+    uint32_t crc;
+  };
+
+  // clang-format off
+  static const TestVector TEST_VECTORS[] = {
+      {"", 0x00000000},
+      {"a", 0xe8b7be43},
+      {"abc", 0x352441c2},
+      {"message digest", 0x20159d7f},
+      {"abcdefghijklmnopqrstuvwxyz", 0x4c2750bd},
+      {"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789", 0x1fc2e6d2},
+      {"12345678901234567890123456789012345678901234567890123456789012345678901234567890", 0x7ca94a72},
+  };
+  // clang-format on
+
+  for (const TestVector &test : TEST_VECTORS) {
+    assert(Crc32(test.text, Str::Length(test.text)) == test.crc);
+  }
+}
+TEST_END
+
+//---------------------------------------------------------------------------

@@ -71,7 +71,7 @@ public:
   virtual bool Add(const StenoStroke *strokes, size_t length, const char *word);
 
   virtual bool CanRemove() const { return true; }
-  virtual bool Remove(const char *name, const StenoStroke *strokes,
+  virtual bool Remove(const char *dictionaryName, const StenoStroke *strokes,
                       size_t length) {
     return Remove(strokes, length);
   }

@@ -292,7 +292,7 @@ public:
   }
 
   virtual bool CanRemove() const { return false; }
-  virtual bool Remove(const char *name, const StenoStroke *strokes,
+  virtual bool Remove(const char *dictionaryName, const StenoStroke *strokes,
                       size_t length) {
     return false;
   }

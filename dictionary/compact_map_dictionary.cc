@@ -155,7 +155,7 @@ StenoCompactMapDictionary::Lookup(const StenoDictionaryLookup &lookup) const {
     }
 
     dataIndex += entrySize;
-    if (++entryIndex > strokesDefinition.hashMapMask) {
+    if (++entryIndex > strokesDefinition.hashMapMask) [[unlikely]] {
       entryIndex = 0;
       dataIndex = 0;
     }
@@ -195,7 +195,7 @@ const StenoDictionary *StenoCompactMapDictionary::GetDictionaryForOutline(
     }
 
     dataIndex += entrySize;
-    if (++entryIndex > strokesDefinition.hashMapMask) {
+    if (++entryIndex > strokesDefinition.hashMapMask) [[unlikely]] {
       entryIndex = 0;
       dataIndex = 0;
     }

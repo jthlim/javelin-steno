@@ -65,6 +65,16 @@ void StenoStrokeHistory::UpdateDefinitionBoundaries(
   }
 }
 
+void StenoStrokeHistory::MarkLastLookupTypeAsUnknown() {
+  for (size_t i = 1; i <= GetCount(); ++i) {
+    StenoState &state = Back(i).state;
+    if (state.IsDefinitionStart()) {
+      state.lookupType = SegmentLookupType::UNKNOWN;
+      return;
+    }
+  }
+}
+
 size_t StenoStrokeHistory::GetStartingStroke(size_t maximumCount) const {
   const size_t count = GetCount();
   if (maximumCount >= count) {

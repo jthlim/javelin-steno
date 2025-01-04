@@ -22,7 +22,7 @@ public:
 
   virtual void ReverseLookup(StenoReverseDictionaryLookup &lookup) const;
 
-  virtual bool Remove(const char *name, const StenoStroke *strokes,
+  virtual bool Remove(const char *dictionaryName, const StenoStroke *strokes,
                       size_t length);
 
   virtual void SetParentRecursively(StenoDictionary *parent) final;

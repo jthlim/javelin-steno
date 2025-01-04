@@ -295,14 +295,14 @@ char *StenoCompiledOrthography::AddSuffix(const char *word,
 char *StenoCompiledOrthography::AddSuffixToPhrase(const char *phrase,
                                                   const char *suffix) const {
   const char *lastWord = phrase;
-  Utf8Pointer p = phrase;
+  const uint8_t *p = (const uint8_t *)phrase;
   for (;;) {
     const uint32_t c = *p++;
     if (c == '\0') {
       break;
     }
     if (Unicode::IsWhitespace(c)) {
-      lastWord = p.GetRawPointer();
+      lastWord = (const char *)p;
     }
   }
 

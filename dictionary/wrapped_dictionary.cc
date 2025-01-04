@@ -31,9 +31,9 @@ void StenoWrappedDictionary::ReverseLookup(
   return dictionary->ReverseLookup(lookup);
 }
 
-bool StenoWrappedDictionary::Remove(const char *name,
+bool StenoWrappedDictionary::Remove(const char *dictionaryName,
                                     const StenoStroke *strokes, size_t length) {
-  return dictionary->Remove(name, strokes, length);
+  return dictionary->Remove(dictionaryName, strokes, length);
 }
 
 void StenoWrappedDictionary::SetParentRecursively(StenoDictionary *parent) {

@@ -82,11 +82,11 @@ void StenoDictionaryList::ReverseLookup(
   }
 }
 
-bool StenoDictionaryList::Remove(const char *name, const StenoStroke *strokes,
-                                 size_t length) {
+bool StenoDictionaryList::Remove(const char *dictionaryName,
+                                 const StenoStroke *strokes, size_t length) {
   for (const StenoDictionaryListEntry &entry : dictionaries) {
-    if (Str::Eq(name, entry->GetName())) {
-      return entry->Remove(name, strokes, length);
+    if (Str::Eq(dictionaryName, entry->GetName())) {
+      return entry->Remove(dictionaryName, strokes, length);
     }
   }
   return false;

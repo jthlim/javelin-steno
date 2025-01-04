@@ -150,8 +150,6 @@ void StenoEngine::ProcessNormalModeStroke(StenoStroke stroke) {
   StenoSegmentList nextSegments;
   CreateSegments(history.GetCount(), nextConversionBuffer, conversionCount,
                  nextSegments, true);
-  history.UpdateDefinitionBoundaries(history.GetCount() - conversionCount,
-                                     nextSegments);
 
 #if ENABLE_PROFILE
   const uint32_t t1 = sysTick->ReadCycleCount();
@@ -167,6 +165,11 @@ void StenoEngine::ProcessNormalModeStroke(StenoStroke stroke) {
                                     conversionCount - 1, previousSegments,
                                     nextConversionBuffer, nextSegments);
   }
+
+  // Update definition boundaries after evaluating previous segments so that
+  // they are evaluated with the right lookup type.
+  history.UpdateDefinitionBoundaries(history.GetCount() - conversionCount,
+                                     nextSegments);
 
 #if ENABLE_PROFILE
   const uint32_t t2 = sysTick->ReadCycleCount();
@@ -322,6 +325,9 @@ void StenoEngine::ProcessNormalModeUndo() {
 
   const size_t nextConversionCount =
       undoCount >= conversionCount ? 0 : conversionCount - undoCount;
+
+  // Mark last lookup type as unknown to ensure a full lookup is performed.
+  history.MarkLastLookupTypeAsUnknown();
 
   StenoSegmentList nextSegments;
   if (previousConversionBuffer.segmentBuilder.HasModifiedStrokeHistory()) {
