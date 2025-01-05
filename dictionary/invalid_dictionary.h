@@ -18,6 +18,7 @@ public:
 
   static StenoInvalidDictionary corruptedInstance;
   static StenoInvalidDictionary incompleteUploadInstance;
+  static StenoInvalidDictionary invalidPairVersionInstance;
 
 private:
   StenoInvalidDictionary(const char *message)

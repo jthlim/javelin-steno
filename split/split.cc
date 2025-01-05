@@ -97,16 +97,16 @@ uint8_t *TxBuffer::Add(SplitHandlerId id, size_t length) {
   return result;
 }
 
-void TxBuffer::Handlers::OnConnectionReset() const {
+void TxBuffer::Handlers::OnConnect() const {
   for (SplitTxHandler *handler : *this) {
-    handler->OnTransmitConnectionReset();
+    handler->OnTransmitConnected();
   }
   ButtonScriptManager::ExecuteScript(ButtonScriptId::PAIR_CONNECTION_UPDATE);
 }
 
-void TxBuffer::Handlers::OnConnect() const {
+void TxBuffer::Handlers::OnConnectionReset() const {
   for (SplitTxHandler *handler : *this) {
-    handler->OnTransmitConnected();
+    handler->OnTransmitConnectionReset();
   }
   ButtonScriptManager::ExecuteScript(ButtonScriptId::PAIR_CONNECTION_UPDATE);
 }
@@ -175,6 +175,14 @@ void RxBuffer::Process() const {
 
     const uint32_t wordLength = (length + 3) >> 2;
     offset += wordLength;
+  }
+}
+
+void RxBuffer::OnConnect() {
+  for (SplitRxHandler *handler : handlers) {
+    if (handler) {
+      handler->OnReceiveConnected();
+    }
   }
 }
 

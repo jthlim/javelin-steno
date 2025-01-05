@@ -50,7 +50,8 @@ struct StenoEngine::UpdateNormalModeTextBufferThreadData {
 const size_t MAX_EXTRA_STROKES = 4;
 
 size_t StenoEngine::GetStartingStrokeForNormalModeProcessing() const {
-  const size_t maximumConversionStrokes = dictionary.GetMaximumOutlineLength();
+  const size_t maximumConversionStrokes =
+      GetDictionary().GetMaximumOutlineLength();
   if (history.GetCount() < maximumConversionStrokes) {
     return 0;
   }
@@ -121,8 +122,8 @@ size_t StenoEngine::GetStartingStrokeForNormalModeUndoProcessing(
 
   size_t conversionStrokes = undoCount;
   if (state.isNonAffixCommand) {
-    conversionStrokes =
-        dictionary.GetMaximumOutlineLength() + undoCount + MAX_EXTRA_STROKES;
+    conversionStrokes = GetDictionary().GetMaximumOutlineLength() + undoCount +
+                        MAX_EXTRA_STROKES;
   }
 
   return history.GetStartingStrokeAfterUndo(conversionStrokes);
@@ -501,7 +502,7 @@ void StenoEngine::PrintPaperTape(StenoStroke stroke,
       nextConversionBuffer.segmentBuilder.GetStrokes(startingStrokeIndex);
   const size_t length = segment.strokeLength;
   const StenoDictionary *provider =
-      dictionary.GetDictionaryForOutline(strokes, length);
+      GetDictionary().GetDictionaryForOutline(strokes, length);
   if (provider != nullptr) {
     Console::Printf(",\"dictionary\":\"%J\"", provider->GetName());
   }

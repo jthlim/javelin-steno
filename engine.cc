@@ -1,6 +1,7 @@
 //---------------------------------------------------------------------------
 
 #include "engine.h"
+#include "dictionary/invalid_dictionary.h"
 
 #include JAVELIN_BOARD_CONFIG
 
@@ -35,10 +36,10 @@ void StenoEngine::TemplateValue::Set(char *newValue) {
 StenoEngine::StenoEngine(StenoDictionary &dictionary,
                          const StenoCompiledOrthography &orthography,
                          StenoUserDictionary *userDictionary)
-    : dictionary(dictionary), orthography(orthography),
-      userDictionary(userDictionary) {
-  previousConversionBuffer.Prepare(&this->orthography, &this->dictionary);
-  nextConversionBuffer.Prepare(&this->orthography, &this->dictionary);
+    : activeDictionary(&dictionary), storedDictionaries(&dictionary),
+      orthography(orthography), userDictionary(userDictionary) {
+  previousConversionBuffer.Prepare(&this->orthography, &GetDictionary());
+  nextConversionBuffer.Prepare(&this->orthography, &GetDictionary());
   ResetState();
 }
 
@@ -137,7 +138,7 @@ void StenoEngine::PrintInfo() const {
   const ExternalFlashSentry externalFlashSentry;
 
   Console::Printf("    Dictionaries\n");
-  dictionary.PrintInfo(4);
+  GetDictionary().PrintInfo(4);
 }
 
 void StenoEngine::PrintDictionary(const char *name) const {
@@ -145,34 +146,34 @@ void StenoEngine::PrintDictionary(const char *name) const {
 
   Console::Printf("{");
   PrintDictionaryContext context(name);
-  dictionary.PrintDictionary(context);
+  GetDictionary().PrintDictionary(context);
   Console::Printf("\n}\n\n");
 }
 
 void StenoEngine::ListDictionaries() const {
   const ExternalFlashSentry externalFlashSentry;
-  dictionary.ListDictionaries();
+  GetDictionary().ListDictionaries();
 }
 
 bool StenoEngine::EnableDictionary(const char *name) {
   const ExternalFlashSentry externalFlashSentry;
-  return dictionary.EnableDictionary(name);
+  return GetDictionary().EnableDictionary(name);
 }
 
 bool StenoEngine::DisableDictionary(const char *name) {
   const ExternalFlashSentry externalFlashSentry;
-  return dictionary.DisableDictionary(name);
+  return GetDictionary().DisableDictionary(name);
 }
 
 bool StenoEngine::ToggleDictionary(const char *name) {
   const ExternalFlashSentry externalFlashSentry;
-  return dictionary.ToggleDictionary(name);
+  return GetDictionary().ToggleDictionary(name);
 }
 
 void StenoEngine::ReverseLookup(StenoReverseDictionaryLookup &lookup) const {
   const ExternalFlashSentry externalFlashSentry;
 
-  dictionary.ReverseLookup(lookup);
+  GetDictionary().ReverseLookup(lookup);
   if (lookup.results.IsEmpty()) {
     return;
   }

@@ -20,6 +20,7 @@
 #include "keyboard_led_status.h"
 #include "malloc_allocate.h"
 #include "random.h"
+#include "split/split_power_override.h"
 #include "split/split_usb_status.h"
 #include "str.h"
 #include "timer_manager.h"
@@ -755,6 +756,11 @@ public:
     const int seconds = (int)script.Pop();
     script.Push(WpmTracker::instance.GetWpm(seconds));
   }
+
+  static void SetPairBoardPower(ButtonScript &script) {
+    const PowerOverride powerOverride = (PowerOverride)script.Pop();
+    SplitPowerOverride::Set(powerOverride);
+  }
 };
 
 constexpr void (*ButtonScript::FUNCTION_TABLE[])(ButtonScript &) = {
@@ -847,6 +853,7 @@ constexpr void (*ButtonScript::FUNCTION_TABLE[])(ButtonScript &) = {
     &Function::SetEnableButtonStates,
     &Function::PrintValue,
     &Function::GetWpm,
+    &Function::SetPairBoardPower,
 };
 
 void ButtonScript::PrintEventHistory() {

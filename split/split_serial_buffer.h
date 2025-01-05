@@ -14,10 +14,16 @@ public:
     instance.Add(data, length);
   }
 
-  static void RegisterTxHandler() { Split::RegisterTxHandler(&instance); }
+  static void RegisterTxHandler() {
+#if JAVELIN_SPLIT_IS_MASTER
+    Split::RegisterTxHandler(&instance);
+#endif
+  }
 
   static void RegisterRxHandler() {
+#if !JAVELIN_SPLIT_IS_MASTER
     Split::RegisterRxHandler(SplitHandlerId::SERIAL, &instance);
+#endif
   }
 
 private:
@@ -27,12 +33,19 @@ private:
   };
 
   struct SplitSerialBufferData : public Queue<EntryData>,
-                                 public SplitTxHandler,
-                                 public SplitRxHandler {
+#if JAVELIN_SPLIT_IS_MASTER
+                                 public SplitTxHandler
+#else
+                                 public SplitRxHandler
+#endif
+  {
     void Add(const uint8_t *data, size_t length);
 
-    virtual void UpdateBuffer(TxBuffer &buffer);
-    virtual void OnDataReceived(const void *data, size_t length);
+#if JAVELIN_SPLIT_IS_MASTER
+    void UpdateBuffer(TxBuffer &buffer) final;
+#else
+    void OnDataReceived(const void *data, size_t length) final;
+#endif
 
     static QueueEntry<EntryData> *CreateEntry(const uint8_t *data,
                                               size_t length);

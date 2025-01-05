@@ -101,6 +101,7 @@ statements.
 - `*` Multiply
 - `/` Quotient
 - `%` Remainder
+- `~` Bitwise Not
 - `&` Bitwise And
 - `^` Bitwise Xor
 - `|` Bitwise Or
@@ -703,8 +704,19 @@ const CONNECTION_ID_USB2 = 3;
   - If the board supports separate power domains, control power to RGB lights.
 
 - `func isBoardPowered() var`
+
   - If the board supports separate power domains, returns whether power is
     being supplied to the RGB lights.
+
+- `func setPairBoardPower(<setting>)`
+
+  - Controls power to the pair side's RGB lights.
+  - Constants
+    ```
+    const PAIR_BOARD_POWER_NO_OVERRIDE = 0;
+    const PAIR_BOARD_POWER_FORCE_OFF = 1;
+    const PAIR_BOARD_POWER_FORCE_ON = 2;
+    ```
 
 ## Timer Functions
 

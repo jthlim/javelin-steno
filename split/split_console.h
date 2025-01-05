@@ -10,14 +10,14 @@ class Console;
 
 #if JAVELIN_SPLIT
 
-struct PairConsoleEntryData {
+struct SplitConsoleEntryData {
   size_t length;
   char data[0];
 };
 
-class PairConsole : Queue<PairConsoleEntryData>,
-                    SplitTxHandler,
-                    SplitRxHandler
+class SplitConsole : Queue<SplitConsoleEntryData>,
+                     SplitTxHandler,
+                     SplitRxHandler
 
 {
 public:
@@ -42,18 +42,18 @@ private:
   void AddInternal(const char *data, size_t length);
   void ProcessInternal();
 
-  static QueueEntry<PairConsoleEntryData> *CreateEntry(const void *data,
-                                                       size_t length);
+  static QueueEntry<SplitConsoleEntryData> *CreateEntry(const void *data,
+                                                        size_t length);
 
   virtual void UpdateBuffer(TxBuffer &buffer) override;
   virtual void OnDataReceived(const void *data, size_t length) override;
 
-  static PairConsole instance;
+  static SplitConsole instance;
 };
 
 #else
 
-class PairConsole {
+class SplitConsole {
 public:
   static void Process() {}
   static void RegisterHandlers() {}

@@ -270,7 +270,7 @@ bool StenoEngine::IsNewline(StenoStroke stroke) const {
   }
 
   // Standalone newlines are treated as delimiters.
-  StenoDictionaryLookupResult lookup = dictionary.Lookup(&stroke, 1);
+  StenoDictionaryLookupResult lookup = GetDictionary().Lookup(&stroke, 1);
   if (!lookup.IsValid()) {
     return false;
   }

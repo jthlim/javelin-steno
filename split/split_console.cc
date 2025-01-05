@@ -1,6 +1,6 @@
 //---------------------------------------------------------------------------
 
-#include "pair_console.h"
+#include "split_console.h"
 #include "../console.h"
 #include "../str.h"
 
@@ -8,14 +8,14 @@
 
 #if JAVELIN_SPLIT
 
-PairConsole PairConsole::instance;
+SplitConsole SplitConsole::instance;
 
 //---------------------------------------------------------------------------
 
-inline QueueEntry<PairConsoleEntryData> *
-PairConsole::CreateEntry(const void *data, size_t length) {
-  QueueEntry<PairConsoleEntryData> *entry =
-      new (length) QueueEntry<PairConsoleEntryData>;
+inline QueueEntry<SplitConsoleEntryData> *
+SplitConsole::CreateEntry(const void *data, size_t length) {
+  QueueEntry<SplitConsoleEntryData> *entry =
+      new (length) QueueEntry<SplitConsoleEntryData>;
   entry->data.length = length;
   entry->next = nullptr;
   memcpy(entry->data.data, data, length);
@@ -24,11 +24,11 @@ PairConsole::CreateEntry(const void *data, size_t length) {
 
 //---------------------------------------------------------------------------
 
-void PairConsole::AddInternal(const char *data, size_t length) {
+void SplitConsole::AddInternal(const char *data, size_t length) {
   AddEntry(CreateEntry(data, length));
 }
 
-void PairConsole::ProcessInternal() {
+void SplitConsole::ProcessInternal() {
 #if !JAVELIN_SPLIT_IS_MASTER
   while (head) {
     Console::RunCommand(head->data.data, NullWriter::instance);
@@ -37,7 +37,7 @@ void PairConsole::ProcessInternal() {
 #endif
 }
 
-void PairConsole::UpdateBuffer(TxBuffer &buffer) {
+void SplitConsole::UpdateBuffer(TxBuffer &buffer) {
 #if JAVELIN_SPLIT_IS_MASTER
   while (head) {
     if (!buffer.Add(SplitHandlerId::PAIR_CONSOLE, head->data.data,
@@ -50,13 +50,13 @@ void PairConsole::UpdateBuffer(TxBuffer &buffer) {
 #endif
 }
 
-void PairConsole::OnDataReceived(const void *data, size_t length) {
+void SplitConsole::OnDataReceived(const void *data, size_t length) {
   AddInternal((const char *)data, length);
 }
 
 //---------------------------------------------------------------------------
 
-void PairConsole::PairBinding(void *context, const char *commandLine) {
+void SplitConsole::PairBinding(void *context, const char *commandLine) {
   const char *p = strchr(commandLine, ' ');
   if (!p) {
     Console::Printf("ERR missing pair command\n\n");
@@ -75,9 +75,9 @@ void PairConsole::PairBinding(void *context, const char *commandLine) {
   Console::SendOk();
 }
 
-void PairConsole::AddConsoleCommands(Console &console) {
+void SplitConsole::AddConsoleCommands(Console &console) {
   console.RegisterCommand("pair", "Runs a command on the pair's console",
-                          &PairConsole::PairBinding, nullptr);
+                          &SplitConsole::PairBinding, nullptr);
 }
 
 //---------------------------------------------------------------------------

@@ -21,8 +21,9 @@ enum class SplitHandlerId {
   USB_STATUS,
   PAIR_CONSOLE,
   U2F,
-  U2F_SCRIPT,
+  POWER_OVERRIDE,
   ENCODER,
+  VERSION,
 
   COUNT,
 };
@@ -88,8 +89,8 @@ public:
   struct Handlers
       : public FastIterableStaticList<SplitTxHandler *,
                                       (size_t)SplitHandlerId::COUNT> {
-    void OnConnectionReset() const;
     void OnConnect() const;
+    void OnConnectionReset() const;
   };
 
   static Handlers handlers;
@@ -115,6 +116,7 @@ struct RxBuffer {
   void Process() const;
   static void OnDataReceived();
 
+  static void OnConnect();
   static void OnConnectionReset();
 
   static SplitRxHandler *handlers[];
@@ -123,13 +125,14 @@ struct RxBuffer {
 
 class SplitTxHandler {
 public:
-  virtual void OnTransmitConnectionReset() {}
   virtual void OnTransmitConnected() {}
+  virtual void OnTransmitConnectionReset() {}
   virtual void UpdateBuffer(TxBuffer &buffer) = 0;
 };
 
 class SplitRxHandler {
 public:
+  virtual void OnReceiveConnected() {}
   virtual void OnReceiveConnectionReset() {}
   virtual void OnDataReceived(const void *data, size_t length) = 0;
 };

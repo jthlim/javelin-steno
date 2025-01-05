@@ -230,7 +230,8 @@ void StenoEngine::LookupStroke_Binding(void *context, const char *commandLine) {
   const ExternalFlashSentry externalFlashSentry;
   StenoEngine *engine = (StenoEngine *)context;
   const StenoDictionary *dictionary =
-      engine->dictionary.GetDictionaryForOutline(parser.strokes, parser.length);
+      engine->GetDictionary().GetDictionaryForOutline(parser.strokes,
+                                                      parser.length);
 
   if (dictionary != nullptr) {
     const StenoDictionaryLookupResult result =
@@ -286,8 +287,8 @@ void StenoEngine::RemoveStroke_Binding(void *context, const char *commandLine) {
 
   const ExternalFlashSentry externalFlashSentry;
   StenoEngine *engine = (StenoEngine *)context;
-  const bool result =
-      engine->dictionary.Remove(dictionaryName, parser.strokes, parser.length);
+  const bool result = engine->GetDictionary().Remove(
+      dictionaryName, parser.strokes, parser.length);
 
   if (!result) {
     Console::Printf("ERR Unable to delete stroke %s from dictionary %s\n\n",

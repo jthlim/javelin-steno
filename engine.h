@@ -47,8 +47,13 @@ public:
   bool ToggleDictionary(const char *name);
   void ReverseLookup(StenoReverseDictionaryLookup &lookup) const;
 
-  StenoDictionary &GetDictionary() const { return dictionary; }
+  StenoDictionary &GetDictionary() const { return *activeDictionary; }
   const StenoCompiledOrthography &GetOrthography() const { return orthography; }
+
+  void SetErrorDictionary(StenoDictionary *dictionary) {
+    activeDictionary = dictionary;
+  }
+  void ClearErrorDictionary() { activeDictionary = storedDictionaries; }
 
   bool IsPaperTapeEnabled() const { return paperTapeEnabled; }
   void EnablePaperTape() { paperTapeEnabled = true; }
@@ -96,7 +101,12 @@ private:
   StenoEngineMode mode = StenoEngineMode::NORMAL;
 
   size_t strokeCount = 0;
-  StenoDictionary &dictionary;
+
+  // When error messages need to be displayed, activeDictionary is redirected
+  // to an InvalidDictionary.
+  StenoDictionary *activeDictionary;
+  StenoDictionary *storedDictionaries;
+
   const StenoCompiledOrthography orthography;
   StenoUserDictionary *userDictionary;
 

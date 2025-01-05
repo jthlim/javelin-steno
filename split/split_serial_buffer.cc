@@ -33,6 +33,8 @@ void SplitSerialBuffer::SplitSerialBufferData::Add(const uint8_t *data,
 
 //---------------------------------------------------------------------------
 
+#if JAVELIN_SPLIT_IS_MASTER
+
 void SplitSerialBuffer::SplitSerialBufferData::UpdateBuffer(TxBuffer &buffer) {
   while (head) {
     if (!buffer.Add(SplitHandlerId::SERIAL, &head->data.data,
@@ -44,9 +46,7 @@ void SplitSerialBuffer::SplitSerialBufferData::UpdateBuffer(TxBuffer &buffer) {
   }
 }
 
-[[gnu::weak]] void
-SplitSerialBuffer::SplitSerialBufferData::OnDataReceived(const void *data,
-                                                         size_t length) {}
+#endif
 
 //---------------------------------------------------------------------------
 
