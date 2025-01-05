@@ -255,6 +255,11 @@ void Console::ProcessChannelCommand(Channel &channel) {
     return;
   }
 
+  if (channel.buffer[0] == '\0') {
+    SendOk();
+    return;
+  }
+
   const ConsoleCommand *command = GetCommand(channel.buffer);
   if (command) {
     (*command->handler)(command->context, channel.buffer);

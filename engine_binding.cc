@@ -261,7 +261,9 @@ void StenoEngine::LookupStroke_Binding(void *context, const char *commandLine) {
         isFirst = false;
       }
       delete tokenizer;
-      Console::Printf("\"}\n\n");
+      // This marker is used by the Add Translation tool to indicate that the
+      // stroke is built from segments.
+      Console::Printf("\",\"dictionary\":\"#\"}\n\n");
     } else {
       Console::Printf("null\n\n");
     }

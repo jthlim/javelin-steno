@@ -153,7 +153,11 @@ sufficient to determine the result, the right hand side will not be evaluated.
 
 - `func moveMouse(<dx>, <dy>)`
 
+  - _dx_ and _dy_ are values between -128 and 127 inclusive.
+
 - `func wheelMouse(<delta>)`
+
+  - _delta_ is a values between -128 and 127 inclusive.
 
 - `func pressMouseButton(<buttonIndex>)`
 
