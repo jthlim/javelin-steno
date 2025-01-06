@@ -15,10 +15,13 @@ struct SplitConsoleEntryData {
   char data[0];
 };
 
+// Split console is used to send data from the master to the pair to execute.
 class SplitConsole : Queue<SplitConsoleEntryData>,
-                     SplitTxHandler,
+#if JAVELIN_SPLIT_IS_MASTER
+                     SplitTxHandler
+#else
                      SplitRxHandler
-
+#endif
 {
 public:
   static void Add(const char *data, size_t length) {
@@ -45,8 +48,11 @@ private:
   static QueueEntry<SplitConsoleEntryData> *CreateEntry(const void *data,
                                                         size_t length);
 
-  virtual void UpdateBuffer(TxBuffer &buffer) override;
-  virtual void OnDataReceived(const void *data, size_t length) override;
+#if JAVELIN_SPLIT_IS_MASTER
+  void UpdateBuffer(TxBuffer &buffer) final;
+#else
+  void OnDataReceived(const void *data, size_t length) final;
+#endif
 
   static SplitConsole instance;
 };

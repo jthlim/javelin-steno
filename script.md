@@ -153,11 +153,15 @@ sufficient to determine the result, the right hand side will not be evaluated.
 
 - `func moveMouse(<dx>, <dy>)`
 
-  - _dx_ and _dy_ are values between -128 and 127 inclusive.
+  - _dx_ and _dy_ are values between -32768 and 32767 inclusive.
 
-- `func wheelMouse(<delta>)`
+- `func vWheelMouse(<delta>)`
 
-  - _delta_ is a values between -128 and 127 inclusive.
+  - _delta_ is a value between -32768 and 32767 inclusive.
+
+- `func hWheelMouse(<delta>)`
+
+  - _delta_ is a value between -32768 and 32767 inclusive.
 
 - `func pressMouseButton(<buttonIndex>)`
 
@@ -732,6 +736,7 @@ const CONNECTION_ID_USB2 = 3;
 
   - Starts a timer that will call _handler_ after _delayInMilliseconds_.
   - _timerId_ is any chosen unique id for future calls to `stopTimer` and `isTimerActive` and must be positive.
+  - Any existing _timerId_ will be replaced by the _handler_ specified.
   - If _isRepeating_ is `1`, the timer should be stopped with `stopTimer`.
 
 - `func stopTimer(<timerId>)`
@@ -745,8 +750,11 @@ const CONNECTION_ID_USB2 = 3;
 ## GPIO Functions
 
 - `func setGpioPin(<pin>, <zeroOrOne>)`
+
   - Sets a GPIO _pin_ to 0 or 1.
+
 - `func setGpioInputPin(<pin>, <pull>)`
+
   - Marks a _pin_ for input with specified _pull_ configuration.
   - Constants:
     ```
@@ -754,6 +762,7 @@ const CONNECTION_ID_USB2 = 3;
     const PULL_DOWN = 1;
     const PULL_UP = 2;
     ```
+
 - `func readGpioPin(<pin>) var`
 
   - Returns whether a GPIO _pin_ is logic high level.
@@ -766,10 +775,15 @@ const CONNECTION_ID_USB2 = 3;
 ## Audio Functions
 
 - `func stopSound()`
+
   - Stops all sound playback.
+
 - `func playFrequency(<frequencyInHz>)`
+
   - Plays a sound at the specified _frequencyInHz_.
+
 - `func playSequence(<sequenceByteList>)`
+
   - Plays a sequence and automatically stops upon completion.
   - A sequence is a series of notes that have the following encoding:
     - noteIndex: 7 bits
@@ -782,7 +796,9 @@ const CONNECTION_ID_USB2 = 3;
   - Example:
     - C8 for 100ms, E8 for 100ms repeated 3 times is:
     - `playSequence([[62 05 66 05 62 05 66 05 62 05 66 05 00 00]])`
+
 - `func playWaveform(<data>, <length>, <frequency>)`
+
   - Placeholder, currently not available on any platform.
 
 ## Security Key Functions

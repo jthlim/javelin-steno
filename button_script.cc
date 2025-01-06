@@ -735,9 +735,9 @@ public:
     Mouse::Move(dx, dy);
   }
 
-  static void WheelMouse(ButtonScript &script) {
+  static void VWheelMouse(ButtonScript &script) {
     const int32_t delta = (int32_t)script.Pop();
-    Mouse::Wheel(delta);
+    Mouse::VWheel(delta);
   }
 
   static void SetEnableButtonStates(ButtonScript &script) {
@@ -760,6 +760,11 @@ public:
   static void SetPairBoardPower(ButtonScript &script) {
     const PowerOverride powerOverride = (PowerOverride)script.Pop();
     SplitPowerOverride::Set(powerOverride);
+  }
+
+  static void HWheelMouse(ButtonScript &script) {
+    const int32_t delta = (int32_t)script.Pop();
+    Mouse::HWheel(delta);
   }
 };
 
@@ -849,11 +854,12 @@ constexpr void (*ButtonScript::FUNCTION_TABLE[])(ButtonScript &) = {
     &Function::TapMouseButton,
     &Function::IsMouseButtonPressed,
     &Function::MoveMouse,
-    &Function::WheelMouse,
+    &Function::VWheelMouse,
     &Function::SetEnableButtonStates,
     &Function::PrintValue,
     &Function::GetWpm,
     &Function::SetPairBoardPower,
+    &Function::HWheelMouse,
 };
 
 void ButtonScript::PrintEventHistory() {

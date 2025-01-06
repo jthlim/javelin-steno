@@ -17,13 +17,13 @@ public:
   static void Process() { instance.Process(); }
 
   static void RegisterTxHandler() {
-#if JAVELIN_SPLIT
+#if JAVELIN_SPLIT && !JAVELIN_SPLIT_IS_MASTER
     Split::RegisterTxHandler(&instance);
 #endif
   }
 
   static void RegisterRxHandler() {
-#if JAVELIN_SPLIT
+#if JAVELIN_SPLIT && JAVELIN_SPLIT_IS_MASTER
     Split::RegisterRxHandler(SplitHandlerId::CONSOLE, &instance);
 #endif
   }
@@ -37,9 +37,13 @@ private:
   };
 
 #if JAVELIN_SPLIT
-  struct ConsoleInputBufferData : public Queue<EntryData>,
-                                  public SplitTxHandler,
-                                  SplitRxHandler {
+  struct ConsoleInputBufferData final : public Queue<EntryData>,
+#if JAVELIN_SPLIT_IS_MASTER
+                                        public SplitRxHandler
+#else
+                                        public SplitTxHandler
+#endif
+  {
 #else
   struct ConsoleInputBufferData : public Queue<EntryData> {
 #endif
@@ -56,10 +60,13 @@ private:
     // boot up are queued to send to the master.
     bool isConnected = true;
 
-    virtual void UpdateBuffer(TxBuffer &buffer) override;
-    virtual void OnDataReceived(const void *data, size_t length) override;
-    virtual void OnTransmitConnectionReset() override { isConnected = false; }
-    virtual void OnTransmitConnected() override { isConnected = true; }
+#if JAVELIN_SPLIT_IS_MASTER
+    void OnDataReceived(const void *data, size_t length) final;
+#else
+    void UpdateBuffer(TxBuffer &buffer) final;
+    void OnTransmitConnectionReset() final { isConnected = false; }
+    void OnTransmitConnected() final { isConnected = true; }
+#endif
 #endif
   };
 

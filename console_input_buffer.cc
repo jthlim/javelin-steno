@@ -54,6 +54,14 @@ void ConsoleInputBuffer::ConsoleInputBufferData::Process() {
 }
 
 #if JAVELIN_SPLIT
+#if JAVELIN_SPLIT_IS_MASTER
+
+void ConsoleInputBuffer::ConsoleInputBufferData::OnDataReceived(
+    const void *data, size_t length) {
+  Add((const uint8_t *)data, length, ConnectionId::USB_PAIR);
+}
+
+#else
 void ConsoleInputBuffer::ConsoleInputBufferData::UpdateBuffer(
     TxBuffer &buffer) {
   while (head) {
@@ -65,11 +73,7 @@ void ConsoleInputBuffer::ConsoleInputBufferData::UpdateBuffer(
     RemoveHead();
   }
 }
-
-void ConsoleInputBuffer::ConsoleInputBufferData::OnDataReceived(
-    const void *data, size_t length) {
-  Add((const uint8_t *)data, length, ConnectionId::USB_PAIR);
-}
+#endif
 #endif
 
 //---------------------------------------------------------------------------

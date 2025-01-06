@@ -37,8 +37,8 @@ void SplitConsole::ProcessInternal() {
 #endif
 }
 
-void SplitConsole::UpdateBuffer(TxBuffer &buffer) {
 #if JAVELIN_SPLIT_IS_MASTER
+void SplitConsole::UpdateBuffer(TxBuffer &buffer) {
   while (head) {
     if (!buffer.Add(SplitHandlerId::PAIR_CONSOLE, head->data.data,
                     head->data.length)) {
@@ -47,12 +47,12 @@ void SplitConsole::UpdateBuffer(TxBuffer &buffer) {
 
     RemoveHead();
   }
-#endif
 }
-
+#else
 void SplitConsole::OnDataReceived(const void *data, size_t length) {
   AddInternal((const char *)data, length);
 }
+#endif
 
 //---------------------------------------------------------------------------
 
