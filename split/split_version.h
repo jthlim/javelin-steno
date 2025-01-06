@@ -13,7 +13,7 @@ class SplitVersion :
     public SplitRxHandler,
     private TimerHandler
 #else
-    public SplitTxHandler
+    public SplitTxHanaredler
 #endif
 {
 public:
@@ -31,7 +31,7 @@ public:
   }
 
 private:
-  static const uint32_t VERSION = 2;
+  static const uint32_t VERSION = 3;
 
 #if JAVELIN_SPLIT_IS_MASTER
   void OnReceiveConnected() final;
