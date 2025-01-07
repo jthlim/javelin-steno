@@ -13,7 +13,7 @@ class SplitVersion :
     public SplitRxHandler,
     private TimerHandler
 #else
-    public SplitTxHanaredler
+    public SplitTxHandler
 #endif
 {
 public:
