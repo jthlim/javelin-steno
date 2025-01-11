@@ -164,7 +164,7 @@ void Console::WriteScriptEvent(const char *text) {
 
 //---------------------------------------------------------------------------
 
-Console::Channel *Console::GetChannel(int channelId, bool hasChannelId) {
+Console::Channel *Console::GetChannel(int channelId) {
   if (channelId >= 0) {
     for (Channel *c : activeBuffers) {
       if (c->id == channelId) {
@@ -189,7 +189,7 @@ Console::Channel *Console::GetChannel(int channelId, bool hasChannelId) {
     result = freeBuffers.PopBack();
   }
   activeBuffers.Add(result);
-  result->Reset(channelId, hasChannelId);
+  result->Reset(channelId);
   return result;
 }
 
@@ -198,28 +198,16 @@ int Console::AllocateChannelId() { return channelHistory.AllocateId(); }
 void Console::HandleInput(const char *data, size_t length) {
   int channelId = -1;
   const char *end = data + length;
-  bool hasChannelId = false;
 
   // If the input starts with 'c##<space>', then treat it as channel input.
   if (length > 4 && data[0] == 'c' && Unicode::IsAsciiDigit(data[1]) &&
       Unicode::IsAsciiDigit(data[2]) && data[3] == ' ') {
     channelId = 10 * (data[1] - '0') + data[2] - '0';
     channelHistory.Touch(channelId);
-    hasChannelId = true;
     data += 4;
-  } else {
-    // If preceeded by digits, treat that as the channelId
-    const char *endParse = Str::ParseInteger(&channelId, data, false);
-    if (endParse) {
-      if (*endParse == ' ') {
-        data = endParse + 1;
-      } else {
-        channelId = -1;
-      }
-    }
   }
 
-  Channel *channel = GetChannel(channelId, hasChannelId);
+  Channel *channel = GetChannel(channelId);
   for (const char *p = data; p < end; ++p) {
     const uint8_t c = *p;
     if (c == '\0') {
@@ -229,7 +217,7 @@ void Console::HandleInput(const char *data, size_t length) {
     if (c == '\n') {
       channel->AddByte('\0');
       ProcessChannelCommand(*channel);
-      channel->Reset(channelId, hasChannelId);
+      channel->Reset(channelId);
       continue;
     }
 
@@ -247,7 +235,7 @@ void Console::ProcessChannelCommand(Channel &channel) {
   }
 
   if (channel.id >= 0) {
-    Printf(channel.usedChannelId ? "c%02d " : "%d ", channel.id);
+    Printf("c%02d ", channel.id);
   }
 
   if (channel.isTooLong) {

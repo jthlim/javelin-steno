@@ -204,6 +204,8 @@ struct KeyCode {
     CONSUMER_PAGE_MUTE = 0xd2,                // UsageId 0xe2
     CONSUMER_PAGE_VOLUME_UP = 0xd9,           // UsageId 0xe9
     CONSUMER_PAGE_VOLUME_DOWN = 0xda,         // UsageId 0xea
+    CONSUMER_PAGE_BRIGHTNESS_UP = 0xde,       // UsageId 0x6f
+    CONSUMER_PAGE_BRIGHTNESS_DOWN = 0xdf,     // UsageId 0x70
   };
 
   KeyCode() = default;

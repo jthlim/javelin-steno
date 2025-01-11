@@ -1,29 +1,54 @@
 //---------------------------------------------------------------------------
 
 #include "rgb.h"
+#include "../base64.h"
 #include "../console.h"
 #include "../str.h"
 
 //---------------------------------------------------------------------------
 
 void Rgb::SetRgb_Binding(void *context, const char *commandLine) {
-  int values[4];
   const char *p = strchr(commandLine, ' ');
   if (!p) {
     Console::Printf("ERR Missing parameters\n\n");
     return;
   }
 
-  for (int i = 0; i < 4; ++i) {
+  int startRgbId;
+  p = Str::ParseInteger(&startRgbId, p + 1, false);
+  if (!p) {
+    Console::Printf("ERR Missing parameters\n\n");
+    return;
+  }
+
+  if (Base64::IsValid(p + 1)) {
+    SetRgbBase64(startRgbId, (uint8_t *)p + 1);
+    Console::SendOk();
+    return;
+  }
+
+  int values[3];
+  for (int i = 0; i < 3; ++i) {
     p = Str::ParseInteger(&values[i], p + 1, false);
 
     if (!p) {
       Console::Printf("ERR Missing parameters\n\n");
+      return;
     }
   }
 
-  SetRgb(values[0], values[1], values[2], values[3]);
+  SetRgb(startRgbId, values[0], values[1], values[2]);
   Console::SendOk();
+}
+
+void Rgb::SetRgbBase64(size_t startRgbId, const uint8_t *p) {
+  uint8_t buffer[256];
+  const size_t byteCount = Base64::Decode(buffer, (uint8_t *)p);
+  const size_t rgbCount = byteCount / 3;
+  const uint8_t *rgb = buffer;
+  for (int i = 0; i < rgbCount; ++i, rgb += 3) {
+    SetRgb(startRgbId + i, rgb[0], rgb[1], rgb[2]);
+  }
 }
 
 void Rgb::SetHsv(size_t id, int h, int s, int v) {

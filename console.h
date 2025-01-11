@@ -104,15 +104,13 @@ public:
 
 private:
   struct Channel {
+    int8_t id;
     bool isTooLong;
-    bool usedChannelId;
-    int32_t id;
-    size_t bufferCount;
+    uint16_t bufferCount;
     char buffer[256];
 
-    void Reset(uint32_t channelId, bool hasChannelId) {
+    void Reset(uint32_t channelId) {
       id = channelId;
-      usedChannelId = hasChannelId;
       isTooLong = false;
       bufferCount = 0;
     }
@@ -145,7 +143,7 @@ private:
 
   Channel channels[CHANNEL_COUNT];
 
-  Channel *GetChannel(int channelId, bool hasChannelId);
+  Channel *GetChannel(int channelId);
   void ProcessChannelCommand(Channel &channel);
   static void PrintfInternal(const char *format, ...);
 

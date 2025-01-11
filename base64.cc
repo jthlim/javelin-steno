@@ -23,6 +23,18 @@ constexpr int8_t BASE64_DECODE_TABLE[256] = {
 
 //---------------------------------------------------------------------------
 
+bool Base64::IsValid(const char *p) {
+  const uint8_t *v = (const uint8_t *)p;
+
+  while (*v) {
+    if (BASE64_DECODE_TABLE[*v++] == -2) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
 size_t Base64::Decode(uint8_t *destination, const uint8_t *source) {
   uint8_t *const startDestination = destination;
 

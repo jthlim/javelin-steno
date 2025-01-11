@@ -353,6 +353,9 @@ const SC_CONSUMER_MUTE = 0xd2;                // UsageId 0xe2
 const SC_CONSUMER_VOLUME_UP = 0xd9;           // UsageId 0xe9
 const SC_CONSUMER_VOLUME_DOWN = 0xda;         // UsageId 0xea
 
+const SC_CONSUMER_BRIGHTNESS_UP = 0xde,       // UsageId 0x6f
+const SC_CONSUMER_BRIGHTNESS_DOWN = 0xdf,     // UsageId 0x70
+
 const MOUSE_BUTTON_LEFT = 0;
 const MOUSE_BUTTON_RIGHT = 1;
 const MOUSE_BUTTON_MIDDLE = 2;
@@ -738,6 +741,9 @@ const CONNECTION_ID_USB2 = 3;
   - _timerId_ is any chosen unique id for future calls to `stopTimer` and `isTimerActive` and must be positive.
   - Any existing _timerId_ will be replaced by the _handler_ specified.
   - If _isRepeating_ is `1`, the timer should be stopped with `stopTimer`.
+  - _handler_ is either:
+    - `func handler() { ... }`, or
+    - `func handler(<timerId>) { ... }`
 
 - `func stopTimer(<timerId>)`
 

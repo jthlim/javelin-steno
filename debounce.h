@@ -22,7 +22,8 @@ public:
 //---------------------------------------------------------------------------
 
 // Only triggers a key after new state has been stable for DEBOUNCE_DELAY_MS.
-template <typename T> class GlobalDeferredDebounce {
+template <typename T, uint32_t MS = JAVELIN_DEBOUNCE_MS>
+class GlobalDeferredDebounce {
 public:
   GlobalDeferredDebounce() {}
 
@@ -39,7 +40,7 @@ public:
   const T &GetCurrentState() const { return lastState; }
   const T &GetDebouncedState() const { return lastDebouncedState; }
 
-  static const uint32_t DEBOUNCE_DELAY_MS = JAVELIN_DEBOUNCE_MS;
+  static const uint32_t DEBOUNCE_DELAY_MS = MS;
 
 private:
   T lastDebouncedState;
@@ -50,7 +51,8 @@ private:
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-template <typename T> Debounced<T> GlobalDeferredDebounce<T>::Update(T input) {
+template <typename T, uint32_t MS>
+Debounced<T> GlobalDeferredDebounce<T, MS>::Update(T input) {
   uint32_t currentTime = Clock::GetMilliseconds();
 
   if (input != lastState) {
