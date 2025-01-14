@@ -223,7 +223,7 @@ public:
   StaticList<StenoReverseDictionaryResult, 24> results;
   StaticList<StenoStroke, 64> strokes;
 
-  static const size_t MAX_STROKE_THRESHOLD = 31;
+  static constexpr size_t MAX_STROKE_THRESHOLD = 31;
 
   uint32_t GetLookupCrc() {
     if (!hasLookupCrc) {
@@ -360,7 +360,7 @@ protected:
   static const char *Spaces(int count) { return SPACES + SPACES_COUNT - count; }
 
 private:
-  static const size_t SPACES_COUNT = 16;
+  static constexpr size_t SPACES_COUNT = 16;
   static const char SPACES[];
 };
 

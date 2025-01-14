@@ -40,8 +40,8 @@ private:
 
 template <size_t N> class BitField {
 private:
-  static const size_t BITS_PER_WORD = 8 * sizeof(size_t);
-  static const size_t WORD_COUNT = (N + BITS_PER_WORD - 1) / BITS_PER_WORD;
+  static constexpr size_t BITS_PER_WORD = 8 * sizeof(size_t);
+  static constexpr size_t WORD_COUNT = (N + BITS_PER_WORD - 1) / BITS_PER_WORD;
 
 public:
   bool IsSet(size_t n) const {
@@ -145,7 +145,7 @@ public:
   // Dummy response, as BitFieldIterator does not use this.
   friend const size_t end(const BitField &b) { return 0; }
 
-  static const size_t BIT_COUNT = N;
+  static constexpr size_t BIT_COUNT = N;
 
 private:
   size_t data[WORD_COUNT];

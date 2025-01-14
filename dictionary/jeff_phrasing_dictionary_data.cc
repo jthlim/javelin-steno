@@ -1931,7 +1931,7 @@ constexpr StenoStroke NON_PHRASE_STROKES[] = {
 
 #include "jeff_phrasing_dictionary_generated.h"
 
-const JeffPhrasingDictionaryData JeffPhrasingDictionaryData::instance = {
+constexpr JeffPhrasingDictionaryData JeffPhrasingDictionaryData::instance = {
     .simpleStarters =
         {
             sizeof(SIMPLE_STARTERS) / sizeof(*SIMPLE_STARTERS),
@@ -2018,7 +2018,7 @@ static void PrintCharacters() {
 void GenerateLookupTable() {
   // printf("endersCount: %zu\n", phrasingData.endersCount);
 
-  static const size_t HASH_SIZE = 512;
+  static constexpr size_t HASH_SIZE = 512;
 
   const JeffPhrasingEnder **enderMap = new const JeffPhrasingEnder *[512];
   for (size_t i = 0; i < HASH_SIZE; ++i) {

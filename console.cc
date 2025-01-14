@@ -95,21 +95,21 @@ Console::Console() {
   freeBuffers.Add(&channels[3]);
 }
 
-static const ConsoleCommand HELP_COMMAND = {
+static constexpr ConsoleCommand HELP_COMMAND = {
     .command = "help",
     .description = "Provides a list of commands",
     .handler = &Console::HelpCommand,
     .context = nullptr,
 };
 
-static const ConsoleCommand HELLO_COMMAND = {
+static constexpr ConsoleCommand HELLO_COMMAND = {
     .command = "hello",
     .description = "Used to initiate a stable communication channel",
     .handler = &Console::HelloCommand,
     .context = nullptr,
 };
 
-static const size_t MAX_COMMAND_COUNT = 64;
+static constexpr size_t MAX_COMMAND_COUNT = 64;
 static size_t commandCount = 2;
 static ConsoleCommand commands[MAX_COMMAND_COUNT] = {
     HELLO_COMMAND,

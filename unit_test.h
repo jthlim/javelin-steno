@@ -43,8 +43,8 @@ struct TestFailure {
 // files
 #define TEST_BEGIN__(text, file, line)                                         \
   namespace UnitTest##line {                                                   \
-    static const char *uTDescription = text;                                   \
-    static const char *uTFile = file;                                          \
+    static constexpr const char *uTDescription = text;                         \
+    static constexpr const char *uTFile = file;                                \
     static int uTLine = line;                                                  \
     static void Test() {
 

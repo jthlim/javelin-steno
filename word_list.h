@@ -38,7 +38,7 @@ public:
 
   static WordList instance;
 
-  static const int MAX_SCORE = 0xf;
+  static constexpr int MAX_SCORE = 0xf;
   static const WordListData EMPTY;
 
 private:

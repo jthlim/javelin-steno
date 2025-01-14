@@ -144,7 +144,7 @@ public:
     }
   }
 
-  static const size_t MAX_STRING_LENGTH = 33;
+  static constexpr size_t MAX_STRING_LENGTH = 33;
 
 private:
   uint32_t keyState;

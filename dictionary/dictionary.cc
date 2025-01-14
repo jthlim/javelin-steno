@@ -9,7 +9,7 @@
 
 //---------------------------------------------------------------------------
 
-const char StenoDictionary::SPACES[SPACES_COUNT + 1] = "                ";
+constexpr char StenoDictionary::SPACES[SPACES_COUNT + 1] = "                ";
 
 #if ENABLE_DICTIONARY_STATS
 StenoDictionary::Stats StenoDictionary::stats;

@@ -19,7 +19,7 @@ public:
   static WpmTracker instance;
 
 private:
-  static const size_t NUMBER_OF_SECONDS = 64;
+  static constexpr size_t NUMBER_OF_SECONDS = 64;
 
   uint32_t lastTime;
   int charactersTyped[NUMBER_OF_SECONDS];

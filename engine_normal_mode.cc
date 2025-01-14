@@ -850,7 +850,7 @@ void StenoEngine::PrintTextLog(
   }
 
   Console::Printf("EV {\"event\":\"text_log\",\"text\":\"");
-  static const char BACKSPACES[] =
+  static constexpr char BACKSPACES[] =
       "\\b\\b\\b\\b\\b\\b\\b\\b\\b\\b\\b\\b\\b\\b\\b\\b";
 
   while (backspaceCount > 0) {

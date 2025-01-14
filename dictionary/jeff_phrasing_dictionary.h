@@ -9,7 +9,7 @@ struct JeffPhrasingReverseHashMapEntry;
 
 class StenoJeffPhrasingDictionary final : public StenoDictionary {
 private:
-  static const size_t MAXIMUM_OUTLINE_LENGTH = 1;
+  static constexpr size_t MAXIMUM_OUTLINE_LENGTH = 1;
 
 public:
   StenoJeffPhrasingDictionary() : StenoDictionary(MAXIMUM_OUTLINE_LENGTH) {}

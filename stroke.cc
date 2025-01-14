@@ -8,9 +8,9 @@
 //---------------------------------------------------------------------------
 
 constexpr StrokeKey ENGLISH_STROKE_FORMATTER[] = {
+    {'#', StrokeKeyType::MASK, 0x00000001},
     {'^', StrokeKeyType::MASK, 0x00800000},
     {'+', StrokeKeyType::MASK, 0x01000000},
-    {'#', StrokeKeyType::MASK, 0x00000001},
     {'S', StrokeKeyType::MASK, 0x00000002},
     {'T', StrokeKeyType::MASK, 0x00000004},
     {'K', StrokeKeyType::MASK, 0x00000008},
@@ -38,9 +38,9 @@ constexpr StrokeKey ENGLISH_STROKE_FORMATTER[] = {
 };
 
 constexpr StrokeKey ENGLISH_STROKE_PARSER[] = {
+    {'#', StrokeKeyType::MASK, 0x00000001},
     {'^', StrokeKeyType::MASK, 0x00800000},
     {'+', StrokeKeyType::MASK, 0x01000000},
-    {'#', StrokeKeyType::MASK, 0x00000001},
     {'1', StrokeKeyType::MASK, 0x00000003},
     {'S', StrokeKeyType::MASK, 0x00000002},
     {'2', StrokeKeyType::MASK, 0x00000005},

@@ -8,7 +8,7 @@
 // Firmware implementation of https://github.com/jthlim/jeff-numbers.
 class StenoJeffNumbersDictionary final : public StenoDictionary {
 private:
-  static const size_t MAXIMUM_OUTLINE_LENGTH = 10;
+  static constexpr size_t MAXIMUM_OUTLINE_LENGTH = 10;
 
   using super = StenoDictionary;
 

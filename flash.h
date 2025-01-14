@@ -24,7 +24,7 @@ public:
   static void WriteBlock(const void *target, const void *data, size_t size);
   static void Write(const void *target, const void *data, size_t size);
 
-  static const size_t BLOCK_SIZE = 4096;
+  static constexpr size_t BLOCK_SIZE = 4096;
 
   static void PrintInfo();
 
@@ -50,7 +50,7 @@ private:
   void AddData(const uint8_t *data, size_t length);
   void WriteRemaining();
 
-  static const size_t WRITE_DATA_BUFFER_SIZE = BLOCK_SIZE;
+  static constexpr size_t WRITE_DATA_BUFFER_SIZE = BLOCK_SIZE;
 
   size_t erasedBytes;
   size_t programmedBytes;

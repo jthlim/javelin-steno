@@ -90,8 +90,8 @@ private:
   class Function;
   class TimerContext;
 
-  static const size_t EVENT_HISTORY_COUNT = 4;
-  static const size_t MAX_STACK_SIZE = 256;
+  static constexpr size_t EVENT_HISTORY_COUNT = 4;
+  static constexpr size_t MAX_STACK_SIZE = 256;
   static void (*const FUNCTION_TABLE[])(ButtonScript &);
 
   bool scriptEventsEnabled = false;

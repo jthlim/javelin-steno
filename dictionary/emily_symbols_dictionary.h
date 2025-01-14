@@ -7,7 +7,7 @@
 
 class StenoEmilySymbolsDictionary final : public StenoDictionary {
 private:
-  static const size_t MAXIMUM_OUTLINE_LENGTH = 1;
+  static constexpr size_t MAXIMUM_OUTLINE_LENGTH = 1;
 
 public:
   StenoEmilySymbolsDictionary(bool isSpecifySpacesMode)

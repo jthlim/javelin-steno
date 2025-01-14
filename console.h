@@ -135,7 +135,7 @@ private:
     StaticList<uint8_t, 16> history;
   };
 
-  static const size_t CHANNEL_COUNT = 4;
+  static constexpr size_t CHANNEL_COUNT = 4;
   StaticList<Channel *, CHANNEL_COUNT> freeBuffers;
   StaticList<Channel *, CHANNEL_COUNT> activeBuffers;
 

@@ -91,7 +91,7 @@ public:
 
 private:
   static const StenoStroke UNDO_STROKE;
-  static const size_t PAPER_TAPE_SUGGESTION_SEGMENT_LIMIT = 8;
+  static constexpr size_t PAPER_TAPE_SUGGESTION_SEGMENT_LIMIT = 8;
 
   bool paperTapeEnabled = false;
   bool suggestionsEnabled = false;
@@ -132,7 +132,7 @@ private:
   ConversionBuffer previousConversionBuffer;
   ConversionBuffer nextConversionBuffer;
 
-  static const size_t TEMPLATE_VALUE_COUNT = 64;
+  static constexpr size_t TEMPLATE_VALUE_COUNT = 64;
   struct TemplateValue {
     char *value;
 

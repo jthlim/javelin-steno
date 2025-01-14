@@ -22,7 +22,7 @@ private:
   struct Prefix;
   struct ReverseLookupContext;
 
-  static const size_t MAXIMUM_REVERSE_PREFIX_DEPTH = 2;
+  static constexpr size_t MAXIMUM_REVERSE_PREFIX_DEPTH = 2;
 
   const uint8_t *baseAddress;
 

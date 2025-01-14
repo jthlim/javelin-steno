@@ -13,8 +13,8 @@ class Console;
 struct SoundSequenceData {
   uint8_t data[2];
 
-  static const int END_NOTE = 0;
-  static const int PAUSE_NOTE = 1;
+  static constexpr int END_NOTE = 0;
+  static constexpr int PAUSE_NOTE = 1;
 
   //  Notes:
   //   0 means end of sequence.

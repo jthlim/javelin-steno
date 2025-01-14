@@ -126,7 +126,7 @@ public:
 
   void AddTrailingNull();
 
-  static const size_t BUFFER_SIZE = 64;
+  static constexpr size_t BUFFER_SIZE = 64;
 
   size_t bufferUsedCount = 0;
   uint8_t buffer[BUFFER_SIZE + 1];

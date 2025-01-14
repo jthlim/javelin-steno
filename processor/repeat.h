@@ -16,10 +16,10 @@ public:
   void Tick();
   void PrintInfo() const;
 
-  static const int FORGET_TIME_SPAN = 120;
-  static const int INITIAL_REPEAT_DELAY = 200;
-  static const int REPEAT_DELAY = 30;
-  static const int REPEAT_DELAY_MINIMUM = 5;
+  static constexpr int FORGET_TIME_SPAN = 120;
+  static constexpr int INITIAL_REPEAT_DELAY = 200;
+  static constexpr int REPEAT_DELAY = 30;
+  static constexpr int REPEAT_DELAY_MINIMUM = 5;
 
 private:
   bool wasLastEventAPress = false;

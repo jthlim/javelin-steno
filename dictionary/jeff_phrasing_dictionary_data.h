@@ -125,17 +125,17 @@ struct JeffPhrasingStructureException {
 };
 
 struct ComponentMask {
-  static const uint8_t STARTER = 1;
-  static const uint8_t MIDDLE = 2;
-  static const uint8_t STRUCTURE = 4;
-  static const uint8_t VERB = 8;
+  static constexpr uint8_t STARTER = 1;
+  static constexpr uint8_t MIDDLE = 2;
+  static constexpr uint8_t STRUCTURE = 4;
+  static constexpr uint8_t VERB = 8;
 };
 
 struct ModeMask {
-  static const uint8_t FULL = 1;
-  static const uint8_t SIMPLE = 2;
-  static const uint8_t PRESENT = 4;
-  static const uint8_t PAST = 8;
+  static constexpr uint8_t FULL = 1;
+  static constexpr uint8_t SIMPLE = 2;
+  static constexpr uint8_t PRESENT = 4;
+  static constexpr uint8_t PAST = 8;
 };
 
 struct JeffPhrasingReverseHashMapEntry {

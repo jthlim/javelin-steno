@@ -40,7 +40,7 @@ public:
   const T &GetCurrentState() const { return lastState; }
   const T &GetDebouncedState() const { return lastDebouncedState; }
 
-  static const uint32_t DEBOUNCE_DELAY_MS = MS;
+  static constexpr uint32_t DEBOUNCE_DELAY_MS = MS;
 
 private:
   T lastDebouncedState;

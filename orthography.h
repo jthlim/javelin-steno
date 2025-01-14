@@ -104,9 +104,9 @@ private:
   static void LockCache();
   static void UnlockCache();
 
-  static const size_t CACHE_SIZE = 256;
-  static const size_t CACHE_ASSOCIATIVITY = 4;
-  static const size_t CACHE_BLOCK_COUNT = CACHE_SIZE / CACHE_ASSOCIATIVITY;
+  static constexpr size_t CACHE_SIZE = 256;
+  static constexpr size_t CACHE_ASSOCIATIVITY = 4;
+  static constexpr size_t CACHE_BLOCK_COUNT = CACHE_SIZE / CACHE_ASSOCIATIVITY;
 
   struct CacheBlock {
     // Stored separately for better data packing.

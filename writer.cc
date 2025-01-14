@@ -332,8 +332,8 @@ void IWriter::Vprintf(const char *p, va_list args) {
   }
 }
 
-static const char SPACES[] = "                ";
-static const char ZEROS[] = "0000000000000000";
+static constexpr char SPACES[] = "                ";
+static constexpr char ZEROS[] = "0000000000000000";
 
 void IWriter::WriteSegment(int flags, char *start, char *end, int width) {
   const size_t length = end - start;

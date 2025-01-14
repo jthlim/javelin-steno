@@ -10,31 +10,36 @@
 
 //---------------------------------------------------------------------------
 
-const KeyCode::Value StenoKeyCodeEmitter::EmitterContext::MASK_KEY_CODES[] = {
-    KeyCode::L_CTRL, KeyCode::L_SHIFT, KeyCode::L_ALT, KeyCode::L_META,
-    KeyCode::R_CTRL, KeyCode::R_SHIFT, KeyCode::R_ALT, KeyCode::R_META,
+constexpr KeyCode::Value StenoKeyCodeEmitter::EmitterContext::MASK_KEY_CODES[] =
+    {
+        KeyCode::L_CTRL, KeyCode::L_SHIFT, KeyCode::L_ALT, KeyCode::L_META,
+        KeyCode::R_CTRL, KeyCode::R_SHIFT, KeyCode::R_ALT, KeyCode::R_META,
 };
 
-const KeyCode::Value StenoKeyCodeEmitter::EmitterContext::HEX_KEY_CODES[] = {
-    KeyCode::_0, KeyCode::_1, KeyCode::_2, KeyCode::_3,
-    KeyCode::_4, KeyCode::_5, KeyCode::_6, KeyCode::_7,
-    KeyCode::_8, KeyCode::_9, KeyCode::A,  KeyCode::B,
-    KeyCode::C,  KeyCode::D,  KeyCode::E,  KeyCode::F,
+constexpr KeyCode::Value StenoKeyCodeEmitter::EmitterContext::HEX_KEY_CODES[] =
+    {
+        KeyCode::_0, KeyCode::_1, KeyCode::_2, KeyCode::_3,
+        KeyCode::_4, KeyCode::_5, KeyCode::_6, KeyCode::_7,
+        KeyCode::_8, KeyCode::_9, KeyCode::A,  KeyCode::B,
+        KeyCode::C,  KeyCode::D,  KeyCode::E,  KeyCode::F,
 };
 
 #define M MODIFIER_L_ALT_FLAG
-const uint16_t StenoKeyCodeEmitter::EmitterContext::ALT_HEX_KEY_CODES[] = {
+constexpr uint16_t StenoKeyCodeEmitter::EmitterContext::ALT_HEX_KEY_CODES[] = {
     M | KeyCode::_0, M | KeyCode::_1, M | KeyCode::_2, M | KeyCode::_3,
     M | KeyCode::_4, M | KeyCode::_5, M | KeyCode::_6, M | KeyCode::_7,
     M | KeyCode::_8, M | KeyCode::_9, M | KeyCode::A,  M | KeyCode::B,
     M | KeyCode::C,  M | KeyCode::D,  M | KeyCode::E,  M | KeyCode::F,
 };
 
-const uint16_t StenoKeyCodeEmitter::EmitterContext::KP_ALT_HEX_KEY_CODES[] = {
-    M | KeyCode::KP_0, M | KeyCode::KP_1, M | KeyCode::KP_2, M | KeyCode::KP_3,
-    M | KeyCode::KP_4, M | KeyCode::KP_5, M | KeyCode::KP_6, M | KeyCode::KP_7,
-    M | KeyCode::KP_8, M | KeyCode::KP_9, M | KeyCode::A,    M | KeyCode::B,
-    M | KeyCode::C,    M | KeyCode::D,    M | KeyCode::E,    M | KeyCode::F,
+constexpr uint16_t StenoKeyCodeEmitter::EmitterContext::KP_ALT_HEX_KEY_CODES[] =
+    {
+        M | KeyCode::KP_0, M | KeyCode::KP_1, M | KeyCode::KP_2,
+        M | KeyCode::KP_3, M | KeyCode::KP_4, M | KeyCode::KP_5,
+        M | KeyCode::KP_6, M | KeyCode::KP_7, M | KeyCode::KP_8,
+        M | KeyCode::KP_9, M | KeyCode::A,    M | KeyCode::B,
+        M | KeyCode::C,    M | KeyCode::D,    M | KeyCode::E,
+        M | KeyCode::F,
 };
 
 #undef M

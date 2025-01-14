@@ -174,7 +174,7 @@ TEST_BEGIN("Crc32: Verify test vectors") {
   };
 
   // clang-format off
-  static const TestVector TEST_VECTORS[] = {
+  static constexpr TestVector TEST_VECTORS[] = {
       {"", 0x00000000},
       {"a", 0xe8b7be43},
       {"abc", 0x352441c2},

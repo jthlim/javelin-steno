@@ -66,8 +66,8 @@ private:
     }
   };
 
-  static const size_t MAXIMUM_TIMER_COUNT = 32;
-  static const size_t INVALID_TIMER_INDEX = (size_t)-1;
+  static constexpr size_t MAXIMUM_TIMER_COUNT = 32;
+  static constexpr size_t INVALID_TIMER_INDEX = (size_t)-1;
 
   uint8_t timerCount;
   int tickDelay = 1;

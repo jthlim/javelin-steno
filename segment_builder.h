@@ -82,7 +82,7 @@ public:
   bool HasModifiedStrokeHistory() const { return hasModifiedStrokeHistory; }
   bool HasRawStroke() const { return hasRawStroke; }
 
-  static const size_t BUFFER_SIZE = 256;
+  static constexpr size_t BUFFER_SIZE = 256;
 
 private:
   bool hasModifiedStrokeHistory = false;

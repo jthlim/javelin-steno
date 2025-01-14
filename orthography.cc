@@ -26,9 +26,9 @@ public:
   bool IsEmpty() const { return candidate == nullptr; }
   bool IsNotEmpty() const { return candidate != nullptr; }
 
-  static const int NOT_IN_WORD_LIST_SCORE = WordList::MAX_SCORE + 1;
-  static const int FALLBACK_SCORE = WordList::MAX_SCORE + 2;
-  static const int EXCLUDE_WORD_SCORE = WordList::MAX_SCORE + 4;
+  static constexpr int NOT_IN_WORD_LIST_SCORE = WordList::MAX_SCORE + 1;
+  static constexpr int FALLBACK_SCORE = WordList::MAX_SCORE + 2;
+  static constexpr int EXCLUDE_WORD_SCORE = WordList::MAX_SCORE + 4;
 
 private:
   char *candidate = nullptr;

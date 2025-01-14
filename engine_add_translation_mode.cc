@@ -10,14 +10,14 @@
 
 //---------------------------------------------------------------------------
 
-static const char ADD_TRANSLATION_PROMPT[] = " >>> Add Translation - "
-                                             "Strokes: ";
+static constexpr char ADD_TRANSLATION_PROMPT[] = " >>> Add Translation - "
+                                                 "Strokes: ";
 
-static const char ADD_DELETE_TRANSLATION_PROMPT[] =
+static constexpr char ADD_DELETE_TRANSLATION_PROMPT[] =
     " >>> Add/Delete Translation - "
     "Strokes: ";
 
-static const char TRANSLATION_PROMPT[] = "; Translation: ";
+static constexpr char TRANSLATION_PROMPT[] = "; Translation: ";
 
 //---------------------------------------------------------------------------
 
@@ -275,7 +275,7 @@ bool StenoEngine::IsNewline(StenoStroke stroke) const {
     return false;
   }
 
-  static const char *const VALID_NEWLINES[] = {
+  static constexpr const char *VALID_NEWLINES[] = {
       "{#Return}", "{#Return}{^}", "\n", "{^}\n{^}", "{^\n^}", "{^~|\n^}",
   };
 

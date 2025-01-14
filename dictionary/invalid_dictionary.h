@@ -7,7 +7,7 @@
 
 class StenoInvalidDictionary final : public StenoDictionary {
 private:
-  static const size_t MAXIMUM_OUTLINE_LENGTH = 8;
+  static constexpr size_t MAXIMUM_OUTLINE_LENGTH = 8;
 
 public:
   virtual StenoDictionaryLookupResult

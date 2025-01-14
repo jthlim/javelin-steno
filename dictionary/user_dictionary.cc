@@ -18,9 +18,9 @@ constexpr size_t OFFSET_EMPTY = 0xffffffff;
 constexpr size_t OFFSET_DELETED = 0;
 constexpr size_t OFFSET_DATA = 1;
 
-static const uint32_t USER_DICTIONARY_MAGIC = 0x4455534a; // 'JSUD'
+static constexpr uint32_t USER_DICTIONARY_MAGIC = 0x4455534a; // 'JSUD'
 
-static const uint32_t USER_DICTIONARY_WITH_REVERSE_LOOKUP_VERSION = 2;
+static constexpr uint32_t USER_DICTIONARY_WITH_REVERSE_LOOKUP_VERSION = 2;
 
 // Offset within the flash page where descriptors will be stored.
 const size_t DESCRIPTOR_OFFSET = 64;

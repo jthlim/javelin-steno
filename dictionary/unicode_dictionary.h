@@ -25,7 +25,7 @@ public:
 
 private:
 private:
-  static const size_t MAXIMUM_OUTLINE_LENGTH = 1;
+  static constexpr size_t MAXIMUM_OUTLINE_LENGTH = 1;
 
   StenoUnicodeDictionary() : StenoDictionary(MAXIMUM_OUTLINE_LENGTH) {}
 };

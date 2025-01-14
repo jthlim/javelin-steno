@@ -5,7 +5,7 @@
 
 //---------------------------------------------------------------------------
 
-const StenoCaseMode StenoState::NEXT_WORD_CASE_MODE[] = {
+constexpr StenoCaseMode StenoState::NEXT_WORD_CASE_MODE[] = {
     StenoCaseMode::NORMAL,      //
     StenoCaseMode::LOWER,       //
     StenoCaseMode::UPPER,       //
@@ -16,7 +16,7 @@ const StenoCaseMode StenoState::NEXT_WORD_CASE_MODE[] = {
     StenoCaseMode::UNSPECIFIED, //
 };
 
-const StenoCaseMode StenoState::NEXT_LETTER_CASE_MODE[] = {
+constexpr StenoCaseMode StenoState::NEXT_LETTER_CASE_MODE[] = {
     StenoCaseMode::NORMAL,      //
     StenoCaseMode::LOWER,       //
     StenoCaseMode::UPPER,       //

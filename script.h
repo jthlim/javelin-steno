@@ -78,7 +78,7 @@ private:
   class StackPointer;
   class ProgramCounter;
 
-  static const size_t MAX_STACK_SIZE = 256;
+  static constexpr size_t MAX_STACK_SIZE = 256;
 
   const ScriptByteCode *const byteCode;
   intptr_t *stackTop = stack;

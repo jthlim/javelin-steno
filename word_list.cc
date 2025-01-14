@@ -7,8 +7,8 @@
 
 //---------------------------------------------------------------------------
 
-const uint32_t WORD_LIST_MAGIC = 0x304c574a;
-const WordListData WordList::EMPTY = {WORD_LIST_MAGIC, 32, 0, 0, {{0, 0}}};
+constexpr uint32_t WORD_LIST_MAGIC = 0x304c574a;
+constexpr WordListData WordList::EMPTY = {WORD_LIST_MAGIC, 32, 0, 0, {{0, 0}}};
 WordList WordList::instance;
 
 //---------------------------------------------------------------------------

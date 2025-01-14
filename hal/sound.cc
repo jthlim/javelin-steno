@@ -9,7 +9,7 @@
 
 uint32_t Sound::CalculateFrequencyForNote(int note) {
   // These frequencies are for note values 116-127;
-  static const uint16_t FREQUENCIES[] = {
+  static constexpr uint16_t FREQUENCIES[] = {
       11840, 12544, 13290, 14080, 14917, 15804,
       16744, 17740, 18795, 19912, 21096, 22351,
   };

@@ -121,7 +121,7 @@ bool Connection::IsHostSleeping() {
 
 void Connection::PrintInfo() {
 #if JAVELIN_BLE || JAVELIN_SPLIT
-  static const char *const NAMES[] = {"none", "ble", "usb", "usb2"};
+  static constexpr const char *NAMES[] = {"none", "ble", "usb", "usb2"};
 
   Console::Printf("Connections\n");
 #if JAVELIN_BLE

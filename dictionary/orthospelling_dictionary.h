@@ -13,7 +13,7 @@ struct StenoOrthospellingDictionaryDefinition;
 
 class StenoOrthospellingDictionary final : public StenoDictionary {
 private:
-  static const size_t MAXIMUM_OUTLINE_LENGTH = 12;
+  static constexpr size_t MAXIMUM_OUTLINE_LENGTH = 12;
 
 public:
   StenoOrthospellingDictionary(const OrthospellingData &data);

@@ -51,7 +51,7 @@ struct TxRxHeader {
   uint16_t transferId;
   uint16_t hash;
 
-  static const uint16_t MAGIC = 0x534a; // 'JS';
+  static constexpr uint16_t MAGIC = 0x534a; // 'JS';
 
   size_t GetByteCount() const {
     return sizeof(*this) + wordCount * sizeof(uint32_t);

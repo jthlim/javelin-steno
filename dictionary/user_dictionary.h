@@ -85,7 +85,7 @@ public:
   static void AddEntry_Binding(void *context, const char *commandLine);
   static void RemoveEntry_Binding(void *context, const char *commandLine);
 
-  static const size_t MAX_STROKE_COUNT = 16;
+  static constexpr size_t MAX_STROKE_COUNT = 16;
 
   void AddConsoleCommands(Console &console);
 
