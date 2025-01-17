@@ -7,7 +7,7 @@
 
 //---------------------------------------------------------------------------
 
-const Font *const Font::FONTS[] = {
+constexpr const Font *Font::FONTS[] = {
     &Font::DEFAULT,
     &Font::SMALL_DIGITS,
     &Font::MEDIUM_DIGITS,

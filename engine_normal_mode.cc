@@ -47,7 +47,7 @@ struct StenoEngine::UpdateNormalModeTextBufferThreadData {
 
 #endif
 
-const size_t MAX_EXTRA_STROKES = 4;
+constexpr size_t MAX_EXTRA_STROKES = 4;
 
 size_t StenoEngine::GetStartingStrokeForNormalModeProcessing() const {
   const size_t maximumConversionStrokes =
@@ -478,9 +478,7 @@ void StenoEngine::PrintPaperTape(StenoStroke stroke,
     return;
   }
 
-  char buffer[256];
-  stroke.ToString(buffer);
-  Console::Printf("EV {\"event\":\"paper_tape\",\"data\":\"%s\"", buffer);
+  Console::Printf("EV {\"event\":\"paper_tape\",\"data\":\"%t\"", &stroke);
 
   size_t undoCount = 0;
   const StenoSegment &segment = nextSegments.Back();

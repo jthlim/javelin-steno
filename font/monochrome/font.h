@@ -36,7 +36,7 @@ struct Font {
   static const Font LARGE_DIGITS;
 
   static const Font *const FONTS[];
-  static const size_t FONT_COUNT = 4;
+  static constexpr size_t FONT_COUNT = 4;
 
   static const Font *GetFont(size_t fontId) {
     return fontId < FONT_COUNT ? FONTS[fontId] : &DEFAULT;

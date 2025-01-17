@@ -24,7 +24,7 @@ struct StenoStrokeHistoryEntry {
 
 //---------------------------------------------------------------------------
 
-const size_t STENO_STROKE_HISTORY_SIZE = 256;
+constexpr size_t STENO_STROKE_HISTORY_SIZE = 256;
 class StenoStrokeHistory
     : public CyclicQueue<StenoStrokeHistoryEntry, STENO_STROKE_HISTORY_SIZE> {
 public:

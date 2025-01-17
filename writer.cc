@@ -1,4 +1,21 @@
 //---------------------------------------------------------------------------
+//
+// Format strings:
+// * %B     - bool
+// * %c     - char
+// * %C     - Unicode (uint32_t)
+// * %d, %i - int
+// * %D     - const void*, size_t count - Data in in base64
+// * %J     - char* in escaped JSON
+// * %p     - void*
+// * %s     - const char*
+// * %t     - StenoStroke*
+// * %T     - StenoStroke*, size_t count
+// * %u     - uint32_t
+// * %x     - Hex
+// * %X     - Upper case hex
+//
+//---------------------------------------------------------------------------
 
 #include "writer.h"
 #include "str.h"
@@ -8,8 +25,8 @@
 
 //---------------------------------------------------------------------------
 
-const int FLAG_FILL_ZERO = 1;
-const int FLAG_LENGTH_64_BIT = 2;
+constexpr int FLAG_FILL_ZERO = 1;
+constexpr int FLAG_LENGTH_64_BIT = 2;
 
 constexpr char BASE64_ALPHABET[] =
     "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";

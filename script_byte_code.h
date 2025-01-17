@@ -7,8 +7,8 @@
 
 //---------------------------------------------------------------------------
 
-const size_t SCRIPT_BYTE_CODE_VERSION = 4;
-const uint32_t SCRIPT_MAGIC = 0x3053534a + (SCRIPT_BYTE_CODE_VERSION << 24);
+constexpr size_t SCRIPT_BYTE_CODE_VERSION = 4;
+constexpr uint32_t SCRIPT_MAGIC = 0x3053534a + (SCRIPT_BYTE_CODE_VERSION << 24);
 
 //---------------------------------------------------------------------------
 

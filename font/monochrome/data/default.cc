@@ -1,6 +1,6 @@
 #include "../font.h"
 
-const uint8_t GLYPH_DATA[1201] = {
+constexpr uint8_t GLYPH_DATA[1201] = {
     0x03, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x03, 0x00, 0x00, 0xf8, 0x13,
     0x00, 0x00, 0x03, 0x38, 0x00, 0x00, 0x00, 0x38, 0x00, 0x08, 0x00, 0x02,
     0x20, 0x1e, 0xe0, 0x03, 0x38, 0x02, 0x20, 0x1e, 0xe0, 0x03, 0x38, 0x02,
@@ -104,7 +104,7 @@ const uint8_t GLYPH_DATA[1201] = {
     0x00,
 };
 
-const uint16_t DATA_OFFSETS[95] = {
+constexpr uint16_t DATA_OFFSETS[95] = {
     1,    8,    15,   22,   39,   54,   71,   88,   95,   102,  109,  124,
     135,  140,  149,  156,  163,  178,  187,  200,  213,  226,  241,  256,
     269,  284,  299,  306,  313,  326,  341,  354,  367,  394,  409,  424,
@@ -115,7 +115,7 @@ const uint16_t DATA_OFFSETS[95] = {
     1083, 1090, 1103, 1114, 1133, 1144, 1155, 1168, 1175, 1182, 1189,
 };
 
-const Font Font::DEFAULT = {
+constexpr Font Font::DEFAULT = {
     32,  // startUnicode
     127, // endUnicode
     0,   // characterWidth

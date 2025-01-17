@@ -15,7 +15,7 @@
 SplitVersion SplitVersion::instance;
 
 // TODO: January 2026 -- Deprecate timer logic.
-const int32_t VERSION_TIMER_ID =
+constexpr int32_t VERSION_TIMER_ID =
     -('S' * 0x1000000 + 'V' * 0x10000 + 'E' * 0x100 + 'R');
 
 //---------------------------------------------------------------------------
@@ -63,7 +63,7 @@ void SplitVersion::UpdateBuffer(TxBuffer &buffer) {
     return;
   }
 
-  const int version = VERSION;
+  constexpr int version = VERSION;
   if (buffer.Add(SplitHandlerId::VERSION, &version, sizeof(version))) {
     isDirty = false;
   }

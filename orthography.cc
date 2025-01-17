@@ -8,12 +8,11 @@
 #include "mem.h"
 #include "str.h"
 #include "unicode.h"
-#include "utf8_pointer.h"
 #include "word_list.h"
 
 //---------------------------------------------------------------------------
 
-const size_t MAXIMUM_CACHEABLE_WORD_LENGTH = 64;
+constexpr size_t MAXIMUM_CACHEABLE_WORD_LENGTH = 64;
 
 //---------------------------------------------------------------------------
 
@@ -324,7 +323,7 @@ void StenoCompiledOrthography::AddCandidates(BestCandidate &bestCandidate,
                                              const char *word,
                                              const char *suffix,
                                              int defaultScore) const {
-  const size_t MAXIMUM_PREFIX_LENGTH = 8;
+  constexpr size_t MAXIMUM_PREFIX_LENGTH = 8;
 
   const size_t wordLength = Str::Length(word);
   const size_t offset = wordLength > MAXIMUM_PREFIX_LENGTH

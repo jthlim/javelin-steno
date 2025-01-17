@@ -6,7 +6,7 @@
 
 //---------------------------------------------------------------------------
 
-const uint8_t INVALID_GEMINI_KEY = 0xff;
+constexpr uint8_t INVALID_GEMINI_KEY = 0xff;
 
 constexpr uint8_t GEMINI_LOOKUP[] = {
     14,                 // S1

@@ -122,19 +122,19 @@ static_assert(sizeof(StenoKeyCode) == 4);
 
 //---------------------------------------------------------------------------
 
-const uint32_t MODIFIER_MASK = 0xff00;
-const uint32_t MODIFIER_BIT_SHIFT = 8;
+constexpr uint32_t MODIFIER_MASK = 0xff00;
+constexpr uint32_t MODIFIER_BIT_SHIFT = 8;
 
-const uint32_t MODIFIER_L_CTRL_FLAG = 0x100;
-const uint32_t MODIFIER_L_SHIFT_FLAG = 0x200;
-const uint32_t MODIFIER_L_ALT_FLAG = 0x400;
-const uint32_t MODIFIER_L_SUPER_FLAG = 0x800;
-const uint32_t MODIFIER_R_CTRL_FLAG = 0x1000;
-const uint32_t MODIFIER_R_SHIFT_FLAG = 0x2000;
-const uint32_t MODIFIER_R_ALT_FLAG = 0x4000;
-const uint32_t MODIFIER_R_SUPER_FLAG = 0x8000;
+constexpr uint32_t MODIFIER_L_CTRL_FLAG = 0x100;
+constexpr uint32_t MODIFIER_L_SHIFT_FLAG = 0x200;
+constexpr uint32_t MODIFIER_L_ALT_FLAG = 0x400;
+constexpr uint32_t MODIFIER_L_SUPER_FLAG = 0x800;
+constexpr uint32_t MODIFIER_R_CTRL_FLAG = 0x1000;
+constexpr uint32_t MODIFIER_R_SHIFT_FLAG = 0x2000;
+constexpr uint32_t MODIFIER_R_ALT_FLAG = 0x4000;
+constexpr uint32_t MODIFIER_R_SUPER_FLAG = 0x8000;
 
-const uint32_t MODIFIER_SHIFT_FLAG =
+constexpr uint32_t MODIFIER_SHIFT_FLAG =
     MODIFIER_L_SHIFT_FLAG | MODIFIER_R_SHIFT_FLAG;
 
 //---------------------------------------------------------------------------
