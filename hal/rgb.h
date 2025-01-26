@@ -20,6 +20,8 @@ public:
   // v = value,      0-255   represents 0.0 - 1.0
   static void SetHsv(size_t id, int h, int s, int v);
 
+  static void ConvertHsvToRgb(int &r, int &g, int &b, int h, int s, int v);
+
   static void SetRgbBase64(size_t start, const uint8_t *p);
   static size_t GetCount();
 

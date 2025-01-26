@@ -2,7 +2,7 @@
 
 #include "console.h"
 #include "bit_field.h"
-#include "mem.h"
+#include "button_script_manager.h"
 #include "str.h"
 #include "unicode.h"
 #include <assert.h>
@@ -236,6 +236,13 @@ void Console::ProcessChannelCommand(Channel &channel) {
 
   if (channel.id >= 0) {
     Printf("c%02d ", channel.id);
+  }
+
+  if (isLocked) {
+    Printf("ERR Console access is disabled\n\n");
+    ButtonScriptManager::ExecuteScript(
+        ButtonScriptId::CONSOLE_ACCESS_REQUESTED);
+    return;
   }
 
   if (channel.isTooLong) {

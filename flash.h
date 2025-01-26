@@ -36,6 +36,10 @@ public:
 
   bool IsScriptMemory(const void *start, const void *end);
 
+  static bool IsWriteEnabled() { return !instance.isLocked; }
+  static void EnableWrite() { instance.isLocked = false; }
+  static void DisableWrite() { instance.isLocked = true; }
+
 private:
   static bool RequiresErase(const void *target, size_t size);
   static bool RequiresErase(const void *target, const void *data, size_t size);
@@ -52,6 +56,7 @@ private:
 
   static constexpr size_t WRITE_DATA_BUFFER_SIZE = BLOCK_SIZE;
 
+  bool isLocked = false;
   size_t erasedBytes;
   size_t programmedBytes;
   size_t reprogrammedBytes;

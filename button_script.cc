@@ -7,6 +7,7 @@
 #include "button_script_manager.h"
 #include "console.h"
 #include "engine.h"
+#include "flash.h"
 #include "hal/ble.h"
 #include "hal/connection.h"
 #include "hal/display.h"
@@ -766,6 +767,38 @@ public:
     const int32_t delta = (int32_t)script.Pop();
     Mouse::HWheel(delta);
   }
+
+  static void EnableConsole(ButtonScript &script) { Console::Enable(); }
+  static void DisableConsole(ButtonScript &script) { Console::Disable(); }
+  static void IsConsoleEnabled(ButtonScript &script) {
+    script.Push(Console::IsEnabled());
+  }
+
+  static void EnableFlashWrite(ButtonScript &script) { Flash::EnableWrite(); }
+  static void DisableFlashWrite(ButtonScript &script) { Flash::DisableWrite(); }
+  static void IsFlashWriteEnabled(ButtonScript &script) {
+    script.Push(Flash::IsWriteEnabled());
+  }
+
+  static void IsInReinit(ButtonScript &script) {
+    script.Push(script.isInReinit);
+  }
+
+  static void SetDrawColorRgb(ButtonScript &script) {
+    const int r = (int)script.Pop();
+    const int g = (int)script.Pop();
+    const int b = (int)script.Pop();
+    const int displayId = (int)script.Pop();
+    Display::SetDrawColorRgb(displayId, r, g, b);
+  }
+
+  static void SetDrawColorHsv(ButtonScript &script) {
+    const int v = (int)script.Pop();
+    const int s = (int)script.Pop();
+    const int h = (int)script.Pop();
+    const int displayId = (int)script.Pop();
+    Display::SetDrawColorHsv(displayId, h, s, v);
+  }
 };
 
 constexpr void (*ButtonScript::FUNCTION_TABLE[])(ButtonScript &) = {
@@ -860,6 +893,15 @@ constexpr void (*ButtonScript::FUNCTION_TABLE[])(ButtonScript &) = {
     &Function::GetWpm,
     &Function::SetPairBoardPower,
     &Function::HWheelMouse,
+    &Function::EnableConsole,
+    &Function::DisableConsole,
+    &Function::IsConsoleEnabled,
+    &Function::EnableFlashWrite,
+    &Function::DisableFlashWrite,
+    &Function::IsFlashWriteEnabled,
+    &Function::IsInReinit,
+    &Function::SetDrawColorRgb,
+    &Function::SetDrawColorHsv,
 };
 
 void ButtonScript::PrintEventHistory() {

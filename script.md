@@ -819,6 +819,20 @@ These methods are only available on chips with secure storage.
   - Responds whether a user is present or not.
   - `replyUserPresence(1);` is the equivalent of touching other security keys.
 
+## Security Functions
+
+- `func enableConsole()`
+- `func disableConsole()`
+- `func isConsoleEnabled() var`
+
+  - These functions enable and disable external tools access to the keyboard.
+
+- `func enableFlashWrite()`
+- `func disableFlashWrite()`
+- `func isFlashWriteEnabled() var`
+
+  - These functions enable and disable updating flash on the keyboard.
+
 ## Miscellaneous Functions
 
 - `func rand() var`
@@ -907,9 +921,15 @@ These methods are only available on chips with secure storage.
 
 - `func getWpm(<windowDurationInSeconds>) var`
 
-  - Returns the average wpm in the time window.
+  - Returns the weighted wpm in the time window.
+
+- `func isInReinit() var`
+
+  - Returns whether the script is reinitializing after a script upload.
+  - This can be used to avoid disabling console and flash write access.
 
 - `func setInputHint(<hint>)` [deprecated]
+
   - This function is deprecated and no longer has any implementation.
 
 # Visual Editor Script Templates

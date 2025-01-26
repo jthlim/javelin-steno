@@ -55,10 +55,6 @@ public:
   }
   void ClearErrorDictionary() { activeDictionary = storedDictionaries; }
 
-  bool IsPaperTapeEnabled() const { return paperTapeEnabled; }
-  void EnablePaperTape() { paperTapeEnabled = true; }
-  void DisablePaperTape() { paperTapeEnabled = false; }
-
   bool IsSuggestionsEnabled() const { return suggestionsEnabled; }
   void EnableSuggestions() { suggestionsEnabled = true; }
   void DisableSuggestions() { suggestionsEnabled = false; }
@@ -93,7 +89,6 @@ private:
   static const StenoStroke UNDO_STROKE;
   static constexpr size_t PAPER_TAPE_SUGGESTION_SEGMENT_LIMIT = 8;
 
-  bool paperTapeEnabled = false;
   bool suggestionsEnabled = false;
   bool templateValueUpdateEnabled = false;
   bool textLogEnabled = false;
@@ -212,8 +207,6 @@ private:
   static void DisableDictionary_Binding(void *context, const char *commandLine);
   static void ToggleDictionary_Binding(void *context, const char *commandLine);
   static void PrintDictionary_Binding(void *context, const char *commandLine);
-  static void EnablePaperTape_Binding(void *context, const char *commandLine);
-  static void DisablePaperTape_Binding(void *context, const char *commandLine);
   static void EnableSuggestions_Binding(void *context, const char *commandLine);
   static void DisableSuggestions_Binding(void *context,
                                          const char *commandLine);

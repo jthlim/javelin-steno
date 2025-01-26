@@ -124,20 +124,6 @@ void StenoEngine::PrintDictionary_Binding(void *context,
   engine->PrintDictionary(dictionary);
 }
 
-void StenoEngine::EnablePaperTape_Binding(void *context,
-                                          const char *commandLine) {
-  StenoEngine *engine = (StenoEngine *)context;
-  engine->EnablePaperTape();
-  Console::SendOk();
-}
-
-void StenoEngine::DisablePaperTape_Binding(void *context,
-                                           const char *commandLine) {
-  StenoEngine *engine = (StenoEngine *)context;
-  engine->DisablePaperTape();
-  Console::SendOk();
-}
-
 void StenoEngine::EnableSuggestions_Binding(void *context,
                                             const char *commandLine) {
   StenoEngine *engine = (StenoEngine *)context;
@@ -401,10 +387,6 @@ void StenoEngine::AddConsoleCommands(Console &console) {
   console.RegisterCommand(
       "disable_dictionary_status", "Disable sending dictionary status updates",
       StenoDictionaryList::DisableDictionaryStatus_Binding, nullptr);
-  console.RegisterCommand("enable_paper_tape", "Enables paper tape output",
-                          StenoEngine::EnablePaperTape_Binding, this);
-  console.RegisterCommand("disable_paper_tape", "Disables paper tape output",
-                          StenoEngine::DisablePaperTape_Binding, this);
   console.RegisterCommand("enable_suggestions", "Enables suggestions output",
                           StenoEngine::EnableSuggestions_Binding, this);
   console.RegisterCommand("disable_suggestions", "Disables suggestions output",

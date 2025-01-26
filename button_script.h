@@ -34,6 +34,9 @@ enum class ButtonScriptId : int {
   USER7,
   USER8,
 
+  CONSOLE_ACCESS_REQUESTED,
+  FLASH_WRITE_ACCESS_REQUESTED,
+
   COUNT,
 };
 
@@ -83,6 +86,7 @@ public:
   void PrintEventHistory();
 
   void Reset();
+  void SetReinit(bool value) { isInReinit = value; }
 
   class TestHelper;
 
@@ -95,6 +99,7 @@ private:
   static void (*const FUNCTION_TABLE[])(ButtonScript &);
 
   bool scriptEventsEnabled = false;
+  bool isInReinit = false;
   uint8_t inPressAllCount = 0;
   uint8_t inReleaseAllCount = 0;
   uint32_t pressCount = 0;

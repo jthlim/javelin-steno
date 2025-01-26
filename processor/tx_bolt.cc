@@ -79,6 +79,7 @@ void StenoTxBoltPacket::Set(const StenoStroke &stroke) {
 //---------------------------------------------------------------------------
 
 void StenoTxBolt::Process(const StenoKeyState &value, StenoAction action) {
+  next->Process(value, action);
   if (action != StenoAction::TRIGGER) {
     return;
   }

@@ -1,6 +1,6 @@
 //---------------------------------------------------------------------------
 
-#include "processor.h"
+#include "passthrough.h"
 
 //---------------------------------------------------------------------------
 
@@ -12,8 +12,10 @@ struct StenoPloverHidPacket {
 
 //---------------------------------------------------------------------------
 
-class StenoPloverHid final : public StenoProcessorElement {
+class StenoPloverHid final : public StenoPassthrough {
 public:
+  StenoPloverHid(StenoProcessorElement *next) : StenoPassthrough(next) {}
+
   void Process(const StenoKeyState &value, StenoAction action);
   void PrintInfo() const;
 

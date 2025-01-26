@@ -103,6 +103,7 @@ StenoGeminiPacket::StenoGeminiPacket(const StenoKeyState &state)
 //---------------------------------------------------------------------------
 
 void StenoGemini::Process(const StenoKeyState &value, StenoAction action) {
+  next->Process(value, action);
   if (action != StenoAction::TRIGGER) {
     return;
   }

@@ -1,11 +1,13 @@
 //---------------------------------------------------------------------------
 
-#include "processor.h"
+#include "passthrough.h"
 
 //---------------------------------------------------------------------------
 
-class StenoGemini final : public StenoProcessorElement {
+class StenoGemini final : public StenoPassthrough {
 public:
+  StenoGemini(StenoProcessorElement *next) : StenoPassthrough(next) {}
+
   void Process(const StenoKeyState &value, StenoAction action);
   void PrintInfo() const;
 

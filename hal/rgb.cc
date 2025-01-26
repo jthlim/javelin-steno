@@ -52,6 +52,12 @@ void Rgb::SetRgbBase64(size_t startRgbId, const uint8_t *p) {
 }
 
 void Rgb::SetHsv(size_t id, int h, int s, int v) {
+  int r, g, b;
+  ConvertHsvToRgb(r, g, b, h, s, v);
+  SetRgb(id, r, g, b);
+}
+
+void Rgb::ConvertHsvToRgb(int &r, int &g, int &b, int h, int s, int v) {
   h = 6 * (h & 0xffff);
 
   int C = v * s >> 8;
@@ -70,9 +76,9 @@ void Rgb::SetHsv(size_t id, int h, int s, int v) {
     m = v - C;
   }
 
-  int r = 0;
-  int g = 0;
-  int b = 0;
+  r = 0;
+  g = 0;
+  b = 0;
 
   switch (h >> 17) {
   case 0:
@@ -91,7 +97,9 @@ void Rgb::SetHsv(size_t id, int h, int s, int v) {
     __builtin_unreachable();
   }
 
-  SetRgb(id, r + m, g + m, b + m);
+  r += m;
+  g += m;
+  b += m;
 }
 
 [[gnu::weak]] void Rgb::SetRgb(size_t id, int r, int g, int b) {}

@@ -95,6 +95,7 @@ StenoPloverHidPacket::StenoPloverHidPacket(const StenoKeyState &state)
 //---------------------------------------------------------------------------
 
 void StenoPloverHid::Process(const StenoKeyState &value, StenoAction action) {
+  next->Process(value, action);
   switch (action) {
   case StenoAction::CANCEL_KEY:
   case StenoAction::CANCEL_ALL:

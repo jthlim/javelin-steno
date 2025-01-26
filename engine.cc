@@ -11,6 +11,7 @@
 #include "hal/external_flash.h"
 #include "host_layout.h"
 #include "orthography.h"
+#include "processor/paper_tape.h"
 #include "segment.h"
 #include "steno_key_code_buffer.h"
 #include "str.h"
@@ -406,7 +407,7 @@ TEST_BEGIN("Engine: Random spam") {
       StenoOrthography::emptyOrthography);
   // StenoCompiledOrthography orthography(testOrthography);
   StenoEngine engine(dictionaryList, orthography);
-  engine.EnablePaperTape();
+  PaperTape::EnablePaperTape();
   engine.EnableTextLog();
   engine.EnableSuggestions();
 
@@ -419,6 +420,7 @@ TEST_BEGIN("Engine: Random spam") {
   }
 
   Key::EnableHistory();
+  PaperTape::DisablePaperTape();
 }
 TEST_END
 

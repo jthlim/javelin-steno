@@ -30,6 +30,8 @@ public:
   static void DrawRect(int displayId, int left, int top, int right, int bottom);
 
   static void SetDrawColor(int displayId, int color);
+  static void SetDrawColorRgb(int displayId, int r, int g, int b);
+  static void SetDrawColorHsv(int displayId, int h, int s, int v);
 };
 
 //---------------------------------------------------------------------------

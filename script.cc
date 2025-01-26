@@ -83,30 +83,13 @@ public:
   intptr_t *GetStackTop() const { return p; }
   void SetStackTop(intptr_t *stackTop) { p = stackTop; }
 
-  intptr_t Pop() {
-#if JAVELIN_CPU_CORTEX_M4
-    intptr_t r;
-    asm("ldr %0, [%1, #-4]!" : "=l"(r), "+l"(p));
-    return r;
-#else
-    return *--p;
-#endif
-  }
-  void Push(intptr_t v) {
-#if JAVELIN_CPU_CORTEX_M4
-    asm("stmia %0!, {%1}" : "+l"(p) : "l"(v));
-#else
-    *p++ = v;
-#endif
-  }
+  intptr_t Pop() { return *--p; }
+  void Push(intptr_t v) { *p++ = v; }
 
   void UnaryOp(intptr_t (*op)(intptr_t)) { Push(op(Pop())); }
 
   template <typename T> void TwoParam(T op) {
-#if JAVELIN_CPU_CORTEX_M4
-    intptr_t a, b;
-    asm("ldrd %0, %1, [%r2, #-8]!" : "=l"(a), "=l"(b), "+l"(p));
-#elif JAVELIN_CPU_CORTEX_M0
+#if JAVELIN_CPU_CORTEX_M0
     intptr_t a, b;
     asm("sub %2, #8\n\t"
         "ldr %0, [%2]\n\t"
@@ -120,10 +103,7 @@ public:
   }
 
   template <typename T> void BinaryOp(T op) {
-#if JAVELIN_CPU_CORTEX_M4
-    intptr_t a, b;
-    asm("ldrd %0, %1, [%r2, #-8]!" : "=l"(a), "=l"(b), "+l"(p));
-#elif JAVELIN_CPU_CORTEX_M0
+#if JAVELIN_CPU_CORTEX_M0
     intptr_t a, b;
     asm("sub %2, #8\n\t"
         "ldr %0, [%2]\n\t"
@@ -150,55 +130,30 @@ public:
   uint32_t GetU16() const { return p[0] + (p[1] << 8); }
 
   uint32_t ReadU16() {
-#if JAVELIN_CPU_CORTEX_M4
-    uint32_t r;
-    asm("ldrh %0, [%1], #2" : "=l"(r), "+l"(p));
-    return r;
-#else
     const uint32_t v = p[0] + (p[1] << 8);
     p += 2;
     return v;
-#endif
   }
 
   int32_t ReadS16() {
-#if JAVELIN_CPU_CORTEX_M4
-    int32_t r;
-    asm("ldrsh %0, [%1], #2" : "=l"(r), "+l"(p));
-    return r;
-#else
     int32_t value = p[0] + (p[1] << 8);
     p += 2;
     value <<= 16;
     value >>= 16;
     return value;
-#endif
   }
 
   int32_t ReadS24() {
-#if JAVELIN_CPU_CORTEX_M4
-    int32_t r;
-    asm("ldr %0, [%1], #3\n\t"
-        "sbfx %0, %0, #0, #24\n\t"
-        : "=l"(r), "+l"(p));
-    return r;
-#else
     int32_t value = p[0] + (p[1] << 8) + (p[2] << 16);
     p += 3;
     value <<= 8;
     value >>= 8;
     return value;
-#endif
   }
 
   int32_t ReadS32() {
-#if JAVELIN_CPU_CORTEX_M4
-    int32_t v;
-    asm("ldr %0, [%1], #4" : "=l"(v), "+l"(p));
-#else
     const int32_t v = p[0] + (p[1] << 8) + (p[2] << 16) + (p[3] << 24);
     p += 4;
-#endif
     return v;
   }
 
@@ -223,20 +178,10 @@ private:
   void (*const *const functionTable)(Script &) = this->functionTable;
   ProgramCounter p = byteCode + offset;
 
-#define CONTINUE goto next1;
+#define CONTINUE goto next;
 
-next1:
+next:
   uint32_t c = p.ReadU8();
-
-#if JAVELIN_CPU_CORTEX_M4
-next2:
-// This is the same effect as CONTINUE, but generates better code for M4.
-#define CONTINUE2                                                              \
-  c = p.ReadU8();                                                              \
-  goto next2;
-#else
-#define CONTINUE2 goto next1;
-#endif
 
   switch (c) {
   case BC::PUSH_CONSTANT_START... BC::PUSH_CONSTANT_END:
@@ -244,16 +189,9 @@ next2:
     CONTINUE;
   case BC::PUSH_BYTES_1U: {
     int value = p.ReadU8();
-#if JAVELIN_CPU_CORTEX_M4
-    asm volatile("cmp %0, #0x3c\n\t"
-                 "it lt\n\t"
-                 "sublt %0, #0x3c\n\t"
-                 : "+l"(value));
-#else
     if (value < 0x3c) {
       value -= 0x3c;
     }
-#endif
     stack.Push(value);
     CONTINUE;
   }
@@ -335,7 +273,7 @@ next2:
     CONTINUE;
   case BC::OPERATOR_START + (int)OP::QUOTIENT:
     stack.BinaryOp([](intptr_t a, intptr_t b) { return a / b; });
-    CONTINUE2;
+    CONTINUE;
   case BC::OPERATOR_START + (int)OP::REMAINDER:
     stack.BinaryOp([](intptr_t a, intptr_t b) { return a % b; });
     CONTINUE;

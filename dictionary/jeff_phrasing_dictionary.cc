@@ -516,11 +516,6 @@ void StenoJeffPhrasingDictionary::ProcessEntries(
 }
 
 inline bool IsValidPhraseCharacter(int c) {
-  //  return ('a' <= c && c < 'q')
-  //         || ('q' < c && c <= 'z')
-  //         || c == 'I'
-  //         || c == '\''
-  //         || c == ' ';
   return (VALID_CHARACTERS[c / 8] & (1 << c % 8)) != 0;
 }
 

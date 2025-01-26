@@ -33,6 +33,7 @@ StenoProcatPacket::StenoProcatPacket(const StenoKeyState &state)
 //---------------------------------------------------------------------------
 
 void StenoProcat::Process(const StenoKeyState &value, StenoAction action) {
+  next->Process(value, action);
   if (action != StenoAction::TRIGGER) {
     return;
   }

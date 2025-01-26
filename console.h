@@ -96,6 +96,10 @@ public:
   }
   static void Flush();
 
+  static bool IsEnabled() { return !instance.isLocked; }
+  static void Enable() { instance.isLocked = false; }
+  static void Disable() { instance.isLocked = true; }
+
 #if RUN_TESTS
   static std::vector<char> history;
 #endif
@@ -134,6 +138,8 @@ private:
 
     StaticList<uint8_t, 16> history;
   };
+
+  bool isLocked = false;
 
   static constexpr size_t CHANNEL_COUNT = 4;
   StaticList<Channel *, CHANNEL_COUNT> freeBuffers;

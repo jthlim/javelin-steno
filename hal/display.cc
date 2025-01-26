@@ -1,6 +1,7 @@
 //---------------------------------------------------------------------------
 
 #include "display.h"
+#include "rgb.h"
 
 //---------------------------------------------------------------------------
 
@@ -25,5 +26,15 @@
 [[gnu::weak]] void Display::DrawRect(int displayId, int left, int top,
                                      int right, int bottom) {}
 [[gnu::weak]] void Display::SetDrawColor(int displayId, int color) {}
+[[gnu::weak]] void Display::SetDrawColorRgb(int displayId, int r, int g,
+                                            int b) {
+  SetDrawColor(displayId, (r << 16) | (g << 8) | b);
+}
+[[gnu::weak]] void Display::SetDrawColorHsv(int displayId, int h, int s,
+                                            int v) {
+  int r, g, b;
+  Rgb::ConvertHsvToRgb(r, g, b, h, s, v);
+  SetDrawColorRgb(displayId, r, g, b);
+}
 
 //---------------------------------------------------------------------------

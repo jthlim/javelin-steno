@@ -4,6 +4,7 @@
 #include "console.h"
 #include "engine.h"
 #include "key.h"
+#include "processor/paper_tape.h"
 #include "segment.h"
 #include "state.h"
 #include "str.h"
@@ -462,7 +463,7 @@ void StenoEngine::ConvertText(StenoKeyCodeBuffer &keyCodeBuffer,
 //---------------------------------------------------------------------------
 
 void StenoEngine::PrintPaperTapeUndo(size_t undoCount) const {
-  if (!IsPaperTapeEnabled()) {
+  if (!PaperTape::IsPaperTapeEnabled()) {
     return;
   }
 
@@ -474,7 +475,7 @@ void StenoEngine::PrintPaperTapeUndo(size_t undoCount) const {
 void StenoEngine::PrintPaperTape(StenoStroke stroke,
                                  const StenoSegmentList &previousSegments,
                                  const StenoSegmentList &nextSegments) const {
-  if (!IsPaperTapeEnabled()) {
+  if (!PaperTape::IsPaperTapeEnabled()) {
     return;
   }
 

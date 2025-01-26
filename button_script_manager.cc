@@ -156,7 +156,9 @@ void ButtonScriptManager::Reset() {
 
   isScriptValid = script.IsValid();
   if (isScriptValid) {
+    script.SetReinit(true);
     script.ExecuteInitScript(Clock::GetMilliseconds());
+    script.SetReinit(false);
   }
 }
 

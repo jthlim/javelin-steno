@@ -118,9 +118,6 @@ void Flash::WriteRemaining() {
     Flash::WriteBlock(writeAddress, buffer, WRITE_DATA_BUFFER_SIZE);
   }
 
-  if (IsScriptMemory(writeStart, target)) {
-    ButtonScriptManager::GetInstance().Reset();
-  }
   target = nullptr;
 }
 
@@ -145,6 +142,13 @@ void Flash::BeginWriteBinding(void *context, const char *commandLine) {
   const char *p = strchr(commandLine, ' ');
   if (!p) {
     Console::Printf("ERR Missing address\n\n");
+    return;
+  }
+
+  if (instance.isLocked) {
+    Console::Printf("ERR Write access is disabled\n\n");
+    ButtonScriptManager::ExecuteScript(
+        ButtonScriptId::FLASH_WRITE_ACCESS_REQUESTED);
     return;
   }
 
@@ -175,6 +179,11 @@ void Flash::WriteBinding(void *context, const char *commandLine) {
     return;
   }
 
+  if (instance.target == nullptr) {
+    Console::Printf("ERR No write in progress\n\n");
+    return;
+  }
+
   uint8_t decodeBuffer[256];
   const size_t byteCount = Base64::Decode(decodeBuffer, (const uint8_t *)p);
 
@@ -189,8 +198,20 @@ void Flash::WriteBinding(void *context, const char *commandLine) {
 }
 
 void Flash::EndWriteBinding(void *context, const char *commandLine) {
+  if (instance.target == nullptr) {
+    Console::Printf("ERR No write in progress\n\n");
+    return;
+  }
+
+  const bool isScriptMemory =
+      instance.IsScriptMemory(instance.writeStart, instance.target);
+
   instance.WriteRemaining();
   Console::SendOk();
+
+  if (isScriptMemory) {
+    ButtonScriptManager::GetInstance().Reset();
+  }
 }
 
 void Flash::AddConsoleCommands(Console &console) {
