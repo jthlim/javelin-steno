@@ -15,6 +15,7 @@
 
 #define ENABLE_PROFILE 0
 #define ENABLE_PROFILE_SUGGESTIONS 0
+#define DEBUG_SEGMENTS 0
 
 #if ENABLE_PROFILE || ENABLE_PROFILE_SUGGESTIONS
 #include "arm/systick.h"
@@ -170,8 +171,9 @@ void StenoEngine::ProcessNormalModeStroke(StenoStroke stroke) {
 
   // Update definition boundaries after evaluating previous segments so that
   // they are evaluated with the right lookup type.
-  history.UpdateDefinitionBoundaries(history.GetCount() - conversionCount,
-                                     nextSegments);
+  history.UpdateDefinitionBoundaries(
+      history.GetCount() - conversionCount, nextSegments,
+      nextConversionBuffer.segmentBuilder.GetStrokes(0));
 
 #if ENABLE_PROFILE
   const uint32_t t2 = sysTick->ReadCycleCount();
@@ -182,6 +184,40 @@ void StenoEngine::ProcessNormalModeStroke(StenoStroke stroke) {
   if (startingOffset > 0 && placeSpaceAfter) {
     --startingOffset;
   }
+
+#if DEBUG_SEGMENTS
+  Console::Printf(
+      "Previous segments:%s\n",
+      previousConversionBuffer.segmentBuilder.HasModifiedStrokeHistory()
+          ? " (modified stroke history)"
+          : "");
+  for (size_t i = 0; i < previousSegments.GetCount(); ++i) {
+    const StenoSegment &segment = previousSegments[i];
+    const size_t strokeIndex = segment.GetStrokeIndex(
+        previousConversionBuffer.segmentBuilder.GetStatePointer(0));
+    const StenoStroke *strokes =
+        previousConversionBuffer.segmentBuilder.GetStrokes(strokeIndex);
+    Console::Printf(" %s%zu (%s): %T | %J\n", i >= startingOffset ? "*" : "", i,
+                    segment.state->GetLookupTypeName(), strokes,
+                    segment.strokeLength, segment.lookup.GetText());
+  }
+
+  Console::Printf("Next segments:%s\n",
+                  nextConversionBuffer.segmentBuilder.HasModifiedStrokeHistory()
+                      ? " (modified stroke history)"
+                      : "");
+  for (size_t i = 0; i < nextSegments.GetCount(); ++i) {
+    const StenoSegment &segment = nextSegments[i];
+    const size_t strokeIndex = segment.GetStrokeIndex(
+        nextConversionBuffer.segmentBuilder.GetStatePointer(0));
+    const StenoStroke *strokes =
+        nextConversionBuffer.segmentBuilder.GetStrokes(strokeIndex);
+    Console::Printf(" %s%zu (%s): %T | %J\n", i >= startingOffset ? "*" : "", i,
+                    segment.state->GetLookupTypeName(), strokes,
+                    segment.strokeLength, segment.lookup.GetText());
+  }
+  Console::Printf("\n");
+#endif
 
 #if ENABLE_PROFILE
   const uint32_t t3 = sysTick->ReadCycleCount();
@@ -346,14 +382,49 @@ void StenoEngine::ProcessNormalModeUndo() {
   const uint32_t t2 = sysTick->ReadCycleCount();
 #endif
 
-  history.UpdateDefinitionBoundaries(history.GetCount() - nextConversionCount,
-                                     nextSegments);
+  history.UpdateDefinitionBoundaries(
+      history.GetCount() - nextConversionCount, nextSegments,
+      nextConversionBuffer.segmentBuilder.GetStrokes(0));
 
   size_t startingOffset = StenoSegmentList::GetCommonStartingSegmentsCount(
       previousSegments, nextSegments);
   if (startingOffset > 0 && placeSpaceAfter) {
     --startingOffset;
   }
+
+#if DEBUG_SEGMENTS
+  Console::Printf(
+      "Previous segments:%s\n",
+      previousConversionBuffer.segmentBuilder.HasModifiedStrokeHistory()
+          ? " (modified stroke history)"
+          : "");
+  for (size_t i = 0; i < previousSegments.GetCount(); ++i) {
+    const StenoSegment &segment = previousSegments[i];
+    const size_t strokeIndex = segment.GetStrokeIndex(
+        previousConversionBuffer.segmentBuilder.GetStatePointer(0));
+    const StenoStroke *strokes =
+        previousConversionBuffer.segmentBuilder.GetStrokes(strokeIndex);
+    Console::Printf(" %s%zu (%s): %T | %J\n", i >= startingOffset ? "*" : "", i,
+                    segment.state->GetLookupTypeName(), strokes,
+                    segment.strokeLength, segment.lookup.GetText());
+  }
+
+  Console::Printf("Next segments:%s\n",
+                  nextConversionBuffer.segmentBuilder.HasModifiedStrokeHistory()
+                      ? " (modified stroke history)"
+                      : "");
+  for (size_t i = 0; i < nextSegments.GetCount(); ++i) {
+    const StenoSegment &segment = nextSegments[i];
+    const size_t strokeIndex = segment.GetStrokeIndex(
+        nextConversionBuffer.segmentBuilder.GetStatePointer(0));
+    const StenoStroke *strokes =
+        nextConversionBuffer.segmentBuilder.GetStrokes(strokeIndex);
+    Console::Printf(" %s%zu (%s): %T | %J\n", i >= startingOffset ? "*" : "", i,
+                    segment.state->GetLookupTypeName(), strokes,
+                    segment.strokeLength, segment.lookup.GetText());
+  }
+  Console::Printf("\n");
+#endif
 
 #if ENABLE_PROFILE
   const uint32_t t3 = sysTick->ReadCycleCount();

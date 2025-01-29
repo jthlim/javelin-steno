@@ -573,10 +573,13 @@ the button index, then underglow lights after.
     const TEXT_ALIGNMENT_MIDDLE = 1;
     const TEXT_ALIGNMENT_RIGHT = 2;
 
-    const FONT_ID_DEFAULT = 0;
-    const FONT_ID_SMALL_DIGITS = 1;
-    const FONT_ID_MEDIUM_DIGITS = 2;
-    const FONT_ID_LARGE_DIGITS = 3;
+    const FONT_ID_NORMAL = 0;
+    const FONT_ID_LARGE = 1;
+    const FONT_ID_DOS = 2;
+    const FONT_ID_SMALL_DIGITS = 3;
+    const FONT_ID_MEDIUM_DIGITS = 4;
+    const FONT_ID_LARGE_DIGITS = 5;
+    const FONT_ID_HUGE_DIGITS = 6;
     ```
 
 - `func drawRect(<displayId>, <left>, <top>, <right>, <bottom>)`

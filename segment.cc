@@ -11,6 +11,54 @@ bool StenoSegment::ContainsKeyCode() const {
 
 bool StenoSegment::HasCommand() const { return strchr(lookup.GetText(), '{'); }
 
+bool StenoSegment::IsPunctuationCommand() const {
+  const char *text = lookup.GetText();
+  if (text[0] != '{' || text[2] != '}' || text[3] != '\0') {
+    return false;
+  }
+  switch (text[1]) {
+  case '.':
+  case '?':
+  case '!':
+  case ',':
+  case ':':
+  case ';':
+    return true;
+  default:
+    return false;
+  }
+}
+
+bool StenoSegment::IsPrefixCommand() const {
+  const char *text = lookup.GetText();
+  return text[0] == '{' && text[1] == '^';
+}
+
+bool StenoSegment::IsSuffixCommand() const {
+  const char *text = lookup.GetText();
+  if (text[0] != '{') {
+    return false;
+  }
+  const size_t length = Str::Length(text);
+  return text[length - 2] == '^' && text[length - 1] == '}';
+}
+
+SegmentHistoryRequirements::Value StenoSegment::GetHistoryRequirements() const {
+  if (!HasCommand()) {
+    return SegmentHistoryRequirements::NONE;
+  }
+  if (IsPrefixCommand()) {
+    return SegmentHistoryRequirements::FIRST_NON_COMMAND;
+  }
+  if (IsPunctuationCommand()) {
+    return SegmentHistoryRequirements::NONE;
+  }
+  if (IsSuffixCommand()) {
+    return SegmentHistoryRequirements::NONE;
+  }
+  return SegmentHistoryRequirements::ALL;
+}
+
 //---------------------------------------------------------------------------
 
 StenoSegmentList::~StenoSegmentList() {
@@ -36,18 +84,43 @@ StenoSegmentList::GetCommonStartingSegmentsCount(const List<StenoSegment> &a,
     }
   }
 
-  // For suffixes to work, check if the next segment has a command in it.
+  // For commands to work, check if the next segment has a command in it.
+  // Handle common cases of punctuation, suffixes and prefixes.
+  SegmentHistoryRequirements::Value requirements =
+      SegmentHistoryRequirements::NONE;
+
   if (commonPrefixCount < a.GetCount()) {
-    if (a[commonPrefixCount].HasCommand()) {
+    const SegmentHistoryRequirements::Value aRequirements =
+        a[commonPrefixCount].GetHistoryRequirements();
+    if (aRequirements == SegmentHistoryRequirements::ALL) {
       return 0;
+    }
+    if (aRequirements > requirements) {
+      requirements = aRequirements;
     }
   }
   if (commonPrefixCount < b.GetCount()) {
-    if (b[commonPrefixCount].HasCommand()) {
-      return 0;
+    const SegmentHistoryRequirements::Value bRequirements =
+        b[commonPrefixCount].GetHistoryRequirements();
+    if (bRequirements > requirements) {
+      requirements = bRequirements;
     }
   }
 
+  switch (requirements) {
+  case SegmentHistoryRequirements::ALL:
+    return 0;
+  case SegmentHistoryRequirements::NONE:
+    return commonPrefixCount;
+  case SegmentHistoryRequirements::FIRST_NON_COMMAND:
+    while (commonPrefixCount > 0) {
+      --commonPrefixCount;
+      if (!a[commonPrefixCount].HasCommand()) {
+        break;
+      }
+    }
+    break;
+  }
   return commonPrefixCount;
 }
 

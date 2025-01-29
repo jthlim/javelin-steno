@@ -30,9 +30,22 @@ constexpr StenoCaseMode StenoState::NEXT_LETTER_CASE_MODE[] = {
 //---------------------------------------------------------------------------
 
 StenoState::SpaceBuffer StenoState::SpaceBuffer::instance = {
-    .count = 1,
-    .data = {' '},
+    .data = {" "},
 };
+
+size_t StenoState::SpaceBuffer::GetOrCreateIndex(const char *space) {
+  for (size_t i = 0; i < MAXIMUM_COUNT; ++i) {
+    const char *s = data[i];
+    if (s == nullptr) {
+      data[i] = Str::Dup(space);
+      return i;
+    }
+    if (Str::Eq(space, data[i])) {
+      return i;
+    }
+  }
+  return 0;
+}
 
 //---------------------------------------------------------------------------
 
@@ -46,40 +59,13 @@ void StenoState::Reset() {
       .isManualStateChange = false,
       .shouldCombineUndo = false,
       .spaceLength = 1,
-      .spaceOffset = 0,
+      .spaceIndex = 0,
   };
 }
 
 void StenoState::SetSpace(const char *space) {
-  const size_t length = Str::Length(space);
-  if (length >= 16) {
-    spaceOffset = 0;
-    spaceLength = 0;
-    return;
-  }
-
-  // See if it already exists in the buffer.
-  SpaceBuffer &buffer = SpaceBuffer::instance;
-  for (size_t i = 0; i + length <= buffer.count; ++i) {
-    if (Mem::Eq(buffer.data + i, space, length)) {
-      spaceLength = (uint32_t)length;
-      spaceOffset = (uint32_t)i;
-      return;
-    }
-  }
-
-  // Add it if possible otherwise.
-
-  if (buffer.count + length >= sizeof(buffer.data)) {
-    spaceOffset = 0;
-    spaceLength = 0;
-    return;
-  }
-
-  spaceOffset = buffer.count;
-  spaceLength = (uint32_t)length;
-  memcpy(buffer.data + buffer.count, space, length);
-  buffer.count += length;
+  spaceIndex = SpaceBuffer::instance.GetOrCreateIndex(space);
+  spaceLength = Str::Length(GetSpace());
 }
 
 //---------------------------------------------------------------------------

@@ -183,6 +183,8 @@ void StenoEngine::ReverseLookup(StenoReverseDictionaryLookup &lookup) const {
 }
 
 void StenoEngine::SendText(const uint8_t *p) {
+  const ExternalFlashSentry externalFlashSentry;
+
   const char *ccp = (const char *)p;
 
   nextConversionBuffer.keyCodeBuffer.Reset();
@@ -490,7 +492,7 @@ void StenoEngineTester::TestRetroInsertSpace(StenoEngine &engine) {
   VerifyTextBuffer(engine, " test -D");
 
   engine.ProcessStroke(StenoStroke("TEFT"));
-  VerifyTextBuffer(engine, " test -D test");
+  VerifyTextBuffer(engine, "test test -D test");
 }
 
 TEST_BEGIN("Engine: Verify =retro_insert_space") {

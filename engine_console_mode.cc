@@ -76,7 +76,8 @@ void StenoEngine::UpdateConsoleModeTextBuffer(ConversionBuffer &buffer) {
                                      altTranslationHistory.GetCount(),
                                      StenoSegmentBuilder::BUFFER_SIZE);
   buffer.segmentBuilder.CreateSegments(context);
-  altTranslationHistory.UpdateDefinitionBoundaries(0, segments);
+  altTranslationHistory.UpdateDefinitionBoundaries(
+      0, segments, buffer.segmentBuilder.GetStrokes(0));
 
   StenoTokenizer *tokenizer = StenoTokenizer::Create(segments);
   buffer.keyCodeBuffer.Append(tokenizer);

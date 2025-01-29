@@ -8,6 +8,14 @@
 
 //---------------------------------------------------------------------------
 
+struct SegmentHistoryRequirements {
+  enum Value {
+    NONE,
+    FIRST_NON_COMMAND,
+    ALL,
+  };
+};
+
 // A steno segment is a mapping of List<Stroke> -> Translation.
 struct StenoSegment {
   StenoSegment(size_t strokeLength, SegmentLookupType lookupType,
@@ -37,10 +45,16 @@ struct StenoSegment {
     return (state - firstState) + strokeLength;
   }
 
+  SegmentHistoryRequirements::Value GetHistoryRequirements() const;
+
   static StenoSegment CreateInvalid() { return StenoSegment(); }
 
 private:
   StenoSegment() : lookupType(SegmentLookupType::UNKNOWN) {}
+
+  bool IsPunctuationCommand() const;
+  bool IsPrefixCommand() const;
+  bool IsSuffixCommand() const;
 };
 
 //---------------------------------------------------------------------------
@@ -73,7 +87,7 @@ public:
 class StenoSegmentList : public List<StenoSegment> {
 public:
   StenoSegmentList() = default;
-  StenoSegmentList(List &&other) : List((List &&) other) {}
+  StenoSegmentList(List &&other) : List((List &&)other) {}
   ~StenoSegmentList();
 
   static size_t GetCommonStartingSegmentsCount(const List<StenoSegment> &a,

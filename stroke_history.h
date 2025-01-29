@@ -44,7 +44,8 @@ public:
   size_t GetUndoCount() const;
 
   void UpdateDefinitionBoundaries(size_t startingOffset,
-                                  const StenoSegmentList &segments);
+                                  const StenoSegmentList &segments,
+                                  const StenoStroke *strokes);
   void MarkLastLookupTypeAsUnknown();
   size_t GetStartingStroke(size_t maximumCount) const;
   size_t GetStartingStrokeAfterUndo(size_t undoCount) const;

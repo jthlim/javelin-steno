@@ -12,7 +12,7 @@ bool AlignedMem<1>::ConstantTimeEq(const void *p, const void *q,
   const uint8_t *bp = (const uint8_t *)p;
   const uint8_t *bq = (const uint8_t *)q;
 
-  uint8_t delta = 0;
+  uint32_t delta = 0;
   while (bp < pEnd) {
     delta |= *bp++ ^ *bq++;
   }
@@ -138,12 +138,42 @@ bool AlignedMem<sizeof(size_t)>::Eq(const void *p, const void *q,
 void AlignedMem<sizeof(size_t)>::Fill(void *p, size_t length) {
   assert(length % sizeof(size_t) == 0);
 
+#if JAVELIN_CPU_CORTEX_M4
+  register int r1 __asm__("r2") = -1;
+  register int r2 __asm__("r3") = -1;
+  register int r3 __asm__("r4") = -1;
+  register int r4 __asm__("r5") = -1;
+  while (length >= 32) {
+    asm volatile("stmia %0!, {%1, %2, %3, %4}"
+                 : "+l"(p)
+                 : "l"(r1), "l"(r2), "l"(r3), "l"(r4)
+                 : "memory");
+    asm volatile("stmia %0!, {%1, %2, %3, %4}"
+                 : "+l"(p)
+                 : "l"(r1), "l"(r2), "l"(r3), "l"(r4)
+                 : "memory");
+    length -= 32;
+  }
+  if (length & 16) {
+    asm volatile("stmia %0!, {%1, %2, %3, %4}"
+                 : "+l"(p)
+                 : "l"(r1), "l"(r2), "l"(r3), "l"(r4)
+                 : "memory");
+  }
+  if (length & 8) {
+    asm volatile("stmia %0!, {%1, %2}" : "+l"(p) : "l"(r1), "l"(r2) : "memory");
+  }
+  if (length & 4) {
+    asm volatile("str %1, [%0]" : : "l"(p), "l"(r1) : "memory");
+  }
+#else
   void *pEnd = (char *)p + length;
   size_t *sp = (size_t *)p;
 
   while (sp < pEnd) {
     *sp++ = (size_t)-1;
   }
+#endif
 }
 
 //---------------------------------------------------------------------------

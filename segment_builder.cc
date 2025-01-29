@@ -95,7 +95,8 @@ bool StenoSegmentBuilder::DirectLookup(BuildSegmentContext &context,
         context.dictionary.Lookup(strokes + offset, length);
 
     if (!lookup.IsValid()) {
-      if (hasModifiedStrokeHistory) {
+      if (hasModifiedStrokeHistory ||
+          states[offset].lookupType == SegmentLookupType::HISTORY_MODIFIED) {
         --length;
       } else if (states[offset].ShouldStopProcessingLookupType(
                      SegmentLookupType::DIRECT)) {
@@ -261,6 +262,7 @@ bool StenoSegmentBuilder::AutoSuffixLookup(BuildSegmentContext &context,
   size_t startLength = count - offset;
   if (startLength > context.maximumOutlineLength) {
     if (!hasModifiedStrokeHistory &&
+        states[offset].lookupType != SegmentLookupType::HISTORY_MODIFIED &&
         states[offset].lookupType != SegmentLookupType::AUTO_SUFFIX) {
       return false;
     }
@@ -286,6 +288,8 @@ StenoSegment StenoSegmentBuilder::AutoSuffixTest(BuildSegmentContext &context,
   size_t startLength = count - lastStrokeOffset;
   if (startLength > context.maximumOutlineLength) {
     if (!hasModifiedStrokeHistory &&
+        states[lastStrokeOffset].lookupType !=
+            SegmentLookupType::HISTORY_MODIFIED &&
         states[lastStrokeOffset].lookupType != SegmentLookupType::AUTO_SUFFIX) {
       return StenoSegment::CreateInvalid();
     }
@@ -330,7 +334,8 @@ StenoSegment StenoSegmentBuilder::AutoSuffixTest(BuildSegmentContext &context,
         }
       }
     }
-    if (hasModifiedStrokeHistory) {
+    if (hasModifiedStrokeHistory ||
+        states[offset].lookupType == SegmentLookupType::HISTORY_MODIFIED) {
       --length;
     } else if (states[offset].ShouldStopProcessingLookupType(
                    SegmentLookupType::AUTO_SUFFIX)) {
@@ -349,7 +354,7 @@ void StenoSegmentBuilder::AddRawStroke(BuildSegmentContext &context,
     // The only time empty strokes are introduced are when there's
     // stroke buffer modifications. The NO_OP is used to extend the translation
     // buffer size.
-    context.segments.Add(StenoSegment(1, SegmentLookupType::STROKE,
+    context.segments.Add(StenoSegment(1, SegmentLookupType::HISTORY_MODIFIED,
                                       states + offset,
                                       StenoDictionaryLookupResult::NO_OP));
   } else {

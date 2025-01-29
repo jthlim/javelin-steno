@@ -9,11 +9,12 @@
 
 constexpr const Font *Font::FONTS[] = {
     &Font::DEFAULT,       //
+    &Font::LARGE,         //
+    &Font::DOS,           //
     &Font::SMALL_DIGITS,  //
     &Font::MEDIUM_DIGITS, //
     &Font::LARGE_DIGITS,  //
     &Font::HUGE_DIGITS,   //
-    &Font::DOS,           //
 };
 
 uint32_t Font::GetCharacterWidth(uint32_t c) const {

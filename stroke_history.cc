@@ -2,6 +2,7 @@
 
 #include "stroke_history.h"
 #include "segment.h"
+#include "state.h"
 
 //---------------------------------------------------------------------------
 
@@ -30,7 +31,8 @@ size_t StenoStrokeHistory::GetUndoCount() const {
 //---------------------------------------------------------------------------
 
 void StenoStrokeHistory::UpdateDefinitionBoundaries(
-    size_t startingOffset, const StenoSegmentList &segments) {
+    size_t startingOffset, const StenoSegmentList &segments,
+    const StenoStroke *strokes) {
   if (segments.IsEmpty()) {
     return;
   }
@@ -44,6 +46,23 @@ void StenoStrokeHistory::UpdateDefinitionBoundaries(
     const size_t strokeIndex = segment.GetStrokeIndex(firstState);
     StenoState &state = (*this)[startingOffset + strokeIndex].state;
     state.lookupType = segment.lookupType;
+
+    if (strokes[strokeIndex] == 0) {
+      if (&segment != &segments.Front()) {
+        const StenoSegment &previousSegment = *(&segment - 1);
+        const size_t previousStrokeIndex =
+            previousSegment.GetStrokeIndex(firstState);
+        StenoState &previousState =
+            (*this)[startingOffset + previousStrokeIndex].state;
+        previousState.lookupType = SegmentLookupType::HISTORY_MODIFIED;
+      }
+      state.requestsHistoryExtending = true;
+      state.isSpace = false;
+      state.isHistoryExtending = true;
+      state.isSuffix = false;
+      state.isNonAffixCommand = false;
+      continue;
+    }
 
     const char *lookupText = segment.lookup.GetText();
     if (lookupText[0] == '{') {
@@ -90,10 +109,22 @@ size_t StenoStrokeHistory::GetStartingStroke(size_t maximumCount) const {
 
 size_t StenoStrokeHistory::GetStartingStrokeAfterUndo(size_t undoCount) const {
   const size_t count = GetCount();
-  for (size_t i = undoCount; i < count; ++i) {
-    const StenoState state = Back(i + 1).state;
-    if (state.IsDefinitionStart() && !state.isSuffix) {
-      return count - (i + 1);
+  size_t definitionCount = 0;
+  for (size_t i = undoCount + 1; i < count; ++i) {
+    const StenoState state = Back(i).state;
+    if (state.IsDefinitionStart() && !state.isSuffix &&
+        state.lookupType != SegmentLookupType::HISTORY_MODIFIED) {
+
+      // 3 segments to handle 99.999% of cases:
+      // * Last segment could be multi-stroke and contain a history change.
+      // * That history change could cause the previous segment to become
+      //   a suffix
+      //
+      // If there are no stroke history modifying functions, then this would
+      // only need a definitionCount threshold of 1.
+      if (++definitionCount >= 3) {
+        return count - i;
+      }
     }
   }
   return 0;

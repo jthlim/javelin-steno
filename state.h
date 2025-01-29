@@ -22,6 +22,7 @@ enum class SegmentLookupType : uint8_t {
   DIRECT,
   AUTO_SUFFIX,
   STROKE,
+  HISTORY_MODIFIED,
 };
 
 //---------------------------------------------------------------------------
@@ -29,7 +30,7 @@ enum class SegmentLookupType : uint8_t {
 struct StenoState {
   StenoCaseMode caseMode;
   StenoCaseMode overrideCaseMode : 3;
-  SegmentLookupType lookupType : 2;
+  SegmentLookupType lookupType : 3;
   bool joinNext : 1;
   bool isGlue : 1;
   bool isManualStateChange : 1;
@@ -39,8 +40,9 @@ struct StenoState {
   bool requestsHistoryExtending : 1; // e.g. =set_value, =retro_transform
   bool isSuffix : 1;
   bool isNonAffixCommand : 1;
+  bool _unused23 : 1;
   uint32_t spaceLength : 4;
-  uint32_t spaceOffset : 6;
+  uint32_t spaceIndex : 4;
 
   static const StenoCaseMode NEXT_WORD_CASE_MODE[];
   static const StenoCaseMode NEXT_LETTER_CASE_MODE[];
@@ -66,8 +68,10 @@ struct StenoState {
   struct SpaceBuffer {
     static SpaceBuffer instance;
 
-    uint8_t count;
-    char data[64];
+    static const size_t MAXIMUM_COUNT = 32;
+    const char *data[MAXIMUM_COUNT];
+
+    size_t GetOrCreateIndex(const char *space);
   };
 
   bool ShouldStopProcessingLookupType(SegmentLookupType type) const {
@@ -75,7 +79,7 @@ struct StenoState {
   }
 
   const char *GetSpace() const {
-    return SpaceBuffer::instance.data + spaceOffset;
+    return SpaceBuffer::instance.data[spaceIndex];
   }
 
   StenoState GetPersistentState() const {
@@ -85,6 +89,13 @@ struct StenoState {
     result.isNonAffixCommand = false;
     result.lookupType = SegmentLookupType::UNKNOWN;
     return result;
+  }
+
+  const char *GetLookupTypeName() const {
+    static constexpr const char *NAMES[] = {
+        "UNKNOWN", "DIRECT", "AUTO_SUFFIX", "STROKE", "HISTORY_MODIFIED",
+    };
+    return NAMES[(int)lookupType];
   }
 };
 
