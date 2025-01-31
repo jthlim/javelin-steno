@@ -2,6 +2,8 @@
 
 #include "segment.h"
 #include "str.h"
+#include "unicode.h"
+#include <assert.h>
 
 //---------------------------------------------------------------------------
 
@@ -11,8 +13,7 @@ bool StenoSegment::ContainsKeyCode() const {
 
 bool StenoSegment::HasCommand() const { return strchr(lookup.GetText(), '{'); }
 
-bool StenoSegment::IsPunctuationCommand() const {
-  const char *text = lookup.GetText();
+bool StenoSegment::IsPunctuationCommand(const char *text) {
   if (text[0] != '{' || text[2] != '}' || text[3] != '\0') {
     return false;
   }
@@ -29,33 +30,65 @@ bool StenoSegment::IsPunctuationCommand() const {
   }
 }
 
-bool StenoSegment::IsPrefixCommand() const {
-  const char *text = lookup.GetText();
-  return text[0] == '{' && text[1] == '^';
-}
-
-bool StenoSegment::IsSuffixCommand() const {
-  const char *text = lookup.GetText();
-  if (text[0] != '{') {
-    return false;
-  }
+bool StenoSegment::IsPrefixCommand(const char *text) {
+  assert(text[0] != '{');
   const size_t length = Str::Length(text);
   return text[length - 2] == '^' && text[length - 1] == '}';
+}
+
+bool StenoSegment::IsSuffixCommand(const char *text) {
+  assert(text[0] != '{');
+  return text[1] == '^';
+}
+
+bool StenoSegment::IsFingerSpelling(const char *text) {
+  assert(text[0] != '{');
+  return text[1] == '&';
+}
+
+bool StenoSegment::IsDefinitionAndSuffixCommand(const char *text) {
+  assert(text[0] != '{');
+
+  const char *command = strchr(text, '{');
+  if (!command) {
+    return false;
+  }
+  return command[1] == '^';
 }
 
 SegmentHistoryRequirements::Value StenoSegment::GetHistoryRequirements() const {
   if (!HasCommand()) {
     return SegmentHistoryRequirements::NONE;
   }
-  if (IsPrefixCommand()) {
-    return SegmentHistoryRequirements::FIRST_NON_COMMAND;
+  const char *text = lookup.GetText();
+  while (*text && Unicode::IsWhitespace(*text)) {
+    ++text;
   }
-  if (IsPunctuationCommand()) {
-    return SegmentHistoryRequirements::NONE;
+
+  // Capitalize or un-capitalize next
+  if (text[0] == '{' && (text[1] == '<' || text[1] == '>') && text[2] == '}') {
+    text += 3;
   }
-  if (IsSuffixCommand()) {
-    return SegmentHistoryRequirements::NONE;
+
+  if (text[0] == '{') {
+    if (IsSuffixCommand(text)) {
+      return SegmentHistoryRequirements::NONE;
+    }
+    if (IsPunctuationCommand(text)) {
+      return SegmentHistoryRequirements::NONE;
+    }
+    if (IsFingerSpelling(text)) {
+      return SegmentHistoryRequirements::NONE;
+    }
+    if (IsPrefixCommand(text)) {
+      return SegmentHistoryRequirements::FIRST_NON_COMMAND;
+    }
+  } else {
+    if (IsDefinitionAndSuffixCommand(text)) {
+      return SegmentHistoryRequirements::NONE;
+    }
   }
+
   return SegmentHistoryRequirements::ALL;
 }
 

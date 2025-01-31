@@ -52,9 +52,11 @@ struct StenoSegment {
 private:
   StenoSegment() : lookupType(SegmentLookupType::UNKNOWN) {}
 
-  bool IsPunctuationCommand() const;
-  bool IsPrefixCommand() const;
-  bool IsSuffixCommand() const;
+  static bool IsPunctuationCommand(const char *text);
+  static bool IsPrefixCommand(const char *text);
+  static bool IsSuffixCommand(const char *text);
+  static bool IsDefinitionAndSuffixCommand(const char *text);
+  static bool IsFingerSpelling(const char *text);
 };
 
 //---------------------------------------------------------------------------

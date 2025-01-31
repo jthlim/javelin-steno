@@ -522,13 +522,18 @@ void StenoEngine::CreateSegmentsUsingLongerResult(
 void StenoEngine::ConvertText(StenoKeyCodeBuffer &keyCodeBuffer,
                               StenoSegmentList &segments,
                               size_t startingOffset) {
-  StenoTokenizer *tokenizer = StenoTokenizer::Create(segments, startingOffset);
-  keyCodeBuffer.Populate(tokenizer);
-  if (placeSpaceAfter && !keyCodeBuffer.state.joinNext &&
-      segments.IsNotEmpty()) {
-    keyCodeBuffer.AppendSpace();
+  if (startingOffset == segments.GetCount()) {
+    keyCodeBuffer.Reset();
+  } else {
+    StenoTokenizer *tokenizer =
+        StenoTokenizer::Create(segments, startingOffset);
+    keyCodeBuffer.Populate(tokenizer);
+    delete tokenizer;
+
+    if (placeSpaceAfter && !keyCodeBuffer.state.joinNext) {
+      keyCodeBuffer.AppendSpace();
+    }
   }
-  delete tokenizer;
 }
 
 //---------------------------------------------------------------------------
