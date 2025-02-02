@@ -64,8 +64,8 @@ void StenoState::Reset() {
 }
 
 void StenoState::SetSpace(const char *space) {
-  spaceIndex = SpaceBuffer::instance.GetOrCreateIndex(space);
-  spaceLength = Str::Length(GetSpace());
+  spaceIndex = (uint32_t) SpaceBuffer::instance.GetOrCreateIndex(space);
+  spaceLength = (uint32_t) Str::Length(GetSpace());
 }
 
 //---------------------------------------------------------------------------

@@ -211,7 +211,9 @@ char *StenoEngine::ConvertText(StenoSegmentList &segments,
                                size_t startingOffset) {
   StenoKeyCodeBuffer &keyCodeBuffer = nextConversionBuffer.keyCodeBuffer;
   keyCodeBuffer.Reset();
-  ConvertText(keyCodeBuffer, segments, startingOffset);
+  if (startingOffset < segments.GetCount()) {
+    ConvertText(keyCodeBuffer, segments, startingOffset, &keyCodeBuffer.state);
+  }
   return keyCodeBuffer.ToString();
 }
 
@@ -516,16 +518,16 @@ void StenoEngineTester::TestRetroInsertSpaceAutoSuffix(StenoEngine &engine) {
   VerifyTextBuffer(engine, "tested");
 
   engine.ProcessStroke(StenoStroke("TEFTD"));
-  VerifyTextBuffer(engine, "tested tested");
+  VerifyTextBuffer(engine, " tested");
 
   engine.ProcessStroke(StenoStroke("TEFTD"));
   VerifyTextBuffer(engine, " tested tested");
 
   engine.ProcessStroke(StenoStroke("TEFTD"));
-  VerifyTextBuffer(engine, " tested tested tested");
+  VerifyTextBuffer(engine, " tested");
 
   engine.ProcessStroke(StenoStroke("TEFTD"));
-  VerifyTextBuffer(engine, " tested tested tested");
+  VerifyTextBuffer(engine, " tested");
 }
 
 TEST_BEGIN("Engine: Verify =retro_insert_space with auto-suffix") {

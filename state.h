@@ -25,6 +25,12 @@ enum class SegmentLookupType : uint8_t {
   HISTORY_MODIFIED,
 };
 
+enum class SegmentHistoryRequirements : uint8_t {
+  NONE,
+  FIRST_NON_COMMAND,
+  ALL,
+};
+
 //---------------------------------------------------------------------------
 
 struct StenoState {
@@ -39,8 +45,7 @@ struct StenoState {
   bool isSpace : 1;                  // {^ ^}
   bool requestsHistoryExtending : 1; // e.g. =set_value, =retro_transform
   bool isSuffix : 1;
-  bool isNonAffixCommand : 1;
-  bool _unused23 : 1;
+  SegmentHistoryRequirements historyRequirements : 2;
   uint32_t spaceLength : 4;
   uint32_t spaceIndex : 4;
 
@@ -86,7 +91,7 @@ struct StenoState {
     StenoState result = *this;
     result.shouldCombineUndo = false;
     result.isManualStateChange = false;
-    result.isNonAffixCommand = false;
+    result.historyRequirements = SegmentHistoryRequirements::NONE;
     result.lookupType = SegmentLookupType::UNKNOWN;
     return result;
   }
@@ -96,6 +101,15 @@ struct StenoState {
         "UNKNOWN", "DIRECT", "AUTO_SUFFIX", "STROKE", "HISTORY_MODIFIED",
     };
     return NAMES[(int)lookupType];
+  }
+
+  const char *GetHistoryRequirementsName() const {
+    static constexpr const char *NAMES[] = {
+        "NONE",
+        "FIRST_NON_COMMAND",
+        "ALL",
+    };
+    return NAMES[(int)historyRequirements];
   }
 };
 

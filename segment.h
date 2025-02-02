@@ -8,14 +8,6 @@
 
 //---------------------------------------------------------------------------
 
-struct SegmentHistoryRequirements {
-  enum Value {
-    NONE,
-    FIRST_NON_COMMAND,
-    ALL,
-  };
-};
-
 // A steno segment is a mapping of List<Stroke> -> Translation.
 struct StenoSegment {
   StenoSegment(size_t strokeLength, SegmentLookupType lookupType,
@@ -45,18 +37,19 @@ struct StenoSegment {
     return (state - firstState) + strokeLength;
   }
 
-  SegmentHistoryRequirements::Value GetHistoryRequirements() const;
+  SegmentHistoryRequirements GetHistoryRequirements() const;
 
   static StenoSegment CreateInvalid() { return StenoSegment(); }
 
 private:
   StenoSegment() : lookupType(SegmentLookupType::UNKNOWN) {}
 
-  static bool IsPunctuationCommand(const char *text);
-  static bool IsPrefixCommand(const char *text);
-  static bool IsSuffixCommand(const char *text);
-  static bool IsDefinitionAndSuffixCommand(const char *text);
-  static bool IsFingerSpelling(const char *text);
+  static bool IsPunctuationCommand(const char *start, const char *end);
+  static bool IsPrefixCommand(const char *start, const char *end);
+  static bool IsSuffixCommand(const char *start, const char *end);
+  static bool IsCarryCapitalizationCommand(const char *start, const char *end);
+  static bool IsCaseModifierCommand(const char *start, const char *end);
+  static bool IsFingerSpellingCommand(const char *start, const char *end);
 };
 
 //---------------------------------------------------------------------------

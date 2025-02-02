@@ -29,6 +29,7 @@ struct StenoEngine::UpdateNormalModeTextBufferThreadData {
   UpdateNormalModeTextBufferThreadData(StenoEngine *engine,
                                        StenoKeyCodeBuffer *keyCodeBuffer,
                                        StenoSegmentList *segments,
+                                       StenoState *endState,
                                        size_t startingOffset)
       : engine(engine), keyCodeBuffer(keyCodeBuffer), segments(segments),
         startingOffset(startingOffset) {}
@@ -36,10 +37,11 @@ struct StenoEngine::UpdateNormalModeTextBufferThreadData {
   StenoEngine *engine;
   StenoKeyCodeBuffer *keyCodeBuffer;
   StenoSegmentList *segments;
+  StenoState *endState;
   size_t startingOffset;
 
   void ConvertText() {
-    engine->ConvertText(*keyCodeBuffer, *segments, startingOffset);
+    engine->ConvertText(*keyCodeBuffer, *segments, startingOffset, endState);
   }
 
   static void ConvertTextEntryPoint(void *data) {
@@ -122,11 +124,20 @@ size_t StenoEngine::GetStartingStrokeForNormalModeUndoProcessing(
 
   const StenoState state = history[lastSegmentStartStrokeIndex].state;
 
-  size_t conversionStrokes = undoCount;
-  if (state.isNonAffixCommand) {
-    conversionStrokes = GetDictionary().GetMaximumOutlineLength() + undoCount +
-                        MAX_EXTRA_STROKES;
+  if (lastSegmentStartStrokeIndex == history.GetCount() - undoCount &&
+      state.historyRequirements == SegmentHistoryRequirements::NONE &&
+      state.lookupType != SegmentLookupType::HISTORY_MODIFIED) {
+    return lastSegmentStartStrokeIndex;
   }
+
+  const size_t maximumConversionStrokes =
+      GetDictionary().GetMaximumOutlineLength() + MAX_EXTRA_STROKES;
+
+  const size_t conversionStrokes =
+      state.historyRequirements == SegmentHistoryRequirements::ALL ||
+              state.lookupType == SegmentLookupType::HISTORY_MODIFIED
+          ? maximumConversionStrokes + undoCount
+          : undoCount;
 
   return history.GetStartingStrokeAfterUndo(conversionStrokes);
 }
@@ -179,11 +190,9 @@ void StenoEngine::ProcessNormalModeStroke(StenoStroke stroke) {
   const uint32_t t2 = sysTick->ReadCycleCount();
 #endif
 
-  size_t startingOffset = StenoSegmentList::GetCommonStartingSegmentsCount(
-      previousSegments, nextSegments);
-  if (startingOffset > 0 && placeSpaceAfter) {
-    --startingOffset;
-  }
+  const size_t startingOffset =
+      StenoSegmentList::GetCommonStartingSegmentsCount(previousSegments,
+                                                       nextSegments);
 
 #if DEBUG_SEGMENTS
   Console::Printf(
@@ -197,9 +206,10 @@ void StenoEngine::ProcessNormalModeStroke(StenoStroke stroke) {
         previousConversionBuffer.segmentBuilder.GetStatePointer(0));
     const StenoStroke *strokes =
         previousConversionBuffer.segmentBuilder.GetStrokes(strokeIndex);
-    Console::Printf(" %s%zu (%s): %T | %J\n", i >= startingOffset ? "*" : "", i,
-                    segment.state->GetLookupTypeName(), strokes,
-                    segment.strokeLength, segment.lookup.GetText());
+    Console::Printf(
+        " %s%zu (%s): %T | \"%J\" | %s\n", i >= startingOffset ? "*" : "", i,
+        segment.state->GetLookupTypeName(), strokes, segment.strokeLength,
+        segment.lookup.GetText(), segment.state->GetHistoryRequirementsName());
   }
 
   Console::Printf("Next segments:%s\n",
@@ -212,9 +222,10 @@ void StenoEngine::ProcessNormalModeStroke(StenoStroke stroke) {
         nextConversionBuffer.segmentBuilder.GetStatePointer(0));
     const StenoStroke *strokes =
         nextConversionBuffer.segmentBuilder.GetStrokes(strokeIndex);
-    Console::Printf(" %s%zu (%s): %T | %J\n", i >= startingOffset ? "*" : "", i,
-                    segment.state->GetLookupTypeName(), strokes,
-                    segment.strokeLength, segment.lookup.GetText());
+    Console::Printf(
+        " %s%zu (%s): %T | \"%J\" | %s\n", i >= startingOffset ? "*" : "", i,
+        segment.state->GetLookupTypeName(), strokes, segment.strokeLength,
+        segment.lookup.GetText(), segment.state->GetHistoryRequirementsName());
   }
   Console::Printf("\n");
 #endif
@@ -225,10 +236,11 @@ void StenoEngine::ProcessNormalModeStroke(StenoStroke stroke) {
 
 #if JAVELIN_THREADS
   UpdateNormalModeTextBufferThreadData previousThreadData(
-      this, &previousConversionBuffer.keyCodeBuffer, &previousSegments,
+      this, &previousConversionBuffer.keyCodeBuffer, &previousSegments, &state,
       startingOffset);
   UpdateNormalModeTextBufferThreadData nextThreadData(
-      this, &nextConversionBuffer.keyCodeBuffer, &nextSegments, startingOffset);
+      this, &nextConversionBuffer.keyCodeBuffer, &nextSegments,
+      &nextConversionBuffer.keyCodeBuffer.state, startingOffset);
 
   RunParallel(&UpdateNormalModeTextBufferThreadData::ConvertTextEntryPoint,
               &previousThreadData,
@@ -236,8 +248,9 @@ void StenoEngine::ProcessNormalModeStroke(StenoStroke stroke) {
               &nextThreadData);
 #else
   ConvertText(previousConversionBuffer.keyCodeBuffer, previousSegments,
-              startingOffset);
-  ConvertText(nextConversionBuffer.keyCodeBuffer, nextSegments, startingOffset);
+              startingOffset, &state);
+  ConvertText(nextConversionBuffer.keyCodeBuffer, nextSegments, startingOffset,
+              &nextConversionBuffer.keyCodeBuffer.state);
 #endif
 
 #if ENABLE_PROFILE
@@ -365,6 +378,8 @@ void StenoEngine::ProcessNormalModeUndo() {
       undoCount >= conversionCount ? 0 : conversionCount - undoCount;
 
   // Mark last lookup type as unknown to ensure a full lookup is performed.
+  // Without this, undoing 'obliterates' does nto work as expected.
+  const StenoState backState = history.Back().state;
   history.MarkLastLookupTypeAsUnknown();
 
   StenoSegmentList nextSegments;
@@ -377,6 +392,7 @@ void StenoEngine::ProcessNormalModeUndo() {
                                     nextConversionCount, nextSegments,
                                     previousConversionBuffer, previousSegments);
   }
+  history.Back().state = backState;
 
 #if ENABLE_PROFILE
   const uint32_t t2 = sysTick->ReadCycleCount();
@@ -386,11 +402,9 @@ void StenoEngine::ProcessNormalModeUndo() {
       history.GetCount() - nextConversionCount, nextSegments,
       nextConversionBuffer.segmentBuilder.GetStrokes(0));
 
-  size_t startingOffset = StenoSegmentList::GetCommonStartingSegmentsCount(
-      previousSegments, nextSegments);
-  if (startingOffset > 0 && placeSpaceAfter) {
-    --startingOffset;
-  }
+  const size_t startingOffset =
+      StenoSegmentList::GetCommonStartingSegmentsCount(previousSegments,
+                                                       nextSegments);
 
 #if DEBUG_SEGMENTS
   Console::Printf(
@@ -404,9 +418,10 @@ void StenoEngine::ProcessNormalModeUndo() {
         previousConversionBuffer.segmentBuilder.GetStatePointer(0));
     const StenoStroke *strokes =
         previousConversionBuffer.segmentBuilder.GetStrokes(strokeIndex);
-    Console::Printf(" %s%zu (%s): %T | %J\n", i >= startingOffset ? "*" : "", i,
-                    segment.state->GetLookupTypeName(), strokes,
-                    segment.strokeLength, segment.lookup.GetText());
+    Console::Printf(
+        " %s%zu (%s): %T | \"%J\" | %s\n", i >= startingOffset ? "*" : "", i,
+        segment.state->GetLookupTypeName(), strokes, segment.strokeLength,
+        segment.lookup.GetText(), segment.state->GetHistoryRequirementsName());
   }
 
   Console::Printf("Next segments:%s\n",
@@ -419,9 +434,10 @@ void StenoEngine::ProcessNormalModeUndo() {
         nextConversionBuffer.segmentBuilder.GetStatePointer(0));
     const StenoStroke *strokes =
         nextConversionBuffer.segmentBuilder.GetStrokes(strokeIndex);
-    Console::Printf(" %s%zu (%s): %T | %J\n", i >= startingOffset ? "*" : "", i,
-                    segment.state->GetLookupTypeName(), strokes,
-                    segment.strokeLength, segment.lookup.GetText());
+    Console::Printf(
+        " %s%zu (%s): %T | \"%J\" | %s\n", i >= startingOffset ? "*" : "", i,
+        segment.state->GetLookupTypeName(), strokes, segment.strokeLength,
+        segment.lookup.GetText(), segment.state->GetHistoryRequirementsName());
   }
   Console::Printf("\n");
 #endif
@@ -432,10 +448,11 @@ void StenoEngine::ProcessNormalModeUndo() {
 
 #if JAVELIN_THREADS
   UpdateNormalModeTextBufferThreadData previousThreadData(
-      this, &previousConversionBuffer.keyCodeBuffer, &previousSegments,
+      this, &previousConversionBuffer.keyCodeBuffer, &previousSegments, &state,
       startingOffset);
   UpdateNormalModeTextBufferThreadData nextThreadData(
-      this, &nextConversionBuffer.keyCodeBuffer, &nextSegments, startingOffset);
+      this, &nextConversionBuffer.keyCodeBuffer, &nextSegments,
+      &nextConversionBuffer.keyCodeBuffer.state, startingOffset);
 
   RunParallel(&UpdateNormalModeTextBufferThreadData::ConvertTextEntryPoint,
               &previousThreadData,
@@ -443,8 +460,9 @@ void StenoEngine::ProcessNormalModeUndo() {
               &nextThreadData);
 #else
   ConvertText(previousConversionBuffer.keyCodeBuffer, previousSegments,
-              startingOffset);
-  ConvertText(nextConversionBuffer.keyCodeBuffer, nextSegments, startingOffset);
+              startingOffset, &state);
+  ConvertText(nextConversionBuffer.keyCodeBuffer, nextSegments, startingOffset,
+              &nextConversionBuffer.keyCodeBuffer.state);
 #endif
 
 #if ENABLE_PROFILE
@@ -520,8 +538,8 @@ void StenoEngine::CreateSegmentsUsingLongerResult(
 }
 
 void StenoEngine::ConvertText(StenoKeyCodeBuffer &keyCodeBuffer,
-                              StenoSegmentList &segments,
-                              size_t startingOffset) {
+                              StenoSegmentList &segments, size_t startingOffset,
+                              StenoState *endState) {
   if (startingOffset == segments.GetCount()) {
     keyCodeBuffer.Reset();
   } else {
@@ -529,10 +547,22 @@ void StenoEngine::ConvertText(StenoKeyCodeBuffer &keyCodeBuffer,
         StenoTokenizer::Create(segments, startingOffset);
     keyCodeBuffer.Populate(tokenizer);
     delete tokenizer;
+  }
 
-    if (placeSpaceAfter && !keyCodeBuffer.state.joinNext) {
-      keyCodeBuffer.AppendSpace();
-    }
+  // endState is conceptually the state in keyCodeBuffer after processing a
+  // all segments for text conversion. However, since the segment common count
+  // optimization, the buffer may never be updated, leaving the state
+  // uninitialized.
+  //
+  // In all such cases, the state here should be the state currently being
+  // tracked by the StenoEngine, so endState will point to either the
+  // StenoEngine's state, or the keyCodeBuffer's state.
+  //
+  // The reason this is passed by pointer is because the state value inside
+  // keyCodeBuffer is updated in this function.
+
+  if (placeSpaceAfter && !endState->joinNext) {
+    keyCodeBuffer.AppendSpace();
   }
 }
 

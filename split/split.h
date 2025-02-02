@@ -24,6 +24,7 @@ enum class SplitHandlerId {
   POWER_OVERRIDE,
   ENCODER,
   VERSION,
+  POINTER,
 
   COUNT,
 };

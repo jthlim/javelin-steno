@@ -68,17 +68,7 @@ StenoSegmentBuilder::GetFirstDefinitionBoundaryLength(size_t offset,
       return i;
     }
   }
-  return length - 1;
-}
-
-size_t StenoSegmentBuilder::GetStartingDefinitionLength(
-    size_t offset, size_t maximumOutlineLength) const {
-  for (size_t i = 1; i < maximumOutlineLength; ++i) {
-    if (states[offset + i].IsDefinitionStart()) {
-      return i;
-    }
-  }
-  return maximumOutlineLength;
+  return length;
 }
 
 bool StenoSegmentBuilder::DirectLookup(BuildSegmentContext &context,
@@ -86,7 +76,7 @@ bool StenoSegmentBuilder::DirectLookup(BuildSegmentContext &context,
   size_t startLength = count - offset;
   if (startLength > context.maximumOutlineLength) {
     startLength =
-        GetStartingDefinitionLength(offset, context.maximumOutlineLength);
+        GetFirstDefinitionBoundaryLength(offset, context.maximumOutlineLength);
   }
 
   size_t length = startLength;
@@ -102,14 +92,14 @@ bool StenoSegmentBuilder::DirectLookup(BuildSegmentContext &context,
                      SegmentLookupType::DIRECT)) {
         return false;
       } else {
-        length = GetFirstDefinitionBoundaryLength(offset, length);
+        length = GetFirstDefinitionBoundaryLength(offset, length - 1);
       }
       continue;
     }
 
     const char *lookupText = lookup.GetText();
 
-    if (lookupText[0] == '=') {
+    if (lookupText[0] == '=') [[unlikely]] {
       if (Str::HasPrefix(lookupText, "=retro_transform:")) {
         if (context.segments.IsEmpty()) {
           context.segments.Add(
@@ -171,7 +161,7 @@ bool StenoSegmentBuilder::DirectLookup(BuildSegmentContext &context,
       }
     }
 
-    if (lookupText[0] == '{' && lookupText[1] == '*') {
+    if (lookupText[0] == '{' && lookupText[1] == '*') [[unlikely]] {
       if (lookupText[2] == '?' && lookupText[3] == '}') { // {*?}
         if (offset + length == count) {
           context.lastSegmentCommand = "{*?}";
@@ -267,7 +257,7 @@ bool StenoSegmentBuilder::AutoSuffixLookup(BuildSegmentContext &context,
       return false;
     }
     startLength =
-        GetStartingDefinitionLength(offset, context.maximumOutlineLength);
+        GetFirstDefinitionBoundaryLength(offset, context.maximumOutlineLength);
   }
   const StenoSegment segment = AutoSuffixTest(context, offset, startLength, 1);
 
@@ -293,8 +283,8 @@ StenoSegment StenoSegmentBuilder::AutoSuffixTest(BuildSegmentContext &context,
         states[lastStrokeOffset].lookupType != SegmentLookupType::AUTO_SUFFIX) {
       return StenoSegment::CreateInvalid();
     }
-    startLength = GetStartingDefinitionLength(lastStrokeOffset,
-                                              context.maximumOutlineLength);
+    startLength = GetFirstDefinitionBoundaryLength(
+        lastStrokeOffset, context.maximumOutlineLength);
   }
 
   const size_t minimumLength = offset - lastStrokeOffset + 1;
@@ -341,7 +331,7 @@ StenoSegment StenoSegmentBuilder::AutoSuffixTest(BuildSegmentContext &context,
                    SegmentLookupType::AUTO_SUFFIX)) {
       break;
     } else {
-      length = GetFirstDefinitionBoundaryLength(offset, length);
+      length = GetFirstDefinitionBoundaryLength(offset, length - 1);
     }
   }
 
@@ -376,57 +366,35 @@ void StenoSegmentBuilder::ReevaluateSegments(BuildSegmentContext &context,
   // Removes all segments that could be affected and updates offset to
   // reprocess them.
   const size_t currentOffset = offset;
-  size_t maximumOutlineLength = context.maximumOutlineLength;
+  const size_t maximumOutlineLength = context.maximumOutlineLength;
   while (context.segments.IsNotEmpty()) {
     StenoSegment &lastSegment = context.segments.Back();
     const size_t lastOffset = lastSegment.GetStrokeIndex(states);
     if (lastOffset + maximumOutlineLength < currentOffset) {
-      return;
+      break;
     }
 
-    // Empty strokes are used by buffer-modifying commands.
-    if (strokes[lastOffset].IsEmpty()) {
-      ++maximumOutlineLength;
-    }
     lastSegment.lookup.Destroy();
     context.segments.Pop();
     offset = lastOffset;
   }
 
-  // Reprocess them.
+  // Reprocess them. Only process up to currentOffset here.
+  const size_t reprocessOffset = offset;
+  const size_t previousCount = count;
+  count = currentOffset;
   AddSegments(context, offset);
+  count = previousCount;
 
-  // Ensure currentOffset is tagged with a DIRECT lookup
+  // Ensure all elements after reprocessOffset are tagged with HISTORY_MODIFIED.
   for (size_t i = 0; i < context.segments.GetCount(); ++i) {
     StenoSegment *segment = &context.segments[i];
     const size_t segmentOffset = segment->GetStrokeIndex(states);
-    const size_t segmentEndOffset = segmentOffset + segment->strokeLength;
-    if (segmentEndOffset <= currentOffset) {
+    if (segmentOffset < reprocessOffset) {
       continue;
     }
 
-    if (segmentOffset < currentOffset) {
-      const size_t remainingLength = segmentEndOffset - currentOffset;
-      // Need to split the segment
-      segment->lookupType = SegmentLookupType::DIRECT;
-      segment->strokeLength = currentOffset - segmentOffset;
-      ++i;
-      context.segments.InsertAt(
-          i, StenoSegment(remainingLength, SegmentLookupType::DIRECT,
-                          states + currentOffset,
-                          StenoDictionaryLookupResult::CreateStaticString("")));
-      segment = &context.segments[i];
-    }
-
-    segment->lookupType = SegmentLookupType::DIRECT;
-    if (segment->strokeLength != 1) {
-      segment->state++;
-      segment->strokeLength--;
-      context.segments.InsertAt(
-          i, StenoSegment(1, SegmentLookupType::DIRECT, states + currentOffset,
-                          StenoDictionaryLookupResult::CreateStaticString("")));
-    }
-    return;
+    segment->lookupType = SegmentLookupType::HISTORY_MODIFIED;
   }
 }
 

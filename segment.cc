@@ -1,6 +1,7 @@
 //---------------------------------------------------------------------------
 
 #include "segment.h"
+#include "state.h"
 #include "str.h"
 #include "unicode.h"
 #include <assert.h>
@@ -13,11 +14,12 @@ bool StenoSegment::ContainsKeyCode() const {
 
 bool StenoSegment::HasCommand() const { return strchr(lookup.GetText(), '{'); }
 
-bool StenoSegment::IsPunctuationCommand(const char *text) {
-  if (text[0] != '{' || text[2] != '}' || text[3] != '\0') {
+inline bool StenoSegment::IsPunctuationCommand(const char *start,
+                                               const char *end) {
+  if (end != start + 1) {
     return false;
   }
-  switch (text[1]) {
+  switch (*start) {
   case '.':
   case '?':
   case '!':
@@ -30,66 +32,114 @@ bool StenoSegment::IsPunctuationCommand(const char *text) {
   }
 }
 
-bool StenoSegment::IsPrefixCommand(const char *text) {
-  assert(text[0] != '{');
-  const size_t length = Str::Length(text);
-  return text[length - 2] == '^' && text[length - 1] == '}';
+inline bool StenoSegment::IsPrefixCommand(const char *start, const char *end) {
+  return end[-1] == '^';
 }
 
-bool StenoSegment::IsSuffixCommand(const char *text) {
-  assert(text[0] != '{');
-  return text[1] == '^';
+inline bool StenoSegment::IsSuffixCommand(const char *start, const char *end) {
+  return *start == '^';
 }
 
-bool StenoSegment::IsFingerSpelling(const char *text) {
-  assert(text[0] != '{');
-  return text[1] == '&';
+inline bool StenoSegment::IsCarryCapitalizationCommand(const char *start,
+                                                       const char *end) {
+  return start[0] == '~' && start[1] == '|';
 }
 
-bool StenoSegment::IsDefinitionAndSuffixCommand(const char *text) {
-  assert(text[0] != '{');
-
-  const char *command = strchr(text, '{');
-  if (!command) {
-    return false;
-  }
-  return command[1] == '^';
+inline bool StenoSegment::IsCaseModifierCommand(const char *start,
+                                                const char *end) {
+  return *start == '<' || *start == '>';
 }
 
-SegmentHistoryRequirements::Value StenoSegment::GetHistoryRequirements() const {
+inline bool StenoSegment::IsFingerSpellingCommand(const char *start,
+                                                  const char *end) {
+  return *start == '#';
+}
+
+SegmentHistoryRequirements StenoSegment::GetHistoryRequirements() const {
   if (!HasCommand()) {
     return SegmentHistoryRequirements::NONE;
   }
   const char *text = lookup.GetText();
-  while (*text && Unicode::IsWhitespace(*text)) {
-    ++text;
-  }
 
-  // Capitalize or un-capitalize next
-  if (text[0] == '{' && (text[1] == '<' || text[1] == '>') && text[2] == '}') {
-    text += 3;
-  }
+  SegmentHistoryRequirements result = SegmentHistoryRequirements::NONE;
 
-  if (text[0] == '{') {
-    if (IsSuffixCommand(text)) {
-      return SegmentHistoryRequirements::NONE;
+  bool hasLiteral = false;
+  for (;;) {
+    // Skip whitespace at the start.
+    for (;;) {
+      if (*text == '\0') {
+        return result;
+      }
+      if (!Unicode::IsWhitespace(*text)) {
+        break;
+      }
+      ++text;
     }
-    if (IsPunctuationCommand(text)) {
-      return SegmentHistoryRequirements::NONE;
-    }
-    if (IsFingerSpelling(text)) {
-      return SegmentHistoryRequirements::NONE;
-    }
-    if (IsPrefixCommand(text)) {
-      return SegmentHistoryRequirements::FIRST_NON_COMMAND;
-    }
-  } else {
-    if (IsDefinitionAndSuffixCommand(text)) {
-      return SegmentHistoryRequirements::NONE;
+
+    if (text[0] == '{') {
+      // Handle commands.
+      const char *start = text + 1;
+      const char *end = start;
+
+      for (;;) {
+        if (*end == '\0') {
+          return result;
+        }
+        if (*end == '\\') {
+          if (end[1] == '\0') {
+            return result;
+          }
+          end += 2;
+        } else if (*end == '}') {
+          break;
+        } else {
+          ++end;
+        }
+      }
+
+      if (IsSuffixCommand(start, end)) {
+        if (!hasLiteral) {
+          result = SegmentHistoryRequirements::FIRST_NON_COMMAND;
+        }
+      } else if (IsCaseModifierCommand(start, end)) {
+        // Do nothing
+      } else if (IsPunctuationCommand(start, end)) {
+        // Do nothing
+      } else if (IsPrefixCommand(start, end)) {
+        // Do nothing
+      } else if (IsCarryCapitalizationCommand(start, end)) {
+        // Do nothing
+      } else if (IsFingerSpellingCommand(start, end)) {
+        // Do nothing
+      } else {
+        // Unhandled command, do nothing.
+        return SegmentHistoryRequirements::ALL;
+      }
+
+      text = end + 1;
+
+    } else {
+      // Handle literals.
+      hasLiteral = true;
+
+      // Skip all text.
+      for (;;) {
+        if (*text == '\0') {
+          return result;
+        }
+        if (*text == '\\') {
+          if (text[1] == '\0') {
+            return result;
+          }
+          text += 2;
+        } else if (*text == '{') {
+          break;
+        } else {
+          ++text;
+        }
+      }
     }
   }
-
-  return SegmentHistoryRequirements::ALL;
 }
 
 //---------------------------------------------------------------------------
@@ -119,12 +169,11 @@ StenoSegmentList::GetCommonStartingSegmentsCount(const List<StenoSegment> &a,
 
   // For commands to work, check if the next segment has a command in it.
   // Handle common cases of punctuation, suffixes and prefixes.
-  SegmentHistoryRequirements::Value requirements =
-      SegmentHistoryRequirements::NONE;
+  SegmentHistoryRequirements requirements = SegmentHistoryRequirements::NONE;
 
-  if (commonPrefixCount < a.GetCount()) {
-    const SegmentHistoryRequirements::Value aRequirements =
-        a[commonPrefixCount].GetHistoryRequirements();
+  for (size_t i = commonPrefixCount; i < a.GetCount(); ++i) {
+    const SegmentHistoryRequirements aRequirements =
+        a[i].GetHistoryRequirements();
     if (aRequirements == SegmentHistoryRequirements::ALL) {
       return 0;
     }
@@ -132,9 +181,13 @@ StenoSegmentList::GetCommonStartingSegmentsCount(const List<StenoSegment> &a,
       requirements = aRequirements;
     }
   }
-  if (commonPrefixCount < b.GetCount()) {
-    const SegmentHistoryRequirements::Value bRequirements =
-        b[commonPrefixCount].GetHistoryRequirements();
+
+  for (size_t i = commonPrefixCount; i < b.GetCount(); ++i) {
+    const SegmentHistoryRequirements bRequirements =
+        b[i].GetHistoryRequirements();
+    if (bRequirements == SegmentHistoryRequirements::ALL) {
+      return 0;
+    }
     if (bRequirements > requirements) {
       requirements = bRequirements;
     }

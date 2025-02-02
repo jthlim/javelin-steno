@@ -60,7 +60,7 @@ void StenoStrokeHistory::UpdateDefinitionBoundaries(
       state.isSpace = false;
       state.isHistoryExtending = true;
       state.isSuffix = false;
-      state.isNonAffixCommand = false;
+      state.historyRequirements = SegmentHistoryRequirements::ALL;
       continue;
     }
 
@@ -72,14 +72,15 @@ void StenoStrokeHistory::UpdateDefinitionBoundaries(
       state.isHistoryExtending = Str::IsFingerSpellingCommand(lookupText);
       state.isSuffix =
           lookupText[1] == '^'; // Str::HasPrefix(lookupText, "{^");
-      state.isNonAffixCommand =
-          !state.isSuffix && lookupText[Str::Length(lookupText) - 2] != '^';
+      if (&segment == &segments.Back()) {
+        state.historyRequirements = segment.GetHistoryRequirements();
+      }
     } else {
       state.requestsHistoryExtending = false;
       state.isSpace = false;
       state.isHistoryExtending = false;
       state.isSuffix = false;
-      state.isNonAffixCommand = false;
+      state.historyRequirements = SegmentHistoryRequirements::NONE;
     }
   }
 }
@@ -110,24 +111,28 @@ size_t StenoStrokeHistory::GetStartingStroke(size_t maximumCount) const {
 size_t StenoStrokeHistory::GetStartingStrokeAfterUndo(size_t undoCount) const {
   const size_t count = GetCount();
   size_t definitionCount = 0;
+  size_t lastBoundary = 0;
   for (size_t i = undoCount + 1; i < count; ++i) {
     const StenoState state = Back(i).state;
-    if (state.IsDefinitionStart() && !state.isSuffix &&
-        state.lookupType != SegmentLookupType::HISTORY_MODIFIED) {
+    if (state.IsDefinitionStart()) {
+      lastBoundary = count - i;
+      if (!state.isSuffix &&
+          state.lookupType != SegmentLookupType::HISTORY_MODIFIED) {
 
-      // 3 segments to handle 99.999% of cases:
-      // * Last segment could be multi-stroke and contain a history change.
-      // * That history change could cause the previous segment to become
-      //   a suffix
-      //
-      // If there are no stroke history modifying functions, then this would
-      // only need a definitionCount threshold of 1.
-      if (++definitionCount >= 3) {
-        return count - i;
+        // 3 segments to handle 99.999% of cases:
+        // * Last segment could be multi-stroke and contain a history change.
+        // * That history change could cause the previous segment to become
+        //   a suffix
+        //
+        // If there are no stroke history modifying functions, then this would
+        // only need a definitionCount threshold of 1.
+        if (++definitionCount >= 3) {
+          return lastBoundary;
+        }
       }
     }
   }
-  return 0;
+  return lastBoundary;
 }
 
 size_t StenoStrokeHistory::GetIndexOfWordStart(size_t index) const {
