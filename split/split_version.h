@@ -8,6 +8,10 @@
 
 #if JAVELIN_SPLIT
 
+#if !defined(JAVELIN_SPLIT_VERSION_INCREMENT)
+#define JAVELIN_SPLIT_VERSION_INCREMENT 0
+#endif
+
 class SplitVersion :
 #if JAVELIN_SPLIT_IS_MASTER
     public SplitRxHandler,
@@ -31,7 +35,7 @@ public:
   }
 
 private:
-  static constexpr uint32_t VERSION = 3;
+  static constexpr uint32_t VERSION = 3 + JAVELIN_SPLIT_VERSION_INCREMENT;
 
 #if JAVELIN_SPLIT_IS_MASTER
   void OnReceiveConnected() final;

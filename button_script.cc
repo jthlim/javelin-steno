@@ -799,6 +799,13 @@ public:
     const int displayId = (int)script.Pop();
     Display::SetDrawColorHsv(displayId, h, s, v);
   }
+
+  static void DrawEffect(ButtonScript &script) {
+    const int parameter = (int)script.Pop();
+    const int effectId = (int)script.Pop();
+    const int displayId = (int)script.Pop();
+    Display::DrawEffect(displayId, effectId, parameter);
+  }
 };
 
 constexpr void (*ButtonScript::FUNCTION_TABLE[])(ButtonScript &) = {
@@ -902,6 +909,7 @@ constexpr void (*ButtonScript::FUNCTION_TABLE[])(ButtonScript &) = {
     &Function::IsInReinit,
     &Function::SetDrawColorRgb,
     &Function::SetDrawColorHsv,
+    &Function::DrawEffect,
 };
 
 void ButtonScript::PrintEventHistory() {

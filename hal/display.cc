@@ -37,4 +37,7 @@
   SetDrawColorRgb(displayId, r, g, b);
 }
 
+[[gnu::weak]] void Display::DrawEffect(int displayId, int effectId,
+                                       int parameter) {}
+
 //---------------------------------------------------------------------------

@@ -15,6 +15,11 @@ public:
     return malloc(size);
   }
   static inline void operator delete(void *p) noexcept { free(p); };
+
+  static inline void *operator new[](size_t size) noexcept {
+    return malloc(size);
+  }
+  static inline void operator delete[](void *p) noexcept { free(p); };
 };
 
 //---------------------------------------------------------------------------
