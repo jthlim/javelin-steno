@@ -29,7 +29,7 @@
     bx   lr
   )");
 }
-#elif JAVELIN_CPU_CORTEX_M4
+#elif JAVELIN_CPU_CORTEX_M4 || JAVELIN_CPU_CORTEX_M33
 
 [[gnu::noinline]] uint32_t Bit<4>::PopCount(uint32_t v) {
   uint32_t temp;
@@ -48,12 +48,7 @@
 }
 #else
 
-uint32_t Bit<4>::PopCount(uint32_t v) {
-  v = (v & 0x49249249) + ((v >> 1) & 0x49249249) + ((v >> 2) & 0x49249249);
-  v = (v + (v >> 3)) & 0xC71C71C7;
-  v += (v >> 6);
-  return (v * 0x04004004) >> 26;
-}
+#error JAVELIN_USE_CUSTOM_POP_COUNT set but no implementation available.
 
 #endif
 

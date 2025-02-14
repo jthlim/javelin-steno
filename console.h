@@ -91,6 +91,8 @@ public:
     Write(text, N - 1);
   }
 
+  static void Print(const char *text) { Write(text, strlen(text)); }
+
   static void Dump(const void *data, size_t length) {
     ConsoleWriter::instance.GetActiveWriter()->Dump(data, length);
   }

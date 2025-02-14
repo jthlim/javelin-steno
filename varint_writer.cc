@@ -5,7 +5,7 @@
 //---------------------------------------------------------------------------
 
 static inline void WriteUint16(char *p, uint32_t x) {
-#if JAVELIN_CPU_CORTEX_M4
+#if JAVELIN_CPU_CORTEX_M4 || JAVELIN_CPU_CORTEX_M33
   *(uint16_t *)p = x;
 #else
   p[0] = x;
@@ -14,7 +14,7 @@ static inline void WriteUint16(char *p, uint32_t x) {
 }
 
 static inline void WriteUint32(char *p, uint32_t x) {
-#if JAVELIN_CPU_CORTEX_M4
+#if JAVELIN_CPU_CORTEX_M4 || JAVELIN_CPU_CORTEX_M33
   *(uint32_t *)p = x;
 #else
   p[0] = x;
@@ -34,7 +34,7 @@ void VarintWriter::Write(uint32_t x) {
     WriteUint16(localP, (x << 2) | 1);
     localP += 2;
   } else if (x < 0x200000) {
-#if JAVELIN_CPU_CORTEX_M4
+#if JAVELIN_CPU_CORTEX_M4 || JAVELIN_CPU_CORTEX_M33
     WriteUint32(localP, (x << 3) | 3);
     localP += 3;
 #else

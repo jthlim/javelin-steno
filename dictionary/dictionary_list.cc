@@ -141,20 +141,16 @@ void StenoDictionaryList::PrintDictionary(
 //---------------------------------------------------------------------------
 
 void StenoDictionaryList::ListDictionaries() const {
-  bool first = true;
-  Console::Printf("[\n");
+  bool isFirst = true;
+  Console::Printf("[");
   for (const StenoDictionaryListEntry &entry : dictionaries) {
     const char *name = entry->GetName();
     if (name[0] == '#') {
       continue;
     }
-    if (first) {
-      first = false;
-    } else {
-      Console::Printf(",\n");
-    }
-    Console::Printf(" {\"dictionary\":\"%J\",\"enabled\":%B}", name,
-                    entry.IsEnabled());
+    const char *format = ",\n {\"dictionary\":\"%J\",\"enabled\":%B}";
+    Console::Printf(format + isFirst, name, entry.IsEnabled());
+    isFirst = false;
   }
   Console::Printf("\n]\n\n");
 }

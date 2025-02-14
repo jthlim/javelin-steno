@@ -45,7 +45,7 @@ uint32_t Utf8Pointer::BytesForCharacterCode(uint32_t c) {
   }
 }
 
-#if JAVELIN_CPU_CORTEX_M4
+#if JAVELIN_CPU_CORTEX_M4 || JAVELIN_CPU_CORTEX_M33
 
 inline uint32_t bfi(uint32_t previous, uint32_t v, int lsb, int width) {
   __asm("bfi %0, %1, %2, %3" : "+r"(previous) : "r"(v), "i"(lsb), "i"(width) :);

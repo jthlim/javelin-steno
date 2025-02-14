@@ -672,7 +672,8 @@ bool StenoKeyCodeBuffer::StitchLastWordFunction(
 
   const size_t delimiterLength = endCount - startCount;
   StenoKeyCode delimiterKeyCodes[delimiterLength];
-  Mem::Copy(delimiterKeyCodes, buffer + startCount, delimiterLength);
+  Mem::Copy(delimiterKeyCodes, buffer + startCount,
+            sizeof(StenoKeyCode) * delimiterLength);
   count = startCount;
 
   size_t delimiterNeededCount = 0;
@@ -707,7 +708,8 @@ bool StenoKeyCodeBuffer::StitchLastWordFunction(
     while (p > buffer && !p[-1].IsWhitespace()) {
       *output = *p--;
       output -= delimiterLength;
-      Mem::Copy(output, delimiterKeyCodes, delimiterLength);
+      Mem::Copy(output, delimiterKeyCodes,
+                sizeof(StenoKeyCode) * delimiterLength);
       --output;
     }
 
@@ -830,7 +832,43 @@ TEST_BEGIN("StenoKeyCodeBuffer: RetroReplaceSpace <>") {
 }
 TEST_END
 
-TEST_BEGIN("StenoKeyCodeBuffer: StitchLastWord") {
+TEST_BEGIN("StenoKeyCodeBuffer: stitch_last_word:1:-") {
+  StenoKeyCodeBuffer buffer;
+  buffer.Reset();
+  buffer.buffer[0] = StenoKeyCode('t', StenoCaseMode::NORMAL);
+  buffer.buffer[1] = StenoKeyCode('e', StenoCaseMode::NORMAL);
+  buffer.buffer[2] = StenoKeyCode('s', StenoCaseMode::NORMAL);
+  buffer.buffer[3] = StenoKeyCode('t', StenoCaseMode::NORMAL);
+  buffer.buffer[4] = StenoKeyCode(' ', StenoCaseMode::NORMAL);
+  buffer.buffer[5] = StenoKeyCode('t', StenoCaseMode::NORMAL);
+  buffer.buffer[6] = StenoKeyCode('e', StenoCaseMode::NORMAL);
+  buffer.buffer[7] = StenoKeyCode('s', StenoCaseMode::NORMAL);
+  buffer.buffer[8] = StenoKeyCode('t', StenoCaseMode::NORMAL);
+  buffer.count = 9;
+
+  List<const char *> parameters;
+  parameters.Add("");
+  parameters.Add("1");
+  parameters.Add("-");
+  buffer.StitchLastWordFunction(*(const List<char *> *)&parameters);
+
+  assert(buffer.count == 12);
+  buffer.buffer[0] = StenoKeyCode('t', StenoCaseMode::NORMAL);
+  buffer.buffer[1] = StenoKeyCode('e', StenoCaseMode::NORMAL);
+  buffer.buffer[2] = StenoKeyCode('s', StenoCaseMode::NORMAL);
+  buffer.buffer[3] = StenoKeyCode('t', StenoCaseMode::NORMAL);
+  buffer.buffer[4] = StenoKeyCode(' ', StenoCaseMode::NORMAL);
+  buffer.buffer[5] = StenoKeyCode('t', StenoCaseMode::NORMAL);
+  buffer.buffer[6] = StenoKeyCode('-', StenoCaseMode::NORMAL);
+  buffer.buffer[7] = StenoKeyCode('e', StenoCaseMode::NORMAL);
+  buffer.buffer[8] = StenoKeyCode('-', StenoCaseMode::NORMAL);
+  buffer.buffer[9] = StenoKeyCode('s', StenoCaseMode::NORMAL);
+  buffer.buffer[10] = StenoKeyCode('-', StenoCaseMode::NORMAL);
+  buffer.buffer[11] = StenoKeyCode('t', StenoCaseMode::NORMAL);
+}
+TEST_END
+
+TEST_BEGIN("StenoKeyCodeBuffer: stitch_last_word:2:->") {
   StenoKeyCodeBuffer buffer;
   buffer.Reset();
   buffer.buffer[0] = StenoKeyCode('a', StenoCaseMode::NORMAL);

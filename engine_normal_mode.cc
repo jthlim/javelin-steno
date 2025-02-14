@@ -16,6 +16,7 @@
 #define ENABLE_PROFILE 0
 #define ENABLE_PROFILE_SUGGESTIONS 0
 #define DEBUG_SEGMENTS 0
+#define DEBUG_KEY_CODE_BUFFERS 0
 
 #if ENABLE_PROFILE || ENABLE_PROFILE_SUGGESTIONS
 #include "arm/systick.h"
@@ -257,6 +258,19 @@ void StenoEngine::ProcessNormalModeStroke(StenoStroke stroke) {
   const uint32_t t4 = sysTick->ReadCycleCount();
 #endif
 
+#if DEBUG_KEY_CODE_BUFFERS
+  {
+    char *previousText =
+        previousConversionBuffer.keyCodeBuffer.ToUnresolvedString();
+    Console::Printf("PreviousText: \"%J\"\n", previousText);
+    free(previousText);
+
+    char *nextText = nextConversionBuffer.keyCodeBuffer.ToUnresolvedString();
+    Console::Printf("NextText: \"%J\"\n\n", nextText);
+    free(nextText);
+  }
+#endif
+
   state = nextConversionBuffer.keyCodeBuffer.GetPersistentState();
 
   bool printSuggestions = true;
@@ -467,6 +481,19 @@ void StenoEngine::ProcessNormalModeUndo() {
 
 #if ENABLE_PROFILE
   const uint32_t t4 = sysTick->ReadCycleCount();
+#endif
+
+#if DEBUG_KEY_CODE_BUFFERS
+  {
+    char *previousText =
+        previousConversionBuffer.keyCodeBuffer.ToUnresolvedString();
+    Console::Printf("PreviousText: \"%J\"\n", previousText);
+    free(previousText);
+
+    char *nextText = nextConversionBuffer.keyCodeBuffer.ToUnresolvedString();
+    Console::Printf("NextText: \"%J\"\n\n", nextText);
+    free(nextText);
+  }
 #endif
 
   emitter.Process(previousConversionBuffer.keyCodeBuffer,

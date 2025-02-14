@@ -93,6 +93,7 @@ public:
 private:
   class Function;
   class TimerContext;
+  class NullTimerContext;
 
   static constexpr size_t EVENT_HISTORY_COUNT = 4;
   static constexpr size_t MAX_STACK_SIZE = 256;

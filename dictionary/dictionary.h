@@ -256,7 +256,7 @@ public:
   }
 
 private:
-  bool hasData = false;
+  bool isFirst = true;
   const char *name;
 };
 

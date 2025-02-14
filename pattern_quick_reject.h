@@ -11,7 +11,7 @@ public:
   PatternQuickReject(const char *p) { Update(p); }
 
   void Update(int c) {
-#if JAVELIN_CPU_CORTEX_M0 || JAVELIN_CPU_CORTEX_M4
+#if JAVELIN_CPU_CORTEX_M0 || JAVELIN_CPU_CORTEX_M4 || JAVELIN_CPU_CORTEX_M33
     // On arm, shifting by more than the width results in 0.
     mask |= 1 << (c - 'a');
 #else
@@ -42,7 +42,7 @@ private:
   uint32_t mask = 0;
 
   static void Update(int c, uint32_t &mask) {
-#if JAVELIN_CPU_CORTEX_M0 || JAVELIN_CPU_CORTEX_M4
+#if JAVELIN_CPU_CORTEX_M0 || JAVELIN_CPU_CORTEX_M4 || JAVELIN_CPU_CORTEX_M33
     // On arm, shifting by more than the width results in 0.
     mask |= ~(1 << (c - 'a'));
 #else

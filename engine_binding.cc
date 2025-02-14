@@ -180,7 +180,8 @@ void StenoEngine::Lookup_Binding(void *context, const char *commandLine) {
     bool isFirst = true;
     StenoTokenizer *tokenizer = StenoTokenizer::Create(segments);
     while (tokenizer->HasMore()) {
-      Console::Printf(isFirst ? "%J" : " %J", tokenizer->GetNext().text);
+      const char *format = " %J";
+      Console::Printf(format + isFirst, tokenizer->GetNext().text);
       isFirst = false;
     }
     delete tokenizer;

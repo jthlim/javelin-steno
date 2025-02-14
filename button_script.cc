@@ -137,13 +137,28 @@ private:
   void OnTimerRemovedFromManager() override final { delete this; }
 };
 
+class ButtonScript::NullTimerContext final : public TimerHandler,
+                                             public JavelinMallocAllocate {
+public:
+  static NullTimerContext instance;
+
+  void Run(intptr_t id) final {}
+};
+
+ButtonScript::NullTimerContext ButtonScript::NullTimerContext::instance;
+
 void ButtonScript::StopTimer(int32_t timerId) {
   TimerManager::instance.StopTimer(timerId, scriptTime);
 }
 
 void ButtonScript::StartTimer(int32_t timerId, uint32_t interval,
                               bool isRepeating, size_t offset) {
-  TimerContext *context = new TimerContext(this, offset);
+  TimerHandler *context;
+  if (offset) {
+    context = new TimerContext(this, offset);
+  } else {
+    context = &NullTimerContext::instance;
+  }
   TimerManager::instance.StartTimer(timerId, interval, isRepeating, context,
                                     scriptTime);
 }
@@ -914,18 +929,11 @@ constexpr void (*ButtonScript::FUNCTION_TABLE[])(ButtonScript &) = {
 
 void ButtonScript::PrintEventHistory() {
   Console::Printf("[");
-  bool first = true;
+  bool isFirst = true;
   for (const char *event : eventHistory) {
-    if (first) {
-      first = false;
-    } else {
-      Console::Printf(",");
-    }
-    if (event) {
-      Console::Printf("\"%J\"", event);
-    } else {
-      Console::Printf("null");
-    }
+    const char *format = event ? ",\"%J\"" : ",null";
+    Console::Printf(format + isFirst, event);
+    isFirst = false;
   }
   Console::Printf("]\n\n");
 }

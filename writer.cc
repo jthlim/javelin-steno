@@ -96,7 +96,7 @@ void IWriter::WriteBase64(const void *data, size_t length) {
   // 3*8 bits -> 4*6
   const uint8_t *p = (const uint8_t *)data;
   while (length >= 3) {
-#if JAVELIN_CPU_CORTEX_M4
+#if JAVELIN_CPU_CORTEX_M4 || JAVELIN_CPU_CORTEX_M33
     // There's some XIP reading bug that this sequence avoids.
     // Using the default code causes the bzip2 header to be corrupted.
     const uint32_t value = __builtin_bswap32(*(uint32_t *)p << 8);

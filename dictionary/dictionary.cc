@@ -36,7 +36,7 @@ StenoDictionaryLookupResult::DestroyInternal(const char *text) {
   )");
 }
 
-#elif JAVELIN_CPU_CORTEX_M4
+#else
 
 void StenoDictionaryLookupResult::DestroyInternal(const char *text) {
   if (!IsStatic(text)) {
@@ -183,14 +183,9 @@ StenoDictionaryLookupResult::CreateFromBuffer(BufferWriter &writer) {
 [[gnu::noinline]] void PrintDictionaryContext::Print(const StenoStroke *strokes,
                                                      size_t length,
                                                      const char *definition) {
-  if (!hasData) {
-    hasData = true;
-    Console::Printf("\n\t");
-  } else {
-    Console::Printf(",\n\t");
-  }
-
-  Console::Printf("\"%T\": \"%J\"", strokes, length, definition);
+  const char *format = ",\n\t\"%T\": \"%J\"";
+  Console::Printf(format + isFirst, strokes, length, definition);
+  isFirst = false;
 }
 
 //---------------------------------------------------------------------------

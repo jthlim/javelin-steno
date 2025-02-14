@@ -24,7 +24,7 @@ bool AlignedMem<1>::ConstantTimeEq(const void *p, const void *q,
 void AlignedMem<sizeof(size_t)>::Clear(void *p, size_t length) {
   assert(length % sizeof(size_t) == 0);
 
-#if JAVELIN_CPU_CORTEX_M4
+#if JAVELIN_CPU_CORTEX_M4 || JAVELIN_CPU_CORTEX_M33
   register int r1 __asm__("r2") = 0;
   register int r2 __asm__("r3") = 0;
   register int r3 __asm__("r4") = 0;
@@ -80,7 +80,7 @@ bool AlignedMem<sizeof(size_t)>::ConstantTimeEq(const void *p, const void *q,
 void AlignedMem<sizeof(size_t)>::Copy(void *d, const void *s, size_t length) {
   assert(length % sizeof(size_t) == 0);
 
-#if JAVELIN_CPU_CORTEX_M4
+#if JAVELIN_CPU_CORTEX_M4 || JAVELIN_CPU_CORTEX_M33
   while (length >= 32) {
     asm volatile("vldmia %0!, {s0-s7}\n\t"
                  "vstmia %1!, {s0-s7}\n\t"

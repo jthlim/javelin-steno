@@ -34,7 +34,7 @@ private:
 //---------------------------------------------------------------------------
 
 struct StenoTextBlock {
-#if JAVELIN_CPU_CORTEX_M4
+#if JAVELIN_CPU_CORTEX_M4 || JAVELIN_CPU_CORTEX_M33
   static uint32_t uqsub8(uint32_t a, uint32_t b) {
     uint32_t result;
     asm("uqsub8 %0, %1, %2" : "=r"(result) : "r"(a), "r"(b));
@@ -43,7 +43,7 @@ struct StenoTextBlock {
 #endif
 
   static const uint8_t *FindPreviousWordStart(const uint8_t *p) {
-#if JAVELIN_CPU_CORTEX_M4
+#if JAVELIN_CPU_CORTEX_M4 || JAVELIN_CPU_CORTEX_M33
     uint32_t mask;
     do {
       p -= 4;
@@ -59,7 +59,7 @@ struct StenoTextBlock {
 #endif
   }
   static const uint8_t *FindNextWordStart(const uint8_t *p) {
-#if JAVELIN_CPU_CORTEX_M4
+#if JAVELIN_CPU_CORTEX_M4 || JAVELIN_CPU_CORTEX_M33
     uint32_t mask;
     do {
       const uint32_t v = *(const uint32_t *)p;

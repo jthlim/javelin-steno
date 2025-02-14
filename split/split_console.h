@@ -24,6 +24,7 @@ class SplitConsole : Queue<SplitConsoleEntryData>,
 #endif
 {
 public:
+  // data has a terminating null, and length includes that null
   static void Add(const char *data, size_t length) {
     instance.AddInternal(data, length);
   };
