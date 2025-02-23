@@ -1,7 +1,7 @@
 //---------------------------------------------------------------------------
 
 #pragma once
-#include "crc.h"
+#include "crc32.h"
 #include <stddef.h>
 #include <stdint.h>
 
@@ -123,7 +123,7 @@ struct ScriptByteCode {
     return stringHashTableOffset + 2 + sizeof(uint16_t) * GetHashTable()->size;
   }
 
-  uint32_t Crc() const { return Crc32(this, GetLength()); }
+  uint32_t Crc() const { return Crc32::Hash(this, GetLength()); }
 };
 
 //---------------------------------------------------------------------------

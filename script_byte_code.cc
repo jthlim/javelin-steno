@@ -12,7 +12,7 @@ ScriptByteCode::FindStringOrReturnOriginal(const uint8_t *string) const {
 
   const size_t mask = hashTable->size - 1;
   const size_t length = Str::Length(string);
-  size_t index = Crc32(string, length);
+  size_t index = Crc32::Hash(string, length);
 
   for (;;) {
     const size_t textOffset = hashTable->offsets[index & mask];

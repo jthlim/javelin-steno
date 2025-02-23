@@ -3,7 +3,7 @@
 #include "orthography.h"
 
 #include "console.h"
-#include "crc.h"
+#include "crc32.h"
 #include "hal/external_flash.h"
 #include "mem.h"
 #include "str.h"
@@ -245,7 +245,7 @@ char *StenoCompiledOrthography::AddSuffix(const char *word,
   }
 
   const uint32_t crc =
-      Crc32(word, wordLength) ^ Crc32(suffix, Str::Length(suffix));
+      Crc32::Hash(word, wordLength) ^ Crc32::Hash(suffix, Str::Length(suffix));
 
   const size_t blockIndex = crc & (CACHE_BLOCK_COUNT - 1);
   char *cachedResult = cache[blockIndex].Lookup(word, suffix);

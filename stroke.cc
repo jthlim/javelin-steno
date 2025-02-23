@@ -1,7 +1,7 @@
 //---------------------------------------------------------------------------
 
 #include "stroke.h"
-#include "crc.h"
+#include "crc32.h"
 #include "str.h"
 #include <assert.h>
 
@@ -138,7 +138,7 @@ uint32_t StenoStroke::PopCount(const StenoStroke *strokes, size_t length) {
 }
 
 uint32_t StenoStroke::Hash(const StenoStroke *strokes, size_t length) {
-  return Crc32(strokes, sizeof(StenoStroke) * length);
+  return Crc32::Hash(strokes, sizeof(StenoStroke) * length);
 }
 
 //---------------------------------------------------------------------------

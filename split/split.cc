@@ -2,7 +2,7 @@
 
 #include "split.h"
 #include "../button_script_manager.h"
-#include "../crc.h"
+#include "../crc32.h"
 #include "../hash.h"
 #include <string.h>
 
@@ -26,7 +26,7 @@ inline uint32_t RotateLeft(uint32_t v, int shift) {
 uint16_t TxRxHeader::Hash(const uint32_t *data, size_t wordCount) {
 #if JAVELIN_PLATFORM_PICO_SDK
   // Since the pico has a hardware accelerated Crc, just use that.
-  return (uint16_t)Crc32(data, sizeof(uint32_t) * wordCount);
+  return (uint16_t)Crc32::Hash(data, sizeof(uint32_t) * wordCount);
 #else
   const uint32_t v = JavelinHash::Hash(data, wordCount);
   return (uint16_t)(v ^ (v >> 16));
@@ -46,7 +46,7 @@ void TxBuffer::Build() {
 void TxBuffer::BuildEmpty() {
   Reset();
 #if JAVELIN_PLATFORM_PICO_SDK
-  header.hash = EmptyCrc32();
+  header.hash = Crc32::EmptyHash();
 #else
   constexpr uint32_t v = JavelinHash::EmptyHash();
   constexpr uint16_t hash = (uint16_t)(v ^ (v >> 16));

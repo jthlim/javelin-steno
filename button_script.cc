@@ -95,6 +95,11 @@ void ButtonScript::ExecuteScriptIndex(size_t index, uint32_t scriptTime,
 void ButtonScript::PrintInfo() const {
   Console::Printf("Script\n");
 
+  const StenoStroke stroke = stenoState.ToStroke();
+  Console::Printf("  Steno State: %D\n", &stenoState, sizeof(stenoState));
+  Console::Printf("  Steno Stroke: %t\n", &stroke);
+  Console::Printf("  Button State: %D\n", &buttonState, sizeof(buttonState));
+
   Console::Printf("  Callbacks: [");
   const char *prefix = "";
   for (size_t i = 0; i < (size_t)ButtonScriptId::COUNT; ++i) {

@@ -1,7 +1,7 @@
 //---------------------------------------------------------------------------
 
 #pragma once
-#include "../crc.h"
+#include "../crc32.h"
 #include "../malloc_allocate.h"
 #include "../static_list.h"
 #include "../str.h"
@@ -228,7 +228,7 @@ public:
   uint32_t GetLookupCrc() {
     if (!hasLookupCrc) {
       hasLookupCrc = true;
-      lookupCrc = Crc32(definition, definitionLength);
+      lookupCrc = Crc32::Hash(definition, definitionLength);
     }
     return lookupCrc;
   }

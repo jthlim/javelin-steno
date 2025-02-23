@@ -2,7 +2,7 @@
 
 #include "user_dictionary.h"
 #include "../console.h"
-#include "../crc.h"
+#include "../crc32.h"
 #include "../flash.h"
 #include "../mem.h"
 #include "../str.h"
@@ -52,11 +52,11 @@ bool StenoUserDictionaryDescriptor::IsValid(
   return magic == USER_DICTIONARY_MAGIC && data.hashTable == layout.hashTable &&
          data.hashTableSize == layout.hashTableSize &&
          version == USER_DICTIONARY_WITH_REVERSE_LOOKUP_VERSION &&
-         Crc32(&data, sizeof(data)) == crc32;
+         Crc32::Hash(&data, sizeof(data)) == crc32;
 }
 
 void StenoUserDictionaryDescriptor::UpdateCrc32() {
-  crc32 = Crc32(&data, sizeof(data));
+  crc32 = Crc32::Hash(&data, sizeof(data));
 }
 
 //---------------------------------------------------------------------------
@@ -335,7 +335,7 @@ bool StenoUserDictionary::AddToReverseHashTable(const char *word,
     return false;
   }
 
-  size_t entryIndex = Crc32(word, Str::Length(word));
+  size_t entryIndex = Crc32::Hash(word, Str::Length(word));
 
   for (int probeCount = 0; probeCount < 64; ++probeCount) {
     entryIndex &= activeDescriptor->data.hashTableSize - 1;
@@ -404,7 +404,7 @@ bool StenoUserDictionary::RemoveFromReverseHashTable(
   }
 
   const char *text = entryToDelete->GetText();
-  size_t entryIndex = Crc32(text, Str::Length(text));
+  size_t entryIndex = Crc32::Hash(text, Str::Length(text));
 
   for (;;) {
     entryIndex &= activeDescriptor->data.hashTableSize - 1;

@@ -2,7 +2,7 @@
 
 #include "word_list.h"
 #include "bit.h"
-#include "crc.h"
+#include "crc32.h"
 #include "str.h"
 
 //---------------------------------------------------------------------------
@@ -71,7 +71,7 @@ inline bool WordList::Equals(const uint8_t *a, const uint8_t *b,
 int WordList::GetWordRank(const uint8_t *word, int defaultRank) const {
   const size_t wordLength = Str::Length(word);
 
-  uint32_t index = Crc32(word, wordLength) & hashMapMask;
+  uint32_t index = Crc32::Hash(word, wordLength) & hashMapMask;
   const size_t offset = GetOffset(index);
   if (offset == (size_t)-1) {
     return defaultRank;

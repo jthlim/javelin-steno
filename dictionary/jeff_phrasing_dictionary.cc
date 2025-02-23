@@ -1,7 +1,7 @@
 //---------------------------------------------------------------------------
 
 #include "jeff_phrasing_dictionary.h"
-#include "../crc.h"
+#include "../crc32.h"
 #include "../list.h"
 #include "../pattern.h"
 #include "../str.h"
@@ -446,7 +446,7 @@ void StenoJeffPhrasingDictionary::RecurseCheckReverseLookup(
     }
   }
 
-  const uint32_t wordHash = Crc32(p, pEnd - p);
+  const uint32_t wordHash = Crc32::Hash(p, pEnd - p);
   const JeffPhrasingReverseHashMapEntry *entry =
       phrasingData.LookupReverseWord(wordHash);
   if (!entry) {
@@ -463,7 +463,7 @@ void StenoJeffPhrasingDictionary::RecurseCheckReverseLookup(
       ++pEnd2;
     }
 
-    const uint32_t wordHash2 = Crc32(p, pEnd2 - p);
+    const uint32_t wordHash2 = Crc32::Hash(p, pEnd2 - p);
     const JeffPhrasingReverseHashMapEntry *entry2 =
         phrasingData.LookupReverseWord(wordHash2);
     if (entry2) {
