@@ -279,7 +279,9 @@ bool StenoEngine::IsNewline(StenoStroke stroke) const {
   }
 
   static constexpr const char *VALID_NEWLINES[] = {
-      "{#Return}", "{#Return}{^}", "\n", "{^}\n{^}", "{^\n^}", "{^~|\n^}",
+      "{#Return}", "{#Return}{^}",                         //
+      "\n",        "{^}\n{^}",     "{^\n^}",  "{^~|\n^}",  //
+      "\\n",       "{^}\\n{^}",    "{^\\n^}", "{^~|\\n^}", //
   };
 
   const char *text = lookup.GetText();
