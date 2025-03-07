@@ -32,7 +32,8 @@
 //---------------------------------------------------------------------------
 
 ButtonScript::ButtonScript(const uint8_t *byteCode)
-    : Script(byteCode, (void (*const *)(Script &))FUNCTION_TABLE) {
+    : Script(byteCode, (void (*const *)(
+                           Script &, const ScriptByteCode *))FUNCTION_TABLE) {
   keyState.ClearAll();
 }
 
@@ -204,7 +205,8 @@ bool ButtonScript::ProcessScanCode(int scanCode, ScanCodeAction action) {
 
 class ButtonScript::Function {
 public:
-  static void PressScanCode(ButtonScript &script) {
+  static void PressScanCode(ButtonScript &script,
+                            const ScriptByteCode *byteCode) {
     const uint32_t key = (uint32_t)script.Pop();
     if (key < 256 && !script.keyState.IsSet(key)) {
       if (!script.ProcessScanCode(key, ScanCodeAction::PRESS)) {
@@ -214,7 +216,8 @@ public:
     }
   }
 
-  static void ReleaseScanCode(ButtonScript &script) {
+  static void ReleaseScanCode(ButtonScript &script,
+                              const ScriptByteCode *byteCode) {
     const uint32_t key = (uint32_t)script.Pop();
     if (key < 256 && script.keyState.IsSet(key)) {
       if (!script.ProcessScanCode(key, ScanCodeAction::RELEASE)) {
@@ -224,7 +227,8 @@ public:
     }
   }
 
-  static void TapScanCode(ButtonScript &script) {
+  static void TapScanCode(ButtonScript &script,
+                          const ScriptByteCode *byteCode) {
     const uint32_t key = (uint32_t)script.Pop();
     if (key < 256) {
       if (!script.ProcessScanCode(key, ScanCodeAction::TAP)) {
@@ -238,7 +242,8 @@ public:
     }
   }
 
-  static void IsScanCodePressed(ButtonScript &script) {
+  static void IsScanCodePressed(ButtonScript &script,
+                                const ScriptByteCode *byteCode) {
     const uint32_t key = (uint32_t)script.Pop();
     int isPressed = 0;
     if (key < 256) {
@@ -247,7 +252,8 @@ public:
     script.Push(isPressed);
   }
 
-  static void PressStenoKey(ButtonScript &script) {
+  static void PressStenoKey(ButtonScript &script,
+                            const ScriptByteCode *byteCode) {
     const uint32_t stenoKey = (uint32_t)script.Pop();
     if (stenoKey < (uint32_t)StenoKey::COUNT) {
 
@@ -256,7 +262,8 @@ public:
     }
   }
 
-  static void ReleaseStenoKey(ButtonScript &script) {
+  static void ReleaseStenoKey(ButtonScript &script,
+                              const ScriptByteCode *byteCode) {
     const uint32_t stenoKey = (uint32_t)script.Pop();
     if (stenoKey < (uint32_t)StenoKey::COUNT) {
       script.stenoState &= ~StenoKeyState(1ULL << stenoKey);
@@ -264,7 +271,8 @@ public:
     }
   }
 
-  static void IsStenoKeyPressed(ButtonScript &script) {
+  static void IsStenoKeyPressed(ButtonScript &script,
+                                const ScriptByteCode *byteCode) {
     const uint32_t stenoKey = (uint32_t)script.Pop();
     int isPressed = 0;
     if (stenoKey < (uint32_t)StenoKey::COUNT) {
@@ -273,9 +281,12 @@ public:
     script.Push(isPressed);
   }
 
-  static void ReleaseAll(ButtonScript &script) { script.ReleaseAll(); }
+  static void ReleaseAll(ButtonScript &script, const ScriptByteCode *byteCode) {
+    script.ReleaseAll();
+  }
 
-  static void IsButtonPressed(ButtonScript &script) {
+  static void IsButtonPressed(ButtonScript &script,
+                              const ScriptByteCode *byteCode) {
     const uint32_t buttonIndex = (uint32_t)script.Pop();
     int isPressed = 0;
     if (buttonIndex < script.buttonState.BIT_COUNT) {
@@ -284,7 +295,7 @@ public:
     script.Push(isPressed);
   }
 
-  static void PressAll(ButtonScript &script) {
+  static void PressAll(ButtonScript &script, const ScriptByteCode *byteCode) {
     const uint8_t pressAllCount = script.inPressAllCount;
     script.inPressAllCount = pressAllCount + 1;
     for (const size_t buttonIndex : script.buttonState) {
@@ -293,19 +304,20 @@ public:
     script.inPressAllCount = pressAllCount;
   }
 
-  static void SendText(ButtonScript &script) {
+  static void SendText(ButtonScript &script, const ScriptByteCode *byteCode) {
     const intptr_t offset = script.Pop();
-    const uint8_t *text = script.GetScriptData<uint8_t>(offset);
+    const uint8_t *text = byteCode->GetScriptData<uint8_t>(offset);
     script.SendText(text);
   }
 
-  static void Console(ButtonScript &script) {
+  static void Console(ButtonScript &script, const ScriptByteCode *byteCode) {
     const intptr_t offset = script.Pop();
-    const char *command = script.GetScriptData<char>(offset);
-    script.RunConsoleCommand(command);
+    const char *command = byteCode->GetScriptData<char>(offset);
+    script.RunConsoleCommand(command, byteCode);
   }
 
-  static bool CheckButtonState(ButtonScript &script, const uint8_t *text) {
+  static bool CheckButtonStateInternal(ButtonScript &script,
+                                       const uint8_t *text) {
     size_t buttonIndex = 0;
     while (*text) {
       switch (*text) {
@@ -333,17 +345,19 @@ public:
     return true;
   }
 
-  static void CheckButtonState(ButtonScript &script) {
+  static void CheckButtonState(ButtonScript &script,
+                               const ScriptByteCode *byteCode) {
     const intptr_t offset = script.Pop();
-    const uint8_t *text = script.GetScriptData<uint8_t>(offset);
-    script.Push(CheckButtonState(script, text));
+    const uint8_t *text = byteCode->GetScriptData<uint8_t>(offset);
+    script.Push(CheckButtonStateInternal(script, text));
   }
 
-  static void IsInPressAll(ButtonScript &script) {
+  static void IsInPressAll(ButtonScript &script,
+                           const ScriptByteCode *byteCode) {
     script.Push(script.inPressAllCount);
   }
 
-  static void SetRgb(ButtonScript &script) {
+  static void SetRgb(ButtonScript &script, const ScriptByteCode *byteCode) {
     const int b = script.Pop() & 0xff;
     const int g = script.Pop() & 0xff;
     const int r = script.Pop() & 0xff;
@@ -351,50 +365,57 @@ public:
     Rgb::SetRgb(id, r, g, b);
   }
 
-  static void GetTime(ButtonScript &script) { script.Push(script.scriptTime); }
+  static void GetTime(ButtonScript &script, const ScriptByteCode *byteCode) {
+    script.Push(script.scriptTime);
+  }
 
-  static void GetLedStatus(ButtonScript &script) {
+  static void GetLedStatus(ButtonScript &script,
+                           const ScriptByteCode *byteCode) {
     const int index = (int)script.Pop();
     script.Push(Connection::GetActiveKeyboardLedStatus().GetLedStatus(index));
   }
 
-  static void SetGpioPin(ButtonScript &script) {
+  static void SetGpioPin(ButtonScript &script, const ScriptByteCode *byteCode) {
     const int enable = script.Pop() != 0;
     const int pin = (int)script.Pop();
     Gpio::SetPin(pin, enable);
   }
 
-  static void ClearDisplay(ButtonScript &script) {
+  static void ClearDisplay(ButtonScript &script,
+                           const ScriptByteCode *byteCode) {
     const int displayId = (int)script.Pop();
     Display::Clear(displayId);
   }
 
-  static void SetAutoDraw(ButtonScript &script) {
+  static void SetAutoDraw(ButtonScript &script,
+                          const ScriptByteCode *byteCode) {
     const int autoDrawId = (int)script.Pop();
     const int displayId = (int)script.Pop();
     Display::SetAutoDraw(displayId, autoDrawId);
   }
 
-  static void SetScreenOn(ButtonScript &script) {
+  static void SetScreenOn(ButtonScript &script,
+                          const ScriptByteCode *byteCode) {
     const bool on = script.Pop() != 0;
     const int displayId = (int)script.Pop();
     Display::SetScreenOn(displayId, on);
   }
 
-  static void SetScreenContrast(ButtonScript &script) {
+  static void SetScreenContrast(ButtonScript &script,
+                                const ScriptByteCode *byteCode) {
     const int contrast = (int)script.Pop();
     const int displayId = (int)script.Pop();
     Display::SetContrast(displayId, contrast);
   }
 
-  static void DrawPixel(ButtonScript &script) {
+  static void DrawPixel(ButtonScript &script, const ScriptByteCode *byteCode) {
     const int y = (int)script.Pop();
     const int x = (int)script.Pop();
     const int displayId = (int)script.Pop();
     Display::DrawPixel(displayId, x, y);
   }
 
-  static void DrawLine(ButtonScript &script) {
+  static void DrawLine(ButtonScript &script, const ScriptByteCode *byteCode) {
     const int y2 = (int)script.Pop();
     const int x2 = (int)script.Pop();
     const int y1 = (int)script.Pop();
@@ -403,9 +424,9 @@ public:
     Display::DrawLine(displayId, x1, y1, x2, y2);
   }
 
-  static void DrawImage(ButtonScript &script) {
+  static void DrawImage(ButtonScript &script, const ScriptByteCode *byteCode) {
     const intptr_t offset = script.Pop();
-    const uint8_t *data = script.GetScriptData<uint8_t>(offset);
+    const uint8_t *data = byteCode->GetScriptData<uint8_t>(offset);
     const int y = (int)script.Pop();
     const int x = (int)script.Pop();
     const int displayId = (int)script.Pop();
@@ -414,9 +435,9 @@ public:
     Display::DrawImage(displayId, x, y, width, height, data);
   }
 
-  static void DrawText(ButtonScript &script) {
+  static void DrawText(ButtonScript &script, const ScriptByteCode *byteCode) {
     const intptr_t offset = script.Pop();
-    const char *text = script.GetScriptData<char>(offset);
+    const char *text = byteCode->GetScriptData<char>(offset);
     const TextAlignment alignment = (TextAlignment)script.Pop();
     const FontId fontId = (FontId)script.Pop();
     const int y = (int)script.Pop();
@@ -425,13 +446,14 @@ public:
     Display::DrawText(displayId, x, y, fontId, alignment, text);
   }
 
-  static void SetDrawColor(ButtonScript &script) {
+  static void SetDrawColor(ButtonScript &script,
+                           const ScriptByteCode *byteCode) {
     const int color = (int)script.Pop();
     const int displayId = (int)script.Pop();
     Display::SetDrawColor(displayId, color);
   }
 
-  static void DrawRect(ButtonScript &script) {
+  static void DrawRect(ButtonScript &script, const ScriptByteCode *byteCode) {
     const int bottom = (int)script.Pop();
     const int right = (int)script.Pop();
     const int top = (int)script.Pop();
@@ -440,7 +462,7 @@ public:
     Display::DrawRect(displayId, left, top, right, bottom);
   }
 
-  static void SetHsv(ButtonScript &script) {
+  static void SetHsv(ButtonScript &script, const ScriptByteCode *byteCode) {
     const int v = (int)script.Pop();
     const int s = (int)script.Pop();
     const int h = (int)script.Pop();
@@ -448,87 +470,104 @@ public:
     Rgb::SetHsv(id, h, s, v);
   }
 
-  static void Rand(ButtonScript &script) {
+  static void Rand(ButtonScript &script, const ScriptByteCode *byteCode) {
     script.Push(Random::GenerateUint32());
   }
 
-  static void IsUsbMounted(ButtonScript &script) {
+  static void IsUsbMounted(ButtonScript &script,
+                           const ScriptByteCode *byteCode) {
     script.Push(UsbStatus::instance.IsConnected() ||
                 SplitUsbStatus::instance.IsConnected());
   }
 
-  static void IsUsbSuspended(ButtonScript &script) {
+  static void IsUsbSuspended(ButtonScript &script,
+                             const ScriptByteCode *byteCode) {
     script.Push(UsbStatus::instance.IsSleeping() ||
                 SplitUsbStatus::instance.IsSleeping());
   }
 
-  static void GetParameter(ButtonScript &script) {
+  static void GetParameter(ButtonScript &script,
+                           const ScriptByteCode *byteCode) {
     const intptr_t offset = script.Pop();
-    const char *parameter = script.GetScriptData<char>(offset);
+    const char *parameter = byteCode->GetScriptData<char>(offset);
 
     char *command = Str::Join("get_parameter ", parameter);
-    script.RunConsoleCommand(command);
+    script.RunConsoleCommand(command, byteCode);
     free(command);
   }
 
-  static void IsConnected(ButtonScript &script) {
+  static void IsConnected(ButtonScript &script,
+                          const ScriptByteCode *byteCode) {
     const ConnectionId connectionId = (ConnectionId)script.Pop();
     script.Push(Connection::IsConnected(connectionId));
   }
 
-  static void GetActiveConnection(ButtonScript &script) {
+  static void GetActiveConnection(ButtonScript &script,
+                                  const ScriptByteCode *byteCode) {
     script.Push((int)Connection::GetActiveConnection());
   }
 
-  static void SetPreferredConnection(ButtonScript &script) {
+  static void SetPreferredConnection(ButtonScript &script,
+                                     const ScriptByteCode *byteCode) {
     const ConnectionId third = (ConnectionId)script.Pop();
     const ConnectionId second = (ConnectionId)script.Pop();
     const ConnectionId first = (ConnectionId)script.Pop();
     Connection::SetPreferredConnection(first, second, third);
   }
 
-  static void IsPairConnected(ButtonScript &script) {
+  static void IsPairConnected(ButtonScript &script,
+                              const ScriptByteCode *byteCode) {
     const PairConnectionId pairConnectionId = (PairConnectionId)script.Pop();
     script.Push(Connection::IsPairConnected(pairConnectionId));
   }
 
-  static void StartBlePairing(ButtonScript &script) { Ble::StartPairing(); }
+  static void StartBlePairing(ButtonScript &script,
+                              const ScriptByteCode *byteCode) {
+    Ble::StartPairing();
+  }
 
-  static void GetBleProfile(ButtonScript &script) {
+  static void GetBleProfile(ButtonScript &script,
+                            const ScriptByteCode *byteCode) {
     script.Push(Ble::GetProfile());
   }
 
-  static void SetBleProfile(ButtonScript &script) {
+  static void SetBleProfile(ButtonScript &script,
+                            const ScriptByteCode *byteCode) {
     Ble::SetProfile((int)script.Pop());
   }
 
-  static void IsHostSleeping(ButtonScript &script) {
+  static void IsHostSleeping(ButtonScript &script,
+                             const ScriptByteCode *byteCode) {
     script.Push(Connection::IsHostSleeping());
   }
 
-  static void IsMainPowered(ButtonScript &script) {
+  static void IsMainPowered(ButtonScript &script,
+                            const ScriptByteCode *byteCode) {
     script.Push(UsbStatus::instance.IsPowered());
   }
 
-  static void IsCharging(ButtonScript &script) {
+  static void IsCharging(ButtonScript &script, const ScriptByteCode *byteCode) {
     script.Push(Power::IsCharging());
   }
 
-  static void GetBatteryPercentage(ButtonScript &script) {
+  static void GetBatteryPercentage(ButtonScript &script,
+                                   const ScriptByteCode *byteCode) {
     script.Push(Power::GetBatteryPercentage());
   }
 
-  static void GetActivePairConnection(ButtonScript &script) {
+  static void GetActivePairConnection(ButtonScript &script,
+                                      const ScriptByteCode *byteCode) {
     script.Push((int)Connection::GetActivePairConnection());
   }
 
-  static void SetBoardPower(ButtonScript &script) {
+  static void SetBoardPower(ButtonScript &script,
+                            const ScriptByteCode *byteCode) {
     Power::SetBoardPower(script.Pop() != 0);
   }
 
-  static void SendEvent(ButtonScript &script) {
+  static void SendEvent(ButtonScript &script, const ScriptByteCode *byteCode) {
     const intptr_t offset = script.Pop();
-    const char *text = script.GetScriptData<char>(offset);
+    const char *text = byteCode->GetScriptData<char>(offset);
     for (size_t i = 0; i < EVENT_HISTORY_COUNT - 1; ++i) {
       script.eventHistory[i] = script.eventHistory[i + 1];
     }
@@ -538,26 +577,29 @@ public:
     }
   }
 
-  static void IsPairPowered(ButtonScript &script) {
+  static void IsPairPowered(ButtonScript &script,
+                            const ScriptByteCode *byteCode) {
     script.Push(SplitUsbStatus::instance.IsPowered());
   }
 
-  static void SetInputHint(ButtonScript &script) {
+  static void SetInputHint(ButtonScript &script,
+                           const ScriptByteCode *byteCode) {
     // Deprecated. Just pop the parameter.
     script.Pop();
   }
 
-  static void SetScript(ButtonScript &script) {
+  static void SetScript(ButtonScript &script, const ScriptByteCode *byteCode) {
     const size_t scriptOffset = script.Pop();
     const ButtonScriptId scriptId = (ButtonScriptId)script.Pop();
     script.SetScript(scriptId, scriptOffset);
   }
 
-  static void IsBoardPowered(ButtonScript &script) {
+  static void IsBoardPowered(ButtonScript &script,
+                             const ScriptByteCode *byteCode) {
     script.Push(Power::IsBoardPowered());
   }
 
-  static void StartTimer(ButtonScript &script) {
+  static void StartTimer(ButtonScript &script, const ScriptByteCode *byteCode) {
     const size_t scriptOffset = script.Pop();
     const bool repeating = script.Pop() != 0;
     const uint32_t interval = (uint32_t)script.Pop();
@@ -565,67 +607,83 @@ public:
     script.StartTimer(id, interval, repeating, scriptOffset);
   }
 
-  static void StopTimer(ButtonScript &script) {
+  static void StopTimer(ButtonScript &script, const ScriptByteCode *byteCode) {
     const int32_t id = script.Pop() & 0x7fffffff;
     script.StopTimer(id);
   }
 
-  static void IsTimerActive(ButtonScript &script) {
+  static void IsTimerActive(ButtonScript &script,
+                            const ScriptByteCode *byteCode) {
     const int32_t id = script.Pop() & 0x7fffffff;
     script.Push(TimerManager::instance.HasTimer(id));
   }
 
-  static void IsBleProfileConnected(ButtonScript &script) {
+  static void IsBleProfileConnected(ButtonScript &script,
+                                    const ScriptByteCode *byteCode) {
     const uint32_t profileId = (uint32_t)script.Pop();
     script.Push(Ble::IsProfileConnected(profileId));
   }
 
-  static void DisconnectBle(ButtonScript &script) { Ble::Disconnect(); }
+  static void DisconnectBle(ButtonScript &script,
+                            const ScriptByteCode *byteCode) {
+    Ble::Disconnect();
+  }
 
-  static void IsBleProfilePaired(ButtonScript &script) {
+  static void IsBleProfilePaired(ButtonScript &script,
+                                 const ScriptByteCode *byteCode) {
     const uint32_t profileId = (uint32_t)script.Pop();
     script.Push(Ble::IsProfilePaired(profileId));
   }
 
-  static void UnpairBle(ButtonScript &script) { Ble::Unpair(); }
+  static void UnpairBle(ButtonScript &script, const ScriptByteCode *byteCode) {
+    Ble::Unpair();
+  }
 
-  static void IsBleProfileSleeping(ButtonScript &script) {
+  static void IsBleProfileSleeping(ButtonScript &script,
+                                   const ScriptByteCode *byteCode) {
     const uint32_t profileId = (uint32_t)script.Pop();
     script.Push(Ble::IsProfileSleeping(profileId));
   }
 
-  static void IsBleAdvertising(ButtonScript &script) {
+  static void IsBleAdvertising(ButtonScript &script,
+                               const ScriptByteCode *byteCode) {
     script.Push(Ble::IsAdvertising());
   }
 
-  static void IsBleScanning(ButtonScript &script) {
+  static void IsBleScanning(ButtonScript &script,
+                            const ScriptByteCode *byteCode) {
     script.Push(Ble::IsScanning());
   }
 
-  static void IsWaitingForUserPresence(ButtonScript &script) {
+  static void IsWaitingForUserPresence(ButtonScript &script,
+                                       const ScriptByteCode *byteCode) {
     script.Push(ButtonScript::IsWaitingForUserPresence());
   }
 
-  static void ReplyUserPresence(ButtonScript &script) {
+  static void ReplyUserPresence(ButtonScript &script,
+                                const ScriptByteCode *byteCode) {
     ButtonScript::ReplyUserPresence(script.Pop() != 0);
   }
 
-  static void SetGpioInputPin(ButtonScript &script) {
+  static void SetGpioInputPin(ButtonScript &script,
+                              const ScriptByteCode *byteCode) {
     const Gpio::Pull pull = (Gpio::Pull)script.Pop();
     const intptr_t pin = script.Pop();
     Gpio::SetInputPin((int)pin, pull);
   }
 
-  static void ReadGpioPin(ButtonScript &script) {
+  static void ReadGpioPin(ButtonScript &script,
+                          const ScriptByteCode *byteCode) {
     const intptr_t pin = script.Pop();
     script.Push(Gpio::GetPin((int)pin));
   }
 
-  static void DrawGrayscaleRange(ButtonScript &script) {
+  static void DrawGrayscaleRange(ButtonScript &script,
+                                 const ScriptByteCode *byteCode) {
     const int max = (int)script.Pop();
     const int min = (int)script.Pop();
     const intptr_t offset = script.Pop();
-    const uint8_t *data = script.GetScriptData<uint8_t>(offset);
+    const uint8_t *data = byteCode->GetScriptData<uint8_t>(offset);
     const int y = (int)script.Pop();
     const int x = (int)script.Pop();
     const int displayId = (int)script.Pop();
@@ -634,18 +692,21 @@ public:
     Display::DrawGrayscaleRange(displayId, x, y, width, height, data, min, max);
   }
 
-  static void SetGpioPinDutyCycle(ButtonScript &script) {
+  static void SetGpioPinDutyCycle(ButtonScript &script,
+                                  const ScriptByteCode *byteCode) {
     const int dutyCycle = (int)script.Pop();
     const int pin = (int)script.Pop();
     Gpio::SetPinDutyCycle(pin, dutyCycle);
   }
 
-  static void CancelAllStenoKeys(ButtonScript &script) {
+  static void CancelAllStenoKeys(ButtonScript &script,
+                                 const ScriptByteCode *byteCode) {
     script.stenoState = 0;
     script.CancelAllStenoKeys();
   }
 
-  static void CancelStenoKey(ButtonScript &script) {
+  static void CancelStenoKey(ButtonScript &script,
+                             const ScriptByteCode *byteCode) {
     const uint32_t stenoKey = (uint32_t)script.Pop();
     if (stenoKey < (uint32_t)StenoKey::COUNT) {
       const StenoKeyState state = StenoKeyState(1ULL << stenoKey);
@@ -654,29 +715,35 @@ public:
     }
   }
 
-  static void StopSound(ButtonScript &script) { Sound::Stop(); }
+  static void StopSound(ButtonScript &script, const ScriptByteCode *byteCode) {
+    Sound::Stop();
+  }
 
-  static void PlayFrequency(ButtonScript &script) {
+  static void PlayFrequency(ButtonScript &script,
+                            const ScriptByteCode *byteCode) {
     const uint32_t frequency = (uint32_t)script.Pop();
     Sound::PlayFrequency(frequency);
   }
 
-  static void PlaySequence(ButtonScript &script) {
+  static void PlaySequence(ButtonScript &script,
+                           const ScriptByteCode *byteCode) {
 
     const intptr_t offset = script.Pop();
     const SoundSequenceData *data =
-        script.GetScriptData<SoundSequenceData>(offset);
+        byteCode->GetScriptData<SoundSequenceData>(offset);
     Sound::PlaySequence(data);
   }
 
-  static void PlayWaveform(ButtonScript &script) {
+  static void PlayWaveform(ButtonScript &script,
+                           const ScriptByteCode *byteCode) {
     const uint32_t sampleRate = (uint32_t)script.Pop();
     const uint32_t length = (uint32_t)script.Pop();
     const uint8_t *data = (const uint8_t *)script.Pop();
     Sound::PlayWaveform(data, length, sampleRate);
   }
 
-  static void CallAllReleaseScripts(ButtonScript &script) {
+  static void CallAllReleaseScripts(ButtonScript &script,
+                                    const ScriptByteCode *byteCode) {
     const uint8_t releaseAllCount = script.inReleaseAllCount;
     script.inReleaseAllCount = releaseAllCount + 1;
     for (const size_t buttonIndex : script.buttonState) {
@@ -685,19 +752,23 @@ public:
     script.inReleaseAllCount = releaseAllCount;
   }
 
-  static void IsInReleaseAll(ButtonScript &script) {
+  static void IsInReleaseAll(ButtonScript &script,
+                             const ScriptByteCode *byteCode) {
     script.Push(script.inReleaseAllCount);
   }
 
-  static void GetPressCount(ButtonScript &script) {
+  static void GetPressCount(ButtonScript &script,
+                            const ScriptByteCode *byteCode) {
     script.Push(script.pressCount);
   }
 
-  static void GetReleaseCount(ButtonScript &script) {
+  static void GetReleaseCount(ButtonScript &script,
+                              const ScriptByteCode *byteCode) {
     script.Push(script.releaseCount);
   }
 
-  static void IsStenoJoinNext(ButtonScript &script) {
+  static void IsStenoJoinNext(ButtonScript &script,
+                              const ScriptByteCode *byteCode) {
 #if JAVELIN_USE_EMBEDDED_STENO
     script.Push(StenoEngine::GetInstance().IsJoinNext());
 #else
@@ -705,15 +776,17 @@ public:
 #endif
   }
 
-  static void CallPress(ButtonScript &script) {
+  static void CallPress(ButtonScript &script, const ScriptByteCode *byteCode) {
     script.CallPress(script.Pop(), script.scriptTime);
   }
 
-  static void CallRelease(ButtonScript &script) {
+  static void CallRelease(ButtonScript &script,
+                          const ScriptByteCode *byteCode) {
     script.CallPress(script.Pop(), script.scriptTime);
   }
 
-  static void PressMouseButton(ButtonScript &script) {
+  static void PressMouseButton(ButtonScript &script,
+                               const ScriptByteCode *byteCode) {
     const uint32_t mouseButton = (uint32_t)script.Pop();
     if (mouseButton < 32 && !script.mouseButtonState.IsSet(mouseButton)) {
       script.mouseButtonState.Set(mouseButton);
@@ -721,7 +794,8 @@ public:
     }
   }
 
-  static void ReleaseMouseButton(ButtonScript &script) {
+  static void ReleaseMouseButton(ButtonScript &script,
+                                 const ScriptByteCode *byteCode) {
     const uint32_t mouseButton = (uint32_t)script.Pop();
     if (mouseButton < 32 && script.mouseButtonState.IsSet(mouseButton)) {
       script.mouseButtonState.Clear(mouseButton);
@@ -729,7 +803,8 @@ public:
     }
   }
 
-  static void TapMouseButton(ButtonScript &script) {
+  static void TapMouseButton(ButtonScript &script,
+                             const ScriptByteCode *byteCode) {
     const uint32_t mouseButton = (uint32_t)script.Pop();
     if (mouseButton < 32) {
       if (script.mouseButtonState.IsSet(mouseButton)) {
@@ -741,7 +816,8 @@ public:
     }
   }
 
-  static void IsMouseButtonPressed(ButtonScript &script) {
+  static void IsMouseButtonPressed(ButtonScript &script,
+                                   const ScriptByteCode *byteCode) {
     const uint32_t mouseButton = (uint32_t)script.Pop();
     int isPressed = 0;
     if (mouseButton < 32) {
@@ -750,61 +826,80 @@ public:
     script.Push(isPressed);
   }
 
-  static void MoveMouse(ButtonScript &script) {
+  static void MoveMouse(ButtonScript &script, const ScriptByteCode *byteCode) {
     const int32_t dy = (int32_t)script.Pop();
     const int32_t dx = (int32_t)script.Pop();
     Mouse::Move(dx, dy);
   }
 
-  static void VWheelMouse(ButtonScript &script) {
+  static void VWheelMouse(ButtonScript &script,
+                          const ScriptByteCode *byteCode) {
     const int32_t delta = (int32_t)script.Pop();
     Mouse::VWheel(delta);
   }
 
-  static void SetEnableButtonStates(ButtonScript &script) {
+  static void SetEnableButtonStates(ButtonScript &script,
+                                    const ScriptByteCode *byteCode) {
     ButtonScriptManager::GetInstance().SetAllowButtonStateUpdates(
         script.Pop() != 0);
   }
 
-  static void PrintValue(ButtonScript &script) {
+  static void PrintValue(ButtonScript &script, const ScriptByteCode *byteCode) {
     const intptr_t value = script.Pop();
     const intptr_t offset = script.Pop();
-    const uint8_t *text = script.GetScriptData<uint8_t>(offset);
+    const uint8_t *text = byteCode->GetScriptData<uint8_t>(offset);
     Console::Printf("%s: %zd (0x%zx)\n\n", text, value, value);
   }
 
-  static void GetWpm(ButtonScript &script) {
+  static void GetWpm(ButtonScript &script, const ScriptByteCode *byteCode) {
     const int seconds = (int)script.Pop();
     script.Push(WpmTracker::instance.GetWpm(seconds));
   }
 
-  static void SetPairBoardPower(ButtonScript &script) {
+  static void SetPairBoardPower(ButtonScript &script,
+                                const ScriptByteCode *byteCode) {
     const PowerOverride powerOverride = (PowerOverride)script.Pop();
     SplitPowerOverride::Set(powerOverride);
   }
 
-  static void HWheelMouse(ButtonScript &script) {
+  static void HWheelMouse(ButtonScript &script,
+                          const ScriptByteCode *byteCode) {
     const int32_t delta = (int32_t)script.Pop();
     Mouse::HWheel(delta);
   }
 
-  static void EnableConsole(ButtonScript &script) { Console::Enable(); }
-  static void DisableConsole(ButtonScript &script) { Console::Disable(); }
-  static void IsConsoleEnabled(ButtonScript &script) {
+  static void EnableConsole(ButtonScript &script,
+                            const ScriptByteCode *byteCode) {
+    Console::Enable();
+  }
+  static void DisableConsole(ButtonScript &script,
+                             const ScriptByteCode *byteCode) {
+    Console::Disable();
+  }
+  static void IsConsoleEnabled(ButtonScript &script,
+                               const ScriptByteCode *byteCode) {
     script.Push(Console::IsEnabled());
   }
 
-  static void EnableFlashWrite(ButtonScript &script) { Flash::EnableWrite(); }
-  static void DisableFlashWrite(ButtonScript &script) { Flash::DisableWrite(); }
-  static void IsFlashWriteEnabled(ButtonScript &script) {
+  static void EnableFlashWrite(ButtonScript &script,
+                               const ScriptByteCode *byteCode) {
+    Flash::EnableWrite();
+  }
+  static void DisableFlashWrite(ButtonScript &script,
+                                const ScriptByteCode *byteCode) {
+    Flash::DisableWrite();
+  }
+  static void IsFlashWriteEnabled(ButtonScript &script,
+                                  const ScriptByteCode *byteCode) {
     script.Push(Flash::IsWriteEnabled());
   }
 
-  static void IsInReinit(ButtonScript &script) {
+  static void IsInReinit(ButtonScript &script, const ScriptByteCode *byteCode) {
     script.Push(script.isInReinit);
   }
 
-  static void SetDrawColorRgb(ButtonScript &script) {
+  static void SetDrawColorRgb(ButtonScript &script,
+                              const ScriptByteCode *byteCode) {
     const int r = (int)script.Pop();
     const int g = (int)script.Pop();
     const int b = (int)script.Pop();
@@ -812,7 +907,8 @@ public:
     Display::SetDrawColorRgb(displayId, r, g, b);
   }
 
-  static void SetDrawColorHsv(ButtonScript &script) {
+  static void SetDrawColorHsv(ButtonScript &script,
+                              const ScriptByteCode *byteCode) {
     const int v = (int)script.Pop();
     const int s = (int)script.Pop();
     const int h = (int)script.Pop();
@@ -820,7 +916,7 @@ public:
     Display::SetDrawColorHsv(displayId, h, s, v);
   }
 
-  static void DrawEffect(ButtonScript &script) {
+  static void DrawEffect(ButtonScript &script, const ScriptByteCode *byteCode) {
     const int parameter = (int)script.Pop();
     const int effectId = (int)script.Pop();
     const int displayId = (int)script.Pop();
@@ -828,7 +924,8 @@ public:
   }
 };
 
-constexpr void (*ButtonScript::FUNCTION_TABLE[])(ButtonScript &) = {
+constexpr void (*ButtonScript::FUNCTION_TABLE[])(ButtonScript &,
+                                                 const ScriptByteCode *) = {
     &Function::PressScanCode,
     &Function::ReleaseScanCode,
     &Function::TapScanCode,
@@ -943,18 +1040,19 @@ void ButtonScript::PrintEventHistory() {
   Console::Printf("]\n\n");
 }
 
-void ButtonScript::RunConsoleCommand(const char *command) {
+void ButtonScript::RunConsoleCommand(const char *command,
+                                     const ScriptByteCode *byteCode) {
   consoleWriter.Reset();
 
   const uint8_t *result;
   if (Console::RunCommand(command, consoleWriter)) {
     consoleWriter.AddTrailingNull();
-    result = FindStringOrReturnOriginal(consoleWriter.buffer);
+    result = byteCode->FindStringOrReturnOriginal(consoleWriter.buffer);
   } else {
     result = (const uint8_t *)"Invalid console command";
   }
 
-  PushDataOffset(result);
+  Push(byteCode->GetDataOffset(result));
 }
 
 //---------------------------------------------------------------------------

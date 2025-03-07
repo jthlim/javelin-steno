@@ -216,22 +216,29 @@ void StenoEngine::LookupStroke_Binding(void *context, const char *commandLine) {
 
   const ExternalFlashSentry externalFlashSentry;
   StenoEngine *engine = (StenoEngine *)context;
-  const StenoDictionary *dictionary =
-      engine->GetDictionary().GetDictionaryForOutline(parser.strokes,
-                                                      parser.length);
+  List<const StenoDictionary *> dictionaries;
+  engine->GetDictionary().GetDictionariesForOutline(
+      dictionaries, parser.strokes, parser.length);
 
-  if (dictionary != nullptr) {
-    const StenoDictionaryLookupResult result =
-        dictionary->Lookup(parser.strokes, parser.length);
+  if (dictionaries.IsNotEmpty()) {
+    Console::Printf("[");
+    bool isFirstTime = true;
+    for (const StenoDictionary *dictionary : dictionaries) {
+      const StenoDictionaryLookupResult result =
+          dictionary->Lookup(parser.strokes, parser.length);
 
-    Console::Printf("{\"definition\":\"%J\",\"dictionary\":\"%J\"",
-                    result.GetText(), dictionary->GetName());
+      Console::Printf("%s{\"definition\":\"%J\",\"dictionary\":\"%J\"",
+                      isFirstTime ? "\n\t" : ",\n\t", result.GetText(),
+                      dictionary->GetName());
 
-    if (dictionary->CanRemove()) {
-      Console::Printf(",\"can_remove\":true");
+      if (dictionary->CanRemove()) {
+        Console::Printf(",\"can_remove\":true");
+      }
+
+      Console::Printf("}");
+      isFirstTime = false;
     }
-
-    Console::Printf("}\n\n");
+    Console::Printf("\n]\n\n");
   } else {
     StenoSegmentList segments;
     ConversionBuffer &buffer = engine->previousConversionBuffer;
@@ -241,11 +248,11 @@ void StenoEngine::LookupStroke_Binding(void *context, const char *commandLine) {
     if (!buffer.segmentBuilder.HasRawStroke()) {
       Console::Printf("{\"definition\":\"");
 
-      bool isFirst = true;
+      const char *format = "%J";
       StenoTokenizer *tokenizer = StenoTokenizer::Create(segments);
       while (tokenizer->HasMore()) {
-        Console::Printf(isFirst ? "%J" : " %J", tokenizer->GetNext().text);
-        isFirst = false;
+        Console::Printf(format, tokenizer->GetNext().text);
+        format = " %J";
       }
       delete tokenizer;
       Console::Printf("\"}\n\n");

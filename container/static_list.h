@@ -3,7 +3,7 @@
 #pragma once
 #include "sized_list.h"
 #include <assert.h>
-#include <stdlib.h>
+#include <stddef.h>
 
 //---------------------------------------------------------------------------
 

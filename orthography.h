@@ -1,9 +1,9 @@
 //---------------------------------------------------------------------------
 
 #pragma once
+#include "container/sized_list.h"
 #include "malloc_allocate.h"
 #include "pattern.h"
-#include "sized_list.h"
 #include "stroke.h"
 #include "xip_pointer.h"
 #include <stddef.h>
@@ -48,8 +48,6 @@ struct StenoOrthography {
   static const StenoOrthography emptyOrthography;
 
   void Print() const;
-
-  static void Print_Binding(void *context, const char *commandLine);
 };
 
 //---------------------------------------------------------------------------

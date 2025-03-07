@@ -119,6 +119,14 @@ struct ScriptByteCode {
     return (const StenoScriptHashTable *)(base + stringHashTableOffset);
   }
 
+  template <typename T> const T *GetScriptData(size_t offset) const {
+    return (const T *)(intptr_t(this) + offset);
+  }
+
+  intptr_t GetDataOffset(const void *p) const {
+    return intptr_t(p) - intptr_t(this);
+  }
+
   size_t GetLength() const {
     return stringHashTableOffset + 2 + sizeof(uint16_t) * GetHashTable()->size;
   }

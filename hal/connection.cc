@@ -102,10 +102,12 @@ PairConnectionId Connection::GetActivePairConnection() {
   return PairConnectionId::NONE;
 }
 
-bool Connection::IsHostSleeping() {
-  const ConnectionId activeConnectionId = GetActiveConnection();
+bool Connection::IsHostSleeping(ConnectionId connectionId) {
+  const ConnectionId activeConnectionId = connectionId == ConnectionId::ACTIVE
+                                              ? GetActiveConnection()
+                                              : connectionId;
   switch (activeConnectionId) {
-  case ConnectionId::ACTIVE:
+  case ConnectionId::NONE:
     return false;
   case ConnectionId::BLE:
     return Ble::IsSleeping();

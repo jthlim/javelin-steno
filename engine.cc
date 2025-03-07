@@ -23,7 +23,6 @@
 #if JAVELIN_USE_EMBEDDED_STENO
 JavelinStaticAllocate<StenoEngine> StenoEngine::container;
 #endif
-const StenoStroke StenoEngine::UNDO_STROKE(StrokeMask::STAR);
 
 //---------------------------------------------------------------------------
 
@@ -36,9 +35,11 @@ void StenoEngine::TemplateValue::Set(char *newValue) {
 
 StenoEngine::StenoEngine(StenoDictionary &dictionary,
                          const StenoCompiledOrthography &orthography,
+                         StenoStroke undoStroke,
                          StenoUserDictionary *userDictionary)
-    : activeDictionary(&dictionary), storedDictionaries(&dictionary),
-      orthography(orthography), userDictionary(userDictionary) {
+    : undoStroke(undoStroke), activeDictionary(&dictionary),
+      storedDictionaries(&dictionary), orthography(orthography),
+      userDictionary(userDictionary) {
   previousConversionBuffer.Prepare(&this->orthography, &GetDictionary());
   nextConversionBuffer.Prepare(&this->orthography, &GetDictionary());
   ResetState();
@@ -53,7 +54,7 @@ void StenoEngine::Process(const StenoKeyState &value, StenoAction action) {
 
   ++strokeCount;
   const StenoStroke stroke = value.ToStroke();
-  if (stroke == UNDO_STROKE) {
+  if (stroke == undoStroke) {
     ProcessUndo();
   } else {
     ProcessStroke(stroke);
@@ -444,7 +445,7 @@ TEST_BEGIN("Engine: Add Translation Test") {
       dictionaries, sizeof(dictionaries) / sizeof(*dictionaries)); // NOLINT
   const StenoCompiledOrthography orthography(
       StenoOrthography::emptyOrthography);
-  StenoEngine engine(dictionaryList, orthography, userDictionary);
+  StenoEngine engine(dictionaryList, orthography, StenoStroke(StrokeMask::STAR), userDictionary);
   tester.TestAddTranslation(engine);
 
   delete userDictionary;
@@ -469,7 +470,7 @@ TEST_BEGIN("Engine: Scancode Add Translation Test") {
       dictionaries, sizeof(dictionaries) / sizeof(*dictionaries)); // NOLINT
   const StenoCompiledOrthography orthography(
       StenoOrthography::emptyOrthography);
-  StenoEngine engine(dictionaryList, orthography, userDictionary);
+  StenoEngine engine(dictionaryList, orthography, StenoStroke(StrokeMask::STAR), userDictionary);
   tester.TestScancodeAddTranslation(engine);
 
   delete userDictionary;

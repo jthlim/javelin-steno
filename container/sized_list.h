@@ -1,7 +1,7 @@
 //---------------------------------------------------------------------------
 
 #pragma once
-#include "mem.h"
+#include "../mem.h"
 #include <assert.h>
 #include <stdlib.h>
 

@@ -161,7 +161,7 @@ private:
   const uint8_t *p;
 };
 
-[[gnu::weak]] void Script::Run(size_t offset) {
+[[gnu::weak]] void Script::Run(size_t offset, const uint8_t *byteCode) {
   using BC = StenoScriptByteCode;
   using OP = StenoScriptOperator;
 
@@ -174,8 +174,8 @@ private:
   intptr_t *frame = stackTop;
   StackPointer stack(*this);
 
-  const uint8_t *const byteCode = (const uint8_t *)this->byteCode;
-  void (*const *const functionTable)(Script &) = this->functionTable;
+  void (*const *const functionTable)(Script &, const ScriptByteCode *) =
+      this->functionTable;
   ProgramCounter p = byteCode + offset;
 
 #define CONTINUE goto next;
@@ -352,14 +352,14 @@ next:
   case BC::CALL_INTERNAL: {
     stack.WriteBack(*this);
     const uint8_t function = p.ReadU8();
-    (*functionTable[function])(*this);
+    (*functionTable[function])(*this, (const ScriptByteCode *)byteCode);
     stack.Load(*this);
     CONTINUE;
   }
   case BC::CALL: {
     const size_t offset = p.ReadU16();
     stack.WriteBack(*this);
-    Run(offset);
+    Run(offset, byteCode);
     stack.Load(*this);
     CONTINUE;
   }

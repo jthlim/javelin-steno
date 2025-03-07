@@ -18,7 +18,7 @@ StenoJeffNumbersDictionary StenoJeffNumbersDictionary::instance;
 static void ToRoman(char *outBuffer, int value, bool useLower);
 static char *ToWords(char *digits);
 
-const StenoStroke ACTIVATION_MASK(StrokeMask::NUM | StrokeMask::UNICODE);
+const StenoStroke ACTIVATION_MASK(StrokeMask::NUM | ~StrokeMask::ALL);
 const StenoStroke ACTIVATION_MATCH(StrokeMask::NUM);
 
 const StenoStroke ALL_DIGITS_MASK(StrokeMask::SL | StrokeMask::TL |

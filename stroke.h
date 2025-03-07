@@ -2,7 +2,9 @@
 
 #pragma once
 #include "bit.h"
-#include "fast_iterable.h"
+#include "container/fast_iterable.h"
+#include "container/list.h"
+#include "container/sized_list.h"
 
 //---------------------------------------------------------------------------
 
@@ -13,9 +15,11 @@ enum StrokeKeyType : uint8_t {
 };
 
 struct StrokeKey {
-  char c;
+  uint16_t c;
   StrokeKeyType type;
   uint32_t mask;
+
+  bool IsSingleBit() const { return (mask & (mask - 1)) == 0; }
 };
 
 //---------------------------------------------------------------------------
@@ -144,13 +148,17 @@ public:
     }
   }
 
-  static constexpr size_t MAX_STRING_LENGTH = 33;
+  static void SetLanguage(const SizedList<StrokeKey> &keys);
+
+  static constexpr size_t MAX_STRING_LENGTH = 94;
 
 private:
   uint32_t keyState;
 
   static FastIterable<const StrokeKey> formatter;
   static FastIterable<const StrokeKey> parser;
+  static List<StrokeKey> formatters;
+  static List<StrokeKey> parsers;
 };
 
 static_assert(sizeof(StenoStroke) == 4);

@@ -10,7 +10,8 @@
 
 class Script {
 public:
-  Script(const uint8_t *byteCode, void (*const *functionTable)(Script &))
+  Script(const uint8_t *byteCode,
+         void (*const *functionTable)(Script &, const ScriptByteCode *byteCode))
       : byteCode((const ScriptByteCode *)byteCode),
         functionTable(functionTable) {}
 
@@ -40,6 +41,9 @@ public:
   void ExecuteScriptIndex(size_t index) {
     ExecuteScript(byteCode->scriptOffsets[index]);
   }
+  void ExecuteByteCode(const ScriptByteCode *code) {
+    Run(code->scriptOffsets[0], (const uint8_t *)code);
+  }
 
   void ExecuteScript(size_t offset, const intptr_t *parameters,
                      size_t parameterCount);
@@ -59,20 +63,10 @@ public:
   void SetGlobal(size_t i, intptr_t v) { globals[i] = v; }
   intptr_t GetGlobal(size_t i) const { return globals[i]; }
 
-  const uint8_t *FindStringOrReturnOriginal(const uint8_t *string) const {
-    return byteCode->FindStringOrReturnOriginal(string);
-  }
-
 protected:
-  template <typename T> const T *GetScriptData(size_t offset) {
-    return (const T *)(intptr_t(byteCode) + offset);
-  }
-  template <typename T> void PushDataOffset(const T *data) {
-    Push(intptr_t(data) - intptr_t(byteCode));
-  }
-
   // Executes at offset with no stack and offset checks.
-  void Run(size_t offset);
+  void Run(size_t offset, const uint8_t *byteCode);
+  void Run(size_t offset) { Run(offset, (const uint8_t *)byteCode); }
 
 private:
   class StackPointer;
@@ -82,7 +76,7 @@ private:
 
   const ScriptByteCode *const byteCode;
   intptr_t *stackTop = stack;
-  void (*const *const functionTable)(Script &);
+  void (*const *const functionTable)(Script &, const ScriptByteCode *byteCode);
   intptr_t globals[256];
   intptr_t stack[MAX_STACK_SIZE];
 };

@@ -31,6 +31,7 @@ public:
 
   void SetAllowButtonStateUpdates(bool value);
 
+  void ExecuteByteCode(const ScriptByteCode *byteCode);
   void ExecuteScriptIndex(size_t index, uint32_t scriptTime,
                           const intptr_t *parameters, size_t parameterCount) {
     script.ExecuteScriptIndex(index, scriptTime, parameters, parameterCount);
@@ -51,6 +52,7 @@ public:
   static void PrintScriptGlobals_Binding(void *context,
                                          const char *commandLine);
   static void SetScriptGlobal_Binding(void *context, const char *commandLine);
+  static void RunScript_Binding(void *context, const char *commandLine);
   void AddConsoleCommands(Console &console);
   static void PrintEventHistory() { container->script.PrintEventHistory(); }
 

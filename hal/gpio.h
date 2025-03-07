@@ -4,6 +4,10 @@
 
 //---------------------------------------------------------------------------
 
+class Console;
+
+//---------------------------------------------------------------------------
+
 class Gpio {
 public:
   enum Pull {
@@ -16,6 +20,9 @@ public:
   static bool GetPin(int pin);
   static void SetPin(int pin, bool value);
   static void SetPinDutyCycle(int pin, int dutyCycle);
+
+  static void AddConsoleCommands(Console &console);
+  static void SetPin_Binding(void *context, const char *commandLine);
 };
 
 //---------------------------------------------------------------------------

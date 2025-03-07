@@ -20,6 +20,11 @@ public:
   GetDictionaryForOutline(const StenoDictionaryLookup &lookup) const final;
   using super::GetDictionaryForOutline;
 
+  virtual void
+  GetDictionariesForOutline(List<const StenoDictionary *> &results,
+                            const StenoDictionaryLookup &lookup) const;
+  using super::GetDictionariesForOutline;
+
   virtual void ReverseLookup(StenoReverseDictionaryLookup &lookup) const;
 
   virtual bool Remove(const char *dictionaryName, const StenoStroke *strokes,

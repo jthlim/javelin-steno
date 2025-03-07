@@ -28,6 +28,7 @@ class StenoEngine final : public StenoProcessorElement {
 public:
   StenoEngine(StenoDictionary &dictionary,
               const StenoCompiledOrthography &orthography,
+              StenoStroke undoStroke = StenoStroke(StrokeMask::STAR),
               StenoUserDictionary *userDictionary = nullptr);
 
   size_t GetStrokeCount() const { return strokeCount; }
@@ -86,9 +87,9 @@ public:
   char *ConvertText(StenoSegmentList &segments, size_t startingOffset);
 
 private:
-  static const StenoStroke UNDO_STROKE;
   static constexpr size_t PAPER_TAPE_SUGGESTION_SEGMENT_LIMIT = 8;
 
+  StenoStroke undoStroke;
   bool suggestionsEnabled = false;
   bool templateValueUpdateEnabled = false;
   bool textLogEnabled = false;

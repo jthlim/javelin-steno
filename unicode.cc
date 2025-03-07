@@ -2,8 +2,7 @@
 
 #include "unicode.h"
 #include "unicode_data.h"
-#include <assert.h>
-#include <stdlib.h>
+#include <stddef.h>
 
 //---------------------------------------------------------------------------
 

@@ -1,9 +1,9 @@
 //---------------------------------------------------------------------------
 
 #pragma once
-#include "interval.h"
+#include "../interval.h"
 #include "iterable.h"
-#include <stdlib.h>
+#include <stddef.h>
 
 //---------------------------------------------------------------------------
 

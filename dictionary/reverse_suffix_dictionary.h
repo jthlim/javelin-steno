@@ -1,8 +1,8 @@
 //---------------------------------------------------------------------------
 
 #pragma once
-#include "../list.h"
-#include "../sized_list.h"
+#include "../container/list.h"
+#include "../container/sized_list.h"
 #include "wrapped_dictionary.h"
 
 //---------------------------------------------------------------------------

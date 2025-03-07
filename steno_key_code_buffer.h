@@ -1,14 +1,14 @@
 //---------------------------------------------------------------------------
 
 #pragma once
-#include <stddef.h>
 
+#include "container/list.h"
 #include "dictionary/dictionary.h"
-#include "list.h"
 #include "orthography.h"
 #include "segment.h"
 #include "state.h"
 #include "steno_key_code.h"
+#include <stddef.h>
 
 //---------------------------------------------------------------------------
 

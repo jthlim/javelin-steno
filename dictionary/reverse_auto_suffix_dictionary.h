@@ -1,7 +1,7 @@
 //---------------------------------------------------------------------------
 
 #pragma once
-#include "../list.h"
+#include "../container/list.h"
 #include "../pattern.h"
 #include "../pattern_quick_reject.h"
 #include "wrapped_dictionary.h"

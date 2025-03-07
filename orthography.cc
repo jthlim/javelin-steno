@@ -150,65 +150,53 @@ constexpr StenoOrthography StenoOrthography::emptyOrthography = {
 //---------------------------------------------------------------------------
 
 void StenoOrthography::Print() const {
-  Console::Printf("{"
-                  "\n\t\"rules\": [");
-  for (size_t i = 0; i < rules.GetCount(); ++i) {
-    if (i != 0) {
-      Console::Printf(",");
+  Console::Printf("orthography:"
+                  "\n\trules:");
+  if (rules.IsEmpty()) {
+    Console::Printf(" []");
+  } else {
+    for (size_t i = 0; i < rules.GetCount(); ++i) {
+      Console::Printf("\n\t\tpattern: \"%J\""
+                      "\n\t\treplacement: \"%J\"",
+                      rules[i].testPattern, rules[i].replacement);
     }
-    Console::Printf("\n\t\t{"
-                    "\n\t\t\t\"pattern\": \"%J\","
-                    "\n\t\t\t\"replacement\": \"%J\""
-                    "\n\t\t}",
-                    rules[i].testPattern, rules[i].replacement);
   }
-  Console::Printf("\n\t],"
-                  "\n\t\"aliases\": [");
-  for (size_t i = 0; i < aliases.GetCount(); ++i) {
-    if (i != 0) {
-      Console::Printf(",");
+  Console::Printf("\n\taliases:");
+  if (aliases.IsEmpty()) {
+    Console::Printf(" []");
+  } else {
+    for (size_t i = 0; i < aliases.GetCount(); ++i) {
+      Console::Printf("\n\t\tsuffix: \"%J\""
+                      "\n\t\talias: \"%J\"",
+                      aliases[i].text, aliases[i].alias);
     }
-    Console::Printf("\n\t\t{"
-                    "\n\t\t\t\"suffix\": \"%J\","
-                    "\n\t\t\t\"alias\": \"%J\""
-                    "\n\t\t}",
-                    aliases[i].text, aliases[i].alias);
   }
-  Console::Printf("\n\t],"
-                  "\n\t\"auto-suffix\": [");
-  for (size_t i = 0; i < autoSuffixes.GetCount(); ++i) {
-    if (i != 0) {
-      Console::Printf(",");
+  Console::Printf("\n\tauto-suffix:");
+  if (autoSuffixes.IsEmpty()) {
+    Console::Printf(" []");
+  } else {
+    for (size_t i = 0; i < autoSuffixes.GetCount(); ++i) {
+      Console::Printf("\n\t\tkey: \"%t\""
+                      "\n\t\tsuffix: \"%J\"",
+                      &autoSuffixes[i].stroke, autoSuffixes[i].text + 1);
     }
-    Console::Printf("\n\t\t{"
-                    "\n\t\t\t\"key\": \"%t\","
-                    "\n\t\t\t\"suffix\": \"%J\""
-                    "\n\t\t}",
-                    &autoSuffixes[i].stroke, autoSuffixes[i].text + 1);
   }
-  Console::Printf("\n\t],"
-                  "\n\t\"reverse-auto-suffix\": [");
-  for (size_t i = 0; i < reverseAutoSuffixes.GetCount(); ++i) {
-    if (i != 0) {
-      Console::Printf(",");
+  Console::Printf("\n\treverse-auto-suffix:");
+  if (reverseAutoSuffixes.IsEmpty()) {
+    Console::Printf(" []");
+  } else {
+    for (size_t i = 0; i < reverseAutoSuffixes.GetCount(); ++i) {
+      Console::Printf("\n\t\tkey: \"%t\""
+                      "\n\t\tsuppressMask: \"%t\""
+                      "\n\t\tpattern: \"%J\""
+                      "\n\t\treplacement: \"%J\"",
+                      &reverseAutoSuffixes[i].autoSuffix->stroke,
+                      &reverseAutoSuffixes[i].suppressMask,
+                      reverseAutoSuffixes[i].testPattern,
+                      reverseAutoSuffixes[i].replacement);
     }
-    Console::Printf("\n\t\t{"
-                    "\n\t\t\t\"key\": \"%t\","
-                    "\n\t\t\t\"suppressMask\": \"%t\","
-                    "\n\t\t\t\"pattern\": \"%J\","
-                    "\n\t\t\t\"replacement\": \"%J\""
-                    "\n\t\t}",
-                    &reverseAutoSuffixes[i].autoSuffix->stroke,
-                    &reverseAutoSuffixes[i].suppressMask,
-                    reverseAutoSuffixes[i].testPattern,
-                    reverseAutoSuffixes[i].replacement);
   }
-  Console::Printf("\n\t]\n}\n\n");
-}
-
-void StenoOrthography::Print_Binding(void *context, const char *commandLine) {
-  const ExternalFlashSentry sentry;
-  ((StenoOrthography *)context)->Print();
+  Console::Printf("\n\n");
 }
 
 //---------------------------------------------------------------------------

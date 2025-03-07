@@ -36,7 +36,7 @@ public:
   static KeyboardLedStatus GetActiveKeyboardLedStatus();
 
   // This is based on the currently active connection.
-  static bool IsHostSleeping();
+  static bool IsHostSleeping(ConnectionId connectionId = ConnectionId::ACTIVE);
 
   static void PrintInfo();
 

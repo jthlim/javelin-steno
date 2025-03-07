@@ -1,8 +1,8 @@
 //---------------------------------------------------------------------------
 
 #pragma once
-#include "../fast_iterable.h"
-#include "../list.h"
+#include "../container/fast_iterable.h"
+#include "../container/list.h"
 #include "dictionary.h"
 
 //---------------------------------------------------------------------------
@@ -66,6 +66,10 @@ public:
 
   virtual const StenoDictionary *
   GetDictionaryForOutline(const StenoDictionaryLookup &lookup) const;
+
+  virtual void
+  GetDictionariesForOutline(List<const StenoDictionary *> &results,
+                            const StenoDictionaryLookup &lookup) const;
 
   virtual void ReverseLookup(StenoReverseDictionaryLookup &lookup) const;
 

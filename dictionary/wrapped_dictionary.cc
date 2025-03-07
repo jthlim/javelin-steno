@@ -24,6 +24,12 @@ const StenoDictionary *StenoWrappedDictionary::GetDictionaryForOutline(
   return lookupDictionary->GetDictionaryForOutline(lookup);
 }
 
+void StenoWrappedDictionary::GetDictionariesForOutline(
+    List<const StenoDictionary *> &results,
+    const StenoDictionaryLookup &lookup) const {
+  return lookupDictionary->GetDictionariesForOutline(results, lookup);
+}
+
 //---------------------------------------------------------------------------
 
 void StenoWrappedDictionary::ReverseLookup(

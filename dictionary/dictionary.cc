@@ -198,6 +198,15 @@ const StenoDictionary *StenoDictionary::GetDictionaryForOutline(
   return result ? this : nullptr;
 }
 
+void StenoDictionary::GetDictionariesForOutline(
+    List<const StenoDictionary *> &results,
+    const StenoDictionaryLookup &lookup) const {
+  const StenoDictionary *dictionary = GetDictionaryForOutline(lookup);
+  if (dictionary) {
+    results.Add(dictionary);
+  }
+}
+
 void StenoDictionary::ReverseLookup(
     StenoReverseDictionaryLookup &lookup) const {}
 

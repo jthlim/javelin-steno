@@ -1,8 +1,8 @@
 //---------------------------------------------------------------------------
 
 #pragma once
+#include "container/static_list.h"
 #include "hal/connection.h"
-#include "static_list.h"
 #include "writer.h"
 #include <stddef.h>
 

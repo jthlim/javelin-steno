@@ -1,8 +1,8 @@
 //---------------------------------------------------------------------------
 
 #pragma once
+#include "container/queue.h"
 #include "hal/connection.h"
-#include "queue.h"
 #include "split/split.h"
 
 //---------------------------------------------------------------------------

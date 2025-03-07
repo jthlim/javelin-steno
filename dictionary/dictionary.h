@@ -1,9 +1,9 @@
 //---------------------------------------------------------------------------
 
 #pragma once
+#include "../container/static_list.h"
 #include "../crc32.h"
 #include "../malloc_allocate.h"
-#include "../static_list.h"
 #include "../str.h"
 #include "../stroke.h"
 #include <stddef.h>
@@ -274,6 +274,16 @@ public:
 
   virtual const StenoDictionary *
   GetDictionaryForOutline(const StenoDictionaryLookup &lookup) const;
+
+  virtual void
+  GetDictionariesForOutline(List<const StenoDictionary *> &results,
+                            const StenoDictionaryLookup &lookup) const;
+
+  inline void GetDictionariesForOutline(List<const StenoDictionary *> &results,
+                                        const StenoStroke *strokes,
+                                        size_t length) const {
+    GetDictionariesForOutline(results, StenoDictionaryLookup(strokes, length));
+  }
 
   // GetDictionaryForOutline is used to determine which dictionary, if any,
   // can provide a definition for the specified outline.

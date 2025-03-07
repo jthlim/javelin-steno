@@ -1,7 +1,7 @@
 //---------------------------------------------------------------------------
 
 #pragma once
-#include "cyclic_queue.h"
+#include "container/cyclic_queue.h"
 #include "state.h"
 #include "stroke.h"
 #include <assert.h>

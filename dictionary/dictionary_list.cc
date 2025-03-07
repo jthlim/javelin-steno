@@ -70,6 +70,18 @@ const StenoDictionary *StenoDictionaryList::GetDictionaryForOutline(
   return nullptr;
 }
 
+void StenoDictionaryList::GetDictionariesForOutline(
+    List<const StenoDictionary *> &results,
+    const StenoDictionaryLookup &lookup) const {
+  for (const StenoDictionaryListEntry &entry : dictionaries) {
+    if (entry.combinedMaximumOutlineLength < lookup.length) {
+      continue;
+    }
+
+    entry->GetDictionariesForOutline(results, lookup);
+  }
+}
+
 void StenoDictionaryList::ReverseLookup(
     StenoReverseDictionaryLookup &lookup) const {
 #if ENABLE_DICTIONARY_STATS

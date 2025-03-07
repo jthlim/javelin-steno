@@ -2,7 +2,7 @@
 
 #include "orthospelling_data.h"
 #include "../writer.h"
-#include <stdlib.h>
+#include <stddef.h>
 
 //---------------------------------------------------------------------------
 

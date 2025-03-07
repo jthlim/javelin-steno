@@ -142,7 +142,7 @@ void IWriter::Printf(const char *p, ...) {
 
 void IWriter::Vprintf(const char *p, va_list args) {
   const char *spanStart = p;
-  char scratch[64];
+  char scratch[128];
 
   static_assert(sizeof(scratch) >= StenoStroke::MAX_STRING_LENGTH + 1);
 

@@ -1,8 +1,8 @@
 //---------------------------------------------------------------------------
 
 #pragma once
-#include "../sized_list.h"
-#include "../static_list.h"
+#include "../container/sized_list.h"
+#include "../container/static_list.h"
 #include "../stroke.h"
 #include <assert.h>
 #include <stddef.h>

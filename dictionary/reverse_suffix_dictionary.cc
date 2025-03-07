@@ -1,7 +1,7 @@
 //---------------------------------------------------------------------------
 
 #include "reverse_suffix_dictionary.h"
-#include "../list.h"
+#include "../container/list.h"
 #include "../orthography.h"
 #include "dictionary.h"
 #include "map_data_lookup.h"

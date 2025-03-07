@@ -601,8 +601,8 @@ void StenoEngine::PrintPaperTapeUndo(size_t undoCount) const {
   }
 
   Console::Printf(
-      "EV {\"event\":\"paper_tape\",\"data\":\"*\",\"undo\":%zu}\n\n",
-      undoCount);
+      "EV {\"event\":\"paper_tape\",\"data\":\"%t\",\"undo\":%zu}\n\n",
+      &undoStroke, undoCount);
 }
 
 void StenoEngine::PrintPaperTape(StenoStroke stroke,

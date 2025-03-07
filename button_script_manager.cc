@@ -1,6 +1,7 @@
 //---------------------------------------------------------------------------
 
 #include "button_script_manager.h"
+#include "base64.h"
 #include "clock.h"
 #include "console.h"
 #include "flash.h"
@@ -76,6 +77,13 @@ void ButtonScriptManager::Update(const ButtonState &newButtonState,
 #endif
   }
   SendButtonStateUpdate();
+}
+
+void ButtonScriptManager::ExecuteByteCode(const ScriptByteCode *byteCode) {
+  if (Flash::IsUpdating()) {
+    return;
+  }
+  script.ExecuteByteCode(byteCode);
 }
 
 void ButtonScriptManager::ExecuteScript(ButtonScriptId scriptId) {
@@ -271,6 +279,28 @@ void ButtonScriptManager::SetScriptGlobal_Binding(void *context,
   Console::SendOk();
 }
 
+void ButtonScriptManager::RunScript_Binding(void *context,
+                                            const char *commandLine) {
+  const char *p = strchr(commandLine, ' ');
+  if (!p) {
+    Console::Printf("ERR Missing script byte code\n\n");
+    return;
+  }
+
+  uint8_t buffer[256];
+  Base64::Decode(buffer, (const uint8_t *)p + 1);
+  ScriptByteCode *byteCode = (ScriptByteCode *)buffer;
+  if (!byteCode->IsValid()) {
+    Console::Printf("ERR Invalid byte code\n\n");
+    return;
+  }
+
+  Console::SendOk();
+
+  ButtonScriptManager *manager = (ButtonScriptManager *)context;
+  manager->ExecuteByteCode(byteCode);
+}
+
 void ButtonScriptManager::AddConsoleCommands(Console &console) {
   console.RegisterCommand("call_script",
                           "Call scripts registered with setScript",
@@ -292,6 +322,8 @@ void ButtonScriptManager::AddConsoleCommands(Console &console) {
   console.RegisterCommand("set_script_global",
                           "Set script global index to a value",
                           SetScriptGlobal_Binding, this);
+  console.RegisterCommand("run_script", "Runs a script", RunScript_Binding,
+                          this);
 }
 
 //---------------------------------------------------------------------------

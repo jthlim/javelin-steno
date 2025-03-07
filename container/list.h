@@ -1,12 +1,11 @@
 //---------------------------------------------------------------------------
 
 #pragma once
+#include "../malloc_allocate.h"
 #include "iterable.h"
-#include "malloc_allocate.h"
 #include <assert.h>
 #include <stdint.h>
 #include <stdlib.h>
-#include <string.h>
 
 //---------------------------------------------------------------------------
 

@@ -97,7 +97,7 @@ private:
 
   static constexpr size_t EVENT_HISTORY_COUNT = 4;
   static constexpr size_t MAX_STACK_SIZE = 256;
-  static void (*const FUNCTION_TABLE[])(ButtonScript &);
+  static void (*const FUNCTION_TABLE[])(ButtonScript &, const ScriptByteCode *);
 
   bool scriptEventsEnabled = false;
   bool isInReinit = false;
@@ -132,7 +132,7 @@ private:
   void ReleaseAll();
 
   void SendText(const uint8_t *text);
-  void RunConsoleCommand(const char *command);
+  void RunConsoleCommand(const char *command, const ScriptByteCode *byteCode);
 
   void SetScript(ButtonScriptId scriptId, size_t scriptOffset) {
     if (scriptId < ButtonScriptId::COUNT) {

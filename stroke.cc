@@ -3,11 +3,12 @@
 #include "stroke.h"
 #include "crc32.h"
 #include "str.h"
+#include "utf8_pointer.h"
 #include <assert.h>
 
 //---------------------------------------------------------------------------
 
-constexpr StrokeKey ENGLISH_STROKE_FORMATTER[] = {
+constexpr StrokeKey EXTENDED_ENGLISH_STROKE_FORMATTER[] = {
     {'#', StrokeKeyType::MASK, 0x00000001},
     {'^', StrokeKeyType::MASK, 0x00800000},
     {'+', StrokeKeyType::MASK, 0x01000000},
@@ -37,7 +38,7 @@ constexpr StrokeKey ENGLISH_STROKE_FORMATTER[] = {
     {'Z', StrokeKeyType::MASK, 0x00400000},
 };
 
-constexpr StrokeKey ENGLISH_STROKE_PARSER[] = {
+constexpr StrokeKey EXTENDED_ENGLISH_STROKE_PARSER[] = {
     {'#', StrokeKeyType::MASK, 0x00000001},
     {'^', StrokeKeyType::MASK, 0x00800000},
     {'+', StrokeKeyType::MASK, 0x01000000},
@@ -79,9 +80,29 @@ constexpr StrokeKey ENGLISH_STROKE_PARSER[] = {
 //---------------------------------------------------------------------------
 
 FastIterable<const StrokeKey> StenoStroke::formatter =
-    FastIterable<const StrokeKey>(ENGLISH_STROKE_FORMATTER);
+    FastIterable<const StrokeKey>(EXTENDED_ENGLISH_STROKE_FORMATTER);
 FastIterable<const StrokeKey> StenoStroke::parser =
-    FastIterable<const StrokeKey>(ENGLISH_STROKE_PARSER);
+    FastIterable<const StrokeKey>(EXTENDED_ENGLISH_STROKE_PARSER);
+
+// This is placed in memory to avoid needing QSPI active to handle strokes.
+List<StrokeKey> StenoStroke::formatters;
+List<StrokeKey> StenoStroke::parsers;
+
+//---------------------------------------------------------------------------
+
+void StenoStroke::SetLanguage(const SizedList<StrokeKey> &keys) {
+  parsers.Reset();
+  parsers.AddCount(keys.data, keys.count);
+  parser = parsers;
+
+  formatters.Reset();
+  for (const StrokeKey &key : keys) {
+    if (key.type != StrokeKeyType::MASK || key.IsSingleBit()) {
+      formatters.Add(key);
+    }
+  }
+  formatter = formatters;
+}
 
 //---------------------------------------------------------------------------
 
@@ -98,6 +119,7 @@ void StenoStroke::Set(const char *string) {
 }
 
 char *StenoStroke::ToString(char *buffer) const {
+  Utf8Pointer utf8(buffer);
   const StrokeKey *pEnd = end(formatter);
   for (const StrokeKey *p = begin(formatter); p != pEnd;) {
     switch (p->type) {
@@ -109,13 +131,13 @@ char *StenoStroke::ToString(char *buffer) const {
       // use two consecutive entries for separators.
       assert(p[1].type == StrokeKeyType::SEPARATOR_FOLLOW_MASK);
       if ((keyState & p[0].mask) == 0 && (keyState & p[1].mask) != 0) {
-        *buffer++ = p->c;
+        utf8.SetAndAdvance(p->c);
       }
       p += 2;
       break;
     [[likely]] case StrokeKeyType::MASK:
       if ((keyState & p->mask) == p->mask) {
-        *buffer++ = p->c;
+        utf8.SetAndAdvance(p->c);
       }
       ++p;
       break;
@@ -125,8 +147,9 @@ char *StenoStroke::ToString(char *buffer) const {
     }
   }
 
-  *buffer = '\0';
-  return buffer;
+  char *result = utf8.GetRawPointer();
+  *result = '\0';
+  return result;
 }
 
 uint32_t StenoStroke::PopCount(const StenoStroke *strokes, size_t length) {
