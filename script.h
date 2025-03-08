@@ -60,8 +60,8 @@ public:
   intptr_t *GetStackTop() const { return stackTop; }
   void SetStackTop(intptr_t *p) { stackTop = p; }
 
-  void SetGlobal(size_t i, intptr_t v) { globals[i] = v; }
   intptr_t GetGlobal(size_t i) const { return globals[i]; }
+  void SetGlobal(size_t i, intptr_t v) { globals[i] = v; }
 
 protected:
   // Executes at offset with no stack and offset checks.

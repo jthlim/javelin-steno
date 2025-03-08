@@ -128,7 +128,9 @@ struct ScriptByteCode {
   }
 
   size_t GetLength() const {
-    return stringHashTableOffset + 2 + sizeof(uint16_t) * GetHashTable()->size;
+    const StenoScriptHashTable *hashTable = GetHashTable();
+    const void *byteCodeEnd = &hashTable->offsets[hashTable->size];
+    return intptr_t(byteCodeEnd) - intptr_t(this);
   }
 
   uint32_t Crc() const { return Crc32::Hash(this, GetLength()); }
