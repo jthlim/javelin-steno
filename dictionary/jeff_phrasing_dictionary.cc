@@ -153,13 +153,6 @@ JeffPhrasingDictionaryData::LookupEnder(StenoStroke stroke) const {
 
     ++index;
   }
-
-  // for (size_t i = 0; i < endersCount; ++i) {
-  //   if (enders[i].stroke == stroke) {
-  //     return &enders[i];
-  //   }
-  // }
-  // return nullptr;
 }
 
 const JeffPhrasingStructure *
@@ -345,12 +338,12 @@ const char *StenoJeffPhrasingDictionary::GetName() const {
 
 void StenoJeffPhrasingDictionary::ReverseLookup(
     StenoReverseDictionaryLookup &lookup) const {
-  // Maximum phrase is 7 words (6 spaces).
-  if (CountNumberOfSpaces(lookup.definition) > 6) {
+  if (ContainsNonPhraseCharacter(lookup.definition)) {
     return;
   }
 
-  if (ContainsNonPhraseCharacter(lookup.definition)) {
+  // Maximum phrase is 7 words (6 spaces).
+  if (CountNumberOfSpaces(lookup.definition) > 6) {
     return;
   }
 
@@ -532,9 +525,7 @@ bool StenoJeffPhrasingDictionary::ContainsNonPhraseCharacter(const char *p) {
 size_t StenoJeffPhrasingDictionary::CountNumberOfSpaces(const char *p) {
   size_t count = 0;
   while (*p) {
-    if (*p == ' ') {
-      ++count;
-    }
+    count += (*p == ' ');
     ++p;
   }
   return count;

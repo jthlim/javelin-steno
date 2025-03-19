@@ -80,6 +80,7 @@ private:
     const char *GetSuffix() const { return base + suffixOffset; }
     const char *GetResult() const { return base + resultOffset; }
     char *DupResult() const;
+    size_t GetMemoryUsage() const;
 
     void Reset();
 
@@ -115,9 +116,11 @@ private:
     char *Lookup(const char *word, const char *suffix) const;
     void AddEntry(const char *word, const char *suffix, const char *result);
     void Reset();
+    size_t GetMemoryUsage() const;
   };
 
   mutable CacheBlock cache[CACHE_BLOCK_COUNT];
+  size_t GetCacheMemoryUsage() const;
 
 #endif
 

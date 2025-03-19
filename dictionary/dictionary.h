@@ -105,11 +105,7 @@ public:
   bool IsValid() const { return text != nullptr; }
 
   const char *GetText() const { return text; }
-  void Destroy() {
-    if (text) {
-      (*destroyMethod)(this);
-    }
-  }
+  void Destroy() { (*destroyMethod)(this); }
 
   static const StenoDictionaryLookupResult NO_OP;
 
@@ -118,6 +114,7 @@ public:
   static StenoDictionaryLookupResult CreateInvalid() {
     StenoDictionaryLookupResult result;
     result.text = nullptr;
+    result.destroyMethod = &Nop;
     return result;
   }
 

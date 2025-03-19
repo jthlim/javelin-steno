@@ -1,10 +1,14 @@
 //---------------------------------------------------------------------------
 
 #pragma once
-#include "container/list.h"
+#include "container/sized_list.h"
 #include "dictionary/dictionary.h"
 #include "malloc_allocate.h"
 #include "state.h"
+
+//---------------------------------------------------------------------------
+
+class StenoSegmentList;
 
 //---------------------------------------------------------------------------
 
@@ -21,7 +25,7 @@ struct StenoSegment {
   size_t strokeLength;
   const StenoState *state;
   union {
-    size_t _suppressLookupConstructor;
+    // Suppress constructor.
     StenoDictionaryLookupResult lookup;
   };
 
@@ -58,41 +62,44 @@ struct StenoToken {
   StenoToken(const char *text, size_t length, const StenoState *state)
       : text(text), length(length), state(state) {}
 
+  // This text is *not* null terminated.
   const char *text;
   size_t length;
 
   // This can be null -- meaning that the state should be inferred.
   const StenoState *state;
+
+  // Returns text as a null-terminated string.
+  char *DupText() const { return Str::DupN(text, length); }
 };
 
 class StenoTokenizer : public JavelinMallocAllocate {
 public:
-  virtual ~StenoTokenizer() {}
+  virtual bool HasMore() const;
+  virtual StenoToken GetNext();
 
-  virtual bool HasMore() const = 0;
-  virtual StenoToken GetNext() = 0;
-
-  static StenoTokenizer *Create(const List<StenoSegment> &segments,
+  static StenoTokenizer *Create(const StenoSegmentList &segments,
                                 size_t startingOffset = 0);
 };
 
 //---------------------------------------------------------------------------
 
-// StenoSegmentList without automatic destruction of segments.
-class StenoSegmentList : public List<StenoSegment> {
+// StenoSegmentList with automatic destruction of segments.
+class StenoSegmentList : public SizedList<StenoSegment> {
 public:
-  StenoSegmentList() = default;
-  StenoSegmentList(List &&other) : List((List &&)other) {}
+  StenoSegmentList(size_t maximumSize);
   ~StenoSegmentList();
 
-  static size_t GetCommonStartingSegmentsCount(const List<StenoSegment> &a,
-                                               const List<StenoSegment> &b);
+  static size_t GetCommonStartingSegmentsCount(const StenoSegmentList &a,
+                                               const StenoSegmentList &b);
 
   // Returns the starting index of a word.
   //
   // A word is defined as either finger spelling start or
   // a cluster of prefixes + lookup + suffixes.
   size_t GetWordStartingSegmentIndex(size_t endIndex) const;
+
+  bool HasManualStateChange(size_t startIndex) const;
 };
 
 //---------------------------------------------------------------------------

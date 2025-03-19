@@ -66,7 +66,7 @@ void StenoDictionaryLookupResult::FreeText(StenoDictionaryLookupResult *p) {
 }
 
 StenoDictionaryLookupResult StenoDictionaryLookupResult::Clone() const {
-  if (text == nullptr || destroyMethod == &Nop) {
+  if (destroyMethod == &Nop) {
     return *this;
   }
 

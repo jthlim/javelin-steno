@@ -366,8 +366,8 @@ next:
   case BC::RETURN:
   exit: {
     intptr_t *p = base;
-    if (frame != stack.GetStackTop()) {
-      *p++ = *frame;
+    while (frame != stack.GetStackTop()) {
+      *p++ = *frame++;
     }
     stackTop = p;
     return;

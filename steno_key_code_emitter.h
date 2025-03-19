@@ -22,12 +22,13 @@ public:
 
   bool Process(const StenoKeyCodeBuffer &previous,
                const StenoKeyCodeBuffer &next) const {
-    return Process(previous.buffer, previous.count, next.buffer, next.count);
+    return Process(previous.buffer, previous.GetCount(), next.buffer,
+                   next.GetCount());
   }
 
   void Emit(const StenoKeyCode *value, size_t length) const;
   void Emit(const StenoKeyCodeBuffer &buffer) const {
-    Emit(buffer.buffer, buffer.count);
+    Emit(buffer.buffer, buffer.GetCount());
   }
 };
 

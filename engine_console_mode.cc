@@ -69,7 +69,7 @@ void StenoEngine::ProcessConsoleModeUndo() {
 void StenoEngine::UpdateConsoleModeTextBuffer(ConversionBuffer &buffer) {
   buffer.keyCodeBuffer.Reset();
 
-  StenoSegmentList segments;
+  StenoSegmentList segments(altTranslationHistory.GetCount());
   BuildSegmentContext context(segments, *this, false);
 
   buffer.segmentBuilder.TransferFrom(altTranslationHistory,

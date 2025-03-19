@@ -6,7 +6,7 @@
 //---------------------------------------------------------------------------
 
 struct StenoConfigBlock {
-  bool hidCompatibilityMode;
+  uint8_t hidCompatibilityMode;
   bool useSpaceAfter;
   bool useFirstUp;
   bool useRepeat;

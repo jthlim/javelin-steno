@@ -92,7 +92,18 @@ List<StrokeKey> StenoStroke::parsers;
 
 void StenoStroke::SetLanguage(const SizedList<StrokeKey> &keys) {
   parsers.Reset();
-  parsers.AddCount(keys.data, keys.count);
+  for (const StrokeKey &key : keys) {
+    switch (key.type) {
+    case StrokeKeyType::MASK:
+      parsers.Add(key);
+      break;
+    case StrokeKeyType::SEPARATOR:
+      parsers.Add(StrokeKey{key.c, StrokeKeyType::SEPARATOR, 0});
+      break;
+    case StrokeKeyType::SEPARATOR_FOLLOW_MASK:
+      break;
+    }
+  }
   parser = parsers;
 
   formatters.Reset();

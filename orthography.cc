@@ -98,6 +98,13 @@ bool StenoCompiledOrthography::CacheEntry::IsEqual(const char *word,
          Str::Eq(suffix, GetSuffix());
 }
 
+size_t StenoCompiledOrthography::CacheEntry::GetMemoryUsage() const {
+  if (base == nullptr) {
+    return 0;
+  }
+  return resultOffset + resultLength + 1;
+}
+
 char *StenoCompiledOrthography::CacheBlock::Lookup(const char *word,
                                                    const char *suffix) const {
   LockCache();
@@ -136,6 +143,14 @@ void StenoCompiledOrthography::CacheBlock::Reset() {
   UnlockCache();
 }
 
+size_t StenoCompiledOrthography::CacheBlock::GetMemoryUsage() const {
+  size_t total = 0;
+  for (const CacheEntry &entry : entries) {
+    total += entry.GetMemoryUsage();
+  }
+  return total;
+}
+
 #endif
 
 //---------------------------------------------------------------------------
@@ -156,8 +171,8 @@ void StenoOrthography::Print() const {
     Console::Printf(" []");
   } else {
     for (size_t i = 0; i < rules.GetCount(); ++i) {
-      Console::Printf("\n\t\tpattern: \"%J\""
-                      "\n\t\treplacement: \"%J\"",
+      Console::Printf("\n\t\t- pattern: \"%J\""
+                      "\n\t\t  replacement: \"%J\"",
                       rules[i].testPattern, rules[i].replacement);
     }
   }
@@ -166,8 +181,8 @@ void StenoOrthography::Print() const {
     Console::Printf(" []");
   } else {
     for (size_t i = 0; i < aliases.GetCount(); ++i) {
-      Console::Printf("\n\t\tsuffix: \"%J\""
-                      "\n\t\talias: \"%J\"",
+      Console::Printf("\n\t\t- suffix: \"%J\""
+                      "\n\t\t  alias: \"%J\"",
                       aliases[i].text, aliases[i].alias);
     }
   }
@@ -176,8 +191,8 @@ void StenoOrthography::Print() const {
     Console::Printf(" []");
   } else {
     for (size_t i = 0; i < autoSuffixes.GetCount(); ++i) {
-      Console::Printf("\n\t\tkey: \"%t\""
-                      "\n\t\tsuffix: \"%J\"",
+      Console::Printf("\n\t\t- key: \"%t\""
+                      "\n\t\t  suffix: \"%J\"",
                       &autoSuffixes[i].stroke, autoSuffixes[i].text + 1);
     }
   }
@@ -186,10 +201,10 @@ void StenoOrthography::Print() const {
     Console::Printf(" []");
   } else {
     for (size_t i = 0; i < reverseAutoSuffixes.GetCount(); ++i) {
-      Console::Printf("\n\t\tkey: \"%t\""
-                      "\n\t\tsuppressMask: \"%t\""
-                      "\n\t\tpattern: \"%J\""
-                      "\n\t\treplacement: \"%J\"",
+      Console::Printf("\n\t\t- key: \"%t\""
+                      "\n\t\t  suppressMask: \"%t\""
+                      "\n\t\t  pattern: \"%J\""
+                      "\n\t\t  replacement: \"%J\"",
                       &reverseAutoSuffixes[i].autoSuffix->stroke,
                       &reverseAutoSuffixes[i].suppressMask,
                       reverseAutoSuffixes[i].testPattern,
@@ -356,6 +371,15 @@ void StenoCompiledOrthography::ResetCache() {
     block.Reset();
   }
 }
+
+size_t StenoCompiledOrthography::GetCacheMemoryUsage() const {
+  size_t total = 0;
+  for (const CacheBlock &block : cache) {
+    total += block.GetMemoryUsage();
+  }
+  return total;
+}
+
 #endif
 
 void StenoCompiledOrthography::PrintInfo() const {
@@ -370,6 +394,10 @@ void StenoCompiledOrthography::PrintInfo() const {
 #if RECORD_ORTHOGRAPHY_CACHE_STATS
   Console::Printf("      Cache hits: %zu/%zu\n", cacheHits,
                   cacheHits + cacheMisses);
+#endif
+#if USE_ORTHOGRAPHY_CACHE
+  // Console::Printf("      Cache memory usage: %zu bytes\n",
+  //                 GetCacheMemoryUsage());
 #endif
 }
 

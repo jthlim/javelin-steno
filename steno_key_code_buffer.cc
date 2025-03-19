@@ -13,12 +13,12 @@
 
 void StenoKeyCodeBuffer::Reset() {
   wasLastActionAStitch = false;
-  count = 0;
   consoleCount = 0;
   addTranslationCount = 0;
   resetStateCount = 0;
-  lastTextOffset = 0;
   state.Reset();
+  currentOutput = buffer;
+  lastText = buffer;
 }
 
 void StenoKeyCodeBuffer::Populate(StenoTokenizer *tokenizer) {
@@ -35,7 +35,7 @@ void StenoKeyCodeBuffer::Append(StenoTokenizer *tokenizer) {
     if (token.text[0] == '{') {
       ProcessCommand(token.text, token.length);
     } else {
-      lastTextOffset = count;
+      lastText = currentOutput;
       ProcessText(token.text, token.length);
     }
   }
@@ -73,6 +73,7 @@ void StenoKeyCodeBuffer::AppendTextNoCaseModeOverride(const char *p, size_t n,
                                                       StenoCaseMode caseMode) {
   const char *end = p + n;
   Utf8Pointer utf8p(p);
+  StenoKeyCode *d = currentOutput;
 
   while (utf8p < end) {
     uint32_t c = *utf8p++;
@@ -101,20 +102,23 @@ void StenoKeyCodeBuffer::AppendTextNoCaseModeOverride(const char *p, size_t n,
         c = '\t';
         break;
       default:
-        buffer[count++] = StenoKeyCode('\\', StenoCaseMode::NORMAL);
+        *d++ = StenoKeyCode('\\', StenoCaseMode::NORMAL);
         caseMode = GetNextLetterCaseMode(caseMode);
       }
     }
 
     if (c == '\b') [[unlikely]] {
+      currentOutput = d;
       Backspace(1);
+      d = currentOutput;
     } else {
-      buffer[count++] = StenoKeyCode(c, caseMode, StenoCaseMode::NORMAL);
+      *d++ = StenoKeyCode(c, caseMode, StenoCaseMode::NORMAL);
     }
 
     caseMode = GetNextLetterCaseMode(caseMode);
   }
 
+  currentOutput = d;
   wasLastActionAStitch = false;
 }
 
@@ -359,11 +363,11 @@ void StenoKeyCodeBuffer::ProcessOrthographicSuffix(const char *text,
   char orthographicScratchPad[32];
   char *suffix = Str::DupN(text, length);
 
-  size_t start = count;
+  StenoKeyCode *start = currentOutput;
   size_t byteCount = 1; // Need one byte for terminating null.
-  while (start != lastTextOffset && buffer[start - 1].IsLetter()) {
+  while (start != lastText && start[-1].IsLetter()) {
     const size_t utf8Length =
-        Utf8Pointer::BytesForCharacterCode(buffer[start - 1].GetUnicode());
+        Utf8Pointer::BytesForCharacterCode(start[-1].GetUnicode());
     if (byteCount + utf8Length > sizeof(orthographicScratchPad)) {
       break;
     }
@@ -372,14 +376,14 @@ void StenoKeyCodeBuffer::ProcessOrthographicSuffix(const char *text,
   }
 
   Utf8Pointer utf8p(orthographicScratchPad);
-  for (size_t i = start; i < count; ++i) {
-    utf8p.SetAndAdvance(buffer[i].GetUnicode());
+  for (const StenoKeyCode *p = start; p < currentOutput; ++p) {
+    utf8p.SetAndAdvance(p->GetUnicode());
   }
   utf8p.SetTerminatingNull();
 
   char *word = orthography->AddSuffix(orthographicScratchPad, suffix);
 
-  count = start;
+  currentOutput = start;
 
   char *pWord = word;
   char *pScratchPad = orthographicScratchPad;
@@ -390,7 +394,8 @@ void StenoKeyCodeBuffer::ProcessOrthographicSuffix(const char *text,
   while (*pWord && *pScratchPad && *pWord == *pScratchPad) {
     // Skip utf8 suffix characters.
     if ((*pWord & 0xc0) != 0x80) {
-      caseMode = buffer[count++].GetOutputCaseMode();
+      caseMode = currentOutput->GetOutputCaseMode();
+      ++currentOutput;
     }
     ++pWord;
     ++pScratchPad;
@@ -409,11 +414,11 @@ void StenoKeyCodeBuffer::ProcessOrthographicSuffix(const char *text,
 //---------------------------------------------------------------------------
 
 char *StenoKeyCodeBuffer::ToString(size_t startingOffset) const {
-  char *result = (char *)malloc(count * 4 + 1);
+  char *result = (char *)malloc(GetCount() * 4 + 1);
   Utf8Pointer utf8p(result);
-  for (size_t i = startingOffset; i < count; ++i) {
-    if (!buffer[i].IsRawKeyCode()) {
-      utf8p.SetAndAdvance(buffer[i].ResolveOutputUnicode());
+  for (const StenoKeyCode *p = buffer; p < currentOutput; ++p) {
+    if (!p->IsRawKeyCode()) {
+      utf8p.SetAndAdvance(p->ResolveOutputUnicode());
     }
   }
   utf8p.SetTerminatingNull();
@@ -422,11 +427,11 @@ char *StenoKeyCodeBuffer::ToString(size_t startingOffset) const {
 }
 
 char *StenoKeyCodeBuffer::ToUnresolvedString() const {
-  char *result = (char *)malloc(count * 4 + 1);
+  char *result = (char *)malloc(GetCount() * 4 + 1);
   Utf8Pointer utf8p(result);
-  for (size_t i = 0; i < count; ++i) {
-    if (!buffer[i].IsRawKeyCode()) {
-      utf8p.SetAndAdvance(buffer[i].ResolveSelectedUnicode());
+  for (const StenoKeyCode *p = buffer; p < currentOutput; ++p) {
+    if (!p->IsRawKeyCode()) {
+      utf8p.SetAndAdvance(p->ResolveSelectedUnicode());
     }
   }
   utf8p.SetTerminatingNull();
@@ -468,14 +473,14 @@ bool StenoKeyCodeBuffer::ProcessKeyPresses(const char *p, const char *end) {
     case StenoKeyPressToken::Type::KEY: {
       const KeyCode keyCode = token.keyCode;
       if (keyCode != 0) {
-        buffer[count++] = StenoKeyCode::CreateRawKeyCodePress(keyCode);
+        *currentOutput++ = StenoKeyCode::CreateRawKeyCodePress(keyCode);
       }
       if (tokenizer.PeekNextTokenType() ==
           StenoKeyPressToken::Type::OPEN_PAREN) {
         keyPressStack.Add(keyCode);
         tokenizer.GetNext();
       } else {
-        buffer[count++] = StenoKeyCode::CreateRawKeyCodeRelease(keyCode);
+        *currentOutput++ = StenoKeyCode::CreateRawKeyCodeRelease(keyCode);
       }
     } break;
 
@@ -490,7 +495,7 @@ bool StenoKeyCodeBuffer::ProcessKeyPresses(const char *p, const char *end) {
       }
       const KeyCode keyCode = keyPressStack.Back();
       if (keyCode != 0) {
-        buffer[count++] = StenoKeyCode::CreateRawKeyCodeRelease(keyCode);
+        *currentOutput++ = StenoKeyCode::CreateRawKeyCodeRelease(keyCode);
       }
       keyPressStack.Pop();
     } break;
@@ -507,7 +512,7 @@ void StenoKeyCodeBuffer::ReleaseKeyStack(List<KeyCode> &keyPressStack) {
   while (keyPressStack.IsNotEmpty()) {
     const KeyCode keyCode = keyPressStack.Back();
     if (keyCode != 0) {
-      buffer[count++] = StenoKeyCode::CreateRawKeyCodeRelease(keyCode);
+      *currentOutput++ = StenoKeyCode::CreateRawKeyCodeRelease(keyCode);
     }
     keyPressStack.Pop();
   }
@@ -521,6 +526,7 @@ void StenoKeyCodeBuffer::ReleaseKeyStack(List<KeyCode> &keyPressStack) {
 
 TEST_BEGIN("StenoKeyCodeBuffer tests") {
   StenoKeyCodeBuffer *buffer = new StenoKeyCodeBuffer();
+  buffer->Reset();
 
   const char *test = "Shift_L(h a p) p y";
   buffer->ProcessKeyPresses(test, test + Str::Length(test));

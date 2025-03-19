@@ -240,11 +240,16 @@ char *StenoEngine::ConvertText(StenoSegmentList &segments,
 #include "dictionary/unicode_dictionary.h"
 #include "dictionary/user_dictionary.h"
 
+#define DO_PROFILE_TEST 0
+
 extern StenoOrthography testOrthography;
 
-// extern StenoCompactMapDictionaryDefinition testDictionaryDefinition;
-// static StenoCompactMapDictionary mainDictionary(testDictionaryDefinition);
+#if DO_PROFILE_TEST
+extern StenoCompactMapDictionaryDefinition testDictionaryDefinition;
+static StenoCompactMapDictionary mainDictionary(testDictionaryDefinition);
+#else
 static StenoCompactMapDictionary mainDictionary(TestDictionary::definition);
+#endif
 
 static StenoCompactMapDictionary testDictionary(TestDictionary::definition);
 
@@ -281,7 +286,7 @@ void StenoEngineTester::TestSymbols(StenoEngine &engine) {
   engine.ProcessStroke(StenoStroke("SKWHEUFPL"));
   engine.ProcessStroke(StenoStroke("SKWHEFG"));
   // spellchecker: enable
-  assert(engine.nextConversionBuffer.keyCodeBuffer.count == 4);
+  assert(engine.nextConversionBuffer.keyCodeBuffer.GetCount() == 4);
   assert(engine.nextConversionBuffer.keyCodeBuffer.buffer[0] ==
          StenoKeyCode('{', StenoCaseMode::NORMAL));
   assert(engine.nextConversionBuffer.keyCodeBuffer.buffer[1] ==
@@ -313,7 +318,7 @@ void StenoEngineTester::TestTransform(StenoEngine &engine) {
   free(text);
 }
 
-TEST_BEGIN("Engine: Test symbols") {
+TEST_BEGIN("Engine: Test transform") {
   uint8_t *buffer = new uint8_t[512 * 1024];
   memset(buffer, 0, 512 * 1024);
   const StenoUserDictionaryData layout(buffer, 512 * 1024);
@@ -419,7 +424,12 @@ TEST_BEGIN("Engine: Random spam") {
   Key::DisableHistory();
 
   srand(0x1234);
-  for (size_t i = 0; i < 10000; ++i) {
+#if DO_PROFILE_TEST
+  const size_t iterationCount = 1'000'000;
+#else
+  const size_t iterationCount = 1000;
+#endif
+  for (size_t i = 0; i < iterationCount; ++i) {
     const StenoStroke stroke(rand() & StrokeMask::ALL);
     engine.ProcessStroke(stroke);
   }
@@ -445,7 +455,8 @@ TEST_BEGIN("Engine: Add Translation Test") {
       dictionaries, sizeof(dictionaries) / sizeof(*dictionaries)); // NOLINT
   const StenoCompiledOrthography orthography(
       StenoOrthography::emptyOrthography);
-  StenoEngine engine(dictionaryList, orthography, StenoStroke(StrokeMask::STAR), userDictionary);
+  StenoEngine engine(dictionaryList, orthography, StenoStroke(StrokeMask::STAR),
+                     userDictionary);
   tester.TestAddTranslation(engine);
 
   delete userDictionary;
@@ -470,7 +481,8 @@ TEST_BEGIN("Engine: Scancode Add Translation Test") {
       dictionaries, sizeof(dictionaries) / sizeof(*dictionaries)); // NOLINT
   const StenoCompiledOrthography orthography(
       StenoOrthography::emptyOrthography);
-  StenoEngine engine(dictionaryList, orthography, StenoStroke(StrokeMask::STAR), userDictionary);
+  StenoEngine engine(dictionaryList, orthography, StenoStroke(StrokeMask::STAR),
+                     userDictionary);
   tester.TestScancodeAddTranslation(engine);
 
   delete userDictionary;

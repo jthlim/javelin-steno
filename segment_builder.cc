@@ -853,7 +853,7 @@ TEST_BEGIN("StrokeHistory: Test single segment") {
   history.Add(StenoStroke("TEFT"), StenoState());
   // spellchecker: enable
 
-  StenoSegmentList segments;
+  StenoSegmentList segments(16);
   const StenoCompiledOrthography orthography(
       StenoOrthography::emptyOrthography);
 
@@ -881,7 +881,7 @@ TEST_BEGIN("StrokeHistory: Test two segments, with multi-stroke") {
   history.Add(StenoStroke("-D"), StenoState{});
   // spellchecker: enable
 
-  StenoSegmentList segments;
+  StenoSegmentList segments(16);
   const StenoCompiledOrthography orthography(
       StenoOrthography::emptyOrthography);
 
@@ -910,7 +910,7 @@ TEST_BEGIN("StrokeHistory: Test *? splits strokes") {
   history.Add(StenoStroke("SKWHU"), StenoState{});
   // spellchecker: enable
 
-  StenoSegmentList segments;
+  StenoSegmentList segments(16);
   const StenoCompiledOrthography orthography(
       StenoOrthography::emptyOrthography);
 
@@ -935,7 +935,7 @@ TEST_BEGIN("StrokeHistory: Test * toggles lookup") {
   history.Add(StenoStroke("#EU"), StenoState());
   // spellchecker: enable
 
-  StenoSegmentList segments;
+  StenoSegmentList segments(16);
   const StenoCompiledOrthography orthography(
       StenoOrthography::emptyOrthography);
 
@@ -964,7 +964,7 @@ TEST_BEGIN("StrokeHistory: Test {*?} behaves properly") {
   history.Add(StenoStroke("TEFT"), StenoState());
   // spellchecker: enable
 
-  StenoSegmentList segments;
+  StenoSegmentList segments(16);
   const StenoCompiledOrthography orthography(
       StenoOrthography::emptyOrthography);
 

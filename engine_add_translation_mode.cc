@@ -161,7 +161,7 @@ void StenoEngine::UpdateAddTranslationModeTextBuffer(ConversionBuffer &buffer) {
                                   Str::ConstLength(TRANSLATION_PROMPT),
                                   StenoCaseMode::NORMAL);
 
-  StenoSegmentList segments;
+  StenoSegmentList segments(altTranslationHistory.GetCount());
   BuildSegmentContext context(segments, *this, false);
 
   buffer.segmentBuilder.TransferFrom(altTranslationHistory,
@@ -204,7 +204,7 @@ void StenoEngine::AddTranslation(size_t newlineIndex) {
   } else {
     nextConversionBuffer.keyCodeBuffer.Reset();
 
-    StenoSegmentList segments;
+    StenoSegmentList segments(altTranslationHistory.GetCount());
     BuildSegmentContext context(segments, *this, false);
 
     nextConversionBuffer.segmentBuilder.TransferFrom(

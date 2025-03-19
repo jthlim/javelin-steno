@@ -168,7 +168,7 @@ void StenoEngine::Lookup_Binding(void *context, const char *commandLine) {
 
   Console::Printf("[");
   for (const StenoReverseDictionaryResult &entry : lookup.results) {
-    StenoSegmentList segments;
+    StenoSegmentList segments(entry.length);
     ConversionBuffer &buffer = engine->previousConversionBuffer;
     engine->CreateSegments(segments, buffer.segmentBuilder, entry.strokes,
                            entry.length);
@@ -181,7 +181,9 @@ void StenoEngine::Lookup_Binding(void *context, const char *commandLine) {
     StenoTokenizer *tokenizer = StenoTokenizer::Create(segments);
     while (tokenizer->HasMore()) {
       const char *format = " %J";
-      Console::Printf(format + isFirst, tokenizer->GetNext().text);
+      char *text = tokenizer->GetNext().DupText();
+      Console::Printf(format + isFirst, text);
+      free(text);
       isFirst = false;
     }
     delete tokenizer;
@@ -240,7 +242,7 @@ void StenoEngine::LookupStroke_Binding(void *context, const char *commandLine) {
     }
     Console::Printf("\n]\n\n");
   } else {
-    StenoSegmentList segments;
+    StenoSegmentList segments(parser.length);
     ConversionBuffer &buffer = engine->previousConversionBuffer;
     engine->CreateSegments(segments, buffer.segmentBuilder, parser.strokes,
                            parser.length);
@@ -251,7 +253,9 @@ void StenoEngine::LookupStroke_Binding(void *context, const char *commandLine) {
       const char *format = "%J";
       StenoTokenizer *tokenizer = StenoTokenizer::Create(segments);
       while (tokenizer->HasMore()) {
-        Console::Printf(format, tokenizer->GetNext().text);
+        char *text = tokenizer->GetNext().DupText();
+        Console::Printf(format, text);
+        free(text);
         format = " %J";
       }
       delete tokenizer;
@@ -376,7 +380,7 @@ void StenoEngine::DisableTemplateValueUpdate_Binding(void *context,
 
 void StenoEngine::AddConsoleCommands(Console &console) {
   console.RegisterCommand("set_space_position",
-                          "Controls space position before or after",
+                          "Controls space position [\"before\", \"after\"]",
                           StenoEngine::SetSpacePosition_Binding, this);
   console.RegisterCommand("list_dictionaries", "Lists dictionaries",
                           StenoEngine::ListDictionaries_Binding, this);

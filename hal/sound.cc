@@ -21,67 +21,13 @@ uint32_t Sound::CalculateFrequencyForNote(int note) {
 
 //---------------------------------------------------------------------------
 
-void Sound::AddConsoleCommands(Console &console) {
-#if JAVELIN_SOUND
-  console.RegisterCommand("play_frequency", "Plays the specified frequency",
-                          &PlayFrequency_Binding, nullptr);
-  console.RegisterCommand("play_sequence", "Plays the specified sequence",
-                          &PlaySequence_Binding, nullptr);
-  console.RegisterCommand("stop_sound", "Stops all sound playing",
-                          &StopSound_Binding, nullptr);
-#endif
-}
-
-void Sound::PlayFrequency_Binding(void *context, const char *commandLine) {
-  const char *p = strchr(commandLine, ' ');
-  if (!p) {
-    Console::Printf("ERR No frequency specified\n\n");
-    return;
-  }
-  int frequency;
-  p = Str::ParseInteger(&frequency, p + 1);
-  if (!p || *p != '\0') {
-    Console::Printf("ERR No frequency specified\n\n");
-    return;
-  }
-
-  PlayFrequency(frequency);
-  Console::SendOk();
-}
-
-void Sound::PlaySequence_Binding(void *context, const char *commandLine) {
-  const char *p = strchr(commandLine, ' ');
-  if (!p) {
-    Console::Printf("ERR Missing data\n\n");
-    return;
-  }
-
-  static uint8_t decodeBuffer[256];
-  const size_t byteCount = Base64::Decode(decodeBuffer, (const uint8_t *)p);
-
-  if (byteCount == 0) {
-    Console::Printf("ERR No data\n\n");
-    return;
-  }
-  decodeBuffer[byteCount] = 0;
-
-  PlaySequence((const SoundSequenceData *)decodeBuffer);
-  Console::SendOk();
-}
-
-void Sound::StopSound_Binding(void *context, const char *commandLine) {
-  Stop();
-  Console::SendOk();
-}
-
-//---------------------------------------------------------------------------
-
 [[gnu::weak]] void Sound::Stop() {}
 [[gnu::weak]] void Sound::PlayFrequency(uint32_t frequency) {}
 [[gnu::weak]] void Sound::PlaySequence(const SoundSequenceData *data) {}
 [[gnu::weak]] void Sound::PlayWaveform(const uint8_t *data, size_t length,
                                        uint32_t sampleRate) {}
 
+//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
 #include "../unit_test.h"

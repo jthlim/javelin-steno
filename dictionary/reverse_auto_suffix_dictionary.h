@@ -39,8 +39,8 @@ private:
     const char *text;
     size_t textLength;
     union {
+      // Suppress constructor.
       Pattern reversePattern;
-      size_t _suppressConstructorDummy;
     };
     StaticList<const StenoOrthographyReverseAutoSuffix *, 4> replacements;
   };

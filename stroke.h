@@ -94,7 +94,9 @@ struct StrokeMask {
 // star, S) are represented by the *same* bits.
 class StenoStroke {
 public:
-  constexpr StenoStroke(uint32_t keyState = 0) : keyState(keyState) {}
+  StenoStroke() = default;
+
+  constexpr StenoStroke(uint32_t keyState) : keyState(keyState) {}
 
   void Set(const char *string);
   template <size_t N> StenoStroke(const char (&s)[N]) { Set(s); }

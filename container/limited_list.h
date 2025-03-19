@@ -1,7 +1,7 @@
 //---------------------------------------------------------------------------
 
 #pragma once
-#include <stdlib.h>
+#include <stddef.h>
 
 //---------------------------------------------------------------------------
 
@@ -19,7 +19,7 @@ public:
   // Returns the total number of elements added to the list.
   size_t GetTotalCount() const { return count; }
 
-  void Add(T t) { data[count++ & (CAPACITY - 1)] = t; }
+  void Add(const T &t) { data[count++ & (CAPACITY - 1)] = t; }
 
   T &Back(size_t offset = 1) { return data[(count - offset) & (CAPACITY - 1)]; }
   const T &Back(size_t offset = 1) const {

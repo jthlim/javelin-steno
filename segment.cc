@@ -144,15 +144,21 @@ SegmentHistoryRequirements StenoSegment::GetHistoryRequirements() const {
 
 //---------------------------------------------------------------------------
 
+StenoSegmentList::StenoSegmentList(size_t maximumSize) {
+  count = 0;
+  data = (StenoSegment *)malloc(sizeof(StenoSegment) * maximumSize);
+}
+
 StenoSegmentList::~StenoSegmentList() {
   for (size_t i = 0; i < count; ++i) {
     (*this)[i].lookup.Destroy();
   }
+  free((void *)data);
 }
 
 size_t
-StenoSegmentList::GetCommonStartingSegmentsCount(const List<StenoSegment> &a,
-                                                 const List<StenoSegment> &b) {
+StenoSegmentList::GetCommonStartingSegmentsCount(const StenoSegmentList &a,
+                                                 const StenoSegmentList &b) {
   const size_t limit =
       a.GetCount() < b.GetCount() ? a.GetCount() : b.GetCount();
 
@@ -252,12 +258,25 @@ size_t StenoSegmentList::GetWordStartingSegmentIndex(size_t endIndex) const {
   return index;
 }
 
+bool StenoSegmentList::HasManualStateChange(size_t startIndex) const {
+  for (const StenoSegment &segment : Skip(startIndex)) {
+    if (segment.state->isManualStateChange) {
+      return true;
+    }
+  }
+  return false;
+}
+
+//---------------------------------------------------------------------------
+
+bool StenoTokenizer::HasMore() const { return false; }
+StenoToken StenoTokenizer::GetNext() { return StenoToken("", 0, nullptr); }
+
 //---------------------------------------------------------------------------
 
 class StenoSegmentListTokenizer final : public StenoTokenizer {
 public:
-  StenoSegmentListTokenizer(const List<StenoSegment> &list,
-                            size_t startingOffset)
+  StenoSegmentListTokenizer(const StenoSegmentList &list, size_t startingOffset)
       : list(list), elementIndex(startingOffset) {
     if (list.IsEmpty()) {
       p = nullptr;
@@ -266,19 +285,16 @@ public:
       PrepareNextP();
     }
   }
-  virtual ~StenoSegmentListTokenizer() { free(scratch); }
 
   bool HasMore() const final { return p != nullptr; }
 
   StenoToken GetNext() final;
 
 private:
-  const List<StenoSegment> &list;
+  const StenoSegmentList &list;
   size_t elementIndex;
   const char *p;
   const StenoState *nextState = nullptr;
-
-  char *scratch = nullptr;
 
   void PrepareNextP();
 };
@@ -290,10 +306,13 @@ StenoToken StenoSegmentListTokenizer::GetNext() {
   assert(p != nullptr);
   const char *start = p;
   const char *workingP = p;
-  if (*workingP == '{') {
+  if (*workingP == '{') [[unlikely]] {
     while (*workingP != '}') [[likely]] {
       if (*workingP == '\0') [[unlikely]] {
-        break;
+        // Unterminated command... drop it.
+        p = workingP;
+        PrepareNextP();
+        return StenoToken("{}", 2, state);
       }
       if (workingP[0] == '\\') [[unlikely]] {
         if (workingP[1] != '\0') [[likely]] {
@@ -303,12 +322,6 @@ StenoToken StenoSegmentListTokenizer::GetNext() {
       }
       ++workingP;
     }
-    if (*workingP == '\0') [[unlikely]] {
-      // Unterminated command... drop it.
-      p = workingP;
-      PrepareNextP();
-      return StenoToken("{}", 2, state);
-    }
     ++workingP;
   } else {
     for (;;) {
@@ -316,16 +329,12 @@ StenoToken StenoSegmentListTokenizer::GetNext() {
       case '\0':
       case ' ':
       case '{':
-        goto ReturnSpan;
+        goto UpdatePAndReturnSpan;
 
       case '\\':
         if (workingP[1] == '\0') {
-          free(scratch);
-          const size_t length = workingP - start;
-          scratch = Str::DupN(start, length);
           p = workingP + 1;
-          PrepareNextP();
-          return StenoToken(scratch, length, state);
+          goto ReturnSpan;
         }
         workingP += 2;
         break;
@@ -336,17 +345,13 @@ StenoToken StenoSegmentListTokenizer::GetNext() {
     }
   }
 
-ReturnSpan:
-  const char *result = start;
-  const size_t length = workingP - start;
-  if (*workingP != '\0') {
-    free(scratch);
-    result = scratch = Str::DupN(start, length);
-  }
-
+UpdatePAndReturnSpan:
   p = workingP;
+
+ReturnSpan:
+  const size_t length = workingP - start;
   PrepareNextP();
-  return StenoToken(result, length, state);
+  return StenoToken(start, length, state);
 }
 
 void StenoSegmentListTokenizer::PrepareNextP() {
@@ -368,7 +373,7 @@ void StenoSegmentListTokenizer::PrepareNextP() {
   }
 }
 
-StenoTokenizer *StenoTokenizer::Create(const List<StenoSegment> &segments,
+StenoTokenizer *StenoTokenizer::Create(const StenoSegmentList &segments,
                                        size_t startingOffset) {
   return new StenoSegmentListTokenizer(segments, startingOffset);
 }
@@ -391,7 +396,7 @@ TEST_BEGIN("Segment tests") {
   history.Add(StenoStroke("-G"), StenoState());
   // spellchecker: enable
 
-  StenoSegmentList segments;
+  StenoSegmentList segments(16);
   const StenoCompiledOrthography compiledOrthography(
       StenoOrthography::emptyOrthography);
   StenoCompactMapDictionary dictionary(TestDictionary::definition);

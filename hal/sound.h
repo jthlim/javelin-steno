@@ -41,13 +41,6 @@ public:
 
   static void PlayWaveform(const uint8_t *data, size_t length,
                            uint32_t sampleRate);
-
-  static void AddConsoleCommands(Console &console);
-
-private:
-  static void PlayFrequency_Binding(void *context, const char *commandLine);
-  static void PlaySequence_Binding(void *context, const char *commandLine);
-  static void StopSound_Binding(void *context, const char *commandLine);
 };
 
 //---------------------------------------------------------------------------

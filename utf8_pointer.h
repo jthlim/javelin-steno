@@ -55,8 +55,7 @@ public:
 
 inline void Utf8Pointer::SetAndAdvance(uint32_t c) {
   if (c < 0x80) [[likely]] {
-    p[0] = c;
-    ++p;
+    *p++ = c;
   } else if (c < 0x800) {
     p[0] = 0xc0 | (c >> 6);
     p[1] = 0x80 | (c & 0x3f);

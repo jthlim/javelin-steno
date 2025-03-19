@@ -44,8 +44,6 @@ struct Font {
   static const Font *GetFont(size_t fontId) {
     return fontId < FONT_COUNT ? FONTS[fontId] : &DEFAULT;
   }
-
-  static void MeasureText_Binding(void *context, const char *commandLine);
 };
 
 //---------------------------------------------------------------------------

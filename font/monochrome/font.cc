@@ -66,25 +66,3 @@ uint32_t Font::GetStringWidth(const char *p) const {
 }
 
 //---------------------------------------------------------------------------
-
-void Font::MeasureText_Binding(void *context, const char *commandLine) {
-  const char *p = strchr(commandLine, ' ');
-  if (!p) {
-    Console::Printf("ERR No parameters specified\n\n");
-    return;
-  }
-
-  int fontId;
-  p = Str::ParseInteger(&fontId, p + 1, false);
-  if (!p || *p != ' ') {
-    Console::Printf("ERR fontId parameter missing\n\n");
-    return;
-  }
-  ++p;
-
-  const Font *font = Font::GetFont(fontId);
-  const uint32_t width = font->GetStringWidth(p);
-  Console::Printf("Width: %u\n\n", width);
-}
-
-//---------------------------------------------------------------------------

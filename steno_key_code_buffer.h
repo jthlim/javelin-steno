@@ -37,17 +37,18 @@ public:
   const StenoCompiledOrthography *orthography;
   StenoDictionary *rootDictionary;
 
-  bool wasLastActionAStitch;
-  size_t count = 0;
-  size_t consoleCount = 0;
-  size_t addTranslationCount = 0;
-  size_t resetStateCount = 0;
-  size_t lastTextOffset = 0;
+  bool wasLastActionAStitch = false;
+  uint8_t consoleCount = 0;
+  uint8_t addTranslationCount = 0;
+  uint8_t resetStateCount = 0;
+  StenoKeyCode *lastText;
   StenoState state;
   char *addTranslationText = nullptr;
+  StenoKeyCode *currentOutput;
   StenoKeyCode buffer[BUFFER_SIZE];
 
   void Reset();
+  size_t GetCount() const { return currentOutput - buffer; }
 
   StenoState GetPersistentState() const { return state.GetPersistentState(); }
 

@@ -6,15 +6,12 @@
 
 //---------------------------------------------------------------------------
 
-template <typename T> class JavelinStaticAllocate {
+template <typename T> union JavelinStaticAllocate {
 public:
   JavelinStaticAllocate() {}
   ~JavelinStaticAllocate() {}
 
-  union {
-    uint8_t storage[sizeof(T)];
-    T value;
-  };
+  T value;
 
   inline operator T &() { return value; }
   inline T *operator->() { return &value; }
@@ -23,7 +20,7 @@ public:
 template <typename T>
 inline void *operator new(size_t n, JavelinStaticAllocate<T> &p) {
   assert(n == sizeof(T));
-  return p.storage;
+  return &p.value;
 }
 
 //---------------------------------------------------------------------------

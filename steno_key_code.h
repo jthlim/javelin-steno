@@ -15,14 +15,14 @@
 // with the unicode bitfield, and will just do the right thing.
 //
 // The functions that work in either mode have a comment: // *
-class StenoKeyCode {
+union StenoKeyCode {
 public:
-  StenoKeyCode() = default;
+  StenoKeyCode() {}
 
-  StenoKeyCode(uint32_t unicode, StenoCaseMode outputCaseMode,
-               StenoCaseMode selectedCaseMode = StenoCaseMode::NORMAL)
-      : unicode(unicode), outputCaseMode(outputCaseMode),
-        selectedCaseMode(selectedCaseMode) {}
+  constexpr StenoKeyCode(uint32_t unicode, StenoCaseMode outputCaseMode,
+                         StenoCaseMode selectedCaseMode = StenoCaseMode::NORMAL)
+      : value(unicode | (int(outputCaseMode) << 24) |
+              (int(selectedCaseMode) << 28)) {}
 
   static StenoKeyCode CreateRawKeyCodePress(KeyCode keyCode) {
     StenoKeyCode result;
@@ -91,29 +91,27 @@ public:
   }
 
 private:
-  union {
-    struct {
-      // This is KeyCode::Value, but using a using a uint32_t to use more than
-      // 8 bits.
-      uint32_t rawKeyCode : 22;
-      bool isPress : 1;
-      bool isRawKeyCode : 1;
-      uint32_t reserved : 8;
-    };
-    struct {
-      // Unicode only needs 21 bits.
-      // The upper bits intentionally overlap with the flags for raw key codes
-      // to simplify the implementation of the above methods.
-      uint32_t unicode : 24;
-
-      // Used for output case.
-      StenoCaseMode outputCaseMode : 4;
-
-      // Used for reverse lookups.
-      StenoCaseMode selectedCaseMode : 4;
-    };
-    uint32_t value;
+  struct {
+    // This is KeyCode::Value, but using a using a uint32_t to use more than
+    // 8 bits for modifiers.
+    uint32_t rawKeyCode : 22;
+    bool isPress : 1;
+    bool isRawKeyCode : 1;
+    uint32_t reserved : 8;
   };
+  struct {
+    // Unicode only needs 21 bits.
+    // The upper bits intentionally overlap with the flags for raw key codes
+    // to simplify the implementation of the above methods.
+    uint32_t unicode : 24;
+
+    // Used for output case.
+    StenoCaseMode outputCaseMode : 4;
+
+    // Used for reverse lookups.
+    StenoCaseMode selectedCaseMode : 4;
+  };
+  uint32_t value;
 
   static uint32_t ResolveUnicode(uint32_t unicode, StenoCaseMode mode);
 };

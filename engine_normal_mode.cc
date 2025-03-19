@@ -162,7 +162,7 @@ void StenoEngine::ProcessNormalModeStroke(StenoStroke stroke) {
 
   const size_t conversionCount = history.GetCount() - startingStroke;
 
-  StenoSegmentList nextSegments;
+  StenoSegmentList nextSegments(conversionCount);
   CreateSegments(history.GetCount(), nextConversionBuffer, conversionCount,
                  nextSegments, true);
 
@@ -170,7 +170,7 @@ void StenoEngine::ProcessNormalModeStroke(StenoStroke stroke) {
   const uint32_t t1 = sysTick->ReadCycleCount();
 #endif
 
-  StenoSegmentList previousSegments;
+  StenoSegmentList previousSegments(conversionCount - 1);
   if (nextConversionBuffer.segmentBuilder.HasModifiedStrokeHistory()) {
     CreateSegments(previousSourceStrokeCount, previousConversionBuffer,
                    conversionCount - 1, previousSegments, false);
@@ -285,8 +285,8 @@ void StenoEngine::ProcessNormalModeStroke(StenoStroke stroke) {
   if (canCombine && previousSegments.GetCount() < nextSegments.GetCount()) {
     history.SetBackCombineUndo();
 
-    if (previousConversionBuffer.keyCodeBuffer.count ==
-        nextConversionBuffer.keyCodeBuffer.count) {
+    if (previousConversionBuffer.keyCodeBuffer.GetCount() ==
+        nextConversionBuffer.keyCodeBuffer.GetCount()) {
       history.SetBackHasManualStateChange();
       if (state.caseMode != StenoCaseMode::NORMAL ||
           state.overrideCaseMode != StenoCaseMode::NORMAL) {
@@ -377,7 +377,7 @@ void StenoEngine::ProcessNormalModeUndo() {
       GetStartingStrokeForNormalModeUndoProcessing(undoCount);
   const size_t conversionCount = history.GetCount() - startingStroke;
 
-  StenoSegmentList previousSegments;
+  StenoSegmentList previousSegments(conversionCount);
   CreateSegments(history.GetCount(), previousConversionBuffer, conversionCount,
                  previousSegments, false);
 
@@ -396,7 +396,7 @@ void StenoEngine::ProcessNormalModeUndo() {
   const StenoState backState = history.Back().state;
   history.MarkLastLookupTypeAsUnknown();
 
-  StenoSegmentList nextSegments;
+  StenoSegmentList nextSegments(nextConversionCount);
   if (previousConversionBuffer.segmentBuilder.HasModifiedStrokeHistory()) {
     CreateSegments(history.GetCount(), nextConversionBuffer,
                    nextConversionCount, nextSegments, true);
@@ -770,8 +770,7 @@ void StenoEngine::PrintFingerSpellingSuggestions(
   char buffer[256];
   char *p = buffer + sizeof(buffer) - 2;
   const StenoKeyCode *skc =
-      &nextConversionBuffer.keyCodeBuffer
-           .buffer[nextConversionBuffer.keyCodeBuffer.count - 1];
+      nextConversionBuffer.keyCodeBuffer.currentOutput - 1;
 
   if (placeSpaceAfter && skc > nextConversionBuffer.keyCodeBuffer.buffer) {
     skc--;
@@ -836,7 +835,7 @@ void StenoEngine::PrintSuggestion(const char *p, size_t arrowPrefixCount,
   Console::Printf("}\n\n");
 }
 
-static bool ShouldShowSuggestions(const List<StenoSegment> &segments,
+static bool ShouldShowSuggestions(const StenoSegmentList &segments,
                                   size_t startSegmentIndex) {
   // Count the number of suffix "{*!}" entries.
   // There must be more that number of entries before that.
@@ -849,16 +848,6 @@ static bool ShouldShowSuggestions(const List<StenoSegment> &segments,
     ++joinPreviousCount;
   }
   return (segments.GetCount() - startSegmentIndex) > 2 * joinPreviousCount;
-}
-
-static bool HasManualStateChange(const List<StenoSegment> &segments,
-                                 size_t startSegmentIndex) {
-  for (const StenoSegment &segment : segments.Skip(startSegmentIndex)) {
-    if (segment.state->isManualStateChange) {
-      return true;
-    }
-  }
-  return false;
 }
 
 char *StenoEngine::PrintSegmentSuggestion(size_t startSegmentIndex,
@@ -887,7 +876,7 @@ char *StenoEngine::PrintSegmentSuggestion(size_t startSegmentIndex,
 #endif
 
   char *lookup =
-      HasManualStateChange(segments, startSegmentIndex) ||
+      segments.HasManualStateChange(startSegmentIndex) ||
               Str::HasPrefix(segments.Back().lookup.GetText(), "{:")
           ? previousConversionBuffer.keyCodeBuffer.ToString()
           : previousConversionBuffer.keyCodeBuffer.ToUnresolvedString();
@@ -965,9 +954,9 @@ void StenoEngine::PrintTextLog(
   }
 
   const StenoKeyCode *previousData = previousKeyCodeBuffer.buffer;
-  const size_t previousLength = previousKeyCodeBuffer.count;
+  const size_t previousLength = previousKeyCodeBuffer.GetCount();
   const StenoKeyCode *nextData = nextKeyCodeBuffer.buffer;
-  const size_t nextLength = nextKeyCodeBuffer.count;
+  const size_t nextLength = nextKeyCodeBuffer.GetCount();
   size_t i = 0;
   while (i < previousLength && i < nextLength &&
          previousData[i].HasSameOutput(nextData[i])) {

@@ -319,6 +319,10 @@ const StenoDictionary *StenoEmilySymbolsDictionary::GetDictionaryForOutline(
 
 void StenoEmilySymbolsDictionary::ReverseLookup(
     StenoReverseDictionaryLookup &lookup) const {
+  if (lookup.definitionLength > 2 && lookup.definition[0] != '{') {
+    return;
+  }
+
   uint32_t hash = lookup.GetLookupCrc();
   uint32_t index = hash;
   hash >>= 8;

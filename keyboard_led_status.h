@@ -5,9 +5,9 @@
 
 //---------------------------------------------------------------------------
 
-class KeyboardLedStatus {
+union KeyboardLedStatus {
 public:
-  KeyboardLedStatus() = default;
+  KeyboardLedStatus() {}
   KeyboardLedStatus(uint8_t value) : value(value) {}
 
   void Reset() { value = 0; }
@@ -27,15 +27,13 @@ public:
   }
 
 private:
-  union {
-    struct {
-      uint8_t numLock : 1;
-      uint8_t capsLock : 1;
-      uint8_t scrollLock : 1;
-      uint8_t compose : 1;
-      uint8_t kana : 1;
-    };
-    uint8_t value;
+  uint8_t value;
+  struct {
+    uint8_t numLock : 1;
+    uint8_t capsLock : 1;
+    uint8_t scrollLock : 1;
+    uint8_t compose : 1;
+    uint8_t kana : 1;
   };
 };
 

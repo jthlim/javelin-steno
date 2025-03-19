@@ -287,7 +287,7 @@ void ButtonScriptManager::RunScript_Binding(void *context,
     return;
   }
 
-  uint8_t buffer[256];
+  static uint8_t buffer[256];
   Base64::Decode(buffer, (const uint8_t *)p + 1);
   ScriptByteCode *byteCode = (ScriptByteCode *)buffer;
   if (!byteCode->IsValid()) {
