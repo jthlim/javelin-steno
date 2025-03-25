@@ -158,7 +158,7 @@ void StenoReverseDictionaryLookup::SortResults() {
   });
 }
 
-bool StenoReverseDictionaryLookup::AreAllFromSameDictionary() const {
+bool StenoReverseDictionaryLookup::AreAllResultsFromSameDictionary() const {
   if (results.IsEmpty()) {
     return false;
   }

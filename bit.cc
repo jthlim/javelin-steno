@@ -31,7 +31,7 @@
 }
 #elif JAVELIN_CPU_CORTEX_M4 || JAVELIN_CPU_CORTEX_M33
 
-[[gnu::noinline]] uint32_t Bit<4>::PopCount(uint32_t v) {
+uint32_t Bit<4>::PopCount(uint32_t v) {
   uint32_t temp;
   asm volatile(R"(
     bic %1, %0, #0x55555555

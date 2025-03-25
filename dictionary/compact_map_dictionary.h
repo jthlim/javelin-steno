@@ -42,6 +42,9 @@ private:
   // This is offset by 1 to simplify lookup code marginally.
   const StenoCompactMapDictionaryStrokesDefinition *strokes;
 
+  const CompactStenoMapDictionaryDataEntry *
+  FindEntry(const StenoDictionaryLookup &lookup) const;
+
   static const StenoCompactMapDictionaryStrokesDefinition *
   CreateStrokeCache(const StenoCompactMapDictionaryDefinition &definition);
 

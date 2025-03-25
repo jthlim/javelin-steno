@@ -125,19 +125,19 @@ StenoCompactMapDictionary::StenoCompactMapDictionary(
   dataRange.max = strokes[maximumOutlineLength].offsets;
 }
 
-StenoDictionaryLookupResult
-StenoCompactMapDictionary::Lookup(const StenoDictionaryLookup &lookup) const {
+const CompactStenoMapDictionaryDataEntry *StenoCompactMapDictionary::FindEntry(
+    const StenoDictionaryLookup &lookup) const {
   const StenoCompactMapDictionaryStrokesDefinition &strokesDefinition =
       strokes[lookup.length];
 
   if (strokesDefinition.hashMapMask == 0) {
-    return StenoDictionaryLookupResult::CreateInvalid();
+    return nullptr;
   }
 
   size_t entryIndex = lookup.hash & strokesDefinition.hashMapMask;
   const size_t offset = strokesDefinition.GetOffset(entryIndex);
   if (offset == (size_t)-1) {
-    return StenoDictionaryLookupResult::CreateInvalid();
+    return nullptr;
   }
 
   // Size of CompactStenoMapDictionaryDataEntry for this length.
@@ -150,48 +150,7 @@ StenoCompactMapDictionary::Lookup(const StenoDictionaryLookup &lookup) const {
             strokesDefinition.data[dataIndex];
 
     if (entry.Equals(lookup.strokes, lookup.length)) {
-      const uint8_t *text = textBlock + entry.textOffset.ToUint32();
-      return StenoDictionaryLookupResult::CreateStaticString(text);
-    }
-
-    dataIndex += entrySize;
-    if (++entryIndex > strokesDefinition.hashMapMask) [[unlikely]] {
-      entryIndex = 0;
-      dataIndex = 0;
-    }
-
-    if (!strokesDefinition.HasEntry(entryIndex)) {
-      return StenoDictionaryLookupResult::CreateInvalid();
-    }
-  }
-}
-
-const StenoDictionary *StenoCompactMapDictionary::GetDictionaryForOutline(
-    const StenoDictionaryLookup &lookup) const {
-
-  const StenoCompactMapDictionaryStrokesDefinition &strokesDefinition =
-      strokes[lookup.length];
-
-  if (strokesDefinition.hashMapMask == 0) {
-    return nullptr;
-  }
-
-  size_t entryIndex = lookup.hash & strokesDefinition.hashMapMask;
-  const size_t offset = strokesDefinition.GetOffset(entryIndex);
-  if (offset == (size_t)-1) {
-    return nullptr;
-  }
-
-  const size_t entrySize = 3 + 3 * lookup.length;
-  size_t dataIndex = offset * entrySize;
-
-  for (;;) {
-    const CompactStenoMapDictionaryDataEntry &entry =
-        (const CompactStenoMapDictionaryDataEntry &)
-            strokesDefinition.data[dataIndex];
-
-    if (entry.Equals(lookup.strokes, lookup.length)) {
-      return this;
+      return &entry;
     }
 
     dataIndex += entrySize;
@@ -204,6 +163,20 @@ const StenoDictionary *StenoCompactMapDictionary::GetDictionaryForOutline(
       return nullptr;
     }
   }
+}
+
+StenoDictionaryLookupResult
+StenoCompactMapDictionary::Lookup(const StenoDictionaryLookup &lookup) const {
+  const CompactStenoMapDictionaryDataEntry *entry = FindEntry(lookup);
+  return entry == nullptr ? StenoDictionaryLookupResult::CreateInvalid()
+                          : StenoDictionaryLookupResult::CreateStaticString(
+                                textBlock + entry->textOffset.ToUint32());
+}
+
+const StenoDictionary *StenoCompactMapDictionary::GetDictionaryForOutline(
+    const StenoDictionaryLookup &lookup) const {
+  const CompactStenoMapDictionaryDataEntry *entry = FindEntry(lookup);
+  return entry == nullptr ? nullptr : this;
 }
 
 void StenoCompactMapDictionary::ReverseLookup(

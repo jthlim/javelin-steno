@@ -78,32 +78,34 @@ void StenoKeyCodeBuffer::AppendTextNoCaseModeOverride(const char *p, size_t n,
   while (utf8p < end) {
     uint32_t c = *utf8p++;
 
-    if (c == '\\' && utf8p < end) [[unlikely]] {
-      c = *utf8p++;
-      switch (c) {
-      case '{':
-      case '}':
-      case '\\':
-      case '\"':
-      case '\'':
-      case ' ':
-      case ':':
-        break;
-      case 'b':
-        c = '\b';
-        break;
-      case 'n':
-        c = '\n';
-        break;
-      case 'r':
-        c = '\r';
-        break;
-      case 't':
-        c = '\t';
-        break;
-      default:
-        *d++ = StenoKeyCode('\\', StenoCaseMode::NORMAL);
-        caseMode = GetNextLetterCaseMode(caseMode);
+    if (c == '\\') [[unlikely]] {
+      if (utf8p < end) [[likely]] {
+        c = *utf8p++;
+        switch (c) {
+        case '{':
+        case '}':
+        case '\\':
+        case '\"':
+        case '\'':
+        case ' ':
+        case ':':
+          break;
+        case 'b':
+          c = '\b';
+          break;
+        case 'n':
+          c = '\n';
+          break;
+        case 'r':
+          c = '\r';
+          break;
+        case 't':
+          c = '\t';
+          break;
+        default:
+          *d++ = StenoKeyCode('\\', StenoCaseMode::NORMAL);
+          caseMode = GetNextLetterCaseMode(caseMode);
+        }
       }
     }
 

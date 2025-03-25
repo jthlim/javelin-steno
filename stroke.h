@@ -5,6 +5,7 @@
 #include "container/fast_iterable.h"
 #include "container/list.h"
 #include "container/sized_list.h"
+#include <assert.h>
 
 //---------------------------------------------------------------------------
 
@@ -136,11 +137,12 @@ public:
   static uint32_t Hash(const StenoStroke *strokes, size_t length);
   static bool Equals(const StenoStroke *a, const StenoStroke *b,
                      size_t length) {
-    for (size_t i = 0; i < length; ++i) {
-      if (a[i] != b[i]) {
+    assert(length != 0);
+    do {
+      if (*a++ != *b++) {
         return false;
       }
-    }
+    } while (--length);
     return true;
   }
 

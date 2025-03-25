@@ -85,6 +85,7 @@ public:
 
   intptr_t Pop() { return *--p; }
   void Push(intptr_t v) { *p++ = v; }
+  intptr_t Peek() { return p[-1]; }
 
   void UnaryOp(intptr_t (*op)(intptr_t)) { Push(op(Pop())); }
 
@@ -417,6 +418,9 @@ next:
     if (stack.Pop()) {
       goto exit;
     }
+    CONTINUE;
+  case BC::DUP:
+    stack.Push(stack.Peek());
     CONTINUE;
   case BC::JUMP_SHORT_BEGIN... BC::JUMP_SHORT_END: {
     const int offset = c + 1 - BC::JUMP_SHORT_BEGIN;

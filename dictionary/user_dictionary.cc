@@ -164,7 +164,7 @@ void StenoUserDictionary::ReverseLookup(
     return;
   }
 
-  uint32_t entryIndex = lookup.GetLookupCrc();
+  uint32_t entryIndex = lookup.definitionCrc;
 
   for (;;) {
     entryIndex &= activeDescriptor->data.hashTableSize - 1;

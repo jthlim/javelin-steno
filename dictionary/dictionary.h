@@ -188,53 +188,46 @@ public:
   StenoReverseDictionaryLookup(const char *definition,
                                size_t strokeThreshold = MAX_STROKE_THRESHOLD)
       : strokeThreshold(strokeThreshold), definition(definition),
-        definitionLength(Str::Length(definition)) {}
+        definitionLength(Str::Length(definition)),
+        definitionCrc(Crc32::Hash(definition, definitionLength)) {}
 
-  bool HasResults() const { return results.IsNotEmpty(); }
-
-  void AddResult(const StenoStroke *strokes, size_t length,
-                 const StenoDictionary *dictionary);
-  bool HasResult(const StenoStroke *strokes, size_t length) const;
-
-  size_t GetMinimumStrokeCount() const;
-
-  // Results equal to, or above this will not be captured.
+  // Results with stroke count equal to, or above this will not be captured.
   // i.e. Only stroke count less than this will be returned.
   size_t strokeThreshold;
+
   const char *definition;
   size_t definitionLength;
+  uint32_t definitionCrc;
 
   // Used to prevent recursing prefixes too far.
   size_t prefixLookupDepth = 0;
 
   // These are used as an optimization for map lookup.
   // Since the first step of all map lookups is the same, do it once and
-  // pass it down
+  // pass it down.
   StaticList<const void *, 24> mapLookupData;
-
-  void AddMapLookupData(MapDataLookup mapDataLookup,
-                        const uint8_t *baseAddress);
-
-  void SortResults();
 
   StaticList<StenoReverseDictionaryResult, 24> results;
   StaticList<StenoStroke, 64> strokes;
 
   static constexpr size_t MAX_STROKE_THRESHOLD = 31;
 
-  uint32_t GetLookupCrc() {
-    if (!hasLookupCrc) {
-      hasLookupCrc = true;
-      lookupCrc = Crc32::Hash(definition, definitionLength);
-    }
-    return lookupCrc;
-  }
+  void AddMapLookupData(MapDataLookup mapDataLookup,
+                        const uint8_t *baseAddress);
 
-  bool AreAllFromSameDictionary() const;
+  void AddResult(const StenoStroke *strokes, size_t length,
+                 const StenoDictionary *dictionary);
+  bool HasResult(const StenoStroke *strokes, size_t length) const;
+  bool HasResults() const { return results.IsNotEmpty(); }
+  void SortResults();
 
-private:
-  bool hasLookupCrc = false;
-  uint32_t lookupCrc;
+  // Returns false if there are no results.
+  bool AreAllResultsFromSameDictionary() const;
+
+  // Returns the minimum number of strokes used in the results.
+  //
+  // Returns 0 if there are no results.
+  size_t GetMinimumStrokeCount() const;
 };
 
 //---------------------------------------------------------------------------

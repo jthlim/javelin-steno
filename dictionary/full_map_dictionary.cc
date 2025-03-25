@@ -8,6 +8,10 @@
 
 //---------------------------------------------------------------------------
 
+#define PRINT_HASH_STATS 0
+
+//---------------------------------------------------------------------------
+
 inline bool StenoFullHashMapEntryBlock::IsBitSet(size_t bitIndex) const {
   return (mask & (1 << bitIndex)) != 0;
 }
@@ -18,22 +22,32 @@ size_t StenoFullHashMapEntryBlock::PopCount() const {
 
 //---------------------------------------------------------------------------
 
+void StenoFullMapDictionary::HashStats::Update(size_t runLength) {
+  entries += runLength;
+  totalProbes += runLength * (runLength + 1) / 2;
+  if (runLength > maxProbe) {
+    maxProbe = runLength;
+  }
+}
+
+void StenoFullMapDictionary::HashStats::Update(const HashStats &stats) {
+  entries += stats.entries;
+  totalProbes += stats.totalProbes;
+  if (stats.maxProbe > maxProbe) {
+    maxProbe = stats.maxProbe;
+  }
+}
+
+//---------------------------------------------------------------------------
+
 struct FullStenoMapDictionaryDataEntry {
   uint32_t textOffset;
   StenoStroke strokes[1];
 
-  bool Equals(const StenoStroke *strokes, size_t length) const;
-};
-
-inline bool FullStenoMapDictionaryDataEntry::Equals(const StenoStroke *strokes,
-                                                    size_t length) const {
-  for (size_t i = 0; i < length; ++i) {
-    if (strokes[i] != this->strokes[i]) {
-      return false;
-    }
+  bool Equals(const StenoStroke *strokes, size_t length) const {
+    return StenoStroke::Equals(this->strokes, strokes, length);
   }
-  return true;
-}
+};
 
 //---------------------------------------------------------------------------
 
@@ -105,19 +119,19 @@ StenoFullMapDictionary::StenoFullMapDictionary(
   dataRange.max = strokes[maximumOutlineLength].offsets;
 }
 
-StenoDictionaryLookupResult
-StenoFullMapDictionary::Lookup(const StenoDictionaryLookup &lookup) const {
+const FullStenoMapDictionaryDataEntry *
+StenoFullMapDictionary::FindEntry(const StenoDictionaryLookup &lookup) const {
   const StenoFullMapDictionaryStrokesDefinition &strokesDefinition =
       strokes[lookup.length];
 
-  if (strokesDefinition.hashMapMask == 0) {
-    return StenoDictionaryLookupResult::CreateInvalid();
+  if (strokesDefinition.hashMapMask == 0) [[unlikely]] {
+    return nullptr;
   }
 
   size_t entryIndex = lookup.hash & strokesDefinition.hashMapMask;
   const size_t offset = strokesDefinition.GetOffset(entryIndex);
-  if (offset == (size_t)-1) {
-    return StenoDictionaryLookupResult::CreateInvalid();
+  if (offset == (size_t)-1) [[likely]] {
+    return nullptr;
   }
 
   // Size of FullStenoMapDictionaryDataEntry for this length.
@@ -130,48 +144,7 @@ StenoFullMapDictionary::Lookup(const StenoDictionaryLookup &lookup) const {
             strokesDefinition.data[dataIndex];
 
     if (entry.Equals(lookup.strokes, lookup.length)) {
-      const uint8_t *text = textBlock + entry.textOffset;
-      return StenoDictionaryLookupResult::CreateStaticString(text);
-    }
-
-    dataIndex += entrySize;
-    if (++entryIndex > strokesDefinition.hashMapMask) [[unlikely]] {
-      entryIndex = 0;
-      dataIndex = 0;
-    }
-
-    if (!strokesDefinition.HasEntry(entryIndex)) {
-      return StenoDictionaryLookupResult::CreateInvalid();
-    }
-  }
-}
-
-const StenoDictionary *StenoFullMapDictionary::GetDictionaryForOutline(
-    const StenoDictionaryLookup &lookup) const {
-
-  const StenoFullMapDictionaryStrokesDefinition &strokesDefinition =
-      strokes[lookup.length];
-
-  if (strokesDefinition.hashMapMask == 0) {
-    return nullptr;
-  }
-
-  size_t entryIndex = lookup.hash & strokesDefinition.hashMapMask;
-  const size_t offset = strokesDefinition.GetOffset(entryIndex);
-  if (offset == (size_t)-1) {
-    return nullptr;
-  }
-
-  const size_t entrySize = 4 + 4 * lookup.length;
-  size_t dataIndex = offset * entrySize;
-
-  for (;;) {
-    const FullStenoMapDictionaryDataEntry &entry =
-        (const FullStenoMapDictionaryDataEntry &)
-            strokesDefinition.data[dataIndex];
-
-    if (entry.Equals(lookup.strokes, lookup.length)) {
-      return this;
+      return &entry;
     }
 
     dataIndex += entrySize;
@@ -184,6 +157,20 @@ const StenoDictionary *StenoFullMapDictionary::GetDictionaryForOutline(
       return nullptr;
     }
   }
+}
+
+StenoDictionaryLookupResult
+StenoFullMapDictionary::Lookup(const StenoDictionaryLookup &lookup) const {
+  const FullStenoMapDictionaryDataEntry *entry = FindEntry(lookup);
+  return entry == nullptr ? StenoDictionaryLookupResult::CreateInvalid()
+                          : StenoDictionaryLookupResult::CreateStaticString(
+                                textBlock + entry->textOffset);
+}
+
+const StenoDictionary *StenoFullMapDictionary::GetDictionaryForOutline(
+    const StenoDictionaryLookup &lookup) const {
+  const FullStenoMapDictionaryDataEntry *entry = FindEntry(lookup);
+  return entry == nullptr ? nullptr : this;
 }
 
 void StenoFullMapDictionary::ReverseLookup(
@@ -283,6 +270,42 @@ void StenoFullMapDictionary::PrintInfo(int depth) const {
                         (lastStrokeDefinition.hashMapMask + 1) / 32);
 
   Console::Printf("%s%s: %zu bytes\n", Spaces(depth), GetName(), end - start);
+
+#if PRINT_HASH_STATS
+  HashStats overallStats;
+  for (size_t i = 1; i <= maximumOutlineLength; ++i) {
+    const StenoFullMapDictionaryStrokesDefinition &strokesDefinition =
+        strokes[i];
+
+    HashStats stats;
+    size_t runLength = 0;
+    for (size_t j = 0; j <= strokesDefinition.hashMapMask; ++j) {
+      if (strokesDefinition.HasEntry(j)) {
+        ++runLength;
+      } else {
+        stats.Update(runLength);
+        runLength = 0;
+      }
+    }
+    stats.Update(runLength);
+    overallStats.Update(stats);
+
+    const int probesPerEntry = stats.totalProbes * 100 / stats.entries;
+    Console::Printf("%s%zu strokes: %zu entries, %zu probes total, %d.%02d "
+                    "probes/entry, %zu max probes, %zu hash table size\n",
+                    Spaces(depth + 2), i, stats.entries, stats.totalProbes,
+                    probesPerEntry / 100, probesPerEntry % 100, stats.maxProbe,
+                    strokesDefinition.hashMapMask + 1);
+  }
+
+  const int probesPerEntry =
+      overallStats.totalProbes * 100 / overallStats.entries;
+  Console::Printf("%sOverall: %zu entries, %zu probes total, %d.%02d "
+                  "probes/entry, %zu max probes\n",
+                  Spaces(depth + 2), overallStats.entries,
+                  overallStats.totalProbes, probesPerEntry / 100,
+                  probesPerEntry % 100, overallStats.maxProbe);
+#endif
 }
 
 void StenoFullMapDictionary::PrintDictionary(

@@ -323,9 +323,8 @@ void StenoEmilySymbolsDictionary::ReverseLookup(
     return;
   }
 
-  uint32_t hash = lookup.GetLookupCrc();
-  uint32_t index = hash;
-  hash >>= 8;
+  uint32_t index = lookup.definitionCrc;
+  const uint32_t upperHash = lookup.definitionCrc >> 8;
 
   for (;;) {
     index &= (REVERSE_LOOKUP_SIZE - 1);
@@ -334,7 +333,7 @@ void StenoEmilySymbolsDictionary::ReverseLookup(
       return;
     }
 
-    if ((data >> 8) != hash) {
+    if ((data >> 8) != upperHash) {
       ++index;
       continue;
     }

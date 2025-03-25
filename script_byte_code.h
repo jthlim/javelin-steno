@@ -55,6 +55,7 @@ public:
     JUMP_VALUE = 0x96,
     RETURN_IF_ZERO = 0x97,
     RETURN_IF_NOT_ZERO = 0x98,
+    DUP = 0x99,
 
     JUMP_SHORT_BEGIN = 0xa0,
     JUMP_SHORT_END = 0xbe,

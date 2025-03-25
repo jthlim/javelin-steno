@@ -113,7 +113,13 @@ private:
   };
   uint32_t value;
 
-  static uint32_t ResolveUnicode(uint32_t unicode, StenoCaseMode mode);
+  static uint32_t ResolveUnicode(uint32_t unicode, StenoCaseMode mode) {
+    if (mode == StenoCaseMode::NORMAL) [[likely]] {
+      return unicode;
+    }
+    return ResolveUnicodeInterrnal(unicode, mode);
+  }
+  static uint32_t ResolveUnicodeInterrnal(uint32_t unicode, StenoCaseMode mode);
 };
 
 static_assert(sizeof(StenoKeyCode) == 4);

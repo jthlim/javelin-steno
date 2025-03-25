@@ -250,7 +250,7 @@ void IWriter::Vprintf(const char *p, va_list args) {
       break;
 
     case 'p':
-      if (sizeof(void *) == sizeof(uint64_t)) {
+      if constexpr (sizeof(void *) == sizeof(uint64_t)) {
         const uint64_t v = va_arg(args, uint64_t);
         end = WriteReversedHex<uint64_t>(start, v, "0123456789abcdef");
       } else {
