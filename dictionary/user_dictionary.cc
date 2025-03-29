@@ -47,16 +47,22 @@ template <typename T> T *RoundToPage(T *p, size_t pageSize) {
 
 //---------------------------------------------------------------------------
 
+inline uint32_t StenoUserDictionaryData::Crc32() const {
+  return ::Crc32::Hash(this, sizeof(*this));
+}
+
+//---------------------------------------------------------------------------
+
 bool StenoUserDictionaryDescriptor::IsValid(
     const StenoUserDictionaryData &layout) const {
   return magic == USER_DICTIONARY_MAGIC && data.hashTable == layout.hashTable &&
          data.hashTableSize == layout.hashTableSize &&
          version == USER_DICTIONARY_WITH_REVERSE_LOOKUP_VERSION &&
-         Crc32::Hash(&data, sizeof(data)) == crc32;
+         data.Crc32() == crc32;
 }
 
-void StenoUserDictionaryDescriptor::UpdateCrc32() {
-  crc32 = Crc32::Hash(&data, sizeof(data));
+inline void StenoUserDictionaryDescriptor::UpdateCrc32() {
+  crc32 = data.Crc32();
 }
 
 //---------------------------------------------------------------------------

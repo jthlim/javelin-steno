@@ -30,6 +30,8 @@ struct StenoUserDictionaryData {
   uint32_t maximumOutlineLength;
   const uint32_t *reverseHashTable;
 
+  uint32_t Crc32() const;
+
   const StenoUserDictionaryDescriptor *GetDescriptor() const {
     return (const StenoUserDictionaryDescriptor *)(dataBlock + dataBlockSize);
   }
