@@ -30,7 +30,7 @@ ButtonScriptManager::ButtonScriptManager(const uint8_t *scriptByteCode)
 
 void ButtonScriptManager::Update(const ButtonState &newButtonState,
                                  uint32_t scriptTime) {
-  if (!isScriptValid) {
+  if (!isScriptValid) [[unlikely]] {
     return;
   }
 
@@ -80,18 +80,19 @@ void ButtonScriptManager::Update(const ButtonState &newButtonState,
 }
 
 void ButtonScriptManager::ExecuteByteCode(const ScriptByteCode *byteCode) {
-  if (Flash::IsUpdating()) {
+  if (Flash::IsUpdating()) [[unlikely]] {
     return;
   }
   script.ExecuteByteCode(byteCode);
 }
 
-void ButtonScriptManager::ExecuteScript(ButtonScriptId scriptId) {
-  if (Flash::IsUpdating()) {
+[[gnu::noinline]] void
+ButtonScriptManager::ExecuteScript(ButtonScriptId scriptId) {
+  if (Flash::IsUpdating()) [[unlikely]] {
     return;
   }
   ButtonScriptManager &instance = GetInstance();
-  if (!instance.isScriptValid) {
+  if (!instance.isScriptValid) [[unlikely]] {
     return;
   }
 
@@ -147,10 +148,10 @@ void ButtonScriptManager::SetAllowButtonStateUpdates(bool value) {
 //---------------------------------------------------------------------------
 
 void ButtonScriptManager::Tick(uint32_t scriptTime) {
-  if (Flash::IsUpdating()) {
+  if (Flash::IsUpdating()) [[unlikely]] {
     return;
   }
-  if (!isScriptValid) {
+  if (!isScriptValid) [[unlikely]] {
     return;
   }
   script.ExecuteTickScript(scriptTime);
@@ -163,11 +164,13 @@ void ButtonScriptManager::Reset() {
   TimerManager::instance.RemoveScriptTimers(Clock::GetMilliseconds());
 
   isScriptValid = script.IsValid();
-  if (isScriptValid) {
-    script.SetReinit(true);
-    script.ExecuteInitScript(Clock::GetMilliseconds());
-    script.SetReinit(false);
+  if (!isScriptValid) [[unlikely]] {
+    return;
   }
+
+  script.SetReinit(true);
+  script.ExecuteInitScript(Clock::GetMilliseconds());
+  script.SetReinit(false);
 }
 
 //---------------------------------------------------------------------------

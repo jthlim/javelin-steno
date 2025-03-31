@@ -839,7 +839,10 @@ TEST_BEGIN("JeffNumbers: Test words") {
   TestWord("1,000,070", "one million and seventy");
   TestWord("1,001,070", "one million, one thousand and seventy");
   TestWord("1,023,040", "one million, twenty-three thousand and forty");
+}
+TEST_END
 
+TEST_BEGIN("JeffNumbers: Test ordinal words") {
   // spellchecker: disable
   TestLookup("#STG", "twelve");
 

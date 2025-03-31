@@ -29,12 +29,26 @@ public:
   void OnSuspend() { isSuspended = true; }
   void OnResume() { isSuspended = false; }
 
+  bool HasData() {
+    return flags != 0 || ledStatus.GetValue() != 0 || batteryPercentage != 0;
+  }
+  void Reset() {
+    flags = 0;
+    ledStatus.Reset();
+    batteryPercentage = 0;
+  }
+
   static UsbStatus instance;
 
 private:
-  bool isMounted : 1;
-  bool isSuspended : 1;
-  bool isPowered : 1;
+  union {
+    struct {
+      bool isMounted : 1;
+      bool isSuspended : 1;
+      bool isPowered : 1;
+    };
+    uint8_t flags;
+  };
   KeyboardLedStatus ledStatus;
   uint8_t batteryPercentage;
 };

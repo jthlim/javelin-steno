@@ -1,7 +1,6 @@
 //---------------------------------------------------------------------------
 
 #include "split.h"
-#include "../button_script_manager.h"
 #include "../crc32.h"
 #include "../hash.h"
 #include <string.h>
@@ -101,14 +100,12 @@ void TxBuffer::Handlers::OnConnect() const {
   for (SplitTxHandler *handler : *this) {
     handler->OnTransmitConnected();
   }
-  ButtonScriptManager::ExecuteScript(ButtonScriptId::PAIR_CONNECTION_UPDATE);
 }
 
 void TxBuffer::Handlers::OnConnectionReset() const {
   for (SplitTxHandler *handler : *this) {
     handler->OnTransmitConnectionReset();
   }
-  ButtonScriptManager::ExecuteScript(ButtonScriptId::PAIR_CONNECTION_UPDATE);
 }
 
 //---------------------------------------------------------------------------

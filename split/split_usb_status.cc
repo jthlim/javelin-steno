@@ -83,9 +83,11 @@ void SplitUsbStatus::OnDataReceived(const void *data, size_t length) {
 
 void SplitUsbStatus::OnConnectionReset() {
   dirty = true;
-  Mem::Clear(GetRemoteUsbStatus());
-
-  ButtonScriptManager::ExecuteScript(ButtonScriptId::CONNECTION_UPDATE);
+  UsbStatus &status = GetRemoteUsbStatus();
+  if (status.HasData()) {
+    status.Reset();
+    ButtonScriptManager::ExecuteScript(ButtonScriptId::CONNECTION_UPDATE);
+  }
 }
 
 //---------------------------------------------------------------------------
