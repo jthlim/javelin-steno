@@ -1531,15 +1531,6 @@ TEST_BEGIN("JeffPhrasing: Enders tests") {
   VerifyStroke("SWR-FRBTD", "I had taken");
   VerifyStroke("KWHR-RBTD", "he took");
 
-  // VerifyStroke("SWR-BLGT", "I talk");
-  // VerifyStroke("SWR-EBLGT", "I am talking");
-  // VerifyStroke("SWR-FBLGT", "I have talked");
-  // VerifyStroke("KWHR-BLGT", "he talks");
-  // VerifyStroke("SWR-BLGTD", "I talked");
-  // VerifyStroke("SWR-EBLGTD", "I was talking");
-  // VerifyStroke("SWR-FBLGTD", "I had talked");
-  // VerifyStroke("KWHR-BLGTD", "he talked");
-
   VerifyStroke("SWR-RLT", "I tell");
   VerifyStroke("SWR-ERLT", "I am telling");
   VerifyStroke("SWR-FRLT", "I have told");

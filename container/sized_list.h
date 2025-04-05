@@ -13,6 +13,7 @@ public:
   bool IsEmpty() const { return count == 0; }
   bool IsNotEmpty() const { return count != 0; }
   size_t GetCount() const { return count; }
+  void SetCount(size_t newCount) { count = newCount; }
 
   T &operator[](size_t i) {
     assert(i < count);

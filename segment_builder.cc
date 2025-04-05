@@ -16,10 +16,9 @@
 //---------------------------------------------------------------------------
 
 BuildSegmentContext::BuildSegmentContext(StenoSegmentList &segments,
-                                         StenoEngine &engine,
-                                         bool allowSetValue)
-    : allowSetValue(allowSetValue), segments(segments), engine(engine),
-      dictionary(engine.GetDictionary()), orthography(engine.GetOrthography()),
+                                         StenoEngine &engine)
+    : segments(segments), engine(engine), dictionary(engine.GetDictionary()),
+      orthography(engine.GetOrthography()),
       maximumOutlineLength(dictionary.GetMaximumOutlineLength()) {}
 
 //---------------------------------------------------------------------------
@@ -449,36 +448,45 @@ void StenoSegmentBuilder::HandleRetroSetValue(BuildSegmentContext &context,
   }
 
   // Only set the value if it is the last entry in the buffer.
-  if (context.allowSetValue && currentOffset + length == count) {
-    char *result =
+  if (currentOffset + length == count) {
+    // Store for later update.
+    context.setValueIndex = parameters.index;
+    char *text =
         context.engine.ConvertText(context.segments, startingSegmentIndex);
-
-    context.engine.SetTemplateValue(parameters.index, Str::Trim(result));
-    free(result);
+    context.setValueText = Str::Trim(text);
+    free(text);
   }
 
+  size_t historyOffset =
+      context.segments[startingSegmentIndex].GetStrokeIndex(states);
   for (size_t i = startingSegmentIndex; i < context.segments.GetCount(); ++i) {
     StenoSegment &segment = context.segments[i];
     segment.lookup.Destroy();
-    segment.lookup = StenoDictionaryLookupResult::NO_OP;
   }
+  context.segments.SetCount(startingSegmentIndex);
 
   BufferWriter writer;
   EscapeCommand(writer, command);
 
   // Special case if followed by =transform
   if (Str::HasPrefix(format, "=transform:")) {
+    char *oldTemplate = nullptr;
+    if (context.setValueText) {
+      oldTemplate = context.engine.SwapTemplateValue(parameters.index,
+                                                     context.setValueText);
+    }
     CreateTransformString(writer, context,
                           format + Str::ConstLength("=transform:"));
+    if (context.setValueText) {
+      context.engine.SwapTemplateValue(parameters.index, oldTemplate);
+    }
   } else {
     writer.WriteString(format);
   }
 
-  hasModifiedStrokeHistory = true;
-  states[currentOffset].joinNext =
-      context.segments[startingSegmentIndex].state->joinNext;
   context.segments.Add(
-      StenoSegment(length, SegmentLookupType::DIRECT, states + currentOffset,
+      StenoSegment(currentOffset - historyOffset + length,
+                   SegmentLookupType::DIRECT, states + historyOffset,
                    StenoDictionaryLookupResult::CreateFromBuffer(writer)));
 }
 
@@ -858,7 +866,7 @@ TEST_BEGIN("StrokeHistory: Test single segment") {
       StenoOrthography::emptyOrthography);
 
   StenoEngine engine(dictionary, orthography);
-  BuildSegmentContext context(segments, engine, false);
+  BuildSegmentContext context(segments, engine);
   history.CreateSegments(context);
 
   assert(segments.GetCount() == 1);
@@ -886,7 +894,7 @@ TEST_BEGIN("StrokeHistory: Test two segments, with multi-stroke") {
       StenoOrthography::emptyOrthography);
 
   StenoEngine engine(dictionary, orthography);
-  BuildSegmentContext context(segments, engine, false);
+  BuildSegmentContext context(segments, engine);
   history.CreateSegments(context);
 
   assert(segments.GetCount() == 2);
@@ -915,7 +923,7 @@ TEST_BEGIN("StrokeHistory: Test *? splits strokes") {
       StenoOrthography::emptyOrthography);
 
   StenoEngine engine(dictionary, orthography);
-  BuildSegmentContext context(segments, engine, false);
+  BuildSegmentContext context(segments, engine);
   history.CreateSegments(context);
 
   assert(segments.GetCount() == 3);
@@ -940,7 +948,7 @@ TEST_BEGIN("StrokeHistory: Test * toggles lookup") {
       StenoOrthography::emptyOrthography);
 
   StenoEngine engine(dictionary, orthography);
-  BuildSegmentContext context(segments, engine, false);
+  BuildSegmentContext context(segments, engine);
   history.CreateSegments(context);
 
   assert(segments.GetCount() == 2);
@@ -975,7 +983,7 @@ TEST_BEGIN("StrokeHistory: Test {*?} behaves properly") {
   };
   StenoDictionaryList dictionary(DICTIONARIES, 2);
   StenoEngine engine(dictionary, orthography);
-  BuildSegmentContext context(segments, engine, false);
+  BuildSegmentContext context(segments, engine);
   history.CreateSegments(context);
 
   assert(segments.GetCount() == 10);

@@ -21,13 +21,17 @@ static constexpr char TRANSLATION_PROMPT[] = "; Translation: ";
 
 //---------------------------------------------------------------------------
 
+void StenoEngine::FreeAddTranslationText() {
+  free(addTranslationText);
+  addTranslationText = nullptr;
+}
+
 void StenoEngine::InitiateAddTranslationMode(const char *text) {
   if (!userDictionary) {
     return;
   }
 
-  free(addTranslationText);
-  addTranslationText = nullptr;
+  FreeAddTranslationText();
   if (text) {
     addTranslationText = Str::Dup(text);
   }
@@ -62,7 +66,7 @@ void StenoEngine::ProcessAddTranslationModeStroke(StenoStroke stroke) {
     }
     if (addTranslationText) {
       AddTranslation(altTranslationHistory.GetCount());
-      EndAddTranslationMode();
+      EndAddTranslationMode(true);
       return;
     }
     if (newlineIndex != 0) {
@@ -72,7 +76,7 @@ void StenoEngine::ProcessAddTranslationModeStroke(StenoStroke stroke) {
       } else {
         AddTranslation(newlineIndex);
       }
-      EndAddTranslationMode();
+      EndAddTranslationMode(true);
       return;
     }
   } else if (newlineIndex == 0) {
@@ -107,7 +111,7 @@ void StenoEngine::ProcessAddTranslationModeStroke(StenoStroke stroke) {
 
 void StenoEngine::ProcessAddTranslationModeUndo() {
   if (altTranslationHistory.IsEmpty()) {
-    EndAddTranslationMode();
+    EndAddTranslationMode(false);
     return;
   }
 
@@ -162,7 +166,7 @@ void StenoEngine::UpdateAddTranslationModeTextBuffer(ConversionBuffer &buffer) {
                                   StenoCaseMode::NORMAL);
 
   StenoSegmentList segments(altTranslationHistory.GetCount());
-  BuildSegmentContext context(segments, *this, false);
+  BuildSegmentContext context(segments, *this);
 
   buffer.segmentBuilder.TransferFrom(altTranslationHistory,
                                      altTranslationHistory.GetCount(),
@@ -182,14 +186,20 @@ void StenoEngine::UpdateAddTranslationModeTextBuffer(ConversionBuffer &buffer) {
   }
 }
 
-void StenoEngine::EndAddTranslationMode() {
+void StenoEngine::EndAddTranslationMode(bool hasAddedTranslation) {
   UpdateAddTranslationModeTextBuffer(previousConversionBuffer);
   nextConversionBuffer.keyCodeBuffer.Reset();
   emitter.Process(previousConversionBuffer.keyCodeBuffer,
                   nextConversionBuffer.keyCodeBuffer);
 
   mode = StenoEngineMode::NORMAL;
-  ProcessNormalModeUndo();
+  if (!hasAddedTranslation) {
+    ProcessNormalModeUndo();
+  } else {
+    history.Reset();
+  }
+
+  FreeAddTranslationText();
 }
 
 void StenoEngine::AddTranslation(size_t newlineIndex) {
@@ -205,7 +215,7 @@ void StenoEngine::AddTranslation(size_t newlineIndex) {
     nextConversionBuffer.keyCodeBuffer.Reset();
 
     StenoSegmentList segments(altTranslationHistory.GetCount());
-    BuildSegmentContext context(segments, *this, false);
+    BuildSegmentContext context(segments, *this);
 
     nextConversionBuffer.segmentBuilder.TransferFrom(
         altTranslationHistory, altTranslationHistory.GetCount(),
@@ -225,8 +235,9 @@ void StenoEngine::AddTranslation(size_t newlineIndex) {
     strokes[i] = altTranslationHistory[i].stroke;
   }
   userDictionary->Add(strokes, newlineIndex, word);
-  free(word);
-  addTranslationText = nullptr;
+  if (word != addTranslationText) {
+    free(word);
+  }
 }
 
 void StenoEngine::DeleteTranslation(size_t newlineIndex) {

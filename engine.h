@@ -81,8 +81,10 @@ public:
   }
 
   // data needs to be dynamically allocated, and StenoEngine will assume
-  // responsibility for its lifecycle/
+  // responsibility for its lifecycle.
   void SetTemplateValue(size_t index, char *data);
+
+  char *SwapTemplateValue(size_t index, char *data);
 
   char *ConvertText(StenoSegmentList &segments, size_t startingOffset);
 
@@ -150,7 +152,8 @@ private:
   bool HandleAddTranslationModeScanCode(uint32_t scanCodeAndModifiers,
                                         ScanCodeAction action);
   void UpdateAddTranslationModeTextBuffer(ConversionBuffer &buffer);
-  void EndAddTranslationMode();
+  void EndAddTranslationMode(bool hasAddedTranslation);
+  void FreeAddTranslationText();
 
   void InitiateConsoleMode();
   void ProcessConsoleModeUndo();
@@ -170,10 +173,11 @@ private:
   void CreateSegments(StenoSegmentList &segments, StenoSegmentBuilder &builder,
                       const StenoStroke *strokes, size_t length);
 
-  void CreateSegments(size_t sourceStrokeCount, ConversionBuffer &buffer,
-                      size_t conversionLimit, StenoSegmentList &segments,
-                      bool allowSetValue);
-  void CreateSegmentsUsingLongerResult(size_t sourceStrokeCount,
+  void CreateSegments(BuildSegmentContext &context, size_t sourceStrokeCount,
+                      ConversionBuffer &buffer, size_t conversionLimit,
+                      StenoSegmentList &segments);
+  void CreateSegmentsUsingLongerResult(BuildSegmentContext &context,
+                                       size_t sourceStrokeCount,
                                        ConversionBuffer &buffer,
                                        size_t conversionLimit,
                                        StenoSegmentList &segments,

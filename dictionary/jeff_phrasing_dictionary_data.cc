@@ -1392,26 +1392,6 @@ constexpr JeffPhrasingMapData<4> ENDER_RBTD = {
         },
 };
 
-// constexpr JeffPhrasingMapData<4> ENDER_BLGT = {
-//     .entries =
-//         {
-//             {0, " talk"},
-//             {(uint32_t)VerbForm::THIRD_PERSON_SINGULAR, " talks"},
-//             {(uint32_t)VerbForm::PRESENT_PARTICIPLE, " talking"},
-//             {(uint32_t)VerbForm::PAST_PARTICIPLE, " talked"},
-//         },
-// };
-
-// constexpr JeffPhrasingMapData<4> ENDER_BLGTD = {
-//     .entries =
-//         {
-//             {0, " talked"},
-//             {(uint32_t)VerbForm::ROOT, " talk"},
-//             {(uint32_t)VerbForm::PRESENT_PARTICIPLE, " talking"},
-//             {(uint32_t)VerbForm::PAST_PARTICIPLE, " talked"},
-//         },
-// };
-
 constexpr JeffPhrasingMapData<4> ENDER_RLT = {
     .entries =
         {
@@ -1856,10 +1836,6 @@ constexpr JeffPhrasingEnder ENDERS[] = {
     // RBT - To take
     {StenoStroke(0x94000 /*-RBT*/), Tense::PRESENT, false, &ENDER_RBT, ""},
     {StenoStroke(0x294000 /*-RBTD*/), Tense::PAST, false, &ENDER_RBTD, ""},
-
-    // // BLGT - To talk
-    // {StenoStroke(0xf0000 /*-BLGT*/), Tense::PRESENT, false, &ENDER_BLGT, ""},
-    // {StenoStroke(0x2f0000 /*-BLGTD*/), Tense::PAST, false, &ENDER_BLGTD, ""},
 
     // RLT - To tell
     {StenoStroke(0xa4000 /*-RLT*/), Tense::PRESENT, false, &ENDER_RLT, ""},

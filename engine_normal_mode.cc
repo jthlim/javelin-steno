@@ -163,22 +163,29 @@ void StenoEngine::ProcessNormalModeStroke(StenoStroke stroke) {
   const size_t conversionCount = history.GetCount() - startingStroke;
 
   StenoSegmentList nextSegments(conversionCount);
-  CreateSegments(history.GetCount(), nextConversionBuffer, conversionCount,
-                 nextSegments, true);
+  BuildSegmentContext nextContext(nextSegments, *this);
+  CreateSegments(nextContext, history.GetCount(), nextConversionBuffer,
+                 conversionCount, nextSegments);
 
 #if ENABLE_PROFILE
   const uint32_t t1 = sysTick->ReadCycleCount();
 #endif
 
   StenoSegmentList previousSegments(conversionCount - 1);
+  BuildSegmentContext previousContext(previousSegments, *this);
   if (nextConversionBuffer.segmentBuilder.HasModifiedStrokeHistory()) {
-    CreateSegments(previousSourceStrokeCount, previousConversionBuffer,
-                   conversionCount - 1, previousSegments, false);
+    CreateSegments(previousContext, previousSourceStrokeCount,
+                   previousConversionBuffer, conversionCount - 1,
+                   previousSegments);
   } else {
-    CreateSegmentsUsingLongerResult(previousSourceStrokeCount,
+    CreateSegmentsUsingLongerResult(previousContext, previousSourceStrokeCount,
                                     previousConversionBuffer,
                                     conversionCount - 1, previousSegments,
                                     nextConversionBuffer, nextSegments);
+  }
+  if (nextContext.setValueText) {
+    SetTemplateValue(nextContext.setValueIndex, nextContext.setValueText);
+    nextContext.setValueText = nullptr;
   }
 
   // Update definition boundaries after evaluating previous segments so that
@@ -378,8 +385,9 @@ void StenoEngine::ProcessNormalModeUndo() {
   const size_t conversionCount = history.GetCount() - startingStroke;
 
   StenoSegmentList previousSegments(conversionCount);
-  CreateSegments(history.GetCount(), previousConversionBuffer, conversionCount,
-                 previousSegments, false);
+  BuildSegmentContext previousContext(previousSegments, *this);
+  CreateSegments(previousContext, history.GetCount(), previousConversionBuffer,
+                 conversionCount, previousSegments);
 
 #if ENABLE_PROFILE
   const uint32_t t1 = sysTick->ReadCycleCount();
@@ -397,15 +405,22 @@ void StenoEngine::ProcessNormalModeUndo() {
   history.MarkLastLookupTypeAsUnknown();
 
   StenoSegmentList nextSegments(nextConversionCount);
+  BuildSegmentContext nextContext(nextSegments, *this);
   if (previousConversionBuffer.segmentBuilder.HasModifiedStrokeHistory()) {
-    CreateSegments(history.GetCount(), nextConversionBuffer,
-                   nextConversionCount, nextSegments, true);
+    CreateSegments(nextContext, history.GetCount(), nextConversionBuffer,
+                   nextConversionCount, nextSegments);
 
   } else {
-    CreateSegmentsUsingLongerResult(history.GetCount(), nextConversionBuffer,
-                                    nextConversionCount, nextSegments,
-                                    previousConversionBuffer, previousSegments);
+    CreateSegmentsUsingLongerResult(nextContext, history.GetCount(),
+                                    nextConversionBuffer, nextConversionCount,
+                                    nextSegments, previousConversionBuffer,
+                                    previousSegments);
   }
+  if (nextContext.setValueText) {
+    SetTemplateValue(nextContext.setValueIndex, nextContext.setValueText);
+    nextContext.setValueText = nullptr;
+  }
+
   history.Back().state = backState;
 
 #if ENABLE_PROFILE
@@ -516,19 +531,19 @@ void StenoEngine::ProcessNormalModeUndo() {
 #endif
 }
 
-void StenoEngine::CreateSegments(size_t sourceStrokeCount,
+void StenoEngine::CreateSegments(BuildSegmentContext &context,
+                                 size_t sourceStrokeCount,
                                  ConversionBuffer &buffer,
                                  size_t conversionLimit,
-                                 StenoSegmentList &segments,
-                                 bool allowSetValue) {
+                                 StenoSegmentList &segments) {
   buffer.segmentBuilder.TransferFrom(history, sourceStrokeCount,
                                      conversionLimit);
-  BuildSegmentContext context(segments, *this, allowSetValue);
   buffer.segmentBuilder.CreateSegments(context);
 }
 
 void StenoEngine::CreateSegmentsUsingLongerResult(
-    size_t sourceStrokeCount, ConversionBuffer &buffer, size_t conversionLimit,
+    BuildSegmentContext &context, size_t sourceStrokeCount,
+    ConversionBuffer &buffer, size_t conversionLimit,
     StenoSegmentList &segments, const ConversionBuffer &longerBuffer,
     const StenoSegmentList &longerSegments) {
 
@@ -560,7 +575,6 @@ void StenoEngine::CreateSegmentsUsingLongerResult(
 
   buffer.segmentBuilder.TransferStartFrom(longerBuffer.segmentBuilder,
                                           startingOffset);
-  BuildSegmentContext context(segments, *this, false);
   buffer.segmentBuilder.CreateSegments(context, startingOffset);
 }
 

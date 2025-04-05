@@ -461,6 +461,10 @@ bool StenoKeyCodeBuffer::AddTranslationFunction(
     }
     unescaped.WriteByte('\0');
     addTranslationText = Str::Trim(unescaped.GetBuffer());
+    if (*addTranslationText == '\0') {
+      free(addTranslationText);
+      addTranslationText = nullptr;
+    }
   }
 
   return true;

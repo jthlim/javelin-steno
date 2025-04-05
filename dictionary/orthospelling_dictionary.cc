@@ -35,7 +35,7 @@ StenoDictionaryLookupResult StenoOrthospellingDictionary::Lookup(
   BufferWriter result;
   result.WriteString(starter->definition);
 
-  const StenoStroke remainder = lookup.strokes[0] & ~starter->mask;
+  const StenoStroke remainder = lookup.strokes[0] & ~starter->activation.mask;
   if (remainder.IsNotEmpty()) {
     ProcessStroke(result, buffer, remainder);
   }

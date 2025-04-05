@@ -208,6 +208,15 @@ void StenoEngine::SetTemplateValue(size_t index, char *data) {
   }
 }
 
+char *StenoEngine::SwapTemplateValue(size_t index, char *data) {
+  if (index >= TEMPLATE_VALUE_COUNT) {
+    return nullptr;
+  }
+  char *oldValue = templateValues[index].value;
+  templateValues[index].value = data;
+  return oldValue;
+}
+
 char *StenoEngine::ConvertText(StenoSegmentList &segments,
                                size_t startingOffset) {
   StenoKeyCodeBuffer &keyCodeBuffer = nextConversionBuffer.keyCodeBuffer;
@@ -262,6 +271,7 @@ class StenoEngineTester {
 public:
   static void TestSymbols(StenoEngine &engine);
   static void TestTransform(StenoEngine &engine);
+  static void TestSetTransform(StenoEngine &engine);
   static void TestEngine(StenoEngine &engine);
   static void TestAddTranslation(StenoEngine &engine);
   static void TestScancodeAddTranslation(StenoEngine &engine);
@@ -335,6 +345,43 @@ TEST_BEGIN("Engine: Test transform") {
       StenoOrthography::emptyOrthography);
   StenoEngine engine(userDictionary, orthography);
   StenoEngineTester::TestTransform(engine);
+
+  delete[] buffer;
+}
+TEST_END
+
+void StenoEngineTester::TestSetTransform(StenoEngine &engine) {
+  engine.ProcessStroke(StenoStroke("S"));
+  engine.ProcessStroke(StenoStroke("K"));
+  char *text = engine.nextConversionBuffer.keyCodeBuffer.ToString();
+  assert(Str::Eq(engine.GetTemplateValue(0), "cat"));
+  assert(Str::Eq(text, "xcat"));
+
+  engine.ProcessStroke(StenoStroke("T"));
+  engine.ProcessStroke(StenoStroke("K"));
+  text = engine.nextConversionBuffer.keyCodeBuffer.ToString();
+  assert(Str::Eq(engine.GetTemplateValue(0), "dog"));
+  assert(Str::Eq(text, "xcat xdog"));
+  free(text);
+}
+
+TEST_BEGIN("Engine: Test set_value and transform") {
+  uint8_t *buffer = new uint8_t[512 * 1024];
+  memset(buffer, 0, 512 * 1024);
+  const StenoUserDictionaryData layout(buffer, 512 * 1024);
+  StenoUserDictionary userDictionary(layout);
+
+  const StenoStroke stroke("S");
+  userDictionary.Add(&stroke, 1, "cat");
+  const StenoStroke setValueStroke("T");
+  userDictionary.Add(&setValueStroke, 1, "dog");
+  const StenoStroke useValueStroke("K");
+  userDictionary.Add(&useValueStroke, 1, "=set_value:0:1 =transform:x%0");
+
+  const StenoCompiledOrthography orthography(
+      StenoOrthography::emptyOrthography);
+  StenoEngine engine(userDictionary, orthography);
+  StenoEngineTester::TestSetTransform(engine);
 
   delete[] buffer;
 }

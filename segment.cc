@@ -401,7 +401,7 @@ TEST_BEGIN("Segment tests") {
       StenoOrthography::emptyOrthography);
   StenoCompactMapDictionary dictionary(TestDictionary::definition);
   StenoEngine engine(dictionary, compiledOrthography);
-  BuildSegmentContext context(segments, engine, false);
+  BuildSegmentContext context(segments, engine);
 
   history.CreateSegments(context);
 

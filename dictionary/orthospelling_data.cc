@@ -9,7 +9,7 @@
 const OrthospellingData::Starter *
 OrthospellingData::GetStarterDefinition(StenoStroke stroke) const {
   for (const Starter &starter : starters) {
-    if ((stroke & starter.mask) == starter.stroke) {
+    if (starter.IsMatch(stroke)) {
       return &starter;
     }
   }
@@ -18,7 +18,7 @@ OrthospellingData::GetStarterDefinition(StenoStroke stroke) const {
 
 const bool OrthospellingData::IsExit(StenoStroke stroke) const {
   for (const Exit &exit : exits) {
-    if (((stroke & exit.fullMask) == exit.stroke) == exit.polarity) {
+    if (exit.IsMatch(stroke)) {
       return true;
     }
   }
@@ -29,16 +29,17 @@ bool OrthospellingData::ResolveStroke(StenoStroke stroke, Context context,
                                       size_t startingIndex) const {
   for (size_t i = startingIndex; i < letters.count; ++i) {
     const Letter &letter = letters[i];
-    if ((letter.mask & stroke) != letter.stroke) {
+    if (!letter.IsMatch(stroke)) {
       continue;
     }
 
     context.Add(&letter);
-    if (i + 1 < letters.count && letter.HasSameActivation(letters[i + 1])) {
+    if (i + 1 < letters.count &&
+        letter.activation == letters[i + 1].activation) {
       continue;
     }
 
-    stroke &= ~letter.stroke;
+    stroke &= ~letter.activation.stroke;
 
     if (stroke.IsEmpty()) {
       context.End();

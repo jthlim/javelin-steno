@@ -11,20 +11,30 @@ class BufferWriter;
 //---------------------------------------------------------------------------
 
 struct OrthospellingData {
-  struct Starter {
+  struct MaskedStroke {
     StenoStroke stroke;
     StenoStroke mask;
+
+    bool operator==(const MaskedStroke &other) const = default;
+    bool IsMatch(StenoStroke other) const { return (other & mask) == stroke; }
+  };
+
+  struct Starter {
+    MaskedStroke activation;
     const char *definition;
+
+    bool IsMatch(StenoStroke stroke) const {
+      return activation.IsMatch(stroke);
+    }
   };
 
   struct Letter {
-    StenoStroke stroke;
-    StenoStroke mask;
+    MaskedStroke activation;
     uint8_t order; // 0-2 inclusive, representing the buffer used in
     const char data[7];
 
-    bool HasSameActivation(const Letter &other) const {
-      return stroke == other.stroke && mask == other.mask;
+    bool IsMatch(StenoStroke stroke) const {
+      return activation.IsMatch(stroke);
     }
   };
 
@@ -38,6 +48,10 @@ struct OrthospellingData {
       };
       uint32_t fullMask;
     };
+
+    bool IsMatch(StenoStroke other) const {
+      return ((other & fullMask) == stroke) == polarity;
+    }
   };
 
   struct Context {

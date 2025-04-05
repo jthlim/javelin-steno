@@ -38,7 +38,7 @@ struct StenoSegment {
   }
 
   size_t GetEndStrokeIndex(const StenoState *firstState) const {
-    return (state - firstState) + strokeLength;
+    return GetStrokeIndex(firstState) + strokeLength;
   }
 
   SegmentHistoryRequirements GetHistoryRequirements() const;
