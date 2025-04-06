@@ -16,11 +16,19 @@ Flash Flash::instance;
 //---------------------------------------------------------------------------
 
 #if RUN_TESTS
+int flashEraseCount = 0;
+int flashWriteCount = 0;
+
 [[gnu::weak]] void Flash::EraseBlock(const void *target, size_t size) {
   assert((size & (BLOCK_SIZE - 1)) == 0);
 
+  if (!RequiresErase(target, size)) {
+    return;
+  }
+
   instance.erasedBytes += size;
   memset((void *)target, 0xff, size);
+  ++flashEraseCount;
 }
 
 [[gnu::weak]] void Flash::WriteBlock(const void *target, const void *data,
@@ -28,9 +36,18 @@ Flash Flash::instance;
   assert(target != data);
   assert((size & (BLOCK_SIZE - 1)) == 0);
 
+  if (RequiresErase(target, data, size)) {
+    ++flashEraseCount;
+  }
+
+  if (!RequiresProgram(target, data, size)) {
+    return;
+  }
+
   instance.erasedBytes += size;
   instance.programmedBytes += size;
   memcpy((void *)target, data, size);
+  ++flashWriteCount;
 }
 #endif
 

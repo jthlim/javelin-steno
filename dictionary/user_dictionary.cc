@@ -19,13 +19,19 @@ constexpr size_t OFFSET_DELETED = 0;
 constexpr size_t OFFSET_DATA = 1;
 
 constexpr uint32_t USER_DICTIONARY_MAGIC = 0x4455534a; // 'JSUD'
+
+// TODO: July 2026: Remove support for version 2.
 constexpr uint32_t USER_DICTIONARY_WITH_REVERSE_LOOKUP_VERSION = 2;
+constexpr uint32_t
+    USER_DICTIONARY_WITH_REVERSE_LOOKUP_AND_REVERSE_DATABLOCK_VERSION = 3;
 
-// Offset within the flash page where descriptors will be stored.
-constexpr size_t DESCRIPTOR_OFFSET = 64;
+constexpr size_t DESCRIPTOR_ENTRY_SIZE = 64;
 
-static_assert(sizeof(StenoUserDictionaryDescriptor) <= DESCRIPTOR_OFFSET,
+static_assert(sizeof(StenoUserDictionaryDescriptor) <= DESCRIPTOR_ENTRY_SIZE,
               "Descriptor size is larger than expected");
+static_assert(StenoUserDictionaryData::ALL_DESCRIPTORS_SIZE %
+                  DESCRIPTOR_ENTRY_SIZE ==
+              0);
 
 //---------------------------------------------------------------------------
 
@@ -51,18 +57,47 @@ inline uint32_t StenoUserDictionaryData::Crc32() const {
   return ::Crc32::Hash(this, sizeof(*this));
 }
 
+const StenoUserDictionaryDescriptor *
+StenoUserDictionaryData::FindMostRecentDescriptor() const {
+  const StenoUserDictionaryDescriptor *result = nullptr;
+
+  // Search backwards as the largest will likely occur last.
+  // This limits the number of Crc32 calculations required.
+  for (size_t i = ALL_DESCRIPTORS_SIZE; i != 0;) {
+    i -= DESCRIPTOR_ENTRY_SIZE;
+
+    const StenoUserDictionaryDescriptor *test = GetDescriptor(i);
+    if ((!result || test->GetUsedDataBlockSize(dataBlockSize) >=
+                        result->GetUsedDataBlockSize(dataBlockSize)) &&
+        test->IsValid(*this)) {
+      result = test;
+    }
+  }
+
+  return result;
+}
+
 //---------------------------------------------------------------------------
 
 bool StenoUserDictionaryDescriptor::IsValid(
     const StenoUserDictionaryData &layout) const {
   return magic == USER_DICTIONARY_MAGIC && data.hashTable == layout.hashTable &&
          data.hashTableSize == layout.hashTableSize &&
-         version == USER_DICTIONARY_WITH_REVERSE_LOOKUP_VERSION &&
+         (version == USER_DICTIONARY_WITH_REVERSE_LOOKUP_VERSION ||
+          version ==
+              USER_DICTIONARY_WITH_REVERSE_LOOKUP_AND_REVERSE_DATABLOCK_VERSION) &&
          data.Crc32() == crc32;
 }
 
 inline void StenoUserDictionaryDescriptor::UpdateCrc32() {
   crc32 = data.Crc32();
+}
+
+size_t StenoUserDictionaryDescriptor::GetUsedDataBlockSize(
+    size_t totalDataBlockSize) const {
+  return version == USER_DICTIONARY_WITH_REVERSE_LOOKUP_VERSION
+             ? data.dataBlockSize
+             : totalDataBlockSize - data.dataBlockSizeRemaining;
 }
 
 //---------------------------------------------------------------------------
@@ -71,71 +106,23 @@ StenoUserDictionary::StenoUserDictionary(const StenoUserDictionaryData &layout)
     : StenoDictionary(0),
 
       descriptorBase(layout.GetDescriptor()), layout(layout) {
-  activeDescriptor = FindMostRecentDescriptor();
+  activeDescriptor = layout.FindMostRecentDescriptor();
   if (activeDescriptor == nullptr) {
     Reset();
   }
   maximumOutlineLength = activeDescriptor->data.maximumOutlineLength;
 }
 
-const StenoUserDictionaryDescriptor *
-StenoUserDictionary::FindMostRecentDescriptor() const {
-  const StenoUserDictionaryDescriptor *result = nullptr;
-
-  for (size_t i = 0; i < Flash::BLOCK_SIZE; i += DESCRIPTOR_OFFSET) {
-    const StenoUserDictionaryDescriptor *test =
-        (const StenoUserDictionaryDescriptor *)((intptr_t)descriptorBase + i);
-
-    if (test->IsValid(layout)) {
-      if (!result || test->data.dataBlockSize >= result->data.dataBlockSize) {
-        result = test;
-      }
-    }
-  }
-
-  return result;
-}
-
 size_t StenoUserDictionary::GetNextDescriptorToWriteOffset() const {
   const size_t activeOffset =
       (intptr_t)activeDescriptor - (intptr_t)descriptorBase;
-  const size_t nextOffset =
-      (activeOffset + DESCRIPTOR_OFFSET) % Flash::BLOCK_SIZE;
+  const size_t nextOffset = (activeOffset + DESCRIPTOR_ENTRY_SIZE) %
+                            StenoUserDictionaryData::ALL_DESCRIPTORS_SIZE;
   return nextOffset;
 }
 
-StenoDictionaryLookupResult
-StenoUserDictionary::Lookup(const StenoDictionaryLookup &lookup) const {
-  size_t entryIndex = lookup.hash;
-  for (;;) {
-    entryIndex &= activeDescriptor->data.hashTableSize - 1;
-
-    const uint32_t offset = activeDescriptor->data.hashTable[entryIndex];
-    switch (offset) {
-    case OFFSET_EMPTY:
-      return StenoDictionaryLookupResult::CreateInvalid();
-
-    case OFFSET_DELETED:
-      break;
-
-    default:
-      const StenoUserDictionaryEntry *entry =
-          (const StenoUserDictionaryEntry *)(activeDescriptor->data.dataBlock +
-                                             offset - OFFSET_DATA);
-
-      if (entry->strokeLength == lookup.length &&
-          StenoStroke::Equals(lookup.strokes, entry->strokes, lookup.length)) {
-        return StenoDictionaryLookupResult::CreateStaticString(
-            entry->GetText());
-      }
-    }
-
-    ++entryIndex;
-  }
-}
-
-const StenoDictionary *StenoUserDictionary::GetDictionaryForOutline(
-    const StenoDictionaryLookup &lookup) const {
+const StenoUserDictionaryEntry *
+StenoUserDictionary::LookupEntry(const StenoDictionaryLookup &lookup) const {
   size_t entryIndex = lookup.hash;
   for (;;) {
     entryIndex &= activeDescriptor->data.hashTableSize - 1;
@@ -155,7 +142,7 @@ const StenoDictionary *StenoUserDictionary::GetDictionaryForOutline(
 
       if (entry->strokeLength == lookup.length &&
           StenoStroke::Equals(lookup.strokes, entry->strokes, lookup.length)) {
-        return this;
+        return entry;
       }
     }
 
@@ -163,13 +150,23 @@ const StenoDictionary *StenoUserDictionary::GetDictionaryForOutline(
   }
 }
 
+StenoDictionaryLookupResult
+StenoUserDictionary::Lookup(const StenoDictionaryLookup &lookup) const {
+  const StenoUserDictionaryEntry *entry = LookupEntry(lookup);
+  if (entry == nullptr) {
+    return StenoDictionaryLookupResult::CreateInvalid();
+  }
+  return StenoDictionaryLookupResult::CreateStaticString(entry->GetText());
+}
+
+const StenoDictionary *StenoUserDictionary::GetDictionaryForOutline(
+    const StenoDictionaryLookup &lookup) const {
+  const StenoUserDictionaryEntry *entry = LookupEntry(lookup);
+  return entry != nullptr ? this : nullptr;
+}
+
 void StenoUserDictionary::ReverseLookup(
     StenoReverseDictionaryLookup &lookup) const {
-  if (activeDescriptor->version !=
-      USER_DICTIONARY_WITH_REVERSE_LOOKUP_VERSION) {
-    return;
-  }
-
   uint32_t entryIndex = lookup.definitionCrc;
 
   for (;;) {
@@ -203,6 +200,8 @@ void StenoUserDictionary::Reset() {
   Flash::EraseBlock(layout.hashTable, layout.hashTableSize * sizeof(uint32_t));
   Flash::EraseBlock(layout.reverseHashTable,
                     layout.hashTableSize * sizeof(uint32_t));
+  Flash::EraseBlock(descriptorBase,
+                    StenoUserDictionaryData::ALL_DESCRIPTORS_SIZE);
 
   StenoUserDictionaryDescriptor *freshDescriptor =
       (StenoUserDictionaryDescriptor *)malloc(Flash::BLOCK_SIZE);
@@ -211,11 +210,12 @@ void StenoUserDictionary::Reset() {
   Mem::Fill(freshDescriptor, Flash::BLOCK_SIZE);
 
   freshDescriptor->magic = USER_DICTIONARY_MAGIC;
-  freshDescriptor->version = USER_DICTIONARY_WITH_REVERSE_LOOKUP_VERSION;
+  freshDescriptor->version =
+      USER_DICTIONARY_WITH_REVERSE_LOOKUP_AND_REVERSE_DATABLOCK_VERSION;
   freshDescriptor->data.hashTable = layout.hashTable;
   freshDescriptor->data.hashTableSize = layout.hashTableSize;
   freshDescriptor->data.dataBlock = layout.dataBlock;
-  freshDescriptor->data.dataBlockSize = 0;
+  freshDescriptor->data.dataBlockSizeRemaining = layout.dataBlockSize;
   freshDescriptor->data.maximumOutlineLength = 0;
   freshDescriptor->data.reverseHashTable = layout.reverseHashTable;
   freshDescriptor->UpdateCrc32();
@@ -229,16 +229,11 @@ void StenoUserDictionary::Reset() {
 bool StenoUserDictionary::Add(const StenoStroke *strokes, size_t length,
                               const char *word) {
   // Verify that it doesn't already exist.
-  StenoDictionaryLookupResult lookup =
-      Lookup(StenoDictionaryLookup(strokes, length));
+  const StenoUserDictionaryEntry *entry =
+      LookupEntry(StenoDictionaryLookup(strokes, length));
 
-  if (lookup.IsValid()) {
-    if (Str::Eq(lookup.GetText(), word)) {
-      lookup.Destroy();
-      return true;
-    }
-    lookup.Destroy();
-    Remove(strokes, length);
+  if (entry && Str::Eq(entry->GetText(), word)) {
+    return true;
   }
 
   const AddToDataBlockResult data =
@@ -246,12 +241,15 @@ bool StenoUserDictionary::Add(const StenoStroke *strokes, size_t length,
   if (data.length == 0) {
     return false;
   }
-  AddToDescriptor(length, data.length);
+  AddToDescriptor(length, data);
   if (!AddToHashTable(strokes, length, data.offset)) {
     return false;
   }
 
   AddToReverseHashTable(word, data.offset);
+  if (entry) {
+    RemoveFromReverseHashTable(entry);
+  }
 
   maximumOutlineLength = activeDescriptor->data.maximumOutlineLength;
   UpdateMaximumOutlineLength();
@@ -270,6 +268,20 @@ StenoUserDictionary::AddToDataBlock(const StenoStroke *strokes, uint32_t length,
   const size_t totalLength =
       sizeof(uint32_t) + sizeof(StenoStroke) * length + wordStorageLength;
 
+  if (activeDescriptor->version ==
+      USER_DICTIONARY_WITH_REVERSE_LOOKUP_VERSION) {
+    if (activeDescriptor->data.dataBlockSize + totalLength >
+        layout.dataBlockSize) {
+      // Too big!
+      return AddToDataBlockResult(0, 0);
+    }
+  } else {
+    if (activeDescriptor->data.dataBlockSizeRemaining < totalLength) {
+      // Too big!
+      return AddToDataBlockResult(0, 0);
+    }
+  }
+
   uint8_t *buffer = (uint8_t *)malloc(totalLength);
   StenoUserDictionaryEntry *entry = (StenoUserDictionaryEntry *)buffer;
   entry->strokeLength = length;
@@ -277,19 +289,29 @@ StenoUserDictionary::AddToDataBlock(const StenoStroke *strokes, uint32_t length,
   memcpy(buffer + sizeof(uint32_t) + sizeof(StenoStroke) * length, word,
          wordLength + 1);
 
-  const size_t offset = activeDescriptor->data.dataBlockSize;
-  const uint8_t *target = activeDescriptor->data.dataBlock + offset;
+  const size_t dataBlockOffset =
+      activeDescriptor->version == USER_DICTIONARY_WITH_REVERSE_LOOKUP_VERSION
+          ? activeDescriptor->data.dataBlockSize
+          : activeDescriptor->data.dataBlockSizeRemaining - totalLength;
+
+  const uint8_t *target = activeDescriptor->data.dataBlock + dataBlockOffset;
   Flash::Write(target, buffer, totalLength);
   free(buffer);
 
-  return AddToDataBlockResult(offset, totalLength);
+  return AddToDataBlockResult(dataBlockOffset, totalLength);
 }
 
-void StenoUserDictionary::AddToDescriptor(size_t strokeLength,
-                                          size_t dataLength) {
+void StenoUserDictionary::AddToDescriptor(
+    size_t strokeLength, AddToDataBlockResult dataBlockResult) {
   StenoUserDictionaryDescriptor newDescriptor = *activeDescriptor;
 
-  newDescriptor.data.dataBlockSize += dataLength;
+  if (activeDescriptor->version ==
+      USER_DICTIONARY_WITH_REVERSE_LOOKUP_VERSION) {
+    newDescriptor.data.dataBlockSize += dataBlockResult.length;
+  } else {
+    newDescriptor.data.dataBlockSizeRemaining = dataBlockResult.offset;
+  }
+
   if (strokeLength > newDescriptor.data.maximumOutlineLength) {
     newDescriptor.data.maximumOutlineLength = (uint32_t)strokeLength;
   }
@@ -299,6 +321,15 @@ void StenoUserDictionary::AddToDescriptor(size_t strokeLength,
   StenoUserDictionaryDescriptor *destination =
       (StenoUserDictionaryDescriptor *)((intptr_t)descriptorBase +
                                         newDescriptorOffset);
+
+  if (Flash::RequiresErase(destination, &newDescriptor,
+                           sizeof(newDescriptor))) {
+    Flash::EraseBlock(
+        (void *)(intptr_t(descriptorBase) +
+                 newDescriptorOffset / Flash::BLOCK_SIZE * Flash::BLOCK_SIZE),
+        Flash::BLOCK_SIZE);
+  }
+
   activeDescriptor = destination;
 
   Flash::Write(destination, &newDescriptor, sizeof(newDescriptor));
@@ -336,11 +367,6 @@ bool StenoUserDictionary::AddToHashTable(const StenoStroke *strokes,
 
 bool StenoUserDictionary::AddToReverseHashTable(const char *word,
                                                 size_t dataOffset) {
-  if (activeDescriptor->version !=
-      USER_DICTIONARY_WITH_REVERSE_LOOKUP_VERSION) {
-    return false;
-  }
-
   size_t entryIndex = Crc32::Hash(word, Str::Length(word));
 
   for (int probeCount = 0; probeCount < 64; ++probeCount) {
@@ -404,11 +430,6 @@ StenoUserDictionary::RemoveFromHashTable(const StenoStroke *strokes,
 
 bool StenoUserDictionary::RemoveFromReverseHashTable(
     const StenoUserDictionaryEntry *entryToDelete) {
-  if (activeDescriptor->version !=
-      USER_DICTIONARY_WITH_REVERSE_LOOKUP_VERSION) {
-    return false;
-  }
-
   const char *text = entryToDelete->GetText();
   size_t entryIndex = Crc32::Hash(text, Str::Length(text));
 
@@ -497,7 +518,8 @@ void StenoUserDictionary::PrintInfo(int depth) const {
   Console::Printf("%sHash table usage: %zu/%zu\n", prefix, hashTableUsed,
                   activeDescriptor->data.hashTableSize);
   Console::Printf("%sData block usage: %zu/%zu\n", prefix,
-                  activeDescriptor->data.dataBlockSize, layout.dataBlockSize);
+                  activeDescriptor->GetUsedDataBlockSize(layout.dataBlockSize),
+                  layout.dataBlockSize);
 }
 
 //---------------------------------------------------------------------------
@@ -592,8 +614,9 @@ TEST_BEGIN("StenoUserDictionary will reset if descriptor is invalid") {
                                        sizeof(userDictionaryBuffer));
 
   const StenoUserDictionaryDescriptor *descriptor =
-      (const StenoUserDictionaryDescriptor *)(userDictionaryBuffer +
-                                              512 * 1024 - 4096);
+      (const StenoUserDictionaryDescriptor
+           *)(userDictionaryBuffer + 512 * 1024 -
+              StenoUserDictionaryData::ALL_DESCRIPTORS_SIZE);
   assert(descriptor == layout.GetDescriptor());
 
   for (size_t i = 0; i < sizeof(userDictionaryBuffer); ++i) {
@@ -603,15 +626,16 @@ TEST_BEGIN("StenoUserDictionary will reset if descriptor is invalid") {
   const StenoUserDictionary userDictionary(layout);
   assert(Flash::IsErased(userDictionaryBuffer, 64 * 1024));
   assert(Flash::IsErased(userDictionaryBuffer + 64 * 1024, 64 * 1024));
-  assert(
-      !Flash::IsErased(userDictionaryBuffer + 128 * 1024, 384 * 1024 - 4096));
+  assert(!Flash::IsErased(userDictionaryBuffer + 128 * 1024,
+                          384 * 1024 -
+                              StenoUserDictionaryData::ALL_DESCRIPTORS_SIZE));
   assert(descriptor->data.hashTable == (void *)userDictionaryBuffer);
   assert(descriptor->data.reverseHashTable ==
          (void *)&userDictionaryBuffer[64 * 1024]);
   assert(descriptor->data.hashTableSize == 16 * 1024);
   assert(descriptor->data.dataBlock ==
          (void *)&userDictionaryBuffer[128 * 1024]);
-  assert(descriptor->data.dataBlockSize == 0);
+  assert(descriptor->GetUsedDataBlockSize(layout.dataBlockSize) == 0);
   assert(descriptor->data.maximumOutlineLength == 0);
   assert(descriptor->IsValid(layout));
 }
@@ -653,20 +677,61 @@ TEST_BEGIN("StenoUserDictionary add and lookup test") {
 }
 TEST_END
 
+extern int flashEraseCount;
+TEST_BEGIN("StenoUserDictionary will not erase on each additions") {
+  const StenoUserDictionaryData layout(userDictionaryBuffer,
+                                       sizeof(userDictionaryBuffer));
+
+  memset(userDictionaryBuffer, 0xff, sizeof(userDictionaryBuffer));
+
+  flashEraseCount = 0;
+  StenoUserDictionary userDictionary(layout);
+  for (size_t i = 0; i < 256; ++i) {
+    StenoStroke stroke((int)i);
+    char buffer[16];
+    MemoryWriter writer(buffer);
+    writer.Printf("test%d", i);
+    writer.WriteByte('\0');
+    userDictionary.Add(&stroke, 1, buffer);
+  }
+
+  assert(flashEraseCount == 3);
+  flashEraseCount = 0;
+
+  for (size_t i = 256; i < 512; ++i) {
+    StenoStroke stroke((int)i);
+    char buffer[16];
+    MemoryWriter writer(buffer);
+    writer.Printf("test-%d", i);
+    writer.WriteByte('\0');
+    userDictionary.Add(&stroke, 1, buffer);
+  }
+
+  for (size_t i = 0; i < 512; ++i) {
+    StenoStroke stroke((int)i);
+    char buffer[16];
+
+    MemoryWriter writer(buffer);
+    writer.Printf(i < 256 ? "test%d" : "test-%d", i);
+    writer.WriteByte('\0');
+    assert(Str::Eq(userDictionary.Lookup(&stroke, 1).GetText(), buffer));
+  }
+
+  assert(flashEraseCount == 4);
+}
+TEST_END
+
 #if RUN_TESTS
 
 static void VerifyReverseLookup(StenoUserDictionary &userDictionary,
                                 const char *text, StenoStroke expected) {
   StenoReverseDictionaryLookup lookup(text);
   userDictionary.ReverseLookup(lookup);
-  assert(lookup.results.IsNotEmpty() > 0);
-  for (size_t i = 0; i < lookup.results.GetCount(); ++i) {
-    assert(lookup.results[i].length == 1);
-    if (lookup.strokes[i] == expected) {
-      return;
-    }
-  }
-  assert(false);
+  assert(lookup.results.GetCount() == 1);
+
+  const auto &result = lookup.results[0];
+  assert(result.length == 1);
+  assert(result.strokes[0] == expected);
 }
 
 static void VerifyNoReverseLookup(StenoUserDictionary &userDictionary,
@@ -719,6 +784,37 @@ TEST_BEGIN("StenoUserDictionary will dump Json dictionary") {
 
   VerifyNoReverseLookup(userDictionary, "cat");
   // spellchecker: enable
+}
+TEST_END
+
+TEST_BEGIN("StenoUserDictionary will not erase on every overwrite") {
+  // spellchecker: disable
+  const StenoStroke KAT[] = {StenoStroke("KAT")};
+  const StenoStroke TKOG[] = {StenoStroke("TKOG")};
+
+  const StenoUserDictionaryData layout(userDictionaryBuffer,
+                                       sizeof(userDictionaryBuffer));
+
+  memset(userDictionaryBuffer, 0xff, sizeof(userDictionaryBuffer));
+
+  flashEraseCount = 0;
+  StenoUserDictionary userDictionary(layout);
+  userDictionary.Add(KAT, 1, "cat");
+  userDictionary.Add(TKOG, 1, "dog");
+  assert(flashEraseCount == 0);
+
+  // Setup a series of writes where not all writes need an erase.
+  userDictionary.Add(TKOG, 1, "pig");
+  userDictionary.Add(TKOG, 1, "ant");
+  userDictionary.Add(KAT, 1, "pig");
+  assert(flashEraseCount == 2);
+
+  assert(Str::Eq(userDictionary.Lookup(KAT, 1).GetText(), "pig"));
+  assert(Str::Eq(userDictionary.Lookup(TKOG, 1).GetText(), "ant"));
+  // spellchecker: enable
+
+  VerifyReverseLookup(userDictionary, "pig", StenoStroke("KAT"));
+  VerifyReverseLookup(userDictionary, "ant", StenoStroke("TKOG"));
 }
 TEST_END
 

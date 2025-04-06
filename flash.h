@@ -40,12 +40,12 @@ public:
   static void EnableWrite() { instance.isLocked = false; }
   static void DisableWrite() { instance.isLocked = true; }
 
-private:
   static bool RequiresErase(const void *target, size_t size);
   static bool RequiresErase(const void *target, const void *data, size_t size);
   static bool RequiresProgram(const void *target, const void *data,
                               size_t size);
 
+private:
   static void EraseBlockInternal(const void *target, size_t size);
   static void WriteBlockInternal(const void *target, const void *data,
                                  size_t size);

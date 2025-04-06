@@ -11,6 +11,8 @@ class Console;
 struct StenoUserDictionaryDescriptor;
 struct StenoUserDictionaryEntry;
 
+//---------------------------------------------------------------------------
+
 struct StenoUserDictionaryData {
   StenoUserDictionaryData() = default;
   StenoUserDictionaryData(const uint8_t *mem, size_t size) {
@@ -19,22 +21,31 @@ struct StenoUserDictionaryData {
     reverseHashTable = (const uint32_t *)(mem + size / 8);
     hashTableSize = size / 32;
     dataBlock = mem + size / 4;
-    dataBlockSize = 3 * size / 4 - Flash::BLOCK_SIZE;
+    dataBlockSize = 3 * size / 4 - ALL_DESCRIPTORS_SIZE;
     maximumOutlineLength = 0;
   }
 
   const uint32_t *hashTable;
   size_t hashTableSize; // Number of uint32_t, not number of bytes
   const uint8_t *dataBlock;
-  size_t dataBlockSize;
+  union {
+    size_t dataBlockSize;
+    size_t dataBlockSizeRemaining;
+  };
   uint32_t maximumOutlineLength;
   const uint32_t *reverseHashTable;
 
   uint32_t Crc32() const;
 
-  const StenoUserDictionaryDescriptor *GetDescriptor() const {
-    return (const StenoUserDictionaryDescriptor *)(dataBlock + dataBlockSize);
+  static const uint32_t ALL_DESCRIPTORS_SIZE = 2 * Flash::BLOCK_SIZE;
+
+  const StenoUserDictionaryDescriptor *
+  GetDescriptor(size_t byteOffset = 0) const {
+    return (const StenoUserDictionaryDescriptor *)(dataBlock + dataBlockSize +
+                                                   byteOffset);
   }
+
+  const StenoUserDictionaryDescriptor *FindMostRecentDescriptor() const;
 };
 
 struct StenoUserDictionaryDescriptor {
@@ -45,6 +56,8 @@ struct StenoUserDictionaryDescriptor {
 
   bool IsValid(const StenoUserDictionaryData &layout) const;
   void UpdateCrc32();
+
+  size_t GetUsedDataBlockSize(size_t totalDataBlockSize) const;
 };
 
 //---------------------------------------------------------------------------
@@ -106,11 +119,15 @@ private:
 
   AddToDataBlockResult AddToDataBlock(const StenoStroke *strokes,
                                       uint32_t length, const char *word);
-  void AddToDescriptor(size_t strokeLength, size_t dataLength);
+  void AddToDescriptor(size_t strokeLength,
+                       AddToDataBlockResult dataBlockResult);
   bool AddToHashTable(const StenoStroke *strokes, size_t length, size_t offset);
   bool AddToReverseHashTable(const char *word, size_t offset);
   void WriteEntryIndex(size_t entryIndex, uint32_t offset);
   void WriteReverseEntryIndex(size_t entryIndex, uint32_t offset);
+
+  const StenoUserDictionaryEntry *
+  LookupEntry(const StenoDictionaryLookup &lookup) const;
 
   const StenoUserDictionaryEntry *
   RemoveFromHashTable(const StenoStroke *strokes, size_t length);
