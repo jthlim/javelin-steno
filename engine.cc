@@ -147,7 +147,7 @@ void StenoEngine::PrintDictionary(const char *name) const {
   const ExternalFlashSentry externalFlashSentry;
 
   Console::Printf("{");
-  PrintDictionaryContext context(name);
+  ConsolePrintDictionaryContext context(name);
   GetDictionary().PrintDictionary(context);
   Console::Printf("\n}\n\n");
 }

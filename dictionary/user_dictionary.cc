@@ -4,6 +4,7 @@
 #include "../console.h"
 #include "../crc32.h"
 #include "../flash.h"
+#include "../hal/external_flash.h"
 #include "../mem.h"
 #include "../str.h"
 #include "../stroke.h"
@@ -103,14 +104,15 @@ size_t StenoUserDictionaryDescriptor::GetUsedDataBlockSize(
 //---------------------------------------------------------------------------
 
 StenoUserDictionary::StenoUserDictionary(const StenoUserDictionaryData &layout)
-    : StenoDictionary(0),
-
-      descriptorBase(layout.GetDescriptor()), layout(layout) {
+    : StenoDictionary(0), descriptorBase(layout.GetDescriptor()),
+      layout(layout) {
   activeDescriptor = layout.FindMostRecentDescriptor();
   if (activeDescriptor == nullptr) {
     Reset();
+  } else {
+    activeDescriptorCopy = *activeDescriptor;
   }
-  maximumOutlineLength = activeDescriptor->data.maximumOutlineLength;
+  maximumOutlineLength = activeDescriptorCopy.data.maximumOutlineLength;
 }
 
 size_t StenoUserDictionary::GetNextDescriptorToWriteOffset() const {
@@ -125,9 +127,9 @@ const StenoUserDictionaryEntry *
 StenoUserDictionary::LookupEntry(const StenoDictionaryLookup &lookup) const {
   size_t entryIndex = lookup.hash;
   for (;;) {
-    entryIndex &= activeDescriptor->data.hashTableSize - 1;
+    entryIndex &= activeDescriptorCopy.data.hashTableSize - 1;
 
-    const uint32_t offset = activeDescriptor->data.hashTable[entryIndex];
+    const uint32_t offset = activeDescriptorCopy.data.hashTable[entryIndex];
     switch (offset) {
     case OFFSET_EMPTY:
       return nullptr;
@@ -137,8 +139,8 @@ StenoUserDictionary::LookupEntry(const StenoDictionaryLookup &lookup) const {
 
     default:
       const StenoUserDictionaryEntry *entry =
-          (const StenoUserDictionaryEntry *)(activeDescriptor->data.dataBlock +
-                                             offset - OFFSET_DATA);
+          (const StenoUserDictionaryEntry
+               *)(activeDescriptorCopy.data.dataBlock + offset - OFFSET_DATA);
 
       if (entry->strokeLength == lookup.length &&
           StenoStroke::Equals(lookup.strokes, entry->strokes, lookup.length)) {
@@ -170,9 +172,10 @@ void StenoUserDictionary::ReverseLookup(
   uint32_t entryIndex = lookup.definitionCrc;
 
   for (;;) {
-    entryIndex &= activeDescriptor->data.hashTableSize - 1;
+    entryIndex &= activeDescriptorCopy.data.hashTableSize - 1;
 
-    const uint32_t offset = activeDescriptor->data.reverseHashTable[entryIndex];
+    const uint32_t offset =
+        activeDescriptorCopy.data.reverseHashTable[entryIndex];
     switch (offset) {
     case OFFSET_EMPTY:
       return;
@@ -182,8 +185,8 @@ void StenoUserDictionary::ReverseLookup(
 
     default:
       const StenoUserDictionaryEntry *entry =
-          (const StenoUserDictionaryEntry *)(activeDescriptor->data.dataBlock +
-                                             offset - OFFSET_DATA);
+          (const StenoUserDictionaryEntry
+               *)(activeDescriptorCopy.data.dataBlock + offset - OFFSET_DATA);
 
       if (Str::Eq(entry->GetText(), lookup.definition)) {
         lookup.AddResult(entry->strokes, entry->strokeLength, this);
@@ -218,8 +221,15 @@ void StenoUserDictionary::Reset() {
 
   Flash::WriteBlock(descriptorBase, freshDescriptor, Flash::BLOCK_SIZE);
 
-  free(freshDescriptor);
   activeDescriptor = descriptorBase;
+  activeDescriptorCopy = *freshDescriptor;
+
+  free(freshDescriptor);
+}
+
+void StenoUserDictionary::DestroyDescriptorBlock() {
+  Flash::EraseBlock(layout.GetDescriptor(),
+                    StenoUserDictionaryData::ALL_DESCRIPTORS_SIZE);
 }
 
 bool StenoUserDictionary::Add(const StenoStroke *strokes, size_t length,
@@ -247,7 +257,7 @@ bool StenoUserDictionary::Add(const StenoStroke *strokes, size_t length,
   }
   AddToReverseHashTable(word, data.offset);
 
-  maximumOutlineLength = activeDescriptor->data.maximumOutlineLength;
+  maximumOutlineLength = activeDescriptorCopy.data.maximumOutlineLength;
   UpdateMaximumOutlineLength();
 
   return true;
@@ -264,15 +274,15 @@ StenoUserDictionary::AddToDataBlock(const StenoStroke *strokes, uint32_t length,
   const size_t totalLength =
       sizeof(uint32_t) + sizeof(StenoStroke) * length + wordStorageLength;
 
-  if (activeDescriptor->version ==
+  if (activeDescriptorCopy.version ==
       USER_DICTIONARY_WITH_REVERSE_LOOKUP_VERSION) {
-    if (activeDescriptor->data.dataBlockSize + totalLength >
+    if (activeDescriptorCopy.data.dataBlockSize + totalLength >
         layout.dataBlockSize) {
       // Too big!
       return AddToDataBlockResult(0, 0);
     }
   } else {
-    if (activeDescriptor->data.dataBlockSizeRemaining < totalLength) {
+    if (activeDescriptorCopy.data.dataBlockSizeRemaining < totalLength) {
       // Too big!
       return AddToDataBlockResult(0, 0);
     }
@@ -286,11 +296,12 @@ StenoUserDictionary::AddToDataBlock(const StenoStroke *strokes, uint32_t length,
          wordLength + 1);
 
   const size_t dataBlockOffset =
-      activeDescriptor->version == USER_DICTIONARY_WITH_REVERSE_LOOKUP_VERSION
-          ? activeDescriptor->data.dataBlockSize
-          : activeDescriptor->data.dataBlockSizeRemaining - totalLength;
+      activeDescriptorCopy.version ==
+              USER_DICTIONARY_WITH_REVERSE_LOOKUP_VERSION
+          ? activeDescriptorCopy.data.dataBlockSize
+          : activeDescriptorCopy.data.dataBlockSizeRemaining - totalLength;
 
-  const uint8_t *target = activeDescriptor->data.dataBlock + dataBlockOffset;
+  const uint8_t *target = activeDescriptorCopy.data.dataBlock + dataBlockOffset;
   Flash::Write(target, buffer, totalLength);
   free(buffer);
 
@@ -299,9 +310,9 @@ StenoUserDictionary::AddToDataBlock(const StenoStroke *strokes, uint32_t length,
 
 void StenoUserDictionary::AddToDescriptor(
     size_t strokeLength, AddToDataBlockResult dataBlockResult) {
-  StenoUserDictionaryDescriptor newDescriptor = *activeDescriptor;
+  StenoUserDictionaryDescriptor newDescriptor = activeDescriptorCopy;
 
-  if (activeDescriptor->version ==
+  if (activeDescriptorCopy.version ==
       USER_DICTIONARY_WITH_REVERSE_LOOKUP_VERSION) {
     newDescriptor.data.dataBlockSize += dataBlockResult.length;
   } else {
@@ -327,6 +338,7 @@ void StenoUserDictionary::AddToDescriptor(
   }
 
   activeDescriptor = destination;
+  activeDescriptorCopy = newDescriptor;
 
   Flash::Write(destination, &newDescriptor, sizeof(newDescriptor));
 }
@@ -336,9 +348,9 @@ bool StenoUserDictionary::AddToHashTable(const StenoStroke *strokes,
   size_t entryIndex = StenoStroke::Hash(strokes, length);
 
   for (int probeCount = 0; probeCount < 64; ++probeCount) {
-    entryIndex &= activeDescriptor->data.hashTableSize - 1;
+    entryIndex &= activeDescriptorCopy.data.hashTableSize - 1;
 
-    const uint32_t offset = activeDescriptor->data.hashTable[entryIndex];
+    const uint32_t offset = activeDescriptorCopy.data.hashTable[entryIndex];
     switch (offset) {
     case OFFSET_EMPTY:
     case OFFSET_DELETED:
@@ -347,8 +359,8 @@ bool StenoUserDictionary::AddToHashTable(const StenoStroke *strokes,
 
     default:
       const StenoUserDictionaryEntry *entry =
-          (const StenoUserDictionaryEntry *)(activeDescriptor->data.dataBlock +
-                                             offset - OFFSET_DATA);
+          (const StenoUserDictionaryEntry
+               *)(activeDescriptorCopy.data.dataBlock + offset - OFFSET_DATA);
 
       if (entry->strokeLength == length &&
           StenoStroke::Equals(strokes, entry->strokes, length)) {
@@ -366,9 +378,10 @@ bool StenoUserDictionary::AddToReverseHashTable(const char *word,
   size_t entryIndex = Crc32::Hash(word, Str::Length(word));
 
   for (int probeCount = 0; probeCount < 64; ++probeCount) {
-    entryIndex &= activeDescriptor->data.hashTableSize - 1;
+    entryIndex &= activeDescriptorCopy.data.hashTableSize - 1;
 
-    const uint32_t offset = activeDescriptor->data.reverseHashTable[entryIndex];
+    const uint32_t offset =
+        activeDescriptorCopy.data.reverseHashTable[entryIndex];
     switch (offset) {
     case OFFSET_EMPTY:
     case OFFSET_DELETED:
@@ -398,9 +411,9 @@ StenoUserDictionary::RemoveFromHashTable(const StenoStroke *strokes,
                                          size_t length) {
   size_t entryIndex = StenoStroke::Hash(strokes, length);
   for (;;) {
-    entryIndex &= activeDescriptor->data.hashTableSize - 1;
+    entryIndex &= activeDescriptorCopy.data.hashTableSize - 1;
 
-    const uint32_t offset = activeDescriptor->data.hashTable[entryIndex];
+    const uint32_t offset = activeDescriptorCopy.data.hashTable[entryIndex];
     switch (offset) {
     case OFFSET_EMPTY:
       return nullptr;
@@ -410,8 +423,8 @@ StenoUserDictionary::RemoveFromHashTable(const StenoStroke *strokes,
 
     default:
       const StenoUserDictionaryEntry *entry =
-          (const StenoUserDictionaryEntry *)(activeDescriptor->data.dataBlock +
-                                             offset - OFFSET_DATA);
+          (const StenoUserDictionaryEntry
+               *)(activeDescriptorCopy.data.dataBlock + offset - OFFSET_DATA);
 
       if (entry->strokeLength == length &&
           StenoStroke::Equals(strokes, entry->strokes, length)) {
@@ -430,9 +443,10 @@ bool StenoUserDictionary::RemoveFromReverseHashTable(
   size_t entryIndex = Crc32::Hash(text, Str::Length(text));
 
   for (;;) {
-    entryIndex &= activeDescriptor->data.hashTableSize - 1;
+    entryIndex &= activeDescriptorCopy.data.hashTableSize - 1;
 
-    const uint32_t offset = activeDescriptor->data.reverseHashTable[entryIndex];
+    const uint32_t offset =
+        activeDescriptorCopy.data.reverseHashTable[entryIndex];
     switch (offset) {
     case OFFSET_EMPTY:
       return false;
@@ -442,8 +456,8 @@ bool StenoUserDictionary::RemoveFromReverseHashTable(
 
     default:
       const StenoUserDictionaryEntry *entry =
-          (const StenoUserDictionaryEntry *)(activeDescriptor->data.dataBlock +
-                                             offset - OFFSET_DATA);
+          (const StenoUserDictionaryEntry
+               *)(activeDescriptorCopy.data.dataBlock + offset - OFFSET_DATA);
 
       if (entry == entryToDelete) {
         WriteReverseEntryIndex(entryIndex, OFFSET_DELETED);
@@ -456,20 +470,21 @@ bool StenoUserDictionary::RemoveFromReverseHashTable(
 }
 
 void StenoUserDictionary::WriteEntryIndex(size_t entryIndex, uint32_t offset) {
-  const uint32_t *entry = &activeDescriptor->data.hashTable[entryIndex];
+  const uint32_t *entry = &activeDescriptorCopy.data.hashTable[entryIndex];
   Flash::Write(entry, &offset, sizeof(offset));
 }
 
 void StenoUserDictionary::WriteReverseEntryIndex(size_t entryIndex,
                                                  uint32_t offset) {
-  const uint32_t *entry = &activeDescriptor->data.reverseHashTable[entryIndex];
+  const uint32_t *entry =
+      &activeDescriptorCopy.data.reverseHashTable[entryIndex];
   Flash::Write(entry, &offset, sizeof(offset));
 }
 
 void StenoUserDictionary::PrintDictionary(
     PrintDictionaryContext &context) const {
-  for (size_t i = 0; i < activeDescriptor->data.hashTableSize; ++i) {
-    const uint32_t offset = activeDescriptor->data.hashTable[i];
+  for (size_t i = 0; i < activeDescriptorCopy.data.hashTableSize; ++i) {
+    const uint32_t offset = activeDescriptorCopy.data.hashTable[i];
     switch (offset) {
     case OFFSET_EMPTY:
     case OFFSET_DELETED:
@@ -477,8 +492,8 @@ void StenoUserDictionary::PrintDictionary(
 
     default:
       const StenoUserDictionaryEntry *entry =
-          (const StenoUserDictionaryEntry *)(activeDescriptor->data.dataBlock +
-                                             offset - OFFSET_DATA);
+          (const StenoUserDictionaryEntry
+               *)(activeDescriptorCopy.data.dataBlock + offset - OFFSET_DATA);
 
       context.Print(entry->strokes, entry->strokeLength, entry->GetText());
     }
@@ -487,7 +502,7 @@ void StenoUserDictionary::PrintDictionary(
 
 void StenoUserDictionary::PrintJsonDictionary() const {
   Console::Printf("{");
-  PrintDictionaryContext context(GetName());
+  ConsolePrintDictionaryContext context(GetName());
   PrintDictionary(context);
   Console::Printf("\n}\n\n");
 }
@@ -496,8 +511,8 @@ const char *StenoUserDictionary::GetName() const { return "user_dictionary"; }
 
 void StenoUserDictionary::PrintInfo(int depth) const {
   size_t hashTableUsed = 0;
-  for (size_t i = 0; i < activeDescriptor->data.hashTableSize; ++i) {
-    switch (activeDescriptor->data.hashTable[i]) {
+  for (size_t i = 0; i < activeDescriptorCopy.data.hashTableSize; ++i) {
+    switch (activeDescriptorCopy.data.hashTable[i]) {
     case OFFSET_EMPTY:
     case OFFSET_DELETED:
       break;
@@ -510,24 +525,28 @@ void StenoUserDictionary::PrintInfo(int depth) const {
   Console::Printf("%s%s\n", Spaces(depth), GetName());
 
   const char *prefix = Spaces(depth + 2);
-  Console::Printf("%sFormat version: %u\n", prefix, activeDescriptor->version);
+  Console::Printf("%sFormat version: %u\n", prefix,
+                  activeDescriptorCopy.version);
   Console::Printf("%sHash table usage: %zu/%zu\n", prefix, hashTableUsed,
-                  activeDescriptor->data.hashTableSize);
-  Console::Printf("%sData block usage: %zu/%zu\n", prefix,
-                  activeDescriptor->GetUsedDataBlockSize(layout.dataBlockSize),
-                  layout.dataBlockSize);
+                  activeDescriptorCopy.data.hashTableSize);
+  Console::Printf(
+      "%sData block usage: %zu/%zu\n", prefix,
+      activeDescriptorCopy.GetUsedDataBlockSize(layout.dataBlockSize),
+      layout.dataBlockSize);
 }
 
 //---------------------------------------------------------------------------
 
 void StenoUserDictionary::PrintJsonDictionary_Binding(void *context,
                                                       const char *commandLine) {
+  const ExternalFlashSentry sentry;
   StenoUserDictionary *userDictionary = (StenoUserDictionary *)context;
   userDictionary->PrintJsonDictionary();
 }
 
 void StenoUserDictionary::Reset_Binding(void *context,
                                         const char *commandLine) {
+  const ExternalFlashSentry sentry;
   StenoUserDictionary *userDictionary = (StenoUserDictionary *)context;
   userDictionary->Reset();
   Console::SendOk();
@@ -553,6 +572,7 @@ void StenoUserDictionary::AddEntry_Binding(void *context,
     return;
   }
 
+  const ExternalFlashSentry sentry;
   StenoUserDictionary *userDictionary = (StenoUserDictionary *)context;
   if (!userDictionary->Add(parser.strokes, parser.length, translationStart)) {
     Console::Printf("ERR Unable to write to user dictionary\n\n");
@@ -576,6 +596,7 @@ void StenoUserDictionary::RemoveEntry_Binding(void *context,
     return;
   }
 
+  const ExternalFlashSentry sentry;
   StenoUserDictionary *userDictionary = (StenoUserDictionary *)context;
   userDictionary->Remove(parser.strokes, parser.length);
   Console::SendOk();

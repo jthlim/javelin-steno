@@ -234,16 +234,25 @@ public:
 
 class PrintDictionaryContext {
 public:
-  PrintDictionaryContext(const char *name) : name(name) {}
+  virtual bool HasName() const = 0;
+  virtual const char *GetName() const = 0;
+
+  virtual void Print(const StenoStroke *strokes, size_t length,
+                     const char *definition) = 0;
+
+  void Print(const StenoStroke &stroke, const char *definition) {
+    Print(&stroke, 1, definition);
+  }
+};
+
+class ConsolePrintDictionaryContext final : public PrintDictionaryContext {
+public:
+  ConsolePrintDictionaryContext(const char *name) : name(name) {}
 
   bool HasName() const { return name != nullptr; }
   const char *GetName() const { return name; }
 
   void Print(const StenoStroke *strokes, size_t length, const char *definition);
-
-  void Print(const StenoStroke &stroke, const char *definition) {
-    Print(&stroke, 1, definition);
-  }
 
 private:
   bool isFirst = true;

@@ -180,9 +180,9 @@ StenoDictionaryLookupResult::CreateFromBuffer(BufferWriter &writer) {
 
 //---------------------------------------------------------------------------
 
-[[gnu::noinline]] void PrintDictionaryContext::Print(const StenoStroke *strokes,
-                                                     size_t length,
-                                                     const char *definition) {
+[[gnu::noinline]] void
+ConsolePrintDictionaryContext::Print(const StenoStroke *strokes, size_t length,
+                                     const char *definition) {
   const char *format = ",\n\t\"%T\": \"%J\"";
   Console::Printf(format + isFirst, strokes, length, definition);
   isFirst = false;

@@ -15,7 +15,7 @@ struct StenoUserDictionaryEntry;
 
 struct StenoUserDictionaryData {
   StenoUserDictionaryData() = default;
-  StenoUserDictionaryData(const uint8_t *mem, size_t size) {
+  constexpr StenoUserDictionaryData(const uint8_t *mem, size_t size) {
     assert((size & (size - 1)) == 0);
     hashTable = (uint32_t *)mem;
     reverseHashTable = (const uint32_t *)(mem + size / 8);
@@ -86,6 +86,7 @@ public:
 
   void PrintJsonDictionary() const;
   void Reset();
+  void DestroyDescriptorBlock();
 
   // Returns true if successful.
   virtual bool Add(const StenoStroke *strokes, size_t length, const char *word);
@@ -110,6 +111,7 @@ public:
   void AddConsoleCommands(Console &console);
 
 private:
+  StenoUserDictionaryDescriptor activeDescriptorCopy;
   const StenoUserDictionaryDescriptor *descriptorBase;
   const StenoUserDictionaryDescriptor *activeDescriptor;
   const StenoUserDictionaryData &layout;
