@@ -39,6 +39,11 @@ struct StenoUserDictionaryData {
 
   static const uint32_t ALL_DESCRIPTORS_SIZE = 2 * Flash::BLOCK_SIZE;
 
+  const void *GetDataStart() const { return hashTable; }
+  size_t GetDataLength() const {
+    return (char *)GetDescriptor(0) + ALL_DESCRIPTORS_SIZE - (char *)hashTable;
+  }
+
   const StenoUserDictionaryDescriptor *
   GetDescriptor(size_t byteOffset = 0) const {
     return (const StenoUserDictionaryDescriptor *)(dataBlock + dataBlockSize +

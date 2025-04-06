@@ -19,30 +19,20 @@ Flash Flash::instance;
 int flashEraseCount = 0;
 int flashWriteCount = 0;
 
-[[gnu::weak]] void Flash::EraseBlock(const void *target, size_t size) {
+[[gnu::weak]] void Flash::EraseBlockInternal(const void *target, size_t size) {
+  assert((intptr_t(target) & (BLOCK_SIZE - 1)) == 0);
   assert((size & (BLOCK_SIZE - 1)) == 0);
-
-  if (!RequiresErase(target, size)) {
-    return;
-  }
 
   instance.erasedBytes += size;
   memset((void *)target, 0xff, size);
   ++flashEraseCount;
 }
 
-[[gnu::weak]] void Flash::WriteBlock(const void *target, const void *data,
-                                     size_t size) {
+[[gnu::weak]] void Flash::WriteBlockInternal(const void *target,
+                                             const void *data, size_t size) {
   assert(target != data);
-  assert((size & (BLOCK_SIZE - 1)) == 0);
-
-  if (RequiresErase(target, data, size)) {
-    ++flashEraseCount;
-  }
-
-  if (!RequiresProgram(target, data, size)) {
-    return;
-  }
+  assert((intptr_t(target) & 255) == 0);
+  assert((size & 255) == 0);
 
   instance.erasedBytes += size;
   instance.programmedBytes += size;
@@ -145,6 +135,89 @@ void Flash::WriteRemaining() {
   instance.BeginWrite((const uint8_t *)target);
   instance.AddData((const uint8_t *)data, size);
   instance.WriteRemaining();
+}
+
+void Flash::EraseBlock(const void *target, size_t size) {
+  const uint8_t *eraseStart = nullptr;
+  size_t eraseSize;
+
+  const uint8_t *const t = (const uint8_t *)target;
+  for (size_t i = 0; i < size; i += 4096) {
+    if (RequiresErase(t + i, 4096)) {
+      if (eraseStart == nullptr) {
+        eraseStart = t + i;
+        eraseSize = 4096;
+      } else {
+        eraseSize += 4096;
+      }
+    } else if (eraseStart != nullptr) {
+      EraseBlockInternal(eraseStart, eraseSize);
+      eraseStart = nullptr;
+    }
+  }
+
+  if (eraseStart != nullptr) {
+    EraseBlockInternal(eraseStart, eraseSize);
+  }
+}
+
+void Flash::EraseBlock(const void *target, const void *data, size_t size) {
+  const uint8_t *const t = (const uint8_t *)target;
+  const uint8_t *const d = (const uint8_t *)data;
+
+  const uint8_t *eraseStart = nullptr;
+  size_t eraseSize;
+
+  for (size_t i = 0; i < size; i += 4096) {
+    if (RequiresErase(t + i, d + i, 4096)) {
+      if (eraseStart == nullptr) {
+        eraseStart = t + i;
+        eraseSize = 4096;
+      } else {
+        eraseSize += 4096;
+      }
+    } else if (eraseStart != nullptr) {
+      EraseBlockInternal(eraseStart, eraseSize);
+      eraseStart = nullptr;
+    }
+  }
+
+  if (eraseStart != nullptr) {
+    EraseBlockInternal(eraseStart, eraseSize);
+  }
+}
+
+void Flash::WriteBlock(const void *const target, const void *const data,
+                       const size_t size) {
+  EraseBlock(target, data, size);
+
+  const uint8_t *const t = (const uint8_t *)target;
+  const uint8_t *const d = (const uint8_t *)data;
+
+  const uint8_t *programTargetStart = nullptr;
+  const uint8_t *programSourceStart;
+  size_t programSize;
+
+  for (size_t i = 0; i < size; i += 256) {
+    if (RequiresProgram(t + i, d + i, 256)) {
+      if (programTargetStart == nullptr) {
+        programTargetStart = t + i;
+        programSourceStart = d + i;
+        programSize = 256;
+      } else {
+        programSize += 256;
+      }
+    } else {
+      if (programTargetStart != nullptr) {
+        WriteBlockInternal(programTargetStart, programSourceStart, programSize);
+        programTargetStart = nullptr;
+      }
+    }
+  }
+
+  if (programTargetStart != nullptr) {
+    WriteBlockInternal(programTargetStart, programSourceStart, programSize);
+  }
 }
 
 //---------------------------------------------------------------------------

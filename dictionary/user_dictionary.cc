@@ -197,11 +197,7 @@ void StenoUserDictionary::ReverseLookup(
 //---------------------------------------------------------------------------
 
 void StenoUserDictionary::Reset() {
-  Flash::EraseBlock(layout.hashTable, layout.hashTableSize * sizeof(uint32_t));
-  Flash::EraseBlock(layout.reverseHashTable,
-                    layout.hashTableSize * sizeof(uint32_t));
-  Flash::EraseBlock(descriptorBase,
-                    StenoUserDictionaryData::ALL_DESCRIPTORS_SIZE);
+  Flash::EraseBlock(layout.GetDataStart(), layout.GetDataLength());
 
   StenoUserDictionaryDescriptor *freshDescriptor =
       (StenoUserDictionaryDescriptor *)malloc(Flash::BLOCK_SIZE);
@@ -246,10 +242,10 @@ bool StenoUserDictionary::Add(const StenoStroke *strokes, size_t length,
     return false;
   }
 
-  AddToReverseHashTable(word, data.offset);
   if (entry) {
     RemoveFromReverseHashTable(entry);
   }
+  AddToReverseHashTable(word, data.offset);
 
   maximumOutlineLength = activeDescriptor->data.maximumOutlineLength;
   UpdateMaximumOutlineLength();
@@ -626,9 +622,9 @@ TEST_BEGIN("StenoUserDictionary will reset if descriptor is invalid") {
   const StenoUserDictionary userDictionary(layout);
   assert(Flash::IsErased(userDictionaryBuffer, 64 * 1024));
   assert(Flash::IsErased(userDictionaryBuffer + 64 * 1024, 64 * 1024));
-  assert(!Flash::IsErased(userDictionaryBuffer + 128 * 1024,
-                          384 * 1024 -
-                              StenoUserDictionaryData::ALL_DESCRIPTORS_SIZE));
+  assert(Flash::IsErased(userDictionaryBuffer + 128 * 1024,
+                         384 * 1024 -
+                             StenoUserDictionaryData::ALL_DESCRIPTORS_SIZE));
   assert(descriptor->data.hashTable == (void *)userDictionaryBuffer);
   assert(descriptor->data.reverseHashTable ==
          (void *)&userDictionaryBuffer[64 * 1024]);
