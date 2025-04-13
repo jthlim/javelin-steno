@@ -4,6 +4,7 @@
 
 #include JAVELIN_BOARD_CONFIG
 
+#include "asset_manager.h"
 #include "button_script_manager.h"
 #include "console.h"
 #include "engine.h"
@@ -25,9 +26,11 @@
 #include "split/split_usb_status.h"
 #include "str.h"
 #include "timer_manager.h"
+#include "uint16.h"
 #include "wpm_tracker.h"
 
 #include <assert.h>
+#include <math.h>
 
 //---------------------------------------------------------------------------
 
@@ -430,9 +433,29 @@ public:
     const int y = (int)script.Pop();
     const int x = (int)script.Pop();
     const int displayId = (int)script.Pop();
-    const int width = *data++;
-    const int height = *data++;
-    Display::DrawImage(displayId, x, y, width, height, data);
+    ImageFormat format;
+    int width;
+    int height;
+    if (data[0] == 0) {
+      struct ImageHeader {
+        uint8_t zero;
+        ImageFormat format;
+        Uint16 version;
+        Uint16 width;
+        Uint16 height;
+      };
+      static_assert(sizeof(ImageHeader) == 8);
+      const ImageHeader *header = (const ImageHeader *)data;
+      format = header->format;
+      width = header->width.ToUint32();
+      height = header->height.ToUint32();
+      data = (uint8_t *)(header + 1);
+    } else {
+      format = ImageFormat::BITMAP;
+      width = *data++;
+      height = *data++;
+    }
+    Display::DrawImage(displayId, x, y, width, height, format, data);
   }
 
   static void DrawText(ButtonScript &script, const ScriptByteCode *byteCode) {
@@ -900,9 +923,9 @@ public:
 
   static void SetDrawColorRgb(ButtonScript &script,
                               const ScriptByteCode *byteCode) {
-    const int r = (int)script.Pop();
-    const int g = (int)script.Pop();
     const int b = (int)script.Pop();
+    const int g = (int)script.Pop();
+    const int r = (int)script.Pop();
     const int displayId = (int)script.Pop();
     Display::SetDrawColorRgb(displayId, r, g, b);
   }
@@ -921,6 +944,84 @@ public:
     const int effectId = (int)script.Pop();
     const int displayId = (int)script.Pop();
     Display::DrawEffect(displayId, effectId, parameter);
+  }
+
+  static void Sin(ButtonScript &script, const ScriptByteCode *byteCode) {
+    const float angle = (int)script.Pop() * (M_PI / 32768);
+    const float value = sin(angle);
+    const int fixedPointValue = int(65536 * value);
+    script.Push(fixedPointValue);
+  }
+
+  static void Cos(ButtonScript &script, const ScriptByteCode *byteCode) {
+    const float angle = (int)script.Pop() * (M_PI / 32768);
+    const float value = cos(angle);
+    const int fixedPointValue = int(65536 * value);
+    script.Push(fixedPointValue);
+  }
+
+  static void Tan(ButtonScript &script, const ScriptByteCode *byteCode) {
+    const float angle = (int)script.Pop() * (M_PI / 32768);
+    const float value = tan(angle);
+    const int fixedPointValue = int(65536 * value);
+    script.Push(fixedPointValue);
+  }
+
+  static void Asin(ButtonScript &script, const ScriptByteCode *byteCode) {
+    const int value = (int)script.Pop() / 65536.0f;
+    const float angle = asin(value);
+    const int fixedPointDegrees = (int)(angle * (32768 / M_PI));
+    script.Push(fixedPointDegrees);
+  }
+
+  static void Acos(ButtonScript &script, const ScriptByteCode *byteCode) {
+    const int value = (int)script.Pop() / 65536.0f;
+    const float angle = acos(value);
+    const int fixedPointDegrees = (int)(angle * (32768 / M_PI));
+    script.Push(fixedPointDegrees);
+  }
+
+  static void Atan(ButtonScript &script, const ScriptByteCode *byteCode) {
+    const int value = (int)script.Pop() / 65536.0f;
+    const float angle = atan(value);
+    const int fixedPointDegrees = (int)(angle * (32768 / M_PI));
+    script.Push(fixedPointDegrees);
+  }
+
+  static void Atan2(ButtonScript &script, const ScriptByteCode *byteCode) {
+    const int x = (int)script.Pop();
+    const int y = (int)script.Pop();
+    if (x == 0 && y == 0) {
+      script.Push(0);
+      return;
+    }
+    const float angle = atan2(y, x);
+    const int fixedPointDegrees = (int)(angle * (32768 / M_PI));
+    script.Push(fixedPointDegrees);
+  }
+
+  static void FormatString(ButtonScript &script,
+                           const ScriptByteCode *byteCode) {
+    const int value = (int)script.Pop();
+    const intptr_t offset = script.Pop();
+    const char *text = byteCode->GetScriptData<char>(offset);
+
+    script.consoleWriter.Reset();
+    script.consoleWriter.Printf(text, value);
+    script.consoleWriter.AddTrailingNull();
+
+    const uint8_t *result =
+        byteCode->FindStringOrReturnOriginal(script.consoleWriter.buffer);
+    script.Push(byteCode->GetDataOffset(result));
+  }
+
+  static void GetAsset(ButtonScript &script, const ScriptByteCode *byteCode) {
+    const intptr_t offset = script.Pop();
+    const char *assetName = byteCode->GetScriptData<char>(offset);
+
+    const void *data = AssetManager::GetAssetData(assetName);
+    const intptr_t dataOffset = data ? byteCode->GetDataOffset(data) : 0;
+    script.Push(dataOffset);
   }
 };
 
@@ -1027,6 +1128,15 @@ constexpr void (*ButtonScript::FUNCTION_TABLE[])(ButtonScript &,
     &Function::SetDrawColorRgb,
     &Function::SetDrawColorHsv,
     &Function::DrawEffect,
+    &Function::Sin,
+    &Function::Cos,
+    &Function::Tan,
+    &Function::Asin,
+    &Function::Acos,
+    &Function::Atan,
+    &Function::Atan2,
+    &Function::FormatString,
+    &Function::GetAsset,
 };
 
 void ButtonScript::PrintEventHistory() {

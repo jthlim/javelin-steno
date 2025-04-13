@@ -157,6 +157,7 @@ struct StenoDictionaryCollection {
   // the timestamp at the end of the text block.
   // This is used to detect partial dictionary uploads.
   bool HasMatchingTimestamp() const;
+  const void *GetEndOfData() const;
   void AddDictionariesToList(List<StenoDictionaryListEntry> &list) const;
 };
 

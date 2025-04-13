@@ -836,6 +836,42 @@ These methods are only available on chips with secure storage.
 
   - These functions enable and disable updating flash on the keyboard.
 
+## Math Functions
+
+- `func sin(x) var`
+
+  - `x` is a fixed point 16 angle where 65536 represents 360 degrees.
+  - Returns a fixed point 16 value (between -65336 and 65336).
+
+- `func cos(x) var`
+
+  - `x` is a fixed point 16 angle where 65536 represents 360 degrees.
+  - Returns a fixed point 16 value (between -65336 and 65336).
+
+- `func tan(x) var`
+
+  - `x` is a fixed point 16 angle where 65536 represents 360 degrees.
+  - Returns a fixed point 16 value.
+
+- `func asin(x) var`
+
+  - `x` is a fixed point 16 value (between -65336 and 65336).
+  - Returns an angle from -32767 to 32768.
+
+- `func acos(x) var`
+
+  - `x` is a fixed point 16 value (between -65336 and 65336).
+  - Returns an angle from -32767 to 32768.
+
+- `func atan(x) var`
+
+  - `x` is a fixed point 16 value.
+  - Returns an angle from -16384 to 16384.
+
+- `func atan2(y, x) var`
+
+  - Returns an angle from -32767 to 32768.
+
 ## Miscellaneous Functions
 
 - `func rand() var`
@@ -910,6 +946,18 @@ These methods are only available on chips with secure storage.
     value: 123 (0x7b)
     ```
 
+- `func formatString(<format>, <value>) var`
+
+  - Intended only for use with `getAsset`.
+  - `format` must be a string constant and can contain C printf like formatters.
+    Check [writer.cc](writer.cc) for a full list.
+  - `value` is a single integer value to format. Pointer values cannot be used
+    and will likely crash the script.
+
+- `func getAsset(<assetName>) var`
+
+  - Returns the data for `assetName` or 0 if not found.
+
 - `func sendEvent(<eventString>)`
 
   - Sends a script event to the console.
@@ -930,10 +978,6 @@ These methods are only available on chips with secure storage.
 
   - Returns whether the script is reinitializing after a script upload.
   - This can be used to avoid disabling console and flash write access.
-
-- `func setInputHint(<hint>)` [deprecated]
-
-  - This function is deprecated and no longer has any implementation.
 
 # Visual Editor Script Templates
 

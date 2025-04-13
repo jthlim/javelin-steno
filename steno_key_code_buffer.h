@@ -87,6 +87,9 @@ public:
   void RetroactiveDoubleQuotes(int count);
   void RetroactiveDeleteSpace();
   void RetroactiveFormatCurrency(const char *pStart, const char *pEnd);
+  void RepeatLastCharacterCount(int count);
+  void RepeatLastFragmentCount(int count);
+  void RepeatLastWordCount(int count);
 
   bool ProcessFunction(const List<char *> &parameters);
 
@@ -96,6 +99,9 @@ public:
   bool DisableDictionaryFunction(const List<char *> &parameters);
   bool EnableDictionaryFunction(const List<char *> &parameters);
   bool HostLayoutFunction(const List<char *> &parameters);
+  bool RepeatLastCharacter(const List<char *> &parameters);
+  bool RepeatLastFragment(const List<char *> &parameters);
+  bool RepeatLastWord(const List<char *> &parameters);
   bool ResetStateFunction(const List<char *> &parameters);
   bool RetroCapitalizeFunction(const List<char *> &parameters);
   bool RetroDoubleQuotesFunction(const List<char *> &parameters);
@@ -117,8 +123,8 @@ public:
 private:
   static void Reverse(StenoKeyCode *start, StenoKeyCode *end);
 
-  bool RetroWordCountHandler(void (StenoKeyCodeBuffer::*handler)(int),
-                             const List<char *> &parameters);
+  bool CountHandler(void (StenoKeyCodeBuffer::*handler)(int),
+                    const List<char *> &parameters);
 };
 
 //---------------------------------------------------------------------------

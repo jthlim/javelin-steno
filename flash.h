@@ -67,6 +67,8 @@ private:
   uint8_t buffer[WRITE_DATA_BUFFER_SIZE];
 
   static Flash instance;
+
+  friend class AssetManager;
 };
 
 //---------------------------------------------------------------------------

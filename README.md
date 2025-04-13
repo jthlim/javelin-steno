@@ -35,32 +35,6 @@ T/T/T/T/SPHRA*EUPB: it it `T/T`: "it it" -> "it it"
 T/PHRAOES/-S/SPHRA*EUPB: `T/PHRAOES/-S`: "it please {^s}" -> "it pleases"
 ```
 
-## `=transform:<format>`
-
-Transforms the string, substituting template values in `format`
-
-- `%0` - `%63`: Template value
-- `%%`: '%' character
-
-Example usage:
-
-```
-  =transform:Hello %0
-```
-
-Modifiers supported:
-
-- `%u`: Upper case
-- `%l`: Lower case
-- `%t`: Title case
-- `%c`: Capitalize
-
-Example usage:
-
-```
-  =transform:Hello %u0
-```
-
 ## `=set_value:<template value>:<n>`
 
 Sets `template value` to the last `n` lookup translations. The value adopted is
@@ -97,6 +71,32 @@ Suggested bindings:
   "SR*DZ/SR*DZ": "=set_value:4:2",
   "SR*DZ/SR*DZ/SR*DZ": "=set_value:4:3",
   "SR*DZ/SR*DZ/SR*DZ/SR*DZ": "=set_value:4:4",
+```
+
+## `=transform:<format>`
+
+Transforms the string, substituting template values in `format`
+
+- `%0` - `%63`: Template value
+- `%%`: '%' character
+
+Example usage:
+
+```
+  =transform:Hello %0
+```
+
+Modifiers supported:
+
+- `%u`: Upper case
+- `%l`: Lower case
+- `%t`: Title case
+- `%c`: Capitalize
+
+Example usage:
+
+```
+  =transform:Hello %u0
 ```
 
 ## `{:add_translation}`
@@ -166,6 +166,20 @@ Supported values are determined at firmware build time.
 ```
   {:host_layout:us_windows_alt}
 ```
+
+## `{:repeat_last_character:<character_count>}`
+
+Repeats the last `character_count` characters.
+
+## `{:repeat_last_fragment:<fragment_count>}`
+
+Repeats the last `fragment_count` fragments. Fragments are delineated by
+whitespace characters.
+
+## `{:repeat_last_word:<word_count>}`
+
+Repeats the last `word_count` words. Words are consecutive alphanumeric or
+consecutive non-alphanumeric characters.
 
 ## `{:reset_state}`
 

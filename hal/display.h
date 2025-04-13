@@ -10,6 +10,16 @@ enum FontId : int;
 
 //---------------------------------------------------------------------------
 
+enum class ImageFormat : uint8_t {
+  BITMAP,
+  GRAYSCALE,
+  RGB332,
+  RGB565,
+  RGB888,
+};
+
+//---------------------------------------------------------------------------
+
 class Display {
 public:
   static void Clear(int displayId);
@@ -21,7 +31,7 @@ public:
   static void DrawPixel(int displayId, int x, int y);
   static void DrawLine(int displayId, int x1, int y1, int x2, int y2);
   static void DrawImage(int displayId, int x, int y, int width, int height,
-                        const uint8_t *data);
+                        ImageFormat format, const uint8_t *data);
   static void DrawGrayscaleRange(int displayId, int x, int y, int width,
                                  int height, const uint8_t *data, int min,
                                  int max);

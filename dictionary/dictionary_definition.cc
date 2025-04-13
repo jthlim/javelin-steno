@@ -79,4 +79,9 @@ bool StenoDictionaryCollection::HasMatchingTimestamp() const {
   return timestamp == endOfTextBlockTimestamp;
 }
 
+const void *StenoDictionaryCollection::GetEndOfData() const {
+  const XipPointer<uint8_t> textBlockEnd = end(textBlock);
+  return textBlockEnd + 4;
+}
+
 //---------------------------------------------------------------------------

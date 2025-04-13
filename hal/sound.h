@@ -1,6 +1,7 @@
 //---------------------------------------------------------------------------
 
 #pragma once
+#include "../uint16.h"
 #include <stddef.h>
 #include <stdint.h>
 
@@ -11,7 +12,7 @@ class Console;
 //---------------------------------------------------------------------------
 
 struct SoundSequenceData {
-  uint8_t data[2];
+  Uint16 data;
 
   static constexpr int END_NOTE = 0;
   static constexpr int PAUSE_NOTE = 1;
@@ -20,11 +21,9 @@ struct SoundSequenceData {
   //   0 means end of sequence.
   //   1 means pause.
   //   2+ is note, with middle C as 50, in semitone steps
-  uint8_t GetNote() const { return data[0] & 127; }
+  uint8_t GetNote() const { return data.b[0] & 127; }
 
-  uint32_t GetDelayInMs() const {
-    return 10 * ((data[0] | (data[1] << 8)) >> 7);
-  }
+  uint32_t GetDelayInMs() const { return 10 * (data.ToUint32() >> 7); }
 };
 
 class Sound {

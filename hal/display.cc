@@ -15,7 +15,8 @@
 [[gnu::weak]] void Display::DrawLine(int displayId, int x1, int y1, int x2,
                                      int y2) {}
 [[gnu::weak]] void Display::DrawImage(int displayId, int x, int y, int width,
-                                      int height, const uint8_t *data) {}
+                                      int height, ImageFormat format,
+                                      const uint8_t *data) {}
 [[gnu::weak]] void Display::DrawGrayscaleRange(int displayId, int x, int y,
                                                int width, int height,
                                                const uint8_t *data, int min,
