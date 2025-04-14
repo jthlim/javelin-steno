@@ -12,10 +12,11 @@ enum FontId : int;
 
 enum class ImageFormat : uint8_t {
   BITMAP,
-  GRAYSCALE,
+  LUMINANCE8,
   RGB332,
   RGB565,
   RGB888,
+  ALPHA8,
 };
 
 //---------------------------------------------------------------------------

@@ -379,7 +379,7 @@ void AssetManagerTest::TestAddition() {
   AssetManager::Initialize(intptr_t(buffer), 16384, 0);
   assert(!AssetManager::instance.IsValid());
 
-  assert(AssetManager::instance.AddAsset("test_id", 64));
+  assert(AssetManager::instance.AddAsset("test_id", 64) == nullptr);
 
   uint8_t data[64];
   for (int i = 0; i < 64; ++i) {
@@ -393,7 +393,7 @@ void AssetManagerTest::TestAddition() {
   assert(memcmp(entry->GetData(), data, 64) == 0);
 
   // Second id addition.
-  assert(AssetManager::instance.AddAsset("test_id2", 64));
+  assert(AssetManager::instance.AddAsset("test_id2", 64) == nullptr);
   AssetManager::instance.Write(data, 64);
 
   entry = AssetManager::instance.GetAsset("test_id2");

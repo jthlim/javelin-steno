@@ -38,11 +38,12 @@ public:
   }
 
   void ExecuteScript(size_t offset);
+  void ExecuteScript(const ScriptByteCode *byteCode, size_t offset);
   void ExecuteScriptIndex(size_t index) {
     ExecuteScript(byteCode->scriptOffsets[index]);
   }
   void ExecuteByteCode(const ScriptByteCode *code) {
-    Run(code->scriptOffsets[0], (const uint8_t *)code);
+    Run(code->scriptOffsets[0], code);
   }
 
   void ExecuteScript(size_t offset, const intptr_t *parameters,
@@ -65,8 +66,15 @@ public:
 
 protected:
   // Executes at offset with no stack and offset checks.
-  void Run(size_t offset, const uint8_t *byteCode);
-  void Run(size_t offset) { Run(offset, (const uint8_t *)byteCode); }
+  void Run(size_t offset, const ScriptByteCode *byteCode);
+  void Run(size_t offset) { Run(offset, byteCode); }
+
+  size_t GetDataOffset(const void *p) const {
+    return byteCode->GetDataOffset(p);
+  }
+  const uint8_t *GetInstructionsAtOffset(size_t offset) const {
+    return byteCode->GetScriptData<uint8_t>(offset);
+  }
 
 private:
   class StackPointer;

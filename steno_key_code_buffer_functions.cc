@@ -599,10 +599,10 @@ bool StenoKeyCodeBuffer::CountHandler(void (StenoKeyCodeBuffer::*handler)(int),
 
   int count;
   switch (parameters.GetCount()) {
-  case 0:
+  case 1:
     count = 1;
     break;
-  case 1:
+  case 2:
     if (!ReadIntegerParameter(count, parameters[1])) {
       return false;
     }

@@ -6,6 +6,7 @@
 
 #include "asset_manager.h"
 #include "button_script_manager.h"
+#include "clock.h"
 #include "console.h"
 #include "engine.h"
 #include "flash.h"
@@ -34,6 +35,47 @@
 
 //---------------------------------------------------------------------------
 
+class ButtonScript::TimerContext final : public TimerHandler,
+                                         public JavelinMallocAllocate {
+
+public:
+  TimerContext(ButtonScript *script, size_t offset,
+               const ScriptByteCode *byteCode)
+      : script(script), offset(offset), byteCode(byteCode) {}
+
+  static const uint32_t BUTTON_SCRIPT_TIMER_TYPE_ID = 0x42555343; // 'BUSC'
+
+  uint32_t GetTypeId() const final { return BUTTON_SCRIPT_TIMER_TYPE_ID; }
+
+  const uint8_t *GetInstructions() const {
+    return byteCode->GetScriptData<uint8_t>(offset);
+  }
+
+private:
+  ButtonScript *script;
+  size_t offset;
+  const ScriptByteCode *byteCode;
+
+  void Run(intptr_t id) final {
+    // Take a local copy of the script
+    // executionContext.Run can cause this TimerContext object to be destroyed,
+    // and a local copy is needed so that the last line does not corrupt memory.
+    ButtonScript *localScript = script;
+
+    // A routine may or may not consume the id, so this code records the
+    // top of stack and reinstates it after.
+    intptr_t *const startingStackTop = localScript->GetStackTop();
+
+    localScript->Push(id);
+    localScript->Run(offset, byteCode);
+    localScript->SetStackTop(startingStackTop);
+  }
+
+  void OnTimerRemovedFromManager() override final { delete this; }
+};
+
+//---------------------------------------------------------------------------
+
 ButtonScript::ButtonScript(const uint8_t *byteCode)
     : Script(byteCode, (void (*const *)(
                            Script &, const ScriptByteCode *))FUNCTION_TABLE) {
@@ -51,7 +93,7 @@ void ButtonScript::Reset() {
   eventHistory[1] = nullptr;
   eventHistory[2] = nullptr;
   eventHistory[3] = nullptr;
-  Mem::Clear(scriptOffsets);
+  Mem::Clear(scriptCallbacks);
   Script::Reset();
 }
 
@@ -78,8 +120,10 @@ void ButtonScript::ExecuteScriptId(ButtonScriptId scriptId,
     return;
   }
 
-  const size_t offset = scriptOffsets[(size_t)scriptId];
-  ExecuteScript(offset, scriptTime);
+  this->scriptTime = scriptTime;
+
+  const ScriptCallback &callback = scriptCallbacks[(size_t)scriptId];
+  Script::ExecuteScript(callback.byteCode, callback.offset);
 }
 
 void ButtonScript::ExecuteScriptIndex(size_t index, uint32_t scriptTime) {
@@ -92,6 +136,51 @@ void ButtonScript::ExecuteScriptIndex(size_t index, uint32_t scriptTime,
                                       size_t parameterCount) {
   this->scriptTime = scriptTime;
   Script::ExecuteScriptIndex(index, parameters, parameterCount);
+}
+
+void ButtonScript::CancelAllScriptsForByteCode(const ScriptByteCode *byteCode,
+                                               size_t byteCodeSize) {
+  const Interval<const uint8_t *> byteCodeRange(
+      byteCode->GetScriptData<uint8_t>(0),
+      byteCode->GetScriptData<uint8_t>(byteCodeSize));
+  CancelAllCallbacksForByteCode(byteCodeRange);
+  CancelAllTimersForByteCode(byteCodeRange);
+}
+
+void ButtonScript::CancelAllCallbacksForByteCode(
+    const Interval<const uint8_t *> &byteCodeRange) {
+  for (size_t i = 0; i < (size_t)ButtonScriptId::COUNT; ++i) {
+    const ScriptCallback &callback = scriptCallbacks[i];
+    if (callback.offset == 0) {
+      continue;
+    }
+
+    const uint8_t *p =
+        callback.byteCode->GetScriptData<uint8_t>(callback.offset);
+    if (byteCodeRange.Contains(p)) {
+      scriptCallbacks[i].offset = 0;
+      Console::Printf("Cancelled stale scriptId: %zu\n\n", i);
+    }
+  }
+}
+
+void ButtonScript::CancelAllTimersForByteCode(
+    const Interval<const uint8_t *> &byteCodeRange) {
+  TimerManager::instance.IterateTimers(
+      (void *)&byteCodeRange,
+      [](void *context, int timerId, TimerHandler *handler) {
+        if (handler->GetTypeId() != TimerContext::BUTTON_SCRIPT_TIMER_TYPE_ID) {
+          return;
+        }
+        TimerContext *timerContext = (TimerContext *)handler;
+        const Interval<const uint8_t *> &byteCodeRange =
+            *(const Interval<const uint8_t *> *)context;
+
+        if (byteCodeRange.Contains(timerContext->GetInstructions())) {
+          Console::Printf("Cancelled stale timerId: %d\n\n", timerId);
+          TimerManager::instance.StopTimer(timerId, Clock::GetMilliseconds());
+        }
+      });
 }
 
 //---------------------------------------------------------------------------
@@ -107,8 +196,8 @@ void ButtonScript::PrintInfo() const {
   Console::Printf("  Callbacks: [");
   const char *prefix = "";
   for (size_t i = 0; i < (size_t)ButtonScriptId::COUNT; ++i) {
-    if (scriptOffsets[i] != 0) {
-      Console::Printf("%s%zu: 0x%zx", prefix, i, scriptOffsets[i]);
+    if (scriptCallbacks[i].offset != 0) {
+      Console::Printf("%s%zu: 0x%zx", prefix, i, scriptCallbacks[i].offset);
       prefix = ", ";
     }
   }
@@ -116,35 +205,6 @@ void ButtonScript::PrintInfo() const {
 }
 
 //---------------------------------------------------------------------------
-
-class ButtonScript::TimerContext final : public TimerHandler,
-                                         public JavelinMallocAllocate {
-
-public:
-  TimerContext(ButtonScript *script, size_t offset)
-      : script(script), offset(offset) {}
-
-private:
-  ButtonScript *script;
-  size_t offset;
-
-  void Run(intptr_t id) final {
-    // Take a local copy of the script
-    // executionContext.Run can cause this TimerContext object to be destroyed,
-    // and a local copy is needed so that the last line does not corrupt memory.
-    ButtonScript *localScript = script;
-
-    // A routine may or may not consume the id, so this code records the
-    // top of stack and reinstates it after.
-    intptr_t *const startingStackTop = localScript->GetStackTop();
-
-    localScript->Push(id);
-    localScript->Run(offset);
-    localScript->SetStackTop(startingStackTop);
-  }
-
-  void OnTimerRemovedFromManager() override final { delete this; }
-};
 
 class ButtonScript::NullTimerContext final : public TimerHandler,
                                              public JavelinMallocAllocate {
@@ -161,10 +221,11 @@ void ButtonScript::StopTimer(int32_t timerId) {
 }
 
 void ButtonScript::StartTimer(int32_t timerId, uint32_t interval,
-                              bool isRepeating, size_t offset) {
+                              bool isRepeating, size_t offset,
+                              const ScriptByteCode *byteCode) {
   TimerHandler *context;
   if (offset) {
-    context = new TimerContext(this, offset);
+    context = new TimerContext(this, offset, byteCode);
   } else {
     context = &NullTimerContext::instance;
   }
@@ -429,10 +490,14 @@ public:
 
   static void DrawImage(ButtonScript &script, const ScriptByteCode *byteCode) {
     const intptr_t offset = script.Pop();
-    const uint8_t *data = byteCode->GetScriptData<uint8_t>(offset);
     const int y = (int)script.Pop();
     const int x = (int)script.Pop();
     const int displayId = (int)script.Pop();
+
+    if (offset == 0) {
+      return;
+    }
+    const uint8_t *data = byteCode->GetScriptData<uint8_t>(offset);
     ImageFormat format;
     int width;
     int height;
@@ -614,7 +679,7 @@ public:
   static void SetScript(ButtonScript &script, const ScriptByteCode *byteCode) {
     const size_t scriptOffset = script.Pop();
     const ButtonScriptId scriptId = (ButtonScriptId)script.Pop();
-    script.SetScript(scriptId, scriptOffset);
+    script.SetScript(scriptId, byteCode, scriptOffset);
   }
 
   static void IsBoardPowered(ButtonScript &script,
@@ -627,7 +692,7 @@ public:
     const bool repeating = script.Pop() != 0;
     const uint32_t interval = (uint32_t)script.Pop();
     const int32_t id = script.Pop() & 0x7fffffff;
-    script.StartTimer(id, interval, repeating, scriptOffset);
+    script.StartTimer(id, interval, repeating, scriptOffset, byteCode);
   }
 
   static void StopTimer(ButtonScript &script, const ScriptByteCode *byteCode) {

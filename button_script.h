@@ -88,6 +88,9 @@ public:
   void Reset();
   void SetReinit(bool value) { isInReinit = value; }
 
+  void CancelAllScriptsForByteCode(const ScriptByteCode *byteCode,
+                                   size_t byteCodeSize);
+
   class TestHelper;
 
 private:
@@ -99,6 +102,16 @@ private:
   static constexpr size_t MAX_STACK_SIZE = 256;
   static void (*const FUNCTION_TABLE[])(ButtonScript &, const ScriptByteCode *);
 
+  struct ScriptCallback {
+    const ScriptByteCode *byteCode;
+    size_t offset;
+
+    void Set(const ScriptByteCode *byteCode, size_t offset) {
+      this->byteCode = byteCode;
+      this->offset = offset;
+    }
+  };
+
   bool scriptEventsEnabled = false;
   bool isInReinit = false;
   uint8_t inPressAllCount = 0;
@@ -108,7 +121,7 @@ private:
   uint32_t scriptTime;
   StenoKeyState stenoState;
   const char *eventHistory[EVENT_HISTORY_COUNT] = {};
-  size_t scriptOffsets[(size_t)ButtonScriptId::COUNT];
+  ScriptCallback scriptCallbacks[(size_t)ButtonScriptId::COUNT];
   ButtonState buttonState;
   BitField<256> keyState;
   BitField<32> mouseButtonState;
@@ -119,7 +132,7 @@ private:
   bool IsScriptEmpty(size_t offset) const;
 
   void StartTimer(int32_t timerId, uint32_t interval, bool isRepeating,
-                  size_t offset);
+                  size_t offset, const ScriptByteCode *byteCode);
   void StopTimer(int32_t timerId);
 
   friend class ScriptTestHelper;
@@ -134,9 +147,10 @@ private:
   void SendText(const uint8_t *text);
   void RunConsoleCommand(const char *command, const ScriptByteCode *byteCode);
 
-  void SetScript(ButtonScriptId scriptId, size_t scriptOffset) {
+  void SetScript(ButtonScriptId scriptId, const ScriptByteCode *byteCode,
+                 size_t offset) {
     if (scriptId < ButtonScriptId::COUNT) {
-      scriptOffsets[(size_t)scriptId] = scriptOffset;
+      scriptCallbacks[(size_t)scriptId].Set(byteCode, offset);
     }
   }
 
@@ -146,6 +160,11 @@ private:
   void CallRelease(size_t keyIndex, uint32_t scriptTime) {
     ExecuteScriptIndex(keyIndex * 2 + 3, scriptTime);
   }
+
+  void
+  CancelAllCallbacksForByteCode(const Interval<const uint8_t *> &byteCodeRange);
+  void
+  CancelAllTimersForByteCode(const Interval<const uint8_t *> &byteCodeRange);
 };
 
 //---------------------------------------------------------------------------

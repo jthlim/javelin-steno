@@ -36,6 +36,10 @@ public:
                           const intptr_t *parameters, size_t parameterCount) {
     script.ExecuteScriptIndex(index, scriptTime, parameters, parameterCount);
   }
+  void CancelAllScriptsForByteCode(const ScriptByteCode *byteCode,
+                                   size_t byteCodeSize) {
+    script.CancelAllScriptsForByteCode(byteCode, byteCodeSize);
+  }
 
   static void ExecuteScript(ButtonScriptId scriptId);
   static ButtonScriptManager &GetInstance() { return container.value; }

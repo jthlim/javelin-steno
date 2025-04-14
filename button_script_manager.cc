@@ -291,8 +291,12 @@ void ButtonScriptManager::RunScript_Binding(void *context,
   }
 
   static uint8_t buffer[256];
-  Base64::Decode(buffer, (const uint8_t *)p + 1);
+
+  ButtonScriptManager *manager = (ButtonScriptManager *)context;
   ScriptByteCode *byteCode = (ScriptByteCode *)buffer;
+  manager->CancelAllScriptsForByteCode(byteCode, 256);
+
+  Base64::Decode(buffer, (const uint8_t *)p + 1);
   if (!byteCode->IsValid()) {
     Console::Printf("ERR Invalid byte code\n\n");
     return;
@@ -300,7 +304,6 @@ void ButtonScriptManager::RunScript_Binding(void *context,
 
   Console::SendOk();
 
-  ButtonScriptManager *manager = (ButtonScriptManager *)context;
   manager->ExecuteByteCode(byteCode);
 }
 

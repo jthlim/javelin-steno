@@ -13,6 +13,7 @@ class TimerHandler {
 public:
   virtual void Run(intptr_t id) = 0;
   virtual void OnTimerRemovedFromManager() {}
+  virtual uint32_t GetTypeId() const { return 0; }
 };
 
 class TimerManager {
@@ -41,6 +42,9 @@ public:
   void StopTimer(int32_t timerId, uint32_t currentTime);
 
   void ProcessTimers(uint32_t currentTime);
+
+  void IterateTimers(void *context, void (*callback)(void *context, int id,
+                                                     TimerHandler *handler));
 
   static void NoopDestructor(void *) {}
 

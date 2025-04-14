@@ -19,13 +19,15 @@ bool Script::IsScriptEmpty(size_t offset) const {
          ((uint8_t *)byteCode)[offset] == StenoScriptByteCode::RETURN;
 }
 
-void Script::ExecuteScript(size_t offset) {
+void Script::ExecuteScript(size_t offset) { ExecuteScript(byteCode, offset); }
+
+void Script::ExecuteScript(const ScriptByteCode *byteCode, size_t offset) {
   if (offset == 0) {
     return;
   }
 
   intptr_t *const start = stackTop;
-  Run(offset);
+  Run(offset, byteCode);
   assert(stackTop == start);
 }
 
@@ -162,9 +164,11 @@ private:
   const uint8_t *p;
 };
 
-[[gnu::weak]] void Script::Run(size_t offset, const uint8_t *byteCode) {
+[[gnu::weak]] void Script::Run(size_t offset, const ScriptByteCode *bc) {
   using BC = StenoScriptByteCode;
   using OP = StenoScriptOperator;
+
+  const uint8_t *const byteCode = (const uint8_t *)bc;
 
   intptr_t *locals;
 
@@ -360,7 +364,7 @@ next:
   case BC::CALL: {
     const size_t offset = p.ReadU16();
     stack.WriteBack(*this);
-    Run(offset, byteCode);
+    Run(offset, (const ScriptByteCode *)byteCode);
     stack.Load(*this);
     CONTINUE;
   }
