@@ -586,7 +586,7 @@ the button index, then underglow lights after.
 
   - Draws a rectangle using the current draw color
 
-- `func drawGrayscaleRange(<displayId>, <x>, <y>, <data>, <minValue>, <maxValue>)`
+- `func DrawLuminanceRange(<displayId>, <x>, <y>, <data>, <minValue>, <maxValue>)`
   - Draws pixels on the screen when the pixel value is in range
     [_minValue_, _maxValue_).
 

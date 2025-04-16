@@ -17,7 +17,7 @@
 [[gnu::weak]] void Display::DrawImage(int displayId, int x, int y, int width,
                                       int height, ImageFormat format,
                                       const uint8_t *data) {}
-[[gnu::weak]] void Display::DrawGrayscaleRange(int displayId, int x, int y,
+[[gnu::weak]] void Display::DrawLuminanceRange(int displayId, int x, int y,
                                                int width, int height,
                                                const uint8_t *data, int min,
                                                int max) {}

@@ -35,6 +35,17 @@
 
 //---------------------------------------------------------------------------
 
+struct ImageHeader {
+  uint8_t zero;
+  ImageFormat format;
+  Uint16 version;
+  Uint16 width;
+  Uint16 height;
+};
+static_assert(sizeof(ImageHeader) == 8);
+
+//---------------------------------------------------------------------------
+
 class ButtonScript::TimerContext final : public TimerHandler,
                                          public JavelinMallocAllocate {
 
@@ -502,13 +513,6 @@ public:
     int width;
     int height;
     if (data[0] == 0) {
-      struct ImageHeader {
-        uint8_t zero;
-        ImageFormat format;
-        Uint16 version;
-        Uint16 width;
-        Uint16 height;
-      };
       static_assert(sizeof(ImageHeader) == 8);
       const ImageHeader *header = (const ImageHeader *)data;
       format = header->format;
@@ -766,18 +770,29 @@ public:
     script.Push(Gpio::GetPin((int)pin));
   }
 
-  static void DrawGrayscaleRange(ButtonScript &script,
+  static void DrawLuminanceRange(ButtonScript &script,
                                  const ScriptByteCode *byteCode) {
     const int max = (int)script.Pop();
     const int min = (int)script.Pop();
     const intptr_t offset = script.Pop();
-    const uint8_t *data = byteCode->GetScriptData<uint8_t>(offset);
     const int y = (int)script.Pop();
     const int x = (int)script.Pop();
     const int displayId = (int)script.Pop();
-    const int width = *data++;
-    const int height = *data++;
-    Display::DrawGrayscaleRange(displayId, x, y, width, height, data, min, max);
+
+    const uint8_t *data = byteCode->GetScriptData<uint8_t>(offset);
+    if (data[0] != 0) {
+      return;
+    }
+    const ImageHeader *header = (const ImageHeader *)data;
+    if (header->format != ImageFormat::LUMINANCE8) {
+      return;
+    }
+
+    const int width = header->width.ToUint32();
+    const int height = header->height.ToUint32();
+    data = (uint8_t *)(header + 1);
+
+    Display::DrawLuminanceRange(displayId, x, y, width, height, data, min, max);
   }
 
   static void SetGpioPinDutyCycle(ButtonScript &script,
@@ -1157,7 +1172,7 @@ constexpr void (*ButtonScript::FUNCTION_TABLE[])(ButtonScript &,
     &Function::ReplyUserPresence,
     &Function::SetGpioInputPin,
     &Function::ReadGpioPin,
-    &Function::DrawGrayscaleRange,
+    &Function::DrawLuminanceRange,
     &Function::SetGpioPinDutyCycle,
     &Function::CancelAllStenoKeys,
     &Function::CancelStenoKey,

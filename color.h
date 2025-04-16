@@ -22,7 +22,7 @@ struct Color {
     return ((r >> 3) << 11) | ((g >> 2) << 5) | (b >> 3);
   }
 
-  Color Blend(const Color &other, uint32_t alpha) {
+  Color Blend(const Color &other, uint32_t alpha) const {
     const uint32_t y = 258 * alpha;
     const uint32_t x = 65790 - y;
     return Color{
@@ -42,6 +42,12 @@ struct Color {
         .b = uint8_t(b * scale >> 24),
     };
   }
+};
+
+//---------------------------------------------------------------------------
+
+struct ColorRgba : public Color {
+  uint8_t a;
 };
 
 //---------------------------------------------------------------------------

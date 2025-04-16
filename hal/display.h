@@ -17,6 +17,8 @@ enum class ImageFormat : uint8_t {
   RGB565,
   RGB888,
   ALPHA8,
+  ARGB1555,
+  RGBA8888,
 };
 
 //---------------------------------------------------------------------------
@@ -33,7 +35,7 @@ public:
   static void DrawLine(int displayId, int x1, int y1, int x2, int y2);
   static void DrawImage(int displayId, int x, int y, int width, int height,
                         ImageFormat format, const uint8_t *data);
-  static void DrawGrayscaleRange(int displayId, int x, int y, int width,
+  static void DrawLuminanceRange(int displayId, int x, int y, int width,
                                  int height, const uint8_t *data, int min,
                                  int max);
   static void DrawText(int displayId, int x, int y, FontId fontId,

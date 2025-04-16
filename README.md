@@ -1,6 +1,20 @@
-# Embedded steno engine.
+# Embedded stenography engine and advanced keyboard firmware.
 
-Embedded steno engine.
+Javelin started out as primarily an embedded stenography engine, but has
+evolved over time to have a wealth of features as a keyboard firmware.
+
+A quick summary of it's capabilities:
+
+- Embedded stenography engine -- write at 200+ wpm.
+  - Support for customized host layouts, stenography systems and personal dictionaries.
+- [Online web tools](https://www.lim.au/#/software/javelin-steno-tools) to
+  customize and control the keyboard. This includes a visual layout editor.
+- Fully scriptable configuration, without requiring firmware recompilation.
+  Examples:
+  - [Taipo implementation](https://github.com/kasparless/javelin-taipo)
+  - [Mouse control layer](https://github.com/jthlim/javelin_steno_script/blob/main/scripts/visual_editor/mouse.javelin-script)
+- Supports displays, rgb lighting, encoders, touchpad
+- Support for unibody and split keyboards.
 
 This repository contains the raw steno engine, without any bindings.
 

@@ -19,7 +19,6 @@ StenoProcatPacket::StenoProcatPacket(const StenoKeyState &state)
 
   while (localKeyState) {
     const uint32_t index = __builtin_ctzl(localKeyState) + 1;
-
     if (index < 24) {
       const uint32_t byte = index / 8;
       const uint32_t bit = (~index) & 7;

@@ -16,9 +16,9 @@ struct StenoTxBoltPacket {
 struct TxBoltCode {
   uint8_t group;
   uint8_t bitmask;
-}
+};
 
-constexpr TX_BOLT_LOOKUP[] = {
+constexpr TxBoltCode TX_BOLT_LOOKUP[] = {
     {3, 0b00010000}, // NUM
     {0, 0b00000001}, // SL
     {0, 0b00000010}, // TL
@@ -61,8 +61,10 @@ void StenoTxBoltPacket::Set(const StenoStroke &stroke) {
   uint32_t localKeyState = stroke.GetKeyState();
   while (localKeyState) {
     const int index = __builtin_ctzl(localKeyState);
-    const TxBoltCode boltCode = TX_BOLT_LOOKUP[index];
-    data[boltCode.group] |= boltCode.bitmask;
+    if (index < StrokeBitIndex::COUNT) {
+      const TxBoltCode boltCode = TX_BOLT_LOOKUP[index];
+      data[boltCode.group] |= boltCode.bitmask;
+    }
 
     localKeyState &= localKeyState - 1;
   }
