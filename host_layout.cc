@@ -9,6 +9,10 @@
 
 //---------------------------------------------------------------------------
 
+#define ENABLE_DUMP_HOST_LAYOUT 0
+
+//---------------------------------------------------------------------------
+
 constexpr HostLayout HostLayout::ansi =
     {
         .name = "us",
@@ -135,6 +139,37 @@ void HostLayouts::SetHostLayout_Binding(void *context,
   }
 }
 
+void HostLayouts::DumpHostLayout_Binding(void *context,
+                                         const char *commandLine) {
+
+  static constexpr const char *UNICODE_MODE_NAMES[] = {
+      "None",
+      "MacOS Unicode Hex",
+      "Windows Hex",
+      "Linux IBus",
+  };
+
+  const ExternalFlashSentry sentry;
+  Console::Printf("HostLayout: %s\n", activeLayout->name);
+  Console::Printf("UnicodeMode: %s",
+                  UNICODE_MODE_NAMES[activeLayout->unicodeMode]);
+  for (size_t i = 0; i < 128; ++i) {
+    if (i % 16 == 0)
+      Console::Printf("\n%04zx:", i);
+    Console::Printf(" %04x", activeLayout->asciiKeyCodes[i]);
+  }
+  Console::Printf("\nUnicodeEntries: %zu", activeLayout->entries.GetCount());
+
+  for (const HostLayoutEntry &entry : activeLayout->entries) {
+    Console::Printf("\n\"%C\": ", entry.unicode);
+    for (size_t i = 0; i < entry.length; ++i) {
+      Console::Printf(" %04x", entry.keyCodes[i]);
+    }
+  }
+
+  Console::Printf("\n\n");
+}
+
 void HostLayouts::ListHostLayouts() {
   const ExternalFlashSentry sentry;
 
@@ -150,6 +185,18 @@ void HostLayouts::ListHostLayouts() {
 void HostLayouts::GetHostLayout() {
   const ExternalFlashSentry sentry;
   Console::Printf("%s\n\n", HostLayouts::GetActiveLayout().GetName());
+}
+
+//---------------------------------------------------------------------------
+
+void HostLayouts::AddConsoleCommands(Console &console) {
+  console.RegisterCommand("set_host_layout", "Sets the current host layout",
+                          &HostLayouts::SetHostLayout_Binding, nullptr);
+
+#if ENABLE_DUMP_HOST_LAYOUT
+  console.RegisterCommand("dump_host_layout", "Dumps the current host layout",
+                          &HostLayouts::DumpHostLayout_Binding, nullptr);
+#endif
 }
 
 //---------------------------------------------------------------------------

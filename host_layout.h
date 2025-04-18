@@ -6,6 +6,10 @@
 
 //---------------------------------------------------------------------------
 
+class Console;
+
+//---------------------------------------------------------------------------
+
 enum UnicodeMode : uint8_t {
   NONE,
   MACOS_UNICODE_HEX,
@@ -51,7 +55,8 @@ public:
   static bool SetActiveLayout(const char *name);
   static const HostLayout &GetActiveLayout() { return *activeLayout; }
 
-  static void SetHostLayout_Binding(void *context, const char *commandLine);
+  static void AddConsoleCommands(Console &console);
+
   static void ListHostLayouts();
   static void GetHostLayout();
 
@@ -60,6 +65,9 @@ private:
 
   static const HostLayout *activeLayout;
   static const HostLayouts *instance;
+
+  static void SetHostLayout_Binding(void *context, const char *commandLine);
+  static void DumpHostLayout_Binding(void *context, const char *commandLine);
 };
 
 //---------------------------------------------------------------------------

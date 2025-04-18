@@ -37,6 +37,11 @@ public:
     assert(count > 0);
     memmove(&data[0], &data[1], sizeof(T) * --count);
   }
+  void PopFrontCount(size_t n) {
+    assert(n <= count);
+    count -= n;
+    memmove(&data[0], &data[n], sizeof(T) * count);
+  }
   T &PopBack() {
     assert(count > 0);
     return data[--count];
@@ -76,15 +81,17 @@ public:
 
   void Remove(T v) {
     for (size_t i = 0; i < count; ++i) {
-      if (data[i] != v) {
-        continue;
+      if (data[i] == v) {
+        RemoveIndex(i);
+        return;
       }
+    }
+  }
 
-      --count;
-      for (; i < count; ++i) {
-        data[i] = data[i + 1];
-      }
-      return;
+  void RemoveIndex(size_t i) {
+    --count;
+    for (; i < count; ++i) {
+      data[i] = data[i + 1];
     }
   }
 

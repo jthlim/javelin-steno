@@ -149,6 +149,19 @@ void ButtonScript::ExecuteScriptIndex(size_t index, uint32_t scriptTime,
   Script::ExecuteScriptIndex(index, parameters, parameterCount);
 }
 
+void ButtonScript::ExecuteScriptOffset(size_t offset, uint32_t scriptTime) {
+  this->scriptTime = scriptTime;
+  Script::ExecuteScript(offset);
+}
+
+void ButtonScript::ExecuteScriptCallback(const ScriptByteCode *byteCode,
+                                         size_t offset, uint32_t scriptTime) {
+  this->scriptTime = scriptTime;
+  if (offset != 0) {
+    Script::Run(offset, byteCode);
+  }
+}
+
 void ButtonScript::CancelAllScriptsForByteCode(const ScriptByteCode *byteCode,
                                                size_t byteCodeSize) {
   const Interval<const uint8_t *> byteCodeRange(
@@ -156,6 +169,7 @@ void ButtonScript::CancelAllScriptsForByteCode(const ScriptByteCode *byteCode,
       byteCode->GetScriptData<uint8_t>(byteCodeSize));
   CancelAllCallbacksForByteCode(byteCodeRange);
   CancelAllTimersForByteCode(byteCodeRange);
+  CancelAllCombosForByteCode(byteCodeRange);
 }
 
 void ButtonScript::CancelAllCallbacksForByteCode(
@@ -192,6 +206,11 @@ void ButtonScript::CancelAllTimersForByteCode(
           TimerManager::instance.StopTimer(timerId, Clock::GetMilliseconds());
         }
       });
+}
+
+void ButtonScript::CancelAllCombosForByteCode(
+    const Interval<const uint8_t *> &byteCodeRange) {
+  ButtonScriptManager::GetInstance().CancelAllCombosForByteCode(byteCodeRange);
 }
 
 //---------------------------------------------------------------------------
@@ -1103,6 +1122,24 @@ public:
     const intptr_t dataOffset = data ? byteCode->GetDataOffset(data) : 0;
     script.Push(dataOffset);
   }
+
+  static void AddCombo(ButtonScript &script, const ScriptByteCode *byteCode) {
+    const size_t releaseScriptOffset = script.Pop();
+    const size_t pressScriptOffset = script.Pop();
+    const intptr_t buttonsOffset = script.Pop();
+    const int comboTimeOut = (int)script.Pop();
+    const bool isOrdered = script.Pop() != 0;
+
+    const uint8_t *buttons = byteCode->GetScriptData<uint8_t>(buttonsOffset);
+    ButtonScriptManager::GetInstance().AddCombo(
+        isOrdered, comboTimeOut, buttons, byteCode, pressScriptOffset,
+        releaseScriptOffset);
+  }
+
+  static void ResetCombos(ButtonScript &script,
+                          const ScriptByteCode *byteCode) {
+    ButtonScriptManager::GetInstance().ResetCombos();
+  }
 };
 
 constexpr void (*ButtonScript::FUNCTION_TABLE[])(ButtonScript &,
@@ -1217,6 +1254,8 @@ constexpr void (*ButtonScript::FUNCTION_TABLE[])(ButtonScript &,
     &Function::Atan2,
     &Function::FormatString,
     &Function::GetAsset,
+    &Function::AddCombo,
+    &Function::ResetCombos,
 };
 
 void ButtonScript::PrintEventHistory() {

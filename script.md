@@ -670,6 +670,32 @@ const CONNECTION_ID_USB = 2;
 const CONNECTION_ID_USB2 = 3;
 ```
 
+## Combo Support Functions
+
+- `func addCombo(isOrdered, comboTimeOut, buttons, pressFunction, releaseFunction)`
+
+  - Adds a combo trigger.
+    - Combo triggers suppress calls to button presses/releases until
+      comboTimeOut (milliseconds) expires.
+    - `buttons` is a byte list terminated in `ff`.
+    - If `isOrdered` is non-zero, the combo is only triggered if buttons are
+      pressed in the specified order.
+    - `pressFunction` is called when all of the keys in a combo are pressed.
+    - `releaseFunction` is called when the first key is released.
+  - Javelin supports combos that have overlapping definitions, e.g. one
+    combo can have buttons 1 & 2, and a second combo can have buttons 1, 2 and 3.
+  - Example invocation:
+    - `addCombo(0, 50, [[00 10 ff]], @{ sendText("Hi"); }, @{});`
+      - This will trigger the text "Hi" when buttons 0 and 16 (10 hex) are
+        pressed within 50 ms.
+    - `addCombo(1, 50, [[00 10 ff]], @{ sendText("Hi"); }, @{});`
+      - This will trigger the text "Hi" when buttons 0 then button 16 (10 hex)
+        are pressed within 50 ms.
+
+- `func resetCombos()`
+
+  - Removes all registered combos.
+
 ## Pair Connectivity Functions
 
 - `func getActivePairConnection() var`

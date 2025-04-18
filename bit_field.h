@@ -47,6 +47,7 @@ public:
   bool IsSet(size_t n) const {
     return (data[n / BITS_PER_WORD] & (1ULL << n % BITS_PER_WORD)) != 0;
   }
+  bool IsClear(size_t n) const { return !IsSet(n); }
 
   bool IsAnySet() const {
     size_t v = data[0];

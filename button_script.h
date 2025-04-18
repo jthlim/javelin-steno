@@ -55,6 +55,9 @@ public:
   void ExecuteScriptIndex(size_t index, uint32_t scriptTime);
   void ExecuteScriptIndex(size_t index, uint32_t scriptTime,
                           const intptr_t *parameters, size_t parameterCount);
+  void ExecuteScriptOffset(size_t offset, uint32_t scriptTime);
+  void ExecuteScriptCallback(const ScriptByteCode *byteCode, size_t offset,
+                             uint32_t scriptTime);
 
   void ExecuteScriptId(ButtonScriptId scriptId, uint32_t scriptTime);
 
@@ -165,6 +168,8 @@ private:
   CancelAllCallbacksForByteCode(const Interval<const uint8_t *> &byteCodeRange);
   void
   CancelAllTimersForByteCode(const Interval<const uint8_t *> &byteCodeRange);
+  void
+  CancelAllCombosForByteCode(const Interval<const uint8_t *> &byteCodeRange);
 };
 
 //---------------------------------------------------------------------------

@@ -16,7 +16,71 @@
 
 //-------------------------------------------------------------------- th-------
 
+constexpr intptr_t TIMER_ID = -('B' * 256 + 'S');
+
+//--------------------------------------------------------------------
+
 JavelinStaticAllocate<ButtonScriptManager> ButtonScriptManager::container;
+
+//---------------------------------------------------------------------------
+
+ButtonState PendingComboButtons::CreateButtonState(size_t count) const {
+  ButtonState state;
+  state.ClearAll();
+  for (size_t i = 0; i < count; ++i) {
+    state.Set((*this)[i].buttonIndex);
+  }
+  return state;
+}
+
+void Combo::Set(bool isOrdered, int comboTimeOut, const uint8_t *buttonList,
+                const ScriptByteCode *byteCode, size_t pressScriptOffset,
+                size_t releaseScriptOffset) {
+  this->isOrdered = isOrdered;
+  this->isPressed = false;
+  this->isReleased = true;
+  this->comboTimeOut = comboTimeOut;
+  this->byteCode = byteCode;
+  this->pressScriptOffset = pressScriptOffset;
+  this->releaseScriptOffset = releaseScriptOffset;
+  this->buttonList = buttonList;
+  buttonState.ClearAll();
+  while (*buttonList != 0xff) {
+    buttonState.Set(*buttonList++);
+  }
+}
+
+ComboMatch Combo::Match(const PendingComboButtons &buttons, size_t buttonCount,
+                        const ButtonState &state) const {
+  if ((state & ~this->buttonState).IsAnySet()) {
+    return ComboMatch::NO_MATCH;
+  }
+
+  if (state != this->buttonState) {
+    if (!isOrdered) {
+      return ComboMatch::PARTIAL_MATCH;
+    }
+
+    for (size_t i = 0; i < buttonCount; ++i) {
+      if (buttonList[i] != buttons[i].buttonIndex) {
+        return ComboMatch::NO_MATCH;
+      }
+    }
+    return ComboMatch::PARTIAL_MATCH;
+  }
+
+  // At this point on, state bits match.
+  if (!isOrdered) {
+    return ComboMatch::FULL_MATCH;
+  }
+
+  for (size_t i = 0; i < buttonCount; ++i) {
+    if (buttonList[i] != buttons[i].buttonIndex) {
+      return ComboMatch::NO_MATCH;
+    }
+  }
+  return ComboMatch::FULL_MATCH;
+}
 
 //---------------------------------------------------------------------------
 
@@ -51,8 +115,7 @@ void ButtonScriptManager::Update(const ButtonState &newButtonState,
     Console::Printf("Release %zu at %u ms, now: %u ms\n\n", buttonIndex,
                     scriptTime, Clock::GetMilliseconds());
 #endif
-    script.IncrementReleaseCount();
-    script.HandleRelease(buttonIndex, scriptTime);
+    ReleaseButton(buttonIndex, scriptTime);
 
 #if PROFILE_BUTTON_ACTIVITY
     const uint32_t end = Clock::GetMicroseconds();
@@ -68,8 +131,7 @@ void ButtonScriptManager::Update(const ButtonState &newButtonState,
     Console::Printf("Press %zu at %u ms, now: %u ms\n\n", buttonIndex,
                     scriptTime, Clock::GetMilliseconds());
 #endif
-    script.IncrementPressCount();
-    script.HandlePress(buttonIndex, scriptTime);
+    PressButton(buttonIndex, scriptTime);
 
 #if PROFILE_BUTTON_ACTIVITY
     const uint32_t end = Clock::GetMicroseconds();
@@ -99,22 +161,136 @@ ButtonScriptManager::ExecuteScript(ButtonScriptId scriptId) {
   instance.script.ExecuteScriptId(scriptId, Clock::GetMilliseconds());
 }
 
-void ButtonScriptManager::PressButton(size_t index, uint32_t scriptTime) {
-  if (buttonState.IsSet(index)) {
-    return;
+void ButtonScriptManager::PressButton(size_t buttonIndex, uint32_t scriptTime) {
+  if (combos.IsEmpty()) {
+    return TriggerPress(buttonIndex, scriptTime);
   }
-  buttonState.Set(index);
-  script.HandlePress(index, scriptTime);
-  SendButtonStateUpdate();
+
+  pendingComboButtons.Add().Set(buttonIndex, scriptTime);
+
+  do {
+    const ButtonState buttonState = pendingComboButtons.CreateButtonState();
+    const ComboMatches matches = Match(pendingComboButtons.GetCount());
+
+    if (matches.partialMatch) {
+      if (matches.partialMatch->comboTimeOut == 0) {
+        break;
+      }
+      TimerManager::instance.StartTimer(
+          TIMER_ID, matches.partialMatch->comboTimeOut, 0, this, scriptTime);
+      return;
+    }
+
+    if (matches.fullMatch != nullptr) {
+      TriggerCombo(*matches.fullMatch, scriptTime);
+      pendingComboButtons.Reset();
+      break;
+    }
+
+    const size_t comboLength = pendingComboButtons.GetCount() - 1;
+    TriggerMaximumMatch(comboLength);
+  } while (pendingComboButtons.IsNotEmpty());
+
+  TimerManager::instance.StopTimer(TIMER_ID, scriptTime);
 }
 
-void ButtonScriptManager::ReleaseButton(size_t index, uint32_t scriptTime) {
-  if (!buttonState.IsSet(index)) {
-    return;
+void ButtonScriptManager::ReleaseButton(size_t buttonIndex,
+                                        uint32_t scriptTime) {
+  if (combos.IsEmpty()) {
+    return TriggerRelease(buttonIndex, scriptTime);
   }
-  buttonState.Clear(index);
+
+  TimerManager::instance.StopTimer(TIMER_ID, scriptTime);
+
+  // If the index is in the pending list, then trigger all items up to and
+  // including the entry with index.
+  for (size_t i = 0; i < pendingComboButtons.GetCount(); ++i) {
+    if (pendingComboButtons[i].buttonIndex == buttonIndex) {
+      TriggerPendingComboButtons(i + 1);
+      break;
+    }
+  }
+
+  if (activeComboButtonState.IsClear(buttonIndex)) {
+    return TriggerRelease(buttonIndex, scriptTime);
+  }
+  activeComboButtonState.Clear(buttonIndex);
+
+  for (Combo &combo : combos) {
+    if (combo.isPressed && combo.buttonState.IsSet(buttonIndex)) {
+      if (!combo.isReleased) {
+        combo.isReleased = true;
+        script.ExecuteScriptCallback(combo.byteCode, combo.releaseScriptOffset,
+                                     scriptTime);
+      }
+      combo.isPressed = (activeComboButtonState & combo.buttonState).IsAnySet();
+    }
+  }
+}
+
+void ButtonScriptManager::Run(intptr_t id) {
+  TriggerPendingComboButtons(pendingComboButtons.GetCount());
+}
+
+void ButtonScriptManager::TriggerPendingComboButtons(size_t count) {
+  while (count) {
+    count -= TriggerMaximumMatch(count);
+  }
+}
+
+size_t ButtonScriptManager::TriggerMaximumMatch(size_t maxComboLength) {
+  for (size_t comboLength = maxComboLength; comboLength > 0; --comboLength) {
+    const ButtonState state =
+        pendingComboButtons.CreateButtonState(comboLength);
+    const ComboMatches matches = Match(comboLength);
+    if (matches.fullMatch != nullptr) {
+      TriggerCombo(*matches.fullMatch,
+                   pendingComboButtons[comboLength - 1].scriptTime);
+      pendingComboButtons.PopFrontCount(comboLength);
+      return comboLength;
+    }
+  }
+
+  const PendingComboButton &button = pendingComboButtons.Front();
+  TriggerPress(button.buttonIndex, button.scriptTime);
+  pendingComboButtons.PopFront();
+  return 1;
+}
+
+void ButtonScriptManager::TriggerCombo(Combo &combo, uint32_t scriptTime) {
+  combo.isPressed = true;
+  combo.isReleased = false;
+  activeComboButtonState |= combo.buttonState;
+  script.ExecuteScriptCallback(combo.byteCode, combo.pressScriptOffset,
+                               scriptTime);
+}
+
+void ButtonScriptManager::TriggerPress(size_t index, uint32_t scriptTime) {
+  script.IncrementPressCount();
+  script.HandlePress(index, scriptTime);
+}
+
+void ButtonScriptManager::TriggerRelease(size_t index, uint32_t scriptTime) {
+  script.IncrementReleaseCount();
   script.HandleRelease(index, scriptTime);
-  SendButtonStateUpdate();
+}
+
+ComboMatches ButtonScriptManager::Match(size_t buttonCount) {
+  const ButtonState state = pendingComboButtons.CreateButtonState(buttonCount);
+  ComboMatches matches;
+  for (Combo &combo : combos) {
+    switch (combo.Match(pendingComboButtons, buttonCount, state)) {
+    case ComboMatch::NO_MATCH:
+      break;
+    case ComboMatch::PARTIAL_MATCH:
+      matches.partialMatch = &combo;
+      break;
+    case ComboMatch::FULL_MATCH:
+      matches.fullMatch = &combo;
+      break;
+    }
+  }
+  return matches;
 }
 
 void ButtonScriptManager::SendButtonStateUpdate(
@@ -142,6 +318,48 @@ void ButtonScriptManager::SetAllowButtonStateUpdates(bool value) {
     ButtonState state;
     state.ClearAll();
     SendButtonStateUpdate(state);
+  }
+}
+
+//---------------------------------------------------------------------------
+
+void ButtonScriptManager::AddCombo(bool isOrdered, int comboTimeOut,
+                                   const uint8_t *buttonList,
+                                   const ScriptByteCode *byteCode,
+                                   size_t pressScriptOffset,
+                                   size_t releaseScriptOffset) {
+  if (combos.IsFull()) {
+    Console::Printf("AddCombo ignored - list full\n\n");
+    return;
+  }
+
+  for (Combo &combo : combos) {
+    if (combo.buttonList == buttonList) {
+      Console::Printf(
+          "AddCombo warning - replacing previously registered combo\n\n");
+      combo.Set(isOrdered, comboTimeOut, buttonList, byteCode,
+                pressScriptOffset, releaseScriptOffset);
+      return;
+    }
+  }
+
+  Combo &combo = combos.Add();
+  combo.Set(isOrdered, comboTimeOut, buttonList, byteCode, pressScriptOffset,
+            releaseScriptOffset);
+}
+
+void ButtonScriptManager::CancelAllCombosForByteCode(
+    const Interval<const uint8_t *> &byteCodeRange) {
+  for (size_t i = combos.GetCount(); i != 0;) {
+    --i;
+    const Combo &combo = combos[i];
+    if (byteCodeRange.Contains(
+            combo.byteCode->GetScriptData<uint8_t>(combo.pressScriptOffset)) ||
+        byteCodeRange.Contains(combo.byteCode->GetScriptData<uint8_t>(
+            combo.releaseScriptOffset))) {
+      combos.RemoveIndex(i);
+      Console::Printf("Removed stale combo\n");
+    }
   }
 }
 

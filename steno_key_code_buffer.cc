@@ -418,7 +418,8 @@ void StenoKeyCodeBuffer::ProcessOrthographicSuffix(const char *text,
 char *StenoKeyCodeBuffer::ToString(size_t startingOffset) const {
   char *result = (char *)malloc(GetCount() * 4 + 1);
   Utf8Pointer utf8p(result);
-  for (const StenoKeyCode *p = buffer; p < currentOutput; ++p) {
+  for (const StenoKeyCode *p = buffer + startingOffset; p < currentOutput;
+       ++p) {
     if (!p->IsRawKeyCode()) {
       utf8p.SetAndAdvance(p->ResolveOutputUnicode());
     }
