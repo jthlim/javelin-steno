@@ -348,6 +348,16 @@ void ButtonScriptManager::AddCombo(bool isOrdered, int comboTimeOut,
             releaseScriptOffset);
 }
 
+void ButtonScriptManager::ResetCombos() {
+  for (Combo &combo : combos) {
+    if (combo.isPressed && !combo.isReleased) {
+      script.ExecuteScriptCallback(combo.byteCode, combo.releaseScriptOffset,
+                                   Clock::GetMilliseconds());
+    }
+  }
+  combos.Reset();
+}
+
 void ButtonScriptManager::CancelAllCombosForByteCode(
     const Interval<const uint8_t *> &byteCodeRange) {
   for (size_t i = combos.GetCount(); i != 0;) {

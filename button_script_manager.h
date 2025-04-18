@@ -116,7 +116,7 @@ public:
   void AddCombo(bool isOrdered, int comboTimeOut, const uint8_t *buttonList,
                 const ScriptByteCode *byteCode, size_t pressScriptOffset,
                 size_t releaseScriptOffset);
-  void ResetCombos() { combos.Reset(); }
+  void ResetCombos();
 
   void
   CancelAllCombosForByteCode(const Interval<const uint8_t *> &byteCodeRange);

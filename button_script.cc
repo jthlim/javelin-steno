@@ -184,7 +184,7 @@ void ButtonScript::CancelAllCallbacksForByteCode(
         callback.byteCode->GetScriptData<uint8_t>(callback.offset);
     if (byteCodeRange.Contains(p)) {
       scriptCallbacks[i].offset = 0;
-      Console::Printf("Cancelled stale scriptId: %zu\n\n", i);
+      Console::Printf("Cancelled stale scriptId: %zu\n", i);
     }
   }
 }
@@ -202,7 +202,7 @@ void ButtonScript::CancelAllTimersForByteCode(
             *(const Interval<const uint8_t *> *)context;
 
         if (byteCodeRange.Contains(timerContext->GetInstructions())) {
-          Console::Printf("Cancelled stale timerId: %d\n\n", timerId);
+          Console::Printf("Cancelled stale timerId: %d\n", timerId);
           TimerManager::instance.StopTimer(timerId, Clock::GetMilliseconds());
         }
       });
@@ -1370,7 +1370,7 @@ public:
     ButtonScript script(TEST_BYTE_CODE);
     script.ExecuteInitScript(0);
 
-    // Verify S1 and A are not presed.
+    // Verify S1 and A are not pressed.
     assert((script.stenoState & StenoKeyState(1)).IsEmpty());
     assert(script.keyState.IsSet(KeyCode::A) == false);
 
@@ -1385,7 +1385,7 @@ public:
 
     script.HandleRelease(0, 0);
 
-    // Verify S1 and A are not presed.
+    // Verify S1 and A are not pressed.
     assert((script.stenoState & StenoKeyState(1)).IsEmpty());
     assert(script.keyState.IsSet(KeyCode::A) == false);
   }

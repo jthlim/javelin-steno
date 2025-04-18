@@ -695,6 +695,7 @@ const CONNECTION_ID_USB2 = 3;
 - `func resetCombos()`
 
   - Removes all registered combos.
+  - Any combos that were active will have their `releaseFunction` called.
 
 ## Pair Connectivity Functions
 
