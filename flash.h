@@ -10,6 +10,26 @@ class Console;
 
 //---------------------------------------------------------------------------
 
+enum class FlashWriteMode {
+  // When writing to a page and a reset is required, preserve all data
+  // outside of the write region.
+  PRESERVE,
+
+  // When writing to a page and a reset is required, preserve all data
+  // before (lower memory addres) the write region.
+  PRESERVE_BEFORE,
+
+  // When writing to a page and a reset is required, preserve all data
+  // after (higher memory addres) the write region.
+  PRESERVE_AFTER,
+
+  // When writing to a page and a reset is required, reset (to 0xff)
+  // all data outside of the write region.
+  RESET,
+};
+
+//---------------------------------------------------------------------------
+
 class Flash {
 public:
   static bool IsUpdating() { return instance.target != nullptr; }
@@ -23,7 +43,8 @@ public:
   }
 
   static void WriteBlock(const void *target, const void *data, size_t size);
-  static void Write(const void *target, const void *data, size_t size);
+  static void Write(const void *target, const void *data, size_t size,
+                    FlashWriteMode writeMode);
 
   static constexpr size_t BLOCK_SIZE = 4096;
 

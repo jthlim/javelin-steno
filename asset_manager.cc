@@ -160,13 +160,13 @@ const char *AssetManager::AddAsset(const char *id, size_t size) {
 
   uint8_t buffer[256] = {};
   AssetEntry *entry = (AssetEntry *)buffer;
-  entry->size = size;
+  entry->size = (uint32_t)size;
   entry->idHash = Crc32::Hash(id, idLength);
   Mem::Copy(entry->id, id, idLength);
 
   Flash::instance.BeginWrite((uint8_t *)startWriteAddress);
   Flash::instance.AddData(buffer, paddedAssetEntryLength);
-  assetDataBytesRemaining = size;
+  assetDataBytesRemaining = (uint32_t)size;
 
   return nullptr;
 }
@@ -191,15 +191,15 @@ void AssetManager::BeginWrite(const uint8_t *address) {
 }
 
 void AssetManager::ResetHeader() {
-  char *buffer = (char *)malloc(2 * Flash::BLOCK_SIZE);
-  Mem::Fill(buffer, 2 * Flash::BLOCK_SIZE);
-  AssetDirectory *newDirectory = (AssetDirectory *)buffer;
+  AssetDirectory *newDirectory = new AssetDirectory;
   newDirectory->magic = ASSET_DIRECTORY_MAGIC;
   newDirectory->timestamp = timestamp;
+  Mem::Fill(newDirectory->hashTable);
 
-  Flash::WriteBlock(directory, buffer, 2 * Flash::BLOCK_SIZE);
+  Flash::Write(directory, newDirectory, sizeof(AssetDirectory),
+               FlashWriteMode::RESET);
 
-  free(buffer);
+  delete newDirectory;
 }
 
 void AssetManager::WriteHeader() {
@@ -212,14 +212,14 @@ void AssetManager::WriteHeader() {
     const intptr_t value = directory->hashTable[index];
     if (value == 0 || value == -1) {
       Flash::Write(&directory->hashTable[index], &newEntry,
-                   sizeof(AssetEntry *));
+                   sizeof(AssetEntry *), FlashWriteMode::PRESERVE);
       return;
     }
 
     const AssetEntry *entry = (const AssetEntry *)value;
     if (entry->idHash == hash && Str::Eq(entry->id, newEntry->id)) {
       Flash::Write(&directory->hashTable[index], &newEntry,
-                   sizeof(AssetEntry *));
+                   sizeof(AssetEntry *), FlashWriteMode::PRESERVE);
       return;
     }
 
@@ -359,6 +359,7 @@ void AssetManager::AddConsoleCommands(Console &console) {
                           &ResetAssets_Binding, &instance);
 }
 
+//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
 #include "unit_test.h"

@@ -241,7 +241,8 @@ bool StenoFullMapDictionary::Remove(const char *name,
     if (entry.Equals(strokes, length)) {
       // Found it! Delete it.
       constexpr StenoStroke emptyStroke(0);
-      Flash::Write(&entry.strokes, &emptyStroke, sizeof(StenoStroke));
+      Flash::Write(&entry.strokes, &emptyStroke, sizeof(StenoStroke),
+                   FlashWriteMode::PRESERVE);
       return true;
     }
 

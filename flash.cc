@@ -44,6 +44,7 @@ int flashWriteCount = 0;
 //---------------------------------------------------------------------------
 
 bool Flash::RequiresErase(const void *target, size_t size) {
+  assert((intptr_t(target) & (sizeof(size_t) - 1)) == 0);
   assert((size & (sizeof(size_t) - 1)) == 0);
 
   const size_t *p = (const size_t *)target;
@@ -58,6 +59,10 @@ bool Flash::RequiresErase(const void *target, size_t size) {
 }
 
 bool Flash::RequiresErase(const void *target, const void *data, size_t size) {
+  assert((intptr_t(target) & (sizeof(size_t) - 1)) == 0);
+  assert((intptr_t(data) & (sizeof(size_t) - 1)) == 0);
+  assert((size & (sizeof(size_t) - 1)) == 0);
+
   const size_t *t = (const size_t *)target;
   const size_t *d = (const size_t *)data;
   const size_t *dEnd = (const size_t *)(intptr_t(data) + size);
@@ -129,12 +134,48 @@ void Flash::WriteRemaining() {
 }
 
 [[gnu::noinline]] void Flash::Write(const void *target, const void *data,
-                                    size_t size) {
+                                    size_t size, FlashWriteMode writeMode) {
   const ExternalFlashSentry sentry;
 
-  instance.BeginWrite((const uint8_t *)target);
-  instance.AddData((const uint8_t *)data, size);
-  instance.WriteRemaining();
+  while (size > 0) {
+    const uint8_t *baseAddress =
+        (const uint8_t *)(intptr_t(target) & -WRITE_DATA_BUFFER_SIZE);
+    const size_t offsetIntoPage = size_t(target) & (WRITE_DATA_BUFFER_SIZE - 1);
+    memcpy(instance.buffer, baseAddress, offsetIntoPage);
+
+    const size_t bytesRemainingInPage = WRITE_DATA_BUFFER_SIZE - offsetIntoPage;
+    const size_t copyBytes =
+        size < bytesRemainingInPage ? size : bytesRemainingInPage;
+    memcpy(instance.buffer + offsetIntoPage, data, copyBytes);
+
+    const size_t bytesAfter = bytesRemainingInPage - copyBytes;
+    const size_t offsetAfter = offsetIntoPage + copyBytes;
+    memcpy(instance.buffer + offsetAfter, baseAddress + offsetAfter,
+           bytesAfter);
+
+    if (Flash::RequiresErase(baseAddress, instance.buffer,
+                             WRITE_DATA_BUFFER_SIZE)) {
+      switch (writeMode) {
+      case FlashWriteMode::PRESERVE:
+        break;
+      case FlashWriteMode::PRESERVE_BEFORE:
+        Mem::Fill(instance.buffer + offsetAfter, bytesAfter);
+        break;
+      case FlashWriteMode::PRESERVE_AFTER:
+        Mem::Fill(instance.buffer, offsetIntoPage);
+        break;
+      case FlashWriteMode::RESET:
+        Mem::Fill(instance.buffer, offsetIntoPage);
+        Mem::Fill(instance.buffer + offsetAfter, bytesAfter);
+        break;
+      }
+    }
+    WriteBlock(baseAddress, instance.buffer, WRITE_DATA_BUFFER_SIZE);
+
+    target = (const uint8_t *)target + copyBytes;
+    data = (const uint8_t *)data + copyBytes;
+    size -= copyBytes;
+  }
 }
 
 void Flash::EraseBlock(const void *target, size_t size) {
@@ -324,5 +365,152 @@ void Flash::PrintInfo() {
   Console::Printf("  Programmed bytes: %zu\n", instance.programmedBytes);
   Console::Printf("  Reprogrammed bytes: %zu\n", instance.reprogrammedBytes);
 }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+#include "unit_test.h"
+
+//---------------------------------------------------------------------------
+
+[[gnu::aligned(4096)]] static char flashWriteTestData[8 * 1024];
+
+static void RandomizeFlashWriteTestData() {
+  for (size_t i = 0; i < sizeof(flashWriteTestData); ++i) {
+    flashWriteTestData[i] = rand();
+  }
+}
+
+TEST_BEGIN("Flash: Write with FlashWriteMode::PRESERVE") {
+  char writeData[32];
+  for (size_t i = 0; i < 32; ++i) {
+    writeData[i] = i;
+  }
+
+  const size_t testOffsets[] = {
+      0, 16, 4096 - 32, 4096 - 16, 4096, 4096 + 16, 8192 - 32,
+  };
+
+  for (size_t testOffset : testOffsets) {
+    RandomizeFlashWriteTestData();
+    char expectedResult[8192];
+    Mem::Copy(expectedResult, flashWriteTestData, 8192);
+    Mem::Copy(expectedResult + testOffset, writeData, 32);
+    Flash::Write(flashWriteTestData + testOffset, writeData, 32,
+                 FlashWriteMode::PRESERVE);
+    assert(Mem::Eq(flashWriteTestData, expectedResult, 8192));
+  }
+}
+TEST_END
+
+TEST_BEGIN("Flash: Write with FlashWriteMode::PRESERVE_BEFORE") {
+  char writeData[32];
+  for (size_t i = 0; i < 32; ++i) {
+    writeData[i] = i;
+  }
+
+  const size_t testOffsets[] = {
+      0, 16, 4096 - 32, 4096 - 16, 4096, 4096 + 16, 8192 - 32,
+  };
+
+  for (size_t testOffset : testOffsets) {
+    // Test no reset case.
+    RandomizeFlashWriteTestData();
+    Mem::Fill(flashWriteTestData + testOffset, 32);
+
+    char expectedResult[8192];
+    Mem::Copy(expectedResult, flashWriteTestData, 8192);
+    Mem::Copy(expectedResult + testOffset, writeData, 32);
+    Flash::Write(flashWriteTestData + testOffset, writeData, 32,
+                 FlashWriteMode::PRESERVE_BEFORE);
+    assert(Mem::Eq(flashWriteTestData, expectedResult, 8192));
+
+    // Test reset case.
+    RandomizeFlashWriteTestData();
+    Mem::Clear(flashWriteTestData + testOffset, 32);
+
+    Mem::Copy(expectedResult, flashWriteTestData, 8192);
+    Mem::Copy(expectedResult + testOffset, writeData, 32);
+    Mem::Fill(expectedResult + testOffset + 32,
+              (8192 - 32 - testOffset) & 0xfff);
+    Flash::Write(flashWriteTestData + testOffset, writeData, 32,
+                 FlashWriteMode::PRESERVE_BEFORE);
+    assert(Mem::Eq(flashWriteTestData, expectedResult, 8192));
+  }
+}
+TEST_END
+
+TEST_BEGIN("Flash: Write with FlashWriteMode::PRESERVE_AFTER") {
+  char writeData[32];
+  for (size_t i = 0; i < 32; ++i) {
+    writeData[i] = i;
+  }
+
+  const size_t testOffsets[] = {
+      0, 16, 4096 - 32, 4096 - 16, 4096, 4096 + 16, 8192 - 32,
+  };
+
+  for (size_t testOffset : testOffsets) {
+    // Test no reset case.
+    RandomizeFlashWriteTestData();
+    Mem::Fill(flashWriteTestData + testOffset, 32);
+
+    char expectedResult[8192];
+    Mem::Copy(expectedResult, flashWriteTestData, 8192);
+    Mem::Copy(expectedResult + testOffset, writeData, 32);
+    Flash::Write(flashWriteTestData + testOffset, writeData, 32,
+                 FlashWriteMode::PRESERVE_AFTER);
+    assert(Mem::Eq(flashWriteTestData, expectedResult, 8192));
+
+    // Test reset case.
+    RandomizeFlashWriteTestData();
+    Mem::Clear(flashWriteTestData + testOffset, 32);
+
+    Mem::Copy(expectedResult, flashWriteTestData, 8192);
+    Mem::Copy(expectedResult + testOffset, writeData, 32);
+    Mem::Fill(expectedResult + (testOffset & ~0xfff), testOffset & 0xfff);
+    Flash::Write(flashWriteTestData + testOffset, writeData, 32,
+                 FlashWriteMode::PRESERVE_AFTER);
+    assert(Mem::Eq(flashWriteTestData, expectedResult, 8192));
+  }
+}
+TEST_END
+
+TEST_BEGIN("Flash: Write with FlashWriteMode::RESET") {
+  char writeData[32];
+  for (size_t i = 0; i < 32; ++i) {
+    writeData[i] = i;
+  }
+
+  const size_t testOffsets[] = {
+      0, 16, 4096 - 32, 4096 - 16, 4096, 4096 + 16, 8192 - 32,
+  };
+
+  for (size_t testOffset : testOffsets) {
+    // Test no reset case.
+    RandomizeFlashWriteTestData();
+    Mem::Fill(flashWriteTestData + testOffset, 32);
+
+    char expectedResult[8192];
+    Mem::Copy(expectedResult, flashWriteTestData, 8192);
+    Mem::Copy(expectedResult + testOffset, writeData, 32);
+    Flash::Write(flashWriteTestData + testOffset, writeData, 32,
+                 FlashWriteMode::RESET);
+    assert(Mem::Eq(flashWriteTestData, expectedResult, 8192));
+
+    // Test reset case.
+    RandomizeFlashWriteTestData();
+    Mem::Clear(flashWriteTestData + testOffset, 32);
+
+    Mem::Copy(expectedResult, flashWriteTestData, 8192);
+    Mem::Fill(expectedResult + (testOffset & ~0xfff), 4096);
+    Mem::Fill(expectedResult + ((testOffset + 32 - 1) & ~0xfff), 4096);
+    Mem::Copy(expectedResult + testOffset, writeData, 32);
+    Flash::Write(flashWriteTestData + testOffset, writeData, 32,
+                 FlashWriteMode::RESET);
+    assert(Mem::Eq(flashWriteTestData, expectedResult, 8192));
+  }
+}
+TEST_END
 
 //---------------------------------------------------------------------------

@@ -202,29 +202,24 @@ void StenoUserDictionary::ReverseLookup(
 void StenoUserDictionary::Reset() {
   Flash::EraseBlock(layout.GetDataStart(), layout.GetDataLength());
 
-  StenoUserDictionaryDescriptor *freshDescriptor =
-      (StenoUserDictionaryDescriptor *)malloc(Flash::BLOCK_SIZE);
+  StenoUserDictionaryDescriptor freshDescriptor;
 
-  // Use 0xff rather than 0 to reduce flash I/O.
-  Mem::Fill(freshDescriptor, Flash::BLOCK_SIZE);
-
-  freshDescriptor->magic = USER_DICTIONARY_MAGIC;
-  freshDescriptor->version =
+  freshDescriptor.magic = USER_DICTIONARY_MAGIC;
+  freshDescriptor.version =
       USER_DICTIONARY_WITH_REVERSE_LOOKUP_AND_REVERSE_DATABLOCK_VERSION;
-  freshDescriptor->data.hashTable = layout.hashTable;
-  freshDescriptor->data.hashTableSize = layout.hashTableSize;
-  freshDescriptor->data.dataBlock = layout.dataBlock;
-  freshDescriptor->data.dataBlockSizeRemaining = layout.dataBlockSize;
-  freshDescriptor->data.maximumOutlineLength = 0;
-  freshDescriptor->data.reverseHashTable = layout.reverseHashTable;
-  freshDescriptor->UpdateCrc32();
+  freshDescriptor.data.hashTable = layout.hashTable;
+  freshDescriptor.data.hashTableSize = layout.hashTableSize;
+  freshDescriptor.data.dataBlock = layout.dataBlock;
+  freshDescriptor.data.dataBlockSizeRemaining = layout.dataBlockSize;
+  freshDescriptor.data.maximumOutlineLength = 0;
+  freshDescriptor.data.reverseHashTable = layout.reverseHashTable;
+  freshDescriptor.UpdateCrc32();
 
-  Flash::WriteBlock(descriptorBase, freshDescriptor, Flash::BLOCK_SIZE);
+  Flash::Write(descriptorBase, &freshDescriptor,
+               sizeof(StenoUserDictionaryDescriptor), FlashWriteMode::RESET);
 
   activeDescriptor = descriptorBase;
-  activeDescriptorCopy = *freshDescriptor;
-
-  free(freshDescriptor);
+  activeDescriptorCopy = freshDescriptor;
 }
 
 void StenoUserDictionary::DestroyDescriptorBlock() {
@@ -301,8 +296,14 @@ StenoUserDictionary::AddToDataBlock(const StenoStroke *strokes, uint32_t length,
           ? activeDescriptorCopy.data.dataBlockSize
           : activeDescriptorCopy.data.dataBlockSizeRemaining - totalLength;
 
+  const FlashWriteMode writeMode =
+      activeDescriptorCopy.version ==
+              USER_DICTIONARY_WITH_REVERSE_LOOKUP_VERSION
+          ? FlashWriteMode::PRESERVE_BEFORE
+          : FlashWriteMode::PRESERVE_AFTER;
+
   const uint8_t *target = activeDescriptorCopy.data.dataBlock + dataBlockOffset;
-  Flash::Write(target, buffer, totalLength);
+  Flash::Write(target, buffer, totalLength, writeMode);
   free(buffer);
 
   return AddToDataBlockResult(dataBlockOffset, totalLength);
@@ -329,18 +330,11 @@ void StenoUserDictionary::AddToDescriptor(
       (StenoUserDictionaryDescriptor *)((intptr_t)descriptorBase +
                                         newDescriptorOffset);
 
-  if (Flash::RequiresErase(destination, &newDescriptor,
-                           sizeof(newDescriptor))) {
-    Flash::EraseBlock(
-        (void *)(intptr_t(descriptorBase) +
-                 newDescriptorOffset / Flash::BLOCK_SIZE * Flash::BLOCK_SIZE),
-        Flash::BLOCK_SIZE);
-  }
-
   activeDescriptor = destination;
   activeDescriptorCopy = newDescriptor;
 
-  Flash::Write(destination, &newDescriptor, sizeof(newDescriptor));
+  Flash::Write(destination, &newDescriptor, sizeof(newDescriptor),
+               FlashWriteMode::RESET);
 }
 
 bool StenoUserDictionary::AddToHashTable(const StenoStroke *strokes,
@@ -471,14 +465,14 @@ bool StenoUserDictionary::RemoveFromReverseHashTable(
 
 void StenoUserDictionary::WriteEntryIndex(size_t entryIndex, uint32_t offset) {
   const uint32_t *entry = &activeDescriptorCopy.data.hashTable[entryIndex];
-  Flash::Write(entry, &offset, sizeof(offset));
+  Flash::Write(entry, &offset, sizeof(offset), FlashWriteMode::PRESERVE);
 }
 
 void StenoUserDictionary::WriteReverseEntryIndex(size_t entryIndex,
                                                  uint32_t offset) {
   const uint32_t *entry =
       &activeDescriptorCopy.data.reverseHashTable[entryIndex];
-  Flash::Write(entry, &offset, sizeof(offset));
+  Flash::Write(entry, &offset, sizeof(offset), FlashWriteMode::PRESERVE);
 }
 
 void StenoUserDictionary::PrintDictionary(

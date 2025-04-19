@@ -169,7 +169,6 @@ void ButtonScriptManager::PressButton(size_t buttonIndex, uint32_t scriptTime) {
   pendingComboButtons.Add().Set(buttonIndex, scriptTime);
 
   do {
-    const ButtonState buttonState = pendingComboButtons.CreateButtonState();
     const ComboMatches matches = Match(pendingComboButtons.GetCount());
 
     if (matches.partialMatch) {
@@ -240,8 +239,6 @@ void ButtonScriptManager::TriggerPendingComboButtons(size_t count) {
 
 size_t ButtonScriptManager::TriggerMaximumMatch(size_t maxComboLength) {
   for (size_t comboLength = maxComboLength; comboLength > 0; --comboLength) {
-    const ButtonState state =
-        pendingComboButtons.CreateButtonState(comboLength);
     const ComboMatches matches = Match(comboLength);
     if (matches.fullMatch != nullptr) {
       TriggerCombo(*matches.fullMatch,
