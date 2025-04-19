@@ -240,7 +240,7 @@ bool AssetManager::Write(const uint8_t *data, size_t byteCount) {
   return true;
 }
 
-//----------------------------------------------------------------ass-----------
+//---------------------------------------------------------------------------
 
 void AssetManager::PrintFreeSize() {
   Console::Printf("0x%x\n\n", instance.GetFreeSize());
