@@ -135,8 +135,6 @@ void Flash::WriteRemaining() {
 
 [[gnu::noinline]] void Flash::Write(const void *target, const void *data,
                                     size_t size, FlashWriteMode writeMode) {
-  const ExternalFlashSentry sentry;
-
   while (size > 0) {
     const uint8_t *baseAddress =
         (const uint8_t *)(intptr_t(target) & -WRITE_DATA_BUFFER_SIZE);

@@ -64,6 +64,10 @@ public:
   intptr_t GetGlobal(size_t i) const { return globals[i]; }
   void SetGlobal(size_t i, intptr_t v) { globals[i] = v; }
 
+  bool IsInbuiltByteCode(const ScriptByteCode *byteCode) const {
+    return byteCode == this->byteCode;
+  }
+
 protected:
   // Executes at offset with no stack and offset checks.
   void Run(size_t offset, const ScriptByteCode *byteCode);

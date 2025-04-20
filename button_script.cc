@@ -89,9 +89,7 @@ private:
 
 ButtonScript::ButtonScript(const uint8_t *byteCode)
     : Script(byteCode, (void (*const *)(
-                           Script &, const ScriptByteCode *))FUNCTION_TABLE) {
-  keyState.ClearAll();
-}
+                           Script &, const ScriptByteCode *))FUNCTION_TABLE) {}
 
 void ButtonScript::Reset() {
   ReleaseAll();
@@ -113,11 +111,14 @@ void ButtonScript::ReleaseAll() {
     Key::Release(uint32_t(keyIndex));
   }
   keyState.ClearAll();
+
   stenoState = 0;
   CancelAllStenoKeys();
+
   for (const size_t mouseButtonIndex : mouseButtonState) {
     Mouse::ReleaseButton(mouseButtonIndex);
   }
+  mouseButtonState.ClearAll();
 }
 
 void ButtonScript::ExecuteScript(size_t offset, uint32_t scriptTime) {
@@ -160,6 +161,15 @@ void ButtonScript::ExecuteScriptCallback(const ScriptByteCode *byteCode,
   if (offset != 0) {
     Script::Run(offset, byteCode);
   }
+}
+
+void ButtonScript::RemoveScriptTimers() {
+  TimerManager::instance.IterateTimers(
+      nullptr, [](void *context, int timerId, TimerHandler *handler) {
+        if (handler->GetTypeId() == TimerContext::BUTTON_SCRIPT_TIMER_TYPE_ID) {
+          TimerManager::instance.StopTimer(timerId, Clock::GetMilliseconds());
+        }
+      });
 }
 
 void ButtonScript::CancelAllScriptsForByteCode(const ScriptByteCode *byteCode,
@@ -1005,6 +1015,12 @@ public:
 
   static void EnableFlashWrite(ButtonScript &script,
                                const ScriptByteCode *byteCode) {
+    // Prevent console scripts from turning off flash write protection.
+    if (!script.IsInbuiltByteCode(byteCode)) {
+      Console::Printf("ERR protected method\n\n");
+      return;
+    }
+
     Flash::EnableWrite();
   }
   static void DisableFlashWrite(ButtonScript &script,

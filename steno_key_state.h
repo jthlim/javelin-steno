@@ -44,8 +44,8 @@ enum class StenoKey : int8_t {
   NUM10,
   NUM11,
   NUM12,
-  FUNCTION, // X1
-  POWER,    // X2
+  FUNCTION, // X1, ^
+  POWER,    // X2, +
   RES1,     // X3
   RES2,     // X4
   X1 = FUNCTION,

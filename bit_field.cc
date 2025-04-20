@@ -8,8 +8,7 @@
 
 TEST_BEGIN("BitField: EmptySet iterates properly") {
   List<size_t> setBits;
-  BitField<256> bitfield;
-  bitfield.ClearAll();
+  BitField<256> bitfield = {};
   for (const size_t i : bitfield) {
     setBits.Add(i);
   }
@@ -19,8 +18,7 @@ TEST_END
 
 TEST_BEGIN("BitField: Set bits iterate properly") {
   List<size_t> setBits;
-  BitField<256> bitfield;
-  bitfield.ClearAll();
+  BitField<256> bitfield = {};
   bitfield.Set(1);
   bitfield.Set(252);
   for (const size_t i : bitfield) {

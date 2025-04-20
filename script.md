@@ -676,12 +676,12 @@ const CONNECTION_ID_USB2 = 3;
 
   - Adds a combo trigger.
     - Combo triggers suppress calls to button presses/releases until
-      comboTimeOut (milliseconds) expires.
-    - `buttons` is a byte list terminated in `ff`.
-    - If `isOrdered` is non-zero, the combo is only triggered if buttons are
+      _comboTimeOut_ (milliseconds) expires.
+    - _buttons_ is a byte list terminated in `ff`.
+    - If _isOrdered_ is non-zero, the combo is only triggered if buttons are
       pressed in the specified order.
-    - `pressFunction` is called when all of the keys in a combo are pressed.
-    - `releaseFunction` is called when the first key is released.
+    - _pressFunction_ is called when all of the keys in a combo are pressed.
+    - _releaseFunction_ is called when the first key is released.
   - Javelin supports combos that have overlapping definitions, e.g. one
     combo can have buttons 1 & 2, and a second combo can have buttons 1, 2 and 3.
   - Example invocation:
@@ -691,6 +691,9 @@ const CONNECTION_ID_USB2 = 3;
     - `addCombo(1, 50, [[00 10 ff]], @{ sendText("Hi"); }, @{});`
       - This will trigger the text "Hi" when buttons 0 then button 16 (10 hex)
         are pressed within 50 ms.
+    - `addCombo(0, 50, [[00 01 02 ff]], @{ pressScanCode(SC_A); }, @{ releaseScanCode(SC_A); });`
+      - This will press the letter A when buttons 0, 1 & 2 are pressed within
+        50 ms, and release it when the first of these buttons is let go.
 
 - `func resetCombos()`
 
@@ -789,6 +792,11 @@ const CONNECTION_ID_USB2 = 3;
 
   - Sets a GPIO _pin_ to 0 or 1.
 
+- `func setGpioPinDutyCycle(<pin>, <dutyCycle>)`
+
+  - _dutyCycle_ ranges from 0 to 100.
+  - Sets GPIO _pin_ to be on _dutyCycle_% of the time.
+
 - `func setGpioInputPin(<pin>, <pull>)`
 
   - Marks a _pin_ for input with specified _pull_ configuration.
@@ -802,11 +810,7 @@ const CONNECTION_ID_USB2 = 3;
 - `func readGpioPin(<pin>) var`
 
   - Returns whether a GPIO _pin_ is logic high level.
-  - setGpioInputPin must be called before hand for the pin.
-
-- `func setGpioPinDutyCycle(<pin>, <dutyCycle>)`
-  - _dutyCycle_ ranges from 0 to 100.
-  - Sets GPIO _pin_ to be on _dutyCycle_% of the time.
+  - `setGpioInputPin` must be called before hand for the pin.
 
 ## Audio Functions
 

@@ -30,8 +30,6 @@ public:
   }
   uint32_t GetLastUpdateTime() const { return lastUpdateTime; }
 
-  void RemoveScriptTimers(uint32_t currentTime);
-
   // A previously matched timerId will have its destructor called.
   // If the timer can't be started, destructor will immediately be called on
   // context.

@@ -50,8 +50,7 @@ void ConsoleWriter::Pop() {
 //---------------------------------------------------------------------------
 
 int Console::ChannelHistory::AllocateId() {
-  BitField<100> used;
-  used.ClearAll();
+  BitField<100> used = {};
   for (const uint8_t h : history) {
     used.Set(h);
   }

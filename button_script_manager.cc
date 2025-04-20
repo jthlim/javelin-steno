@@ -25,8 +25,7 @@ JavelinStaticAllocate<ButtonScriptManager> ButtonScriptManager::container;
 //---------------------------------------------------------------------------
 
 ButtonState PendingComboButtons::CreateButtonState(size_t count) const {
-  ButtonState state;
-  state.ClearAll();
+  ButtonState state = {};
   for (size_t i = 0; i < count; ++i) {
     state.Set((*this)[i].buttonIndex);
   }
@@ -312,9 +311,8 @@ void ButtonScriptManager::SetAllowButtonStateUpdates(bool value) {
   if (value) {
     SendButtonStateUpdate();
   } else {
-    ButtonState state;
-    state.ClearAll();
-    SendButtonStateUpdate(state);
+    static constexpr ButtonState emptyButtonState = {};
+    SendButtonStateUpdate(emptyButtonState);
   }
 }
 
@@ -352,6 +350,12 @@ void ButtonScriptManager::ResetCombos() {
                                    Clock::GetMilliseconds());
     }
   }
+  ResetComboData();
+}
+
+void ButtonScriptManager::ResetComboData() {
+  pendingComboButtons.Reset();
+  activeComboButtonState.ClearAll();
   combos.Reset();
 }
 
@@ -385,8 +389,9 @@ void ButtonScriptManager::Tick(uint32_t scriptTime) {
 //---------------------------------------------------------------------------
 
 void ButtonScriptManager::Reset() {
+  ResetComboData();
   script.Reset();
-  TimerManager::instance.RemoveScriptTimers(Clock::GetMilliseconds());
+  ButtonScript::RemoveScriptTimers();
 
   isScriptValid = script.IsValid();
   if (!isScriptValid) [[unlikely]] {

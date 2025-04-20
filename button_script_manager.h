@@ -135,7 +135,6 @@ private:
   ButtonScript script;
 
   PendingComboButtons pendingComboButtons;
-  ButtonState pendingComboButtonState;
   ButtonState activeComboButtonState;
   StaticList<Combo, 64> combos;
 
@@ -158,6 +157,7 @@ private:
   size_t TriggerMaximumMatch(size_t maxComboLength);
 
   ComboMatches Match(size_t buttonCount);
+  void ResetComboData();
 
   static JavelinStaticAllocate<ButtonScriptManager> container;
 };

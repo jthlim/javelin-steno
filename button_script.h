@@ -91,6 +91,7 @@ public:
   void Reset();
   void SetReinit(bool value) { isInReinit = value; }
 
+  static void RemoveScriptTimers();
   void CancelAllScriptsForByteCode(const ScriptByteCode *byteCode,
                                    size_t byteCodeSize);
 
@@ -115,15 +116,15 @@ private:
     }
   };
 
-  bool scriptEventsEnabled = false;
-  bool isInReinit = false;
-  uint8_t inPressAllCount = 0;
-  uint8_t inReleaseAllCount = 0;
-  uint32_t pressCount = 0;
-  uint32_t releaseCount = 0;
+  bool scriptEventsEnabled;
+  bool isInReinit;
+  uint8_t inPressAllCount;
+  uint8_t inReleaseAllCount;
+  uint32_t pressCount;
+  uint32_t releaseCount;
   uint32_t scriptTime;
   StenoKeyState stenoState;
-  const char *eventHistory[EVENT_HISTORY_COUNT] = {};
+  const char *eventHistory[EVENT_HISTORY_COUNT];
   ScriptCallback scriptCallbacks[(size_t)ButtonScriptId::COUNT];
   ButtonState buttonState;
   BitField<256> keyState;

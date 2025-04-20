@@ -121,25 +121,9 @@ void TimerManager::IterateTimers(void *context,
                                  void (*callback)(void *context, int id,
                                                   TimerHandler *handler)) {
   for (size_t i = timerCount; i != 0;) {
-    --i;
-    Timer &timer = timers[i];
-
+    Timer &timer = timers[--i];
     callback(context, timer.id, timer.handler);
   }
-}
-
-void TimerManager::RemoveScriptTimers(uint32_t currentTime) {
-  for (size_t i = timerCount; i != 0;) {
-    --i;
-    if (timers[i].id >= 0) {
-      timers[i].handler->OnTimerRemovedFromManager();
-      --timerCount;
-      if (i != timerCount) {
-        timers[i] = timers[timerCount];
-      }
-    }
-  }
-  OnTimersUpdated(currentTime);
 }
 
 void TimerManager::RemoveTimerIndex(size_t index, uint32_t currentTime) {

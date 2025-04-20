@@ -47,10 +47,10 @@ constexpr uint8_t GEMINI_LOOKUP[] = {
     43,                 // NUM10
     42,                 // NUM11
     41,                 // NUM12
-    6,                  // FUNCTION
-    30,                 // POWER
-    17,                 // RES1
-    16,                 // RES2
+    6,                  // FUNCTION, X1, ^
+    30,                 // POWER, X2, +
+    17,                 // RES1, X3
+    16,                 // RES2, X4
     INVALID_GEMINI_KEY, // X5
     INVALID_GEMINI_KEY, // X6
     INVALID_GEMINI_KEY, // X7
