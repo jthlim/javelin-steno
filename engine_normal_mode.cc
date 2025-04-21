@@ -33,13 +33,13 @@ struct StenoEngine::UpdateNormalModeTextBufferThreadData {
                                        StenoState *endState,
                                        size_t startingOffset)
       : engine(engine), keyCodeBuffer(keyCodeBuffer), segments(segments),
-        startingOffset(startingOffset) {}
+        endState(endState), startingOffset(startingOffset) {}
 
-  StenoEngine *engine;
-  StenoKeyCodeBuffer *keyCodeBuffer;
-  StenoSegmentList *segments;
-  StenoState *endState;
-  size_t startingOffset;
+  StenoEngine *const engine;
+  StenoKeyCodeBuffer *const keyCodeBuffer;
+  StenoSegmentList *const segments;
+  StenoState *const endState;
+  const size_t startingOffset;
 
   void ConvertText() {
     engine->ConvertText(*keyCodeBuffer, *segments, startingOffset, endState);

@@ -11,19 +11,21 @@ class Console;
 //---------------------------------------------------------------------------
 
 enum class FlashWriteMode {
-  // When writing to a page and a reset is required, preserve all data
+  // When writing to a page and an erase is required, preserve all data
   // outside of the write region.
   PRESERVE,
 
-  // When writing to a page and a reset is required, preserve all data
-  // before (lower memory addres) the write region.
+  // When writing to a page and an erase is required, preserve all data
+  // before (lower memory addres) the write region, and reset (to 0xff)
+  // data after.
   PRESERVE_BEFORE,
 
-  // When writing to a page and a reset is required, preserve all data
-  // after (higher memory addres) the write region.
+  // When writing to a page and an erase is required, preserve all data
+  // after (higher memory addres) the write region, and reset (to 0xff)
+  // data before.
   PRESERVE_AFTER,
 
-  // When writing to a page and a reset is required, reset (to 0xff)
+  // When writing to a page and an erase is required, reset (to 0xff)
   // all data outside of the write region.
   RESET,
 };
