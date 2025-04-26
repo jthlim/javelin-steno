@@ -262,13 +262,11 @@ void ButtonScriptManager::TriggerCombo(Combo &combo, uint32_t scriptTime) {
 }
 
 void ButtonScriptManager::TriggerPress(size_t index, uint32_t scriptTime) {
-  script.IncrementPressCount();
-  script.HandlePress(index, scriptTime);
+  script.PressButton(index, scriptTime);
 }
 
 void ButtonScriptManager::TriggerRelease(size_t index, uint32_t scriptTime) {
-  script.IncrementReleaseCount();
-  script.HandleRelease(index, scriptTime);
+  script.ReleaseButton(index, scriptTime);
 }
 
 ComboMatches ButtonScriptManager::Match(size_t buttonCount) {

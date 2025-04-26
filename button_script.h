@@ -61,17 +61,14 @@ public:
 
   void ExecuteScriptId(ButtonScriptId scriptId, uint32_t scriptTime);
 
-  // These are done outside of Handle() as handle will be affected by
-  // PressAll/CallAllReleaseScripts.
-  void IncrementPressCount() { ++pressCount; }
-  void IncrementReleaseCount() { ++releaseCount; }
-
-  void HandlePress(size_t keyIndex, uint32_t scriptTime) {
+  void PressButton(size_t keyIndex, uint32_t scriptTime) {
+    ++pressCount;
     buttonState.Set(keyIndex);
     CallPress(keyIndex, scriptTime);
   }
 
-  void HandleRelease(size_t keyIndex, uint32_t scriptTime) {
+  void ReleaseButton(size_t keyIndex, uint32_t scriptTime) {
+    ++releaseCount;
     buttonState.Clear(keyIndex);
     CallRelease(keyIndex, scriptTime);
   }

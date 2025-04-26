@@ -253,14 +253,24 @@ constexpr uint32_t REVERSE_LOOKUP[256] = {
     0,          0xb87c3d13, 0x971d9a08, 0x97ddb313, 0x8fcc1202, 0xfa20ab1a,
     0,          0,          0,          0x70659e09,
 };
+
+constexpr uint8_t DATA_INDEXES[64] = {
+    6,  14, 21, 8,  31, 9,  22, 0, 19, 28, 24, 5, 32, 26, 0,  12,
+    17, 7,  0,  0,  20, 15, 0,  0, 0,  0,  0,  0, 0,  34, 11, 0,
+    18, 1,  0,  0,  0,  0,  29, 0, 30, 13, 16, 4, 0,  33, 2,  3,
+    23, 0,  0,  10, 0,  0,  0,  0, 0,  0,  0,  0, 25, 0,  0,  27,
+};
+
 //---------------------------------------------------------------------------
 
+static uint32_t ExtractDataMask(StenoStroke stroke) {
+  return (stroke.GetKeyState() >> StrokeBitIndex::FR) & 63;
+}
+
 static const EmilySymbolData *LookupDataStroke(StenoStroke stroke) {
-  for (size_t i = 0; i < sizeof(DATA) / sizeof(*DATA); ++i) {
-    if (DATA[i].trigger == stroke)
-      return &DATA[i];
-  }
-  return nullptr;
+  const uint32_t dataMask = ExtractDataMask(stroke);
+  const uint32_t index = DATA_INDEXES[dataMask];
+  return index == 0 ? nullptr : &DATA[index - 1];
 }
 
 //---------------------------------------------------------------------------
@@ -273,7 +283,7 @@ StenoEmilySymbolsDictionary::Lookup(const StenoDictionaryLookup &lookup) const {
     return StenoDictionaryLookupResult::CreateInvalid();
   }
 
-  const EmilySymbolData *data = LookupDataStroke(s & DATA_MASK);
+  const EmilySymbolData *data = LookupDataStroke(s);
   if (data == nullptr) {
     return StenoDictionaryLookupResult::CreateInvalid();
   }
@@ -313,7 +323,7 @@ const StenoDictionary *StenoEmilySymbolsDictionary::GetDictionaryForOutline(
     return nullptr;
   }
 
-  const EmilySymbolData *data = LookupDataStroke(stroke & DATA_MASK);
+  const EmilySymbolData *data = LookupDataStroke(stroke);
   return data != nullptr ? this : nullptr;
 }
 
@@ -395,7 +405,7 @@ void StenoEmilySymbolsDictionary::PrintDictionary(
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-#define BUILD_REVERSE_HASH_TABLE 0
+#define BUILD_TABLES 0
 
 #include "../unit_test.h"
 
@@ -410,7 +420,7 @@ static void VerifyStroke(const char *stroke, const char *result) {
   lookup.Destroy();
 }
 
-#if BUILD_REVERSE_HASH_TABLE
+#if BUILD_TABLES
 static void BuildReverseLookupTable() {
   size_t entries = 4 * sizeof(DATA) / sizeof(*DATA);
   size_t minimumHashTableSize = entries + entries / 2;
@@ -427,7 +437,7 @@ static void BuildReverseLookupTable() {
 
   for (const EmilySymbolData &data : DATA) {
     for (size_t i = 0; i < 4; ++i) {
-      uint32_t hash = Crc32(data.text[i], Str::Length(data.text[i]));
+      uint32_t hash = Crc32::Hash(data.text[i], Str::Length(data.text[i]));
       size_t index = hash;
       for (;;) {
         index &= (hashTableSize - 1);
@@ -455,9 +465,26 @@ static void BuildReverseLookupTable() {
   delete[] hashTable;
   delete[] hashValues;
 }
+
+static void BuildIndexLookupTable() {
+  uint8_t indexes[64] = {};
+  for (size_t i = 0; i < sizeof(DATA) / sizeof(*DATA); ++i) {
+    indexes[ExtractDataMask(DATA[i].trigger)] = i + 1;
+  }
+  printf("constexpr uint8_t DATA_INDEXES[64] = {");
+  for (size_t i = 0; i < 64; ++i) {
+    printf((i % 16 == 0) ? "\n  %d," : " %d,", indexes[i]);
+  }
+  printf("\n};\n");
+}
+
 #endif
 
 TEST_BEGIN("EmilySymbolsDictionary tests") {
+#if BUILD_TABLES
+  BuildIndexLookupTable();
+#endif
+
   // spellchecker: disable
   VerifyStroke("SKWHE", "{*!}");
   VerifyStroke("SKWH-R", "{^}.{^}");
@@ -477,7 +504,7 @@ TEST_BEGIN("EmilySymbolsDictionary tests") {
 TEST_END
 
 TEST_BEGIN("EmilySymbolsDictionary Reverse Lookup") {
-#if BUILD_REVERSE_HASH_TABLE
+#if BUILD_TABLES
   BuildReverseLookupTable();
 #endif
   StenoReverseDictionaryLookup lookup("!");

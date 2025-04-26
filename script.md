@@ -475,12 +475,17 @@ const SK_X26 = 63;
 
   - Returns whether the function is currently within a `callAllReleaseScripts()`.
 
-- `func callPress(<buttonIndex>)`
+- `func pressButton(<buttonIndex>)`
 
-  - Calls the press script for _buttonIndex_.
+  - Simulates _buttonIndex_ being pressed.
+  - The script function will be called, and `isButtonPressed` will return true
+  - for that index.
 
-- `func callRelease(<buttonIndex>)`
-  - Calls the release script for _buttonIndex_.
+- `func releaseButton(<buttonIndex>)`
+
+  - Simulates _buttonIndex_ being released.
+  - The script function will be called, and `isButtonPressed` will return false
+  - for that index.
 
 ## Button State Functions
 

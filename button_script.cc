@@ -908,13 +908,14 @@ public:
 #endif
   }
 
-  static void CallPress(ButtonScript &script, const ScriptByteCode *byteCode) {
-    script.CallPress(script.Pop(), script.scriptTime);
+  static void PressButton(ButtonScript &script,
+                          const ScriptByteCode *byteCode) {
+    script.PressButton(script.Pop(), script.scriptTime);
   }
 
-  static void CallRelease(ButtonScript &script,
-                          const ScriptByteCode *byteCode) {
-    script.CallRelease(script.Pop(), script.scriptTime);
+  static void ReleaseButton(ButtonScript &script,
+                            const ScriptByteCode *byteCode) {
+    script.ReleaseButton(script.Pop(), script.scriptTime);
   }
 
   static void PressMouseButton(ButtonScript &script,
@@ -1238,8 +1239,8 @@ constexpr void (*ButtonScript::FUNCTION_TABLE[])(ButtonScript &,
     &Function::GetPressCount,
     &Function::GetReleaseCount,
     &Function::IsStenoJoinNext,
-    &Function::CallPress,
-    &Function::CallRelease,
+    &Function::PressButton,
+    &Function::ReleaseButton,
     &Function::PressMouseButton,
     &Function::ReleaseMouseButton,
     &Function::TapMouseButton,
@@ -1371,12 +1372,12 @@ public:
     // Verify S1 is not pressed.
     assert((script.stenoState & StenoKeyState(1)).IsEmpty());
 
-    script.HandlePress(0, 0);
+    script.PressButton(0, 0);
 
     // Verify S1 is pressed.
     assert((script.stenoState & StenoKeyState(1)).IsNotEmpty());
 
-    script.HandleRelease(0, 0);
+    script.ReleaseButton(0, 0);
 
     // Verify S1 is release.
     assert((script.stenoState & StenoKeyState(1)).IsEmpty());
@@ -1390,8 +1391,8 @@ public:
     assert((script.stenoState & StenoKeyState(1)).IsEmpty());
     assert(script.keyState.IsSet(KeyCode::A) == false);
 
-    script.HandlePress(1, 0);
-    script.HandlePress(0, 0);
+    script.PressButton(1, 0);
+    script.PressButton(0, 0);
 
     // Verify S1 is not pressed.
     assert((script.stenoState & StenoKeyState(1)).IsEmpty());
@@ -1399,7 +1400,7 @@ public:
     // Verify A is pressed.
     assert(script.keyState.IsSet(KeyCode::A));
 
-    script.HandleRelease(0, 0);
+    script.ReleaseButton(0, 0);
 
     // Verify S1 and A are not pressed.
     assert((script.stenoState & StenoKeyState(1)).IsEmpty());
