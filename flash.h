@@ -16,12 +16,12 @@ enum class FlashWriteMode {
   PRESERVE,
 
   // When writing to a page and an erase is required, preserve all data
-  // before (lower memory addres) the write region, and reset (to 0xff)
+  // before (lower memory address) the write region, and reset (to 0xff)
   // data after.
   PRESERVE_BEFORE,
 
   // When writing to a page and an erase is required, preserve all data
-  // after (higher memory addres) the write region, and reset (to 0xff)
+  // after (higher memory address) the write region, and reset (to 0xff)
   // data before.
   PRESERVE_AFTER,
 

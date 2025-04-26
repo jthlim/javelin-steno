@@ -6,7 +6,7 @@
 
 //---------------------------------------------------------------------------
 
-// Tracks 60s wpm and 10s wpm.
+// Tracks characters typed each second, to calculate wpm.
 class WpmTracker {
 public:
   void Tally(int count);

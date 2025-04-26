@@ -35,26 +35,28 @@ int WpmTracker::GetWpm(int seconds) {
     // Use a linear weighting to prioritize more recent speed.
     tally += i * charactersTyped[bucket % NUMBER_OF_SECONDS];
   }
-  if (tally <= 0) {
-    return 0;
-  }
-  return tally * (2 * 60 / 5) / (seconds * (seconds + 1));
+
+  return tally <= 0 ? 0 : tally * (2 * 60 / 5) / (seconds * (seconds + 1));
 }
 
 void WpmTracker::UpdateToNow(uint32_t now) {
   const int delta = now - lastTime;
-  if (delta >= 0) {
-    if (delta >= NUMBER_OF_SECONDS) {
-      Mem::Clear(charactersTyped);
-    } else {
-      uint32_t bucket = now;
-      for (int i = 0; i < delta; ++i) {
-        charactersTyped[bucket % NUMBER_OF_SECONDS] = 0;
-        --bucket;
-      }
-    }
+  if (delta == 0) {
+    return;
   }
+
   lastTime = now;
+
+  if (delta >= NUMBER_OF_SECONDS) {
+    Mem::Clear(charactersTyped);
+    return;
+  }
+
+  uint32_t bucket = now;
+  for (int i = 0; i < delta; ++i) {
+    charactersTyped[bucket % NUMBER_OF_SECONDS] = 0;
+    --bucket;
+  }
 }
 
 //---------------------------------------------------------------------------

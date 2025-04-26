@@ -914,7 +914,7 @@ public:
 
   static void CallRelease(ButtonScript &script,
                           const ScriptByteCode *byteCode) {
-    script.CallPress(script.Pop(), script.scriptTime);
+    script.CallRelease(script.Pop(), script.scriptTime);
   }
 
   static void PressMouseButton(ButtonScript &script,
