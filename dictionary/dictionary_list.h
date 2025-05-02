@@ -89,22 +89,8 @@ public:
   virtual bool DisableDictionary(const char *name);
   virtual bool ToggleDictionary(const char *name);
 
-  static void EnableSendDictionaryStatus() {
-    isSendDictionaryStatusEnabled = true;
-  }
-  static void DisableSendDictionaryStatus() {
-    isSendDictionaryStatusEnabled = false;
-  }
-
-  static void EnableDictionaryStatus_Binding(void *context,
-                                             const char *commandLine);
-  static void DisableDictionaryStatus_Binding(void *context,
-                                              const char *commandLine);
-
 private:
   FastIterable<StenoDictionaryListEntry> dictionaries;
-
-  static bool isSendDictionaryStatusEnabled;
 
   void SendDictionaryStatus(const char *name, bool enabled) const;
 

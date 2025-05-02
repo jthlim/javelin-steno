@@ -6,10 +6,6 @@
 
 //---------------------------------------------------------------------------
 
-bool StenoDictionaryList::isSendDictionaryStatusEnabled = false;
-
-//---------------------------------------------------------------------------
-
 StenoDictionaryList::StenoDictionaryList(
     List<StenoDictionaryListEntry> &dictionaries)
     : super(GetMaximumOutlineLength(dictionaries)), dictionaries(dictionaries) {
@@ -205,7 +201,7 @@ bool StenoDictionaryList::ToggleDictionary(const char *name) {
 
 void StenoDictionaryList::SendDictionaryStatus(const char *name,
                                                bool enabled) const {
-  if (!isSendDictionaryStatusEnabled) {
+  if (!Console::IsEventEnabled(ConsoleEvent::DICTIONARY_STATUS)) {
     return;
   }
 
@@ -215,21 +211,6 @@ void StenoDictionaryList::SendDictionaryStatus(const char *name,
                   "\"enabled\":%B"
                   "}\n\n",
                   name, enabled);
-}
-
-//---------------------------------------------------------------------------
-
-void StenoDictionaryList::EnableDictionaryStatus_Binding(
-    void *context, const char *commandLine) {
-  EnableSendDictionaryStatus();
-  Console::SendOk();
-}
-
-void StenoDictionaryList::DisableDictionaryStatus_Binding(
-    void *context, const char *commandLine) {
-
-  DisableSendDictionaryStatus();
-  Console::SendOk();
 }
 
 //---------------------------------------------------------------------------

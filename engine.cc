@@ -201,7 +201,7 @@ void StenoEngine::SetTemplateValue(size_t index, char *data) {
     return;
   }
   templateValues[index].Set(data);
-  if (templateValueUpdateEnabled) {
+  if (Console::IsEventEnabled(ConsoleEvent::TEMPLATE_VALUE)) {
     Console::Printf(
         "EV {\"event\":\"template_value\",\"index\":%zu,\"value\":\"%J\"}\n\n",
         index, data);
@@ -464,9 +464,9 @@ TEST_BEGIN("Engine: Random spam") {
       StenoOrthography::emptyOrthography);
   // StenoCompiledOrthography orthography(testOrthography);
   StenoEngine engine(dictionaryList, orthography);
-  PaperTape::EnablePaperTape();
-  engine.EnableTextLog();
-  engine.EnableSuggestions();
+  Console::EnableEvent(ConsoleEvent::PAPER_TAPE);
+  Console::EnableEvent(ConsoleEvent::TEXT);
+  Console::EnableEvent(ConsoleEvent::SUGGESTION);
 
   Key::DisableHistory();
 
@@ -482,7 +482,9 @@ TEST_BEGIN("Engine: Random spam") {
   }
 
   Key::EnableHistory();
-  PaperTape::DisablePaperTape();
+  Console::DisableEvent(ConsoleEvent::PAPER_TAPE);
+  Console::DisableEvent(ConsoleEvent::TEXT);
+  Console::DisableEvent(ConsoleEvent::SUGGESTION);
 }
 TEST_END
 

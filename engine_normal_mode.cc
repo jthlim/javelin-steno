@@ -477,11 +477,11 @@ void StenoEngine::ProcessNormalModeUndo() {
 
 #if JAVELIN_THREADS
   UpdateNormalModeTextBufferThreadData previousThreadData(
-      this, &previousConversionBuffer.keyCodeBuffer, &previousSegments, &state,
-      startingOffset);
+      this, &previousConversionBuffer.keyCodeBuffer, &previousSegments,
+      &previousConversionBuffer.keyCodeBuffer.state, startingOffset);
   UpdateNormalModeTextBufferThreadData nextThreadData(
-      this, &nextConversionBuffer.keyCodeBuffer, &nextSegments,
-      &nextConversionBuffer.keyCodeBuffer.state, startingOffset);
+      this, &nextConversionBuffer.keyCodeBuffer, &nextSegments, &state,
+      startingOffset);
 
   RunParallel(&UpdateNormalModeTextBufferThreadData::ConvertTextEntryPoint,
               &previousThreadData,
@@ -610,7 +610,7 @@ void StenoEngine::ConvertText(StenoKeyCodeBuffer &keyCodeBuffer,
 //---------------------------------------------------------------------------
 
 void StenoEngine::PrintPaperTapeUndo(size_t undoCount) const {
-  if (!PaperTape::IsPaperTapeEnabled()) {
+  if (!Console::IsEventEnabled(ConsoleEvent::PAPER_TAPE)) {
     return;
   }
 
@@ -622,7 +622,7 @@ void StenoEngine::PrintPaperTapeUndo(size_t undoCount) const {
 void StenoEngine::PrintPaperTape(StenoStroke stroke,
                                  const StenoSegmentList &previousSegments,
                                  const StenoSegmentList &nextSegments) const {
-  if (!PaperTape::IsPaperTapeEnabled()) {
+  if (!Console::IsEventEnabled(ConsoleEvent::PAPER_TAPE)) {
     return;
   }
 
@@ -679,7 +679,7 @@ void StenoEngine::PrintSuggestions(const StenoSegmentList &previousSegments,
   const uint32_t t0 = sysTick->ReadCycleCount();
 #endif
 
-  if (!IsSuggestionsEnabled()) {
+  if (!Console::IsEventEnabled(ConsoleEvent::SUGGESTION)) {
     return;
   }
 
@@ -963,7 +963,7 @@ char *StenoEngine::PrintSegmentSuggestion(size_t startSegmentIndex,
 void StenoEngine::PrintTextLog(
     const StenoKeyCodeBuffer &previousKeyCodeBuffer,
     const StenoKeyCodeBuffer &nextKeyCodeBuffer) const {
-  if (!IsTextLogEnabled()) {
+  if (!Console::IsEventEnabled(ConsoleEvent::TEXT)) {
     return;
   }
 
@@ -984,7 +984,7 @@ void StenoEngine::PrintTextLog(
     }
   }
 
-  Console::Printf("EV {\"event\":\"text_log\",\"text\":\"");
+  Console::Printf("EV {\"event\":\"text\",\"text\":\"");
   static constexpr char BACKSPACES[] =
       "\\b\\b\\b\\b\\b\\b\\b\\b\\b\\b\\b\\b\\b\\b\\b\\b";
 

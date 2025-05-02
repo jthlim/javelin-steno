@@ -54,6 +54,23 @@ private:
 
 //---------------------------------------------------------------------------
 
+enum class ConsoleEvent {
+  BUTTON_STATE,
+  DICTIONARY_STATUS,
+  PAPER_TAPE,
+  SCRIPT,
+#if JAVELIN_BLE
+  SERIAL,
+#endif
+  SUGGESTION,
+  TEMPLATE_VALUE,
+  TEXT,
+
+  COUNT,
+};
+
+//---------------------------------------------------------------------------
+
 class Console {
 public:
   Console();
@@ -73,14 +90,14 @@ public:
 
   static void HelloCommand(void *context, const char *line);
   static void HelpCommand(void *context, const char *line);
+  static void EnableEvents(void *context, const char *line);
+  static void DisableEvents(void *context, const char *line);
 
   static void Write(const char *data, size_t length) {
     ConsoleWriter::WriteToActive(data, length);
   }
   static void WriteAsJson(const char *data, char *buffer);
   static void WriteAsJson(const char *data);
-
-  static void WriteScriptEvent(const char *text);
 
   template <typename T, typename... T2>
   static void Printf(const char *format, T arg, T2... args) {
@@ -105,6 +122,18 @@ public:
 #if RUN_TESTS
   static std::vector<char> history;
 #endif
+
+  static bool IsEventEnabled(ConsoleEvent event) {
+    return instance.isEventEnabled[(size_t)event];
+  }
+
+  static void EnableEvent(ConsoleEvent event) {
+    instance.isEventEnabled[(size_t)event] = true;
+  }
+
+  static void DisableEvent(ConsoleEvent event) {
+    instance.isEventEnabled[(size_t)event] = false;
+  }
 
   static Console instance;
 
@@ -142,6 +171,7 @@ private:
   };
 
   bool isLocked = false;
+  bool isEventEnabled[(size_t)ConsoleEvent::COUNT];
 
   static constexpr size_t CHANNEL_COUNT = 4;
   StaticList<Channel *, CHANNEL_COUNT> freeBuffers;
@@ -156,6 +186,8 @@ private:
   static void PrintfInternal(const char *format, ...);
 
   static const ConsoleCommand *GetCommand(const char *buffer);
+
+  static void UpdateEvents(const char *line, bool value);
 };
 
 //---------------------------------------------------------------------------

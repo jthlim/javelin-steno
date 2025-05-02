@@ -237,6 +237,31 @@ const char *Str::ParseInteger(int *result, const char *p, bool allowNegative) {
   return p;
 }
 
+const char *Str::AdvanceToWordCharacter(const char *p) {
+  if (!p) {
+    return nullptr;
+  }
+
+  for (;;) {
+    if (*p == '\0') {
+      return nullptr;
+    }
+    if (Unicode::IsWordCharacter(*p)) {
+      return p;
+    }
+    ++p;
+  }
+}
+
+const char *Str::AdvanceToNonWordCharacter(const char *p) {
+  for (;;) {
+    if (!Unicode::IsWordCharacter(*p)) {
+      return p;
+    }
+    ++p;
+  }
+}
+
 //---------------------------------------------------------------------------
 
 #include "unit_test.h"

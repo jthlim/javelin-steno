@@ -639,7 +639,7 @@ the button index, then underglow lights after.
 
   - Returns the BLE profile ID (0-4) that is currently active.
 
-- `func setBleProfile()`
+- `func setBleProfile(profileId)`
 
   - Sets the current BLE profile (0-4)
   - If paired but disconnected, this will also initiate a reconnect.

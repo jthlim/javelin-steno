@@ -78,6 +78,14 @@ public:
   // Returns the character after the number if successful, null otherwise.
   static const char *ParseInteger(int *result, const char *p,
                                   bool allowNegative = true);
+
+  // Returns nullptr if there's no word character.
+  // p can be null.
+  static const char *AdvanceToWordCharacter(const char *p);
+
+  // Returns end of string if there's no following non-word character.
+  // p cannot be null.
+  static const char *AdvanceToNonWordCharacter(const char *p);
 };
 
 //---------------------------------------------------------------------------

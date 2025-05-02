@@ -27,9 +27,9 @@ constexpr StenoStroke VARIANT_2(StrokeMask::U);
 constexpr StenoStroke REPEAT_EXTRA_1(StrokeMask::SR);
 constexpr StenoStroke REPEAT_EXTRA_2(StrokeMask::TR);
 
-constexpr StenoStroke DATA_MASK(StrokeMask::FR | StrokeMask::RR |
-                                StrokeMask::PR | StrokeMask::BR |
-                                StrokeMask::LR | StrokeMask::GR);
+//constexpr StenoStroke DATA_MASK(StrokeMask::FR | StrokeMask::RR |
+//                                StrokeMask::PR | StrokeMask::BR |
+//                                StrokeMask::LR | StrokeMask::GR);
 
 //---------------------------------------------------------------------------
 

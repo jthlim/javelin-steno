@@ -80,9 +80,6 @@ public:
   static bool IsWaitingForUserPresence();
   static void ReplyUserPresence(bool present);
 
-  void EnableScriptEvents() { scriptEventsEnabled = true; }
-  void DisableScriptEvents() { scriptEventsEnabled = false; }
-
   void PrintEventHistory();
 
   void Reset();
@@ -113,7 +110,6 @@ private:
     }
   };
 
-  bool scriptEventsEnabled;
   bool isInReinit;
   uint8_t inPressAllCount;
   uint8_t inReleaseAllCount;

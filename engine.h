@@ -56,14 +56,6 @@ public:
   }
   void ClearErrorDictionary() { activeDictionary = storedDictionaries; }
 
-  bool IsSuggestionsEnabled() const { return suggestionsEnabled; }
-  void EnableSuggestions() { suggestionsEnabled = true; }
-  void DisableSuggestions() { suggestionsEnabled = false; }
-
-  bool IsTextLogEnabled() const { return textLogEnabled; }
-  void EnableTextLog() { textLogEnabled = true; }
-  void DisableTextLog() { textLogEnabled = false; }
-
   bool IsSpaceAfter() const { return placeSpaceAfter; }
   void SetSpaceAfter(bool spaceAfter) { placeSpaceAfter = spaceAfter; }
 
@@ -92,9 +84,6 @@ private:
   static constexpr size_t PAPER_TAPE_SUGGESTION_SEGMENT_LIMIT = 8;
 
   StenoStroke undoStroke;
-  bool suggestionsEnabled = false;
-  bool templateValueUpdateEnabled = false;
-  bool textLogEnabled = false;
   bool placeSpaceAfter = false;
   StenoEngineMode mode = StenoEngineMode::NORMAL;
 
@@ -213,11 +202,6 @@ private:
   static void DisableDictionary_Binding(void *context, const char *commandLine);
   static void ToggleDictionary_Binding(void *context, const char *commandLine);
   static void PrintDictionary_Binding(void *context, const char *commandLine);
-  static void EnableSuggestions_Binding(void *context, const char *commandLine);
-  static void DisableSuggestions_Binding(void *context,
-                                         const char *commandLine);
-  static void EnableTextLog_Binding(void *context, const char *commandLine);
-  static void DisableTextLog_Binding(void *context, const char *commandLine);
   static void Lookup_Binding(void *context, const char *commandLine);
   static void LookupStroke_Binding(void *context, const char *commandLine);
   static void RemoveStroke_Binding(void *context, const char *commandLine);
@@ -226,10 +210,6 @@ private:
   static void ListTemplateValues_Binding(void *context,
                                          const char *commandLine);
   static void SetTemplateValue_Binding(void *context, const char *commandLine);
-  static void EnableTemplateValueUpdate_Binding(void *context,
-                                                const char *commandLine);
-  static void DisableTemplateValueUpdate_Binding(void *context,
-                                                 const char *commandLine);
 
   friend class StenoEngineTester;
 };

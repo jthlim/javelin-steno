@@ -126,9 +126,6 @@ private:
 
   bool isScriptValid;
 
-  // Controlled by console commands.
-  bool isButtonStateUpdatesEnabled;
-
   // Controlled by scripts.
   bool allowButtonStateUpdates;
   ButtonState buttonState;

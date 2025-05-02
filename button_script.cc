@@ -693,8 +693,8 @@ public:
       script.eventHistory[i] = script.eventHistory[i + 1];
     }
     script.eventHistory[EVENT_HISTORY_COUNT - 1] = text;
-    if (script.scriptEventsEnabled) {
-      Console::WriteScriptEvent(text);
+    if (Console::IsEventEnabled(ConsoleEvent::SCRIPT)) {
+      Console::Printf("EV {\"event\":\"script\",\"text\":\"%J\"}\n\n", text);
     }
   }
 

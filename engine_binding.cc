@@ -124,34 +124,6 @@ void StenoEngine::PrintDictionary_Binding(void *context,
   engine->PrintDictionary(dictionary);
 }
 
-void StenoEngine::EnableSuggestions_Binding(void *context,
-                                            const char *commandLine) {
-  StenoEngine *engine = (StenoEngine *)context;
-  engine->EnableSuggestions();
-  Console::SendOk();
-}
-
-void StenoEngine::DisableSuggestions_Binding(void *context,
-                                             const char *commandLine) {
-  StenoEngine *engine = (StenoEngine *)context;
-  engine->DisableSuggestions();
-  Console::SendOk();
-}
-
-void StenoEngine::EnableTextLog_Binding(void *context,
-                                        const char *commandLine) {
-  StenoEngine *engine = (StenoEngine *)context;
-  engine->EnableTextLog();
-  Console::SendOk();
-}
-
-void StenoEngine::DisableTextLog_Binding(void *context,
-                                         const char *commandLine) {
-  StenoEngine *engine = (StenoEngine *)context;
-  engine->DisableTextLog();
-  Console::SendOk();
-}
-
 void StenoEngine::Lookup_Binding(void *context, const char *commandLine) {
   const char *definition = strchr(commandLine, ' ');
   if (definition == nullptr) {
@@ -362,20 +334,6 @@ void StenoEngine::SetTemplateValue_Binding(void *context,
   Console::SendOk();
 }
 
-void StenoEngine::EnableTemplateValueUpdate_Binding(void *context,
-                                                    const char *commandLine) {
-  StenoEngine *engine = (StenoEngine *)context;
-  engine->templateValueUpdateEnabled = true;
-  Console::SendOk();
-}
-
-void StenoEngine::DisableTemplateValueUpdate_Binding(void *context,
-                                                     const char *commandLine) {
-  StenoEngine *engine = (StenoEngine *)context;
-  engine->templateValueUpdateEnabled = false;
-  Console::SendOk();
-}
-
 //---------------------------------------------------------------------------
 
 void StenoEngine::AddConsoleCommands(Console &console) {
@@ -393,20 +351,6 @@ void StenoEngine::AddConsoleCommands(Console &console) {
   console.RegisterCommand("print_dictionary",
                           "Prints all dictionaries in JSON format",
                           StenoEngine::PrintDictionary_Binding, this);
-  console.RegisterCommand(
-      "enable_dictionary_status", "Enable sending dictionary status updates",
-      StenoDictionaryList::EnableDictionaryStatus_Binding, nullptr);
-  console.RegisterCommand(
-      "disable_dictionary_status", "Disable sending dictionary status updates",
-      StenoDictionaryList::DisableDictionaryStatus_Binding, nullptr);
-  console.RegisterCommand("enable_suggestions", "Enables suggestions output",
-                          StenoEngine::EnableSuggestions_Binding, this);
-  console.RegisterCommand("disable_suggestions", "Disables suggestions output",
-                          StenoEngine::DisableSuggestions_Binding, this);
-  console.RegisterCommand("enable_text_log", "Enables text log output",
-                          StenoEngine::EnableTextLog_Binding, this);
-  console.RegisterCommand("disable_text_log", "Disables text log output",
-                          StenoEngine::DisableTextLog_Binding, this);
   console.RegisterCommand("lookup", "Looks up a word",
                           StenoEngine::Lookup_Binding, this);
   console.RegisterCommand("lookup_stroke", "Looks up a stroke",
@@ -420,12 +364,6 @@ void StenoEngine::AddConsoleCommands(Console &console) {
                           StenoEngine::ListTemplateValues_Binding, this);
   console.RegisterCommand("set_template_value", "Sets template value",
                           StenoEngine::SetTemplateValue_Binding, this);
-  console.RegisterCommand("enable_template_value_updates",
-                          "Enables template value update events",
-                          StenoEngine::EnableTemplateValueUpdate_Binding, this);
-  console.RegisterCommand(
-      "disable_template_value_updates", "Disables template value update events",
-      StenoEngine::DisableTemplateValueUpdate_Binding, this);
 }
 
 //---------------------------------------------------------------------------

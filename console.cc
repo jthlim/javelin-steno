@@ -108,12 +108,45 @@ static constexpr ConsoleCommand HELLO_COMMAND = {
     .context = nullptr,
 };
 
+static constexpr ConsoleCommand ENABLE_EVENTS_COMMAND = {
+    .command = "enable_events",
+    .description = "Enable specified console events",
+    .handler = &Console::EnableEvents,
+    .context = nullptr,
+};
+
+static constexpr ConsoleCommand DISABLE_EVENTS_COMMAND = {
+    .command = "disable_events",
+    .description = "Disable specified console events",
+    .handler = &Console::DisableEvents,
+    .context = nullptr,
+};
+
 static constexpr size_t MAX_COMMAND_COUNT = 64;
-static size_t commandCount = 2;
+static size_t commandCount = 4;
 static ConsoleCommand commands[MAX_COMMAND_COUNT] = {
     HELLO_COMMAND,
     HELP_COMMAND,
+
+    ENABLE_EVENTS_COMMAND,
+    DISABLE_EVENTS_COMMAND,
 };
+
+static constexpr const char *EVENT_NAMES[] = {
+    "button_state",      //
+    "dictionary_status", //
+    "paper_tape",        //
+    "script",            //
+#if JAVELIN_BLE
+    "serial", //
+#endif
+    "suggestion",     //
+    "template_value", //
+    "text",           //
+};
+
+static_assert(sizeof(EVENT_NAMES) / sizeof(*EVENT_NAMES) ==
+              (size_t)ConsoleEvent::COUNT);
 
 //---------------------------------------------------------------------------
 
@@ -153,10 +186,6 @@ void Console::WriteAsJson(const char *data) {
   char *buffer = (char *)malloc(2 * length);
   WriteAsJson(data, buffer);
   free(buffer);
-}
-
-void Console::WriteScriptEvent(const char *text) {
-  Console::Printf("EV {\"event\":\"script_event\",\"text\":\"%J\"}\n\n", text);
 }
 
 [[gnu::weak]] void Console::Flush() {}
@@ -301,6 +330,52 @@ void Console::HelpCommand(void *context, const char *line) {
   Write("\n", 1);
 }
 
+void Console::EnableEvents(void *context, const char *line) {
+  UpdateEvents(line, true);
+}
+
+void Console::DisableEvents(void *context, const char *line) {
+  UpdateEvents(line, false);
+}
+
+void Console::UpdateEvents(const char *line, bool value) {
+  const char *p = strchr(line, ' ');
+  p = Str::AdvanceToWordCharacter(p);
+  if (!p) {
+    Console::Printf("ERR No events specified\n\n");
+    return;
+  }
+
+  int count = 0;
+  while (p) {
+    const char *end = Str::AdvanceToNonWordCharacter(p);
+    char *eventName = Str::DupN(p, end - p);
+
+    bool found = false;
+    for (size_t i = 0; i < (size_t)ConsoleEvent::COUNT; ++i) {
+      if (Str::Eq(eventName, EVENT_NAMES[i])) {
+        instance.isEventEnabled[i] = value;
+        found = true;
+        ++count;
+        break;
+      }
+    }
+    if (!found) {
+      Console::Printf("WARN Unrecognized event %s\n", eventName);
+    }
+
+    free(eventName);
+    p = Str::AdvanceToWordCharacter(end);
+  }
+
+  if (count == 0) {
+    Console::Printf("ERR No events recognized\n\n");
+    return;
+  }
+
+  Console::SendOk();
+}
+
 //---------------------------------------------------------------------------
 
 #if RUN_TESTS
@@ -317,6 +392,43 @@ TEST_BEGIN("Console should handle invalid commands") {
               "ERR Invalid command. Use \"help\" for a list of commands\n\n"));
 
   Console::history.clear();
+}
+TEST_END
+
+TEST_BEGIN("Console should handle enable & disable events") {
+  Console console;
+  char buffer[64];
+
+  for (size_t i = 0; i < (size_t)ConsoleEvent::COUNT; ++i) {
+    Console::DisableEvent((ConsoleEvent)i);
+  }
+
+  for (size_t i = 0; i < (size_t)ConsoleEvent::COUNT; ++i) {
+    assert(!Console::IsEventEnabled((ConsoleEvent)i));
+
+    console.HandleInput(
+        buffer, Str::Sprintf(buffer, "enable_events %s\n", EVENT_NAMES[i]));
+    assert(Console::IsEventEnabled((ConsoleEvent)i));
+
+    console.HandleInput(
+        buffer, Str::Sprintf(buffer, "disable_events %s\n", EVENT_NAMES[i]));
+    assert(!Console::IsEventEnabled((ConsoleEvent)i));
+  }
+
+  Console::EnableEvents(nullptr,
+                        "enable_events paper_tape, suggestion, button_state");
+  assert(Console::IsEventEnabled(ConsoleEvent::PAPER_TAPE));
+  assert(Console::IsEventEnabled(ConsoleEvent::SUGGESTION));
+  assert(Console::IsEventEnabled(ConsoleEvent::BUTTON_STATE));
+
+  Console::DisableEvents(nullptr, "disable_events paper_tape, button_state");
+  assert(!Console::IsEventEnabled(ConsoleEvent::PAPER_TAPE));
+  assert(Console::IsEventEnabled(ConsoleEvent::SUGGESTION));
+  assert(!Console::IsEventEnabled(ConsoleEvent::BUTTON_STATE));
+
+  for (size_t i = 0; i < (size_t)ConsoleEvent::COUNT; ++i) {
+    Console::DisableEvent((ConsoleEvent)i);
+  }
 }
 TEST_END
 

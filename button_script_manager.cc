@@ -289,7 +289,7 @@ ComboMatches ButtonScriptManager::Match(size_t buttonCount) {
 
 void ButtonScriptManager::SendButtonStateUpdate(
     const ButtonState &state) const {
-  if (isButtonStateUpdatesEnabled) {
+  if (Console::IsEventEnabled(ConsoleEvent::BUTTON_STATE)) {
     Console::Printf("EV {\"event\":\"button_state\",\"data\":\"%D\"}\n\n",
                     &state, sizeof(state));
   }
@@ -450,31 +450,6 @@ void ButtonScriptManager::CallScript_Binding(void *context,
   manager->script.SetStackTop(stackTop);
 }
 
-void ButtonScriptManager::EnableScriptEvents_Binding(void *context,
-                                                     const char *commandLine) {
-  ((ButtonScript *)context)->EnableScriptEvents();
-  Console::SendOk();
-}
-
-void ButtonScriptManager::DisableScriptEvents_Binding(void *context,
-                                                      const char *commandLine) {
-  ((ButtonScript *)context)->DisableScriptEvents();
-  Console::SendOk();
-}
-
-void ButtonScriptManager::EnableButtonStateUpdates_Binding(
-    void *context, const char *commandLine) {
-  ButtonScriptManager *manager = (ButtonScriptManager *)context;
-  manager->isButtonStateUpdatesEnabled = true;
-  Console::SendOk();
-}
-
-void ButtonScriptManager::DisableButtonStateUpdates_Binding(
-    void *context, const char *commandLine) {
-  ((ButtonScriptManager *)context)->isButtonStateUpdatesEnabled = false;
-  Console::SendOk();
-}
-
 void ButtonScriptManager::PrintScriptGlobals_Binding(void *context,
                                                      const char *commandLine) {
   ((ButtonScriptManager *)context)->script.PrintScriptGlobals();
@@ -539,17 +514,6 @@ void ButtonScriptManager::AddConsoleCommands(Console &console) {
   console.RegisterCommand("call_script",
                           "Call scripts registered with setScript",
                           CallScript_Binding, this);
-  console.RegisterCommand("enable_script_events", "Enables events from scripts",
-                          EnableScriptEvents_Binding, &script);
-  console.RegisterCommand("disable_script_events",
-                          "Disables events from scripts",
-                          DisableScriptEvents_Binding, &script);
-  console.RegisterCommand("enable_button_state_updates",
-                          "Enables button state updates",
-                          EnableButtonStateUpdates_Binding, this);
-  console.RegisterCommand("disable_button_state_updates",
-                          "Disables button state updates",
-                          DisableButtonStateUpdates_Binding, this);
   console.RegisterCommand("print_script_globals",
                           "Prints non-zero script globals",
                           PrintScriptGlobals_Binding, this);

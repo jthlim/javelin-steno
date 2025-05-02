@@ -5,6 +5,7 @@
 //---------------------------------------------------------------------------
 
 #include "unit_test.h"
+#include "console.h"
 #include "key.h"
 #include <stdio.h>
 
@@ -27,6 +28,7 @@ void UnitTest::main() {
   size_t failedCount = 0;
   for (const UnitTest *test : GetTests()) {
     try {
+      Console::history.clear();
       Key::history.clear();
       (*test->function)();
       passedCount++;
