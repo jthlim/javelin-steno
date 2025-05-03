@@ -29,8 +29,8 @@ public:
     rootDictionary = newRootDictionary;
   }
 
-  void Populate(StenoTokenizer *tokenizer);
-  void Append(StenoTokenizer *tokenizer);
+  void Populate(StenoTokenizer &tokenizer);
+  void Append(StenoTokenizer &tokenizer);
 
   static constexpr size_t BUFFER_SIZE = 2048;
 

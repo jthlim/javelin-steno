@@ -73,14 +73,43 @@ struct StenoToken {
   char *DupText() const { return Str::DupN(text, length); }
 };
 
-class StenoTokenizer : public JavelinMallocAllocate {
-public:
-  virtual bool HasMore() const;
-  virtual StenoToken GetNext();
+class StenoTokenizerIterator;
 
-  static StenoTokenizer *Create(const StenoSegmentList &segments,
-                                size_t startingOffset = 0);
+class StenoTokenizer {
+public:
+  StenoTokenizer(const StenoSegmentList &list, size_t startingOffset = 0);
+
+  bool HasMore() const { return p != nullptr; }
+  StenoToken GetNext();
+
+  friend StenoTokenizerIterator begin(StenoTokenizer &tokenizer);
+  friend void *end(StenoTokenizer &tokenizer) { return nullptr; }
+
+private:
+  const StenoSegmentList &list;
+  size_t elementIndex;
+
+  const char *p;
+  const StenoState *nextState = nullptr;
+
+  void PrepareNextP();
 };
+
+class StenoTokenizerIterator {
+public:
+  StenoTokenizerIterator(StenoTokenizer &tokenizer) : tokenizer(tokenizer) {}
+
+  StenoToken operator*() { return tokenizer.GetNext(); }
+  StenoTokenizerIterator &operator++() { return *this; }
+  bool operator!=(const void *) const { return tokenizer.HasMore(); }
+
+private:
+  StenoTokenizer &tokenizer;
+};
+
+inline StenoTokenizerIterator begin(StenoTokenizer &tokenizer) {
+  return StenoTokenizerIterator(tokenizer);
+}
 
 //---------------------------------------------------------------------------
 

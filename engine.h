@@ -173,8 +173,7 @@ private:
                                        const ConversionBuffer &longerBuffer,
                                        const StenoSegmentList &longerSegments);
   void ConvertText(StenoKeyCodeBuffer &keyCodeBuffer,
-                   StenoSegmentList &segments, size_t startingOffset,
-                   StenoState *endState);
+                   StenoSegmentList &segments, size_t startingOffset);
 
   void PrintPaperTape(StenoStroke stroke,
                       const StenoSegmentList &previousSegments,

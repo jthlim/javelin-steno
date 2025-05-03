@@ -222,7 +222,7 @@ char *StenoEngine::ConvertText(StenoSegmentList &segments,
   StenoKeyCodeBuffer &keyCodeBuffer = nextConversionBuffer.keyCodeBuffer;
   keyCodeBuffer.Reset();
   if (startingOffset < segments.GetCount()) {
-    ConvertText(keyCodeBuffer, segments, startingOffset, &keyCodeBuffer.state);
+    ConvertText(keyCodeBuffer, segments, startingOffset);
   }
   return keyCodeBuffer.ToString();
 }

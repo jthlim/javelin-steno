@@ -150,15 +150,13 @@ void StenoEngine::Lookup_Binding(void *context, const char *commandLine) {
     Console::Printf(",\"definition\":\"");
 
     bool isFirst = true;
-    StenoTokenizer *tokenizer = StenoTokenizer::Create(segments);
-    while (tokenizer->HasMore()) {
+    for (const StenoToken token : StenoTokenizer(segments)) {
       const char *format = " %J";
-      char *text = tokenizer->GetNext().DupText();
+      char *text = token.DupText();
       Console::Printf(format + isFirst, text);
       free(text);
       isFirst = false;
     }
-    delete tokenizer;
     Console::Printf("\"");
 
     const char *name = entry.dictionary->GetName();
@@ -223,14 +221,12 @@ void StenoEngine::LookupStroke_Binding(void *context, const char *commandLine) {
       Console::Printf("{\"definition\":\"");
 
       const char *format = "%J";
-      StenoTokenizer *tokenizer = StenoTokenizer::Create(segments);
-      while (tokenizer->HasMore()) {
-        char *text = tokenizer->GetNext().DupText();
+      for (const StenoToken token : StenoTokenizer(segments)) {
+        char *text = token.DupText();
         Console::Printf(format, text);
         free(text);
         format = " %J";
       }
-      delete tokenizer;
       Console::Printf("\"}\n\n");
     } else {
       Console::Printf("null\n\n");

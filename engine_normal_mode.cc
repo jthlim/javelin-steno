@@ -30,23 +30,32 @@ struct StenoEngine::UpdateNormalModeTextBufferThreadData {
   UpdateNormalModeTextBufferThreadData(StenoEngine *engine,
                                        StenoKeyCodeBuffer *keyCodeBuffer,
                                        StenoSegmentList *segments,
-                                       StenoState *endState,
                                        size_t startingOffset)
       : engine(engine), keyCodeBuffer(keyCodeBuffer), segments(segments),
-        endState(endState), startingOffset(startingOffset) {}
+        startingOffset(startingOffset) {}
 
   StenoEngine *const engine;
   StenoKeyCodeBuffer *const keyCodeBuffer;
   StenoSegmentList *const segments;
-  StenoState *const endState;
   const size_t startingOffset;
 
   void ConvertText() {
-    engine->ConvertText(*keyCodeBuffer, *segments, startingOffset, endState);
+    engine->ConvertText(*keyCodeBuffer, *segments, startingOffset);
   }
 
   static void ConvertTextEntryPoint(void *data) {
     ((UpdateNormalModeTextBufferThreadData *)data)->ConvertText();
+  }
+};
+
+#else // JAVELIN_THREADS
+
+struct StenoEngine::UpdateNormalModeTextBufferThreadData {
+  UpdateNormalModeTextBufferThreadData(StenoEngine *engine,
+                                       StenoKeyCodeBuffer *keyCodeBuffer,
+                                       StenoSegmentList *segments,
+                                       size_t startingOffset) {
+    engine->ConvertText(*keyCodeBuffer, *segments, startingOffset);
   }
 };
 
@@ -242,23 +251,17 @@ void StenoEngine::ProcessNormalModeStroke(StenoStroke stroke) {
   const uint32_t t3 = sysTick->ReadCycleCount();
 #endif
 
-#if JAVELIN_THREADS
   UpdateNormalModeTextBufferThreadData previousThreadData(
-      this, &previousConversionBuffer.keyCodeBuffer, &previousSegments, &state,
+      this, &previousConversionBuffer.keyCodeBuffer, &previousSegments,
       startingOffset);
   UpdateNormalModeTextBufferThreadData nextThreadData(
-      this, &nextConversionBuffer.keyCodeBuffer, &nextSegments,
-      &nextConversionBuffer.keyCodeBuffer.state, startingOffset);
+      this, &nextConversionBuffer.keyCodeBuffer, &nextSegments, startingOffset);
 
+#if JAVELIN_THREADS
   RunParallel(&UpdateNormalModeTextBufferThreadData::ConvertTextEntryPoint,
               &previousThreadData,
               &UpdateNormalModeTextBufferThreadData::ConvertTextEntryPoint,
               &nextThreadData);
-#else
-  ConvertText(previousConversionBuffer.keyCodeBuffer, previousSegments,
-              startingOffset, &state);
-  ConvertText(nextConversionBuffer.keyCodeBuffer, nextSegments, startingOffset,
-              &nextConversionBuffer.keyCodeBuffer.state);
 #endif
 
 #if ENABLE_PROFILE
@@ -475,23 +478,17 @@ void StenoEngine::ProcessNormalModeUndo() {
   const uint32_t t3 = sysTick->ReadCycleCount();
 #endif
 
-#if JAVELIN_THREADS
   UpdateNormalModeTextBufferThreadData previousThreadData(
       this, &previousConversionBuffer.keyCodeBuffer, &previousSegments,
-      &previousConversionBuffer.keyCodeBuffer.state, startingOffset);
-  UpdateNormalModeTextBufferThreadData nextThreadData(
-      this, &nextConversionBuffer.keyCodeBuffer, &nextSegments, &state,
       startingOffset);
+  UpdateNormalModeTextBufferThreadData nextThreadData(
+      this, &nextConversionBuffer.keyCodeBuffer, &nextSegments, startingOffset);
 
+#if JAVELIN_THREADS
   RunParallel(&UpdateNormalModeTextBufferThreadData::ConvertTextEntryPoint,
               &previousThreadData,
               &UpdateNormalModeTextBufferThreadData::ConvertTextEntryPoint,
               &nextThreadData);
-#else
-  ConvertText(previousConversionBuffer.keyCodeBuffer, previousSegments,
-              startingOffset, &state);
-  ConvertText(nextConversionBuffer.keyCodeBuffer, nextSegments, startingOffset,
-              &nextConversionBuffer.keyCodeBuffer.state);
 #endif
 
 #if ENABLE_PROFILE
@@ -579,30 +576,22 @@ void StenoEngine::CreateSegmentsUsingLongerResult(
 }
 
 void StenoEngine::ConvertText(StenoKeyCodeBuffer &keyCodeBuffer,
-                              StenoSegmentList &segments, size_t startingOffset,
-                              StenoState *endState) {
+                              StenoSegmentList &segments,
+                              size_t startingOffset) {
+  StenoState endState;
   if (startingOffset == segments.GetCount()) {
     keyCodeBuffer.Reset();
+    // The call sites of ConvertText ensure that the StenoEngine's state here is
+    // equivalent to what it would be if segments had been converted up to the
+    // starting offset.
+    endState = state;
   } else {
-    StenoTokenizer *tokenizer =
-        StenoTokenizer::Create(segments, startingOffset);
+    StenoTokenizer tokenizer(segments, startingOffset);
     keyCodeBuffer.Populate(tokenizer);
-    delete tokenizer;
+    endState = keyCodeBuffer.state;
   }
 
-  // endState is conceptually the state in keyCodeBuffer after processing a
-  // all segments for text conversion. However, since the segment common count
-  // optimization, the buffer may never be updated, leaving the state
-  // uninitialized.
-  //
-  // In all such cases, the state here should be the state currently being
-  // tracked by the StenoEngine, so endState will point to either the
-  // StenoEngine's state, or the keyCodeBuffer's state.
-  //
-  // The reason this is passed by pointer is because the state value inside
-  // keyCodeBuffer is updated in this function.
-
-  if (placeSpaceAfter && !endState->joinNext) {
+  if (placeSpaceAfter && !endState.joinNext) {
     keyCodeBuffer.AppendSpace();
   }
 }
@@ -880,10 +869,8 @@ char *StenoEngine::PrintSegmentSuggestion(size_t startSegmentIndex,
   const uint32_t t1 = sysTick->ReadCycleCount();
 #endif
 
-  StenoTokenizer *tokenizer =
-      StenoTokenizer::Create(segments, startSegmentIndex);
+  StenoTokenizer tokenizer(segments, startSegmentIndex);
   previousConversionBuffer.keyCodeBuffer.Populate(tokenizer);
-  delete tokenizer;
 
 #if ENABLE_PROFILE_SUGGESTIONS
   const uint32_t t2 = sysTick->ReadCycleCount();

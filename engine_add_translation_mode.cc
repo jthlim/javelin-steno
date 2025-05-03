@@ -175,9 +175,8 @@ void StenoEngine::UpdateAddTranslationModeTextBuffer(ConversionBuffer &buffer) {
   altTranslationHistory.UpdateDefinitionBoundaries(
       i, segments, buffer.segmentBuilder.GetStrokes(0));
 
-  StenoTokenizer *tokenizer = StenoTokenizer::Create(segments);
+  StenoTokenizer tokenizer(segments);
   buffer.keyCodeBuffer.Append(tokenizer);
-  delete tokenizer;
   if (placeSpaceAfter && segments.IsNotEmpty()) {
     const StenoState lastState = buffer.keyCodeBuffer.state;
     if (!lastState.joinNext) {
@@ -223,9 +222,8 @@ void StenoEngine::AddTranslation(size_t newlineIndex) {
     nextConversionBuffer.segmentBuilder.CreateSegments(context,
                                                        newlineIndex + 1);
 
-    StenoTokenizer *tokenizer = StenoTokenizer::Create(segments);
+    StenoTokenizer tokenizer(segments);
     nextConversionBuffer.keyCodeBuffer.Append(tokenizer);
-    delete tokenizer;
 
     word = nextConversionBuffer.keyCodeBuffer.ToString();
   }

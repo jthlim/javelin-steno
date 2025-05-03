@@ -21,14 +21,13 @@ void StenoKeyCodeBuffer::Reset() {
   lastText = buffer;
 }
 
-void StenoKeyCodeBuffer::Populate(StenoTokenizer *tokenizer) {
+void StenoKeyCodeBuffer::Populate(StenoTokenizer &tokenizer) {
   Reset();
   Append(tokenizer);
 }
 
-void StenoKeyCodeBuffer::Append(StenoTokenizer *tokenizer) {
-  while (tokenizer->HasMore()) {
-    const StenoToken token = tokenizer->GetNext();
+void StenoKeyCodeBuffer::Append(StenoTokenizer &tokenizer) {
+  for (const StenoToken token : tokenizer) {
     if (token.state != nullptr) {
       state = *token.state;
     }

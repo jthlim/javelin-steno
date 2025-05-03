@@ -269,37 +269,14 @@ bool StenoSegmentList::HasManualStateChange(size_t startIndex) const {
 
 //---------------------------------------------------------------------------
 
-bool StenoTokenizer::HasMore() const { return false; }
-StenoToken StenoTokenizer::GetNext() { return StenoToken("", 0, nullptr); }
+StenoTokenizer::StenoTokenizer(const StenoSegmentList &list,
+                               size_t startingOffset)
+    : list(list), elementIndex(startingOffset) {
+  p = "";
+  PrepareNextP();
+}
 
-//---------------------------------------------------------------------------
-
-class StenoSegmentListTokenizer final : public StenoTokenizer {
-public:
-  StenoSegmentListTokenizer(const StenoSegmentList &list, size_t startingOffset)
-      : list(list), elementIndex(startingOffset) {
-    if (list.IsEmpty()) {
-      p = nullptr;
-    } else {
-      p = "";
-      PrepareNextP();
-    }
-  }
-
-  bool HasMore() const final { return p != nullptr; }
-
-  StenoToken GetNext() final;
-
-private:
-  const StenoSegmentList &list;
-  size_t elementIndex;
-  const char *p;
-  const StenoState *nextState = nullptr;
-
-  void PrepareNextP();
-};
-
-StenoToken StenoSegmentListTokenizer::GetNext() {
+StenoToken StenoTokenizer::GetNext() {
   const StenoState *state = nextState;
   nextState = nullptr;
 
@@ -354,7 +331,7 @@ ReturnSpan:
   return StenoToken(start, length, state);
 }
 
-void StenoSegmentListTokenizer::PrepareNextP() {
+void StenoTokenizer::PrepareNextP() {
   for (;;) {
     while (*p == ' ') [[unlikely]] {
       ++p;
@@ -371,11 +348,6 @@ void StenoSegmentListTokenizer::PrepareNextP() {
     p = segment.lookup.GetText();
     nextState = segment.state;
   }
-}
-
-StenoTokenizer *StenoTokenizer::Create(const StenoSegmentList &segments,
-                                       size_t startingOffset) {
-  return new StenoSegmentListTokenizer(segments, startingOffset);
 }
 
 //---------------------------------------------------------------------------
@@ -405,14 +377,13 @@ TEST_BEGIN("Segment tests") {
 
   history.CreateSegments(context);
 
-  StenoTokenizer *tokenizer = StenoTokenizer::Create(segments);
+  StenoTokenizer tokenizer(segments);
 
-  assert(tokenizer->HasMore());
-  assert(Str::Eq(tokenizer->GetNext().text, "test"));
-  assert(tokenizer->HasMore());
-  assert(Str::Eq(tokenizer->GetNext().text, "{^ing}"));
-  assert(!tokenizer->HasMore());
-  delete tokenizer;
+  assert(tokenizer.HasMore());
+  assert(Str::Eq(tokenizer.GetNext().text, "test"));
+  assert(tokenizer.HasMore());
+  assert(Str::Eq(tokenizer.GetNext().text, "{^ing}"));
+  assert(!tokenizer.HasMore());
 }
 TEST_END
 
