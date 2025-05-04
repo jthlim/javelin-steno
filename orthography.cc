@@ -12,7 +12,7 @@
 
 //---------------------------------------------------------------------------
 
-constexpr size_t MAXIMUM_CACHEABLE_WORD_LENGTH = 64;
+constexpr size_t MAXIMUM_CACHEABLE_WORD_LENGTH = 28;
 
 //---------------------------------------------------------------------------
 
@@ -62,6 +62,7 @@ void StenoCompiledOrthography::UnlockCache() {}
 
 void StenoCompiledOrthography::CacheEntry::Reset() {
   free(base);
+  crc = 0;
   base = nullptr;
 }
 
@@ -69,18 +70,22 @@ inline char *StenoCompiledOrthography::CacheEntry::DupResult() const {
   return Str::DupN(GetResult(), resultLength);
 }
 
-void StenoCompiledOrthography::CacheEntry::Set(const char *word,
+void StenoCompiledOrthography::CacheEntry::Set(uint32_t crc, const char *word,
+                                               size_t wordLength,
                                                const char *suffix,
+                                               size_t suffixLength,
                                                const char *result) {
-  free(base);
 
-  const size_t wordLength = Str::Length(word);
-  const size_t suffixLength = Str::Length(suffix);
   const size_t resultLength = Str::Length(result);
-  this->resultLength = resultLength;
-  base = (char *)malloc(wordLength + suffixLength + resultLength + 3);
+  char *p = (char *)malloc(wordLength + suffixLength + resultLength + 3);
+  if (!p) {
+    return;
+  }
+  free(base);
+  base = p;
 
-  char *p = base;
+  this->crc = crc;
+  this->resultLength = resultLength;
   memcpy(p, word, wordLength + 1);
   p += wordLength + 1;
 
@@ -92,8 +97,12 @@ void StenoCompiledOrthography::CacheEntry::Set(const char *word,
   memcpy(p, result, resultLength + 1);
 }
 
-bool StenoCompiledOrthography::CacheEntry::IsEqual(const char *word,
+bool StenoCompiledOrthography::CacheEntry::IsEqual(uint32_t crc,
+                                                   const char *word,
                                                    const char *suffix) const {
+  if (crc != this->crc) [[likely]] {
+    return false;
+  }
   return base != nullptr && Str::Eq(word, GetWord()) &&
          Str::Eq(suffix, GetSuffix());
 }
@@ -105,12 +114,13 @@ size_t StenoCompiledOrthography::CacheEntry::GetMemoryUsage() const {
   return resultOffset + resultLength + 1;
 }
 
-char *StenoCompiledOrthography::CacheBlock::Lookup(const char *word,
+char *StenoCompiledOrthography::CacheBlock::Lookup(uint32_t crc,
+                                                   const char *word,
                                                    const char *suffix) const {
   LockCache();
   for (size_t i = 0; i < CACHE_ASSOCIATIVITY; ++i) {
     const CacheEntry &entry = entries[i];
-    if (entry.IsEqual(word, suffix)) {
+    if (entry.IsEqual(crc, word, suffix)) {
       char *result = entry.DupResult();
       UnlockCache();
       return result;
@@ -121,14 +131,14 @@ char *StenoCompiledOrthography::CacheBlock::Lookup(const char *word,
   return nullptr;
 }
 
-void StenoCompiledOrthography::CacheBlock::AddEntry(const char *word,
-                                                    const char *suffix,
-                                                    const char *result) {
+void StenoCompiledOrthography::CacheBlock::AddEntry(
+    uint32_t crc, const char *word, size_t wordLength, const char *suffix,
+    size_t suffixLength, const char *result) {
   LockCache();
 
-  const size_t entryIndex = entries[0].blockIndex++ & (CACHE_ASSOCIATIVITY - 1);
+  const size_t entryIndex = entries[0].nextEntryIndex++ % CACHE_ASSOCIATIVITY;
   CacheEntry &entry = entries[entryIndex];
-  entry.Set(word, suffix, result);
+  entry.Set(crc, word, wordLength, suffix, suffixLength, result);
 
   UnlockCache();
 }
@@ -244,14 +254,15 @@ char *StenoCompiledOrthography::AddSuffix(const char *word,
                                           const char *suffix) const {
   const size_t wordLength = Str::Length(word);
   if (wordLength >= MAXIMUM_CACHEABLE_WORD_LENGTH) {
-    return AddSuffixInternal(word, suffix);
+    return AddSuffixInternal(word, wordLength, suffix);
   }
 
+  const size_t suffixLength = Str::Length(suffix);
   const uint32_t crc =
-      Crc32::Hash(word, wordLength) ^ Crc32::Hash(suffix, Str::Length(suffix));
+      Crc32::Hash(word, wordLength) ^ Crc32::Hash(suffix, suffixLength);
 
-  const size_t blockIndex = crc & (CACHE_BLOCK_COUNT - 1);
-  char *cachedResult = cache[blockIndex].Lookup(word, suffix);
+  const size_t blockIndex = crc % CACHE_BLOCK_COUNT;
+  char *cachedResult = cache[blockIndex].Lookup(crc, word, suffix);
   if (cachedResult) {
 #if RECORD_ORTHOGRAPHY_CACHE_STATS
     cacheHits++;
@@ -263,22 +274,27 @@ char *StenoCompiledOrthography::AddSuffix(const char *word,
   cacheMisses++;
 #endif
 
-  char *result = AddSuffixInternal(word, suffix);
-  cache[blockIndex].AddEntry(word, suffix, result);
+  char *result = AddSuffixInternal(word, wordLength, suffix);
+  cache[blockIndex].AddEntry(crc, word, wordLength, suffix, suffixLength,
+                             result);
   return result;
 }
 
-char *StenoCompiledOrthography::AddSuffixInternal(const char *word,
-                                                  const char *suffix) const {
 #else
 char *StenoCompiledOrthography::AddSuffix(const char *word,
                                           const char *suffix) const {
+  return AddSuffixInternal(word, Str::Length(word), suffix);
+}
 #endif
+
+char *StenoCompiledOrthography::AddSuffixInternal(const char *word,
+                                                  size_t wordLength,
+                                                  const char *suffix) const {
   BestCandidate bestCandidate;
 
   for (const StenoOrthographyAlias &alias : data.aliases) {
     if (Str::Eq(suffix, alias.text)) {
-      AddCandidates(bestCandidate, word, alias.alias,
+      AddCandidates(bestCandidate, word, wordLength, alias.alias,
                     BestCandidate::EXCLUDE_WORD_SCORE);
     }
   }
@@ -288,7 +304,7 @@ char *StenoCompiledOrthography::AddSuffix(const char *word,
       WordList::GetWordRank(simple, BestCandidate::FALLBACK_SCORE);
   bestCandidate.Add(simple, score);
 
-  AddCandidates(bestCandidate, word, suffix,
+  AddCandidates(bestCandidate, word, wordLength, suffix,
                 BestCandidate::NOT_IN_WORD_LIST_SCORE);
 
   return bestCandidate.GetResult();
@@ -324,11 +340,11 @@ char *StenoCompiledOrthography::AddSuffixToPhrase(const char *phrase,
 
 void StenoCompiledOrthography::AddCandidates(BestCandidate &bestCandidate,
                                              const char *word,
+                                             size_t wordLength,
                                              const char *suffix,
                                              int defaultScore) const {
   constexpr size_t MAXIMUM_PREFIX_LENGTH = 8;
 
-  const size_t wordLength = Str::Length(word);
   const size_t offset = wordLength > MAXIMUM_PREFIX_LENGTH
                             ? wordLength - MAXIMUM_PREFIX_LENGTH
                             : 0;

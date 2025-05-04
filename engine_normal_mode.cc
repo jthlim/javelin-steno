@@ -24,13 +24,9 @@
 
 //---------------------------------------------------------------------------
 
-#if JAVELIN_THREADS
-
-struct StenoEngine::UpdateNormalModeTextBufferThreadData {
-  UpdateNormalModeTextBufferThreadData(StenoEngine *engine,
-                                       StenoKeyCodeBuffer *keyCodeBuffer,
-                                       StenoSegmentList *segments,
-                                       size_t startingOffset)
+struct StenoEngine::ConvertTextData {
+  ConvertTextData(StenoEngine *engine, StenoKeyCodeBuffer *keyCodeBuffer,
+                  StenoSegmentList *segments, size_t startingOffset)
       : engine(engine), keyCodeBuffer(keyCodeBuffer), segments(segments),
         startingOffset(startingOffset) {}
 
@@ -43,23 +39,12 @@ struct StenoEngine::UpdateNormalModeTextBufferThreadData {
     engine->ConvertText(*keyCodeBuffer, *segments, startingOffset);
   }
 
-  static void ConvertTextEntryPoint(void *data) {
-    ((UpdateNormalModeTextBufferThreadData *)data)->ConvertText();
+  static void ThreadEntryPoint(void *data) {
+    ((ConvertTextData *)data)->ConvertText();
   }
 };
 
-#else // JAVELIN_THREADS
-
-struct StenoEngine::UpdateNormalModeTextBufferThreadData {
-  UpdateNormalModeTextBufferThreadData(StenoEngine *engine,
-                                       StenoKeyCodeBuffer *keyCodeBuffer,
-                                       StenoSegmentList *segments,
-                                       size_t startingOffset) {
-    engine->ConvertText(*keyCodeBuffer, *segments, startingOffset);
-  }
-};
-
-#endif
+//---------------------------------------------------------------------------
 
 constexpr size_t MAX_EXTRA_STROKES = 4;
 
@@ -251,17 +236,19 @@ void StenoEngine::ProcessNormalModeStroke(StenoStroke stroke) {
   const uint32_t t3 = sysTick->ReadCycleCount();
 #endif
 
-  UpdateNormalModeTextBufferThreadData previousThreadData(
+  ConvertTextData previousConvertTextData(
       this, &previousConversionBuffer.keyCodeBuffer, &previousSegments,
       startingOffset);
-  UpdateNormalModeTextBufferThreadData nextThreadData(
-      this, &nextConversionBuffer.keyCodeBuffer, &nextSegments, startingOffset);
-
+#if !JAVELIN_THREADS
+  previousConvertTextData.ConvertText();
+#endif
+  ConvertTextData nextConvertTextData(this, &nextConversionBuffer.keyCodeBuffer,
+                                      &nextSegments, startingOffset);
 #if JAVELIN_THREADS
-  RunParallel(&UpdateNormalModeTextBufferThreadData::ConvertTextEntryPoint,
-              &previousThreadData,
-              &UpdateNormalModeTextBufferThreadData::ConvertTextEntryPoint,
-              &nextThreadData);
+  RunParallel(&ConvertTextData::ThreadEntryPoint, &previousConvertTextData,
+              &ConvertTextData::ThreadEntryPoint, &nextConvertTextData);
+#else
+  nextConvertTextData.ConvertText();
 #endif
 
 #if ENABLE_PROFILE
@@ -478,17 +465,21 @@ void StenoEngine::ProcessNormalModeUndo() {
   const uint32_t t3 = sysTick->ReadCycleCount();
 #endif
 
-  UpdateNormalModeTextBufferThreadData previousThreadData(
+  ConvertTextData previousConvertTextData(
       this, &previousConversionBuffer.keyCodeBuffer, &previousSegments,
       startingOffset);
-  UpdateNormalModeTextBufferThreadData nextThreadData(
-      this, &nextConversionBuffer.keyCodeBuffer, &nextSegments, startingOffset);
+#if !JAVELIN_THREADS
+  previousConvertTextData.ConvertText();
+#endif
 
-#if JAVELIN_THREADS
-  RunParallel(&UpdateNormalModeTextBufferThreadData::ConvertTextEntryPoint,
-              &previousThreadData,
-              &UpdateNormalModeTextBufferThreadData::ConvertTextEntryPoint,
-              &nextThreadData);
+  ConvertTextData nextConvertTextData(this, &nextConversionBuffer.keyCodeBuffer,
+                                      &nextSegments, startingOffset);
+
+#if !JAVELIN_THREADS
+  nextConvertTextData.ConvertText();
+#else
+  RunParallel(&ConvertTextData::ThreadEntryPoint, &previousConvertTextData,
+              &ConvertTextData::ThreadEntryPoint, &nextConvertTextData);
 #endif
 
 #if ENABLE_PROFILE

@@ -14,6 +14,7 @@
 #include "hal/connection.h"
 #include "hal/display.h"
 #include "hal/gpio.h"
+#include "hal/infrared.h"
 #include "hal/mouse.h"
 #include "hal/power.h"
 #include "hal/rgb.h"
@@ -1157,6 +1158,35 @@ public:
                           const ScriptByteCode *byteCode) {
     ButtonScriptManager::GetInstance().ResetCombos();
   }
+
+  static void SendInfraredMessage(ButtonScript &script,
+                                  const ScriptByteCode *byteCode) {
+    const uint32_t d2 = script.Pop();
+    const uint32_t d1 = script.Pop();
+    const uint32_t d0 = script.Pop();
+    const InfraredProtocol protocol = (InfraredProtocol)script.Pop();
+
+    Infrared::SendMessage(protocol, d0, d1, d2);
+  }
+
+  static void SendInfraredData(ButtonScript &script,
+                               const ScriptByteCode *byteCode) {
+    const size_t configurationOffset = script.Pop();
+    const uint32_t bitCount = script.Pop();
+    const uint32_t d1 = script.Pop();
+    const uint32_t d0 = script.Pop();
+
+    const uint64_t data = ((uint64_t)d0 << 32) | d1;
+    const InfraredDataConfiguration *configuration =
+        byteCode->GetScriptData<InfraredDataConfiguration>(configurationOffset);
+
+    Infrared::SendData(data, bitCount, *configuration);
+  }
+
+  static void StopInfrared(ButtonScript &script,
+                           const ScriptByteCode *byteCode) {
+    Infrared::Stop();
+  }
 };
 
 constexpr void (*ButtonScript::FUNCTION_TABLE[])(ButtonScript &,
@@ -1273,6 +1303,9 @@ constexpr void (*ButtonScript::FUNCTION_TABLE[])(ButtonScript &,
     &Function::GetAsset,
     &Function::AddCombo,
     &Function::ResetCombos,
+    &Function::SendInfraredMessage,
+    &Function::SendInfraredData,
+    &Function::StopInfrared,
 };
 
 void ButtonScript::PrintEventHistory() {
@@ -1367,6 +1400,7 @@ public:
 
   static void TestPress0AndRelease0() {
     ButtonScript script(TEST_BYTE_CODE);
+    script.keyState.ClearAll();
     script.ExecuteInitScript(0);
 
     // Verify S1 is not pressed.
@@ -1385,6 +1419,7 @@ public:
 
   static void TestPress1ThenPress0() {
     ButtonScript script(TEST_BYTE_CODE);
+    script.keyState.ClearAll();
     script.ExecuteInitScript(0);
 
     // Verify S1 and A are not pressed.

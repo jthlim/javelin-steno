@@ -336,24 +336,6 @@ PatternMatch Pattern::Search(const char *text) const {
   return result;
 }
 
-char *Pattern::Replace(char *text, const char *format) const {
-  const PatternMatch match = Search(text);
-  if (!match.match) {
-    return text;
-  }
-  char *prefix = Str::DupN(text, match.captures[0] - text);
-  char *suffix = Str::DupN(match.captures[1],
-                           text + Str::Length(text) - match.captures[1]);
-  char *replacement = match.Replace(format);
-
-  char *result = Str::Join(prefix, replacement, suffix);
-  free(prefix);
-  free(suffix);
-  free(replacement);
-  free(text);
-  return result;
-}
-
 //---------------------------------------------------------------------------
 
 char *PatternMatch::Replace(const char *format) const {

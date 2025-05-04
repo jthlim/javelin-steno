@@ -2,7 +2,6 @@
 
 #pragma once
 #include "container/sized_list.h"
-#include "malloc_allocate.h"
 #include "pattern.h"
 #include "stroke.h"
 #include "xip_pointer.h"
@@ -71,10 +70,12 @@ private:
   const Pattern *patterns;
 
 #if USE_ORTHOGRAPHY_CACHE
-  struct CacheEntry : public JavelinMallocAllocate {
-    void Set(const char *word, const char *suffix, const char *result);
+  struct CacheBlock;
+  struct CacheEntry {
+    void Set(uint32_t crc, const char *word, size_t wordLength,
+             const char *suffix, size_t suffixLength, const char *result);
 
-    bool IsEqual(const char *word, const char *suffix) const;
+    bool IsEqual(uint32_t crc, const char *word, const char *suffix) const;
 
     const char *GetWord() const { return base; }
     const char *GetSuffix() const { return base + suffixOffset; }
@@ -90,14 +91,17 @@ private:
     uint8_t resultOffset;
     uint8_t resultLength;
 
-  public:
     // The index of the currently used CacheEntry for a block.
     //
     // This should be stored in CacheBlock, but put here for better data
     // packing.
     //
     // Only the first entry in each cache block is used.
-    uint8_t blockIndex;
+    uint8_t nextEntryIndex;
+
+    uint32_t crc;
+
+    friend class CacheBlock;
   };
 
   static void LockCache();
@@ -108,13 +112,14 @@ private:
   static constexpr size_t CACHE_BLOCK_COUNT = CACHE_SIZE / CACHE_ASSOCIATIVITY;
 
   struct CacheBlock {
-    // Stored separately for better data packing.
-    // uint8_t index;
+    // Stored within CacheEntry for better data packing.
+    // uint8_t nextEntryIndex;
 
     CacheEntry entries[CACHE_ASSOCIATIVITY];
 
-    char *Lookup(const char *word, const char *suffix) const;
-    void AddEntry(const char *word, const char *suffix, const char *result);
+    char *Lookup(uint32_t crc, const char *word, const char *suffix) const;
+    void AddEntry(uint32_t crc, const char *word, size_t wordLength,
+                  const char *suffix, size_t suffixLength, const char *result);
     void Reset();
     size_t GetMemoryUsage() const;
   };
@@ -124,11 +129,13 @@ private:
 
 #endif
 
-  char *AddSuffixInternal(const char *word, const char *suffix) const;
+  char *AddSuffixInternal(const char *word, size_t wordLength,
+                          const char *suffix) const;
 
   class BestCandidate;
   void AddCandidates(BestCandidate &bestCandidate, const char *word,
-                     const char *suffix, int defaultScore) const;
+                     size_t wordLength, const char *suffix,
+                     int defaultScore) const;
 
   static const Pattern *CreatePatterns(const StenoOrthography &orthography);
 };

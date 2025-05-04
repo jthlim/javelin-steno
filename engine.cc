@@ -560,7 +560,6 @@ void StenoEngineTester::TestRetroInsertSpace(StenoEngine &engine) {
 }
 
 TEST_BEGIN("Engine: Verify =retro_insert_space") {
-
   StenoDictionaryList dictionaryList(
       DICTIONARIES, sizeof(DICTIONARIES) / sizeof(*DICTIONARIES)); // NOLINT
   const StenoCompiledOrthography orthography(

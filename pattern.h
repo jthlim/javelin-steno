@@ -49,9 +49,6 @@ public:
   PatternMatch MatchBypassingQuickReject(const char *text) const;
   PatternMatch Search(const char *text) const;
 
-  // Will free text if there's a replacement and return a new string.
-  char *Replace(char *text, const char *format) const;
-
   bool IsPossibleMatch(PatternQuickReject inputQuickReject) const {
     return inputQuickReject.IsPossibleMatch(quickReject);
   }

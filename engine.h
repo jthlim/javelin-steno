@@ -94,7 +94,7 @@ private:
   StenoDictionary *activeDictionary;
   StenoDictionary *storedDictionaries;
 
-  const StenoCompiledOrthography orthography;
+  const StenoCompiledOrthography& orthography;
   StenoUserDictionary *userDictionary;
 
   StenoState state;
@@ -130,7 +130,7 @@ private:
   };
   TemplateValue templateValues[TEMPLATE_VALUE_COUNT] = {};
 
-  struct UpdateNormalModeTextBufferThreadData;
+  struct ConvertTextData;
 
   void ProcessNormalModeUndo();
   void ProcessNormalModeStroke(StenoStroke stroke);
