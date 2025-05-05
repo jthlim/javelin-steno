@@ -4,6 +4,29 @@
 
 //---------------------------------------------------------------------------
 
+#if JAVELIN_CPU_CORTEX_M4 || JAVELIN_CPU_CORTEX_M33
+#else
+
+uint32_t Bit<1>::ReverseBits(uint32_t v) {
+  v = ((v >> 1) & 0x55) | ((v & 0x55) << 1);
+  v = ((v >> 2) & 0x33) | ((v & 0x33) << 2);
+  v = ((v >> 4) & 0x0F) | ((v & 0x0F) << 4);
+  return v;
+}
+
+uint32_t Bit<4>::ReverseBits(uint32_t v) {
+  v = ((v >> 1) & 0x55555555) | ((v & 0x55555555) << 1);
+  v = ((v >> 2) & 0x33333333) | ((v & 0x33333333) << 2);
+  v = ((v >> 4) & 0x0F0F0F0F) | ((v & 0x0F0F0F0F) << 4);
+  v = ((v >> 8) & 0x00FF00FF) | ((v & 0x00FF00FF) << 8);
+  v = (v >> 16) | (v << 16);
+
+  return v;
+}
+#endif
+
+//---------------------------------------------------------------------------
+
 #if JAVELIN_USE_CUSTOM_POP_COUNT
 
 #if JAVELIN_CPU_CORTEX_M0

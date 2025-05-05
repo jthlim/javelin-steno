@@ -1017,7 +1017,9 @@ These methods are only available on chips with secure storage.
 
 # Visual Editor Script Templates
 
-This section is TODO
+The settings on each layer within the visual editor are provided by annotations.
+Annotations in global scripts will appear in all layers, scripts in a layer
+will just show in the settings for that layer.
 
 ```
 #option(<attributeName>, <displayCategory>, <optionName>, <functionName>)
