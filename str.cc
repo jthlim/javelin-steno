@@ -4,7 +4,6 @@
 #include "unicode.h"
 #include "writer.h"
 #include <stdarg.h>
-#include <stdio.h>
 
 //---------------------------------------------------------------------------
 

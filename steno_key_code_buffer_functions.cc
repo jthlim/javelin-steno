@@ -7,7 +7,6 @@
 #include "state.h"
 #include "steno_key_code.h"
 #include "steno_key_code_buffer.h"
-#include "steno_key_state.h"
 #include "str.h"
 #include "utf8_pointer.h"
 

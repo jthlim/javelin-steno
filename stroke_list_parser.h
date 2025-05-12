@@ -3,7 +3,6 @@
 #pragma once
 #include "dictionary/user_dictionary.h"
 #include "stroke.h"
-#include <assert.h>
 
 //---------------------------------------------------------------------------
 

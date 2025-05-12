@@ -52,10 +52,10 @@ public:
     return FixedPoint(value / o, true);
   }
 
+  T value;
+
 private:
   constexpr FixedPoint(T value, bool) : value(value) {}
-
-  T value;
 };
 
 //---------------------------------------------------------------------------

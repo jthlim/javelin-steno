@@ -2,18 +2,8 @@
 
 #include "infrared.h"
 #include "../bit.h"
-
-//---------------------------------------------------------------------------
-
-static constexpr InfraredDataConfiguration SONY_CONFIGURATION = {
-    .carrierFrequency = 40000,
-    .dutyCycle = 33,
-    .cycleCount = 24,
-    .header = {4, 1},
-    .zeroBit = {1, 1},
-    .oneBit = {2, 1},
-    .trailer = {0, 0},
-};
+#include "../console.h"
+#include "../str.h"
 
 //---------------------------------------------------------------------------
 
@@ -21,15 +11,26 @@ static constexpr InfraredDataConfiguration SONY_CONFIGURATION = {
 static uint64_t infraRedData;
 static int infraredBitCount;
 [[gnu::weak]] void
-Infrared::SendData(uint64_t data, int bitCount,
+Infrared::SendData(const void *data, int bitCount,
                    const InfraredDataConfiguration &configuration) {
-  infraRedData = data;
   infraredBitCount = bitCount;
+  infraRedData = 0;
+  const uint8_t *p = (const uint8_t *)data;
+  uint32_t mask = 0;
+  for (size_t i = 0; i < bitCount; ++i) {
+    if ((mask << 1) == 0) {
+      mask = (*p++ << 24) | 0x800000;
+    }
+    if (mask >> 31) {
+      infraRedData |= 1ull << (63 - i);
+    }
+    mask <<= 1;
+  }
 }
 
 #else
 [[gnu::weak]] void
-Infrared::SendData(uint64_t data, int bitCount,
+Infrared::SendData(const void *data, int bitCount,
                    const InfraredDataConfiguration &configuration) {}
 #endif
 
@@ -37,31 +38,63 @@ Infrared::SendData(uint64_t data, int bitCount,
 
 //---------------------------------------------------------------------------
 
-void Infrared::SendMessage(InfraredProtocol protocol, uint32_t d0, uint32_t d1,
+void Infrared::SendMessage(const char *protocolName, uint32_t d0, uint32_t d1,
                            uint32_t d2) {
-  switch (protocol) {
-  case InfraredProtocol::RC5:
-    SendRC5Message(d0, d1, d2);
-    break;
-  case InfraredProtocol::NEC:
-    SendNECMessage(d0, d1);
-    break;
-  case InfraredProtocol::SAMSUNG:
-    SendSamsungMessage(d0, d1);
-    break;
-  case InfraredProtocol::SONY12:
-    SendSony12Message(d0, d1);
-    break;
-  case InfraredProtocol::SONY15:
-    SendSony15Message(d0, d1);
-    break;
-  case InfraredProtocol::SONY20:
-    SendSony20Message(d0, d1, d2);
-    break;
+  struct InfraredProtocol {
+    const char *name;
+    void (*handler)(uint32_t, uint32_t, uint32_t);
+  };
+
+  static constexpr InfraredProtocol protocols[] = {
+      {"dyson", SendDysonMessage},     //
+      {"nec", SendNECMessage},         //
+      {"rca", SendRCAMessage},         //
+      {"rc5", SendRC5Message},         //
+      {"samsung", SendSamsungMessage}, //
+      {"sony38", SendSony38Message},   //
+      {"sony40", SendSony40Message},   //
+  };
+  for (const InfraredProtocol &protocol : protocols) {
+    if (Str::Eq(protocolName, protocol.name)) {
+      protocol.handler(d0, d1, d2);
+      return;
+    }
   }
+
+  Console::Printf("Unknown infrared protocol: %s\n", protocolName);
+  Console::Printf("Protocol list:\n");
+  for (const InfraredProtocol &protocol : protocols) {
+    Console::Printf("- %s\n", protocol.name);
+  }
+  Console::Print("\n");
 }
 
-void Infrared::SendNECMessage(uint32_t address, uint32_t command) {
+void Infrared::SendDysonMessage(uint32_t address, uint32_t command,
+                                uint32_t _) {
+  address = Bit<4>::ReverseBits(address);
+  command = Bit<4>::ReverseBits(command);
+
+  static constexpr InfraredDataConfiguration configuration = {
+      .playbackCount = 2,
+      .repeatDelay = 100000,
+      .repeatDelayMode = InfraredRepeatDelayMode::END_TO_START,
+      .carrierFrequency = 38000,
+      .dutyCycle = 33,
+      .cycleCount = 30, // 789µs.
+      .header = {3, 1},
+      .zeroBit = {1, 1},
+      .oneBit = {1, 2},
+      .trailer = {1, 0},
+  };
+
+  const uint32_t data = address | (command >> 7);
+  uint8_t message[2];
+  message[0] = data >> 24;
+  message[1] = data >> 16;
+  SendData(message, 15, configuration);
+}
+
+void Infrared::SendNECMessage(uint32_t address, uint32_t command, uint32_t _) {
   address = Bit<1>::ReverseBits(address);
   command = Bit<1>::ReverseBits(command);
 
@@ -75,9 +108,32 @@ void Infrared::SendNECMessage(uint32_t address, uint32_t command) {
       .trailer = {1, 0},
   };
 
-  const uint64_t message = (address << 24) | ((~address & 0xff) << 16) |
-                           (command << 8) | (~command & 0xff);
-  SendData(message << 32, 32, configuration);
+  uint8_t message[4];
+  message[0] = address;
+  message[1] = ~address;
+  message[2] = command;
+  message[3] = ~command;
+  SendData(message, 32, configuration);
+}
+
+void Infrared::SendRCAMessage(uint32_t address, uint32_t command, uint32_t _) {
+  static constexpr InfraredDataConfiguration configuration = {
+      .carrierFrequency = 56000,
+      .dutyCycle = 33,
+      .cycleCount = 28,
+      .header = {8, 8},
+      .zeroBit = {1, 2},
+      .oneBit = {1, 4},
+      .trailer = {0, 0},
+  };
+
+  const uint32_t combined = address << 8 | command;
+  const uint32_t message = (combined << 12) | (~combined & 0xfff);
+  uint8_t data[3];
+  data[0] = message >> 16;
+  data[1] = message >> 8;
+  data[2] = message;
+  SendData(data, 24, configuration);
 }
 
 // Address is 5 bits.
@@ -122,14 +178,24 @@ void Infrared::SendRC5Message(uint32_t address, uint32_t command,
       .oneBit = {1, 0},
       .trailer = {0, 0},
   };
-  SendData((uint64_t)data << 36, 28, configuration);
+
+  uint8_t dataBytes[4];
+  dataBytes[0] = data >> 20;
+  dataBytes[1] = data >> 12;
+  dataBytes[2] = data >> 4;
+  dataBytes[3] = data << 4;
+  SendData(dataBytes, 28, configuration);
 }
 
-void Infrared::SendSamsungMessage(uint32_t address, uint32_t command) {
+void Infrared::SendSamsungMessage(uint32_t address, uint32_t command,
+                                  uint32_t _) {
   address = Bit<1>::ReverseBits(address);
   command = Bit<1>::ReverseBits(command);
 
   static constexpr InfraredDataConfiguration configuration = {
+      .playbackCount = (uint32_t)-1,
+      .repeatDelay = 108300,
+      .repeatDelayMode = InfraredRepeatDelayMode::START_TO_START,
       .carrierFrequency = 38000,
       .dutyCycle = 33,
       .cycleCount = 21,
@@ -139,35 +205,121 @@ void Infrared::SendSamsungMessage(uint32_t address, uint32_t command) {
       .trailer = {1, 1},
   };
 
-  const uint64_t message =
-      (address << 24) | (address << 16) | (command << 8) | (~command & 0xff);
-  SendData(message << 32, 32, configuration);
+  uint8_t message[4];
+  message[0] = address;
+  message[1] = address;
+  message[2] = command;
+  message[3] = ~command;
+  SendData(message, 32, configuration);
 }
 
-void Infrared::SendSony12Message(uint32_t address, uint32_t command) {
-  address = Bit<1>::ReverseBits(address);
-  command = Bit<1>::ReverseBits(command);
-
-  const uint64_t message = (command << 4) | (address >> 3);
-  SendData(message << 52, 12, SONY_CONFIGURATION);
+void Infrared::SendSony38Message(uint32_t address, uint32_t command,
+                                 uint32_t bits) {
+  static constexpr InfraredDataConfiguration configuration = {
+      .playbackCount = (uint32_t)-1,
+      .repeatDelay = 45000,
+      .repeatDelayMode = InfraredRepeatDelayMode::START_TO_START,
+      .carrierFrequency = 38000,
+      .dutyCycle = 33,
+      .cycleCount = 23,
+      .header = {4, 1},
+      .zeroBit = {1, 1},
+      .oneBit = {2, 1},
+      .trailer = {0, 0},
+  };
+  SendSonyMessage(address, command, bits, configuration);
 }
 
-void Infrared::SendSony15Message(uint32_t address, uint32_t command) {
-  address = Bit<1>::ReverseBits(address);
-  command = Bit<1>::ReverseBits(command);
-
-  const uint64_t message = (command << 7) | address;
-  SendData(message << 49, 15, SONY_CONFIGURATION);
+void Infrared::SendSony40Message(uint32_t address, uint32_t command,
+                                 uint32_t bits) {
+  static constexpr InfraredDataConfiguration configuration = {
+      .playbackCount = (uint32_t)-1,
+      .repeatDelay = 45000,
+      .repeatDelayMode = InfraredRepeatDelayMode::START_TO_START,
+      .carrierFrequency = 40000,
+      .dutyCycle = 33,
+      .cycleCount = 24,
+      .header = {4, 1},
+      .zeroBit = {1, 1},
+      .oneBit = {2, 1},
+      .trailer = {0, 0},
+  };
+  SendSonyMessage(address, command, bits, configuration);
 }
 
-void Infrared::SendSony20Message(uint32_t address, uint32_t command,
-                                 uint32_t extended) {
-  address = Bit<1>::ReverseBits(address);
-  command = Bit<1>::ReverseBits(command);
-  extended = Bit<1>::ReverseBits(extended);
+void Infrared::SendSonyMessage(uint32_t address, uint32_t command,
+                               uint32_t bits,
+                               const InfraredDataConfiguration &configuration) {
+  switch (bits) {
+  case 0:
+    // Try and use the lowest number of bits.
+    if (command < 0x80) {
+      if (address < 0x20) {
+        return SendSony12Message(address, command, configuration);
+      } else if (address < 0x100) {
+        return SendSony15Message(address, command, configuration);
+      }
+    } else if (command < 0x8000 && address < 0x20) {
+      return SendSony20Message(address, command, configuration);
+    }
+    Console::Printf("Unable to encode message\n\n");
+    return;
+  case 12:
+    return SendSony12Message(address, command, configuration);
 
-  const uint64_t message = (command << 12) | (address << 5) | extended;
-  SendData(message << 44, 20, SONY_CONFIGURATION);
+  case 15:
+    return SendSony15Message(address, command, configuration);
+
+  case 20:
+    return SendSony20Message(address, command, configuration);
+
+  default:
+    Console::Printf(
+        "Sony protocol requires 0(infer)/12/15/20 bits as last parameter\n\n");
+  }
+}
+
+void Infrared::SendSony12Message(
+    uint32_t address, uint32_t command,
+    const InfraredDataConfiguration &configuration) {
+  address = Bit<4>::ReverseBits(address);
+  command = Bit<4>::ReverseBits(command);
+
+  const uint32_t data = command | (address >> 7);
+  uint8_t message[2];
+  message[0] = data >> 24;
+  message[1] = data >> 16;
+  SendData(message, 12, configuration);
+}
+
+void Infrared::SendSony15Message(
+    uint32_t address, uint32_t command,
+    const InfraredDataConfiguration &configuration) {
+  address = Bit<4>::ReverseBits(address);
+  command = Bit<4>::ReverseBits(command);
+
+  const uint32_t data = command | (address >> 7);
+  uint8_t message[2];
+  message[0] = data >> 24;
+  message[1] = data >> 16;
+  SendData(message, 15, configuration);
+}
+
+// Command is 15 bits.
+void Infrared::SendSony20Message(
+    uint32_t address, uint32_t command,
+    const InfraredDataConfiguration &configuration) {
+  const uint32_t extended = Bit<4>::ReverseBits(command >> 7);
+  address = Bit<4>::ReverseBits(address);
+  command = Bit<4>::ReverseBits(command & 0x7f);
+
+  const uint32_t data = command | (address >> 7) | (extended >> 12);
+
+  uint8_t message[3];
+  message[0] = data >> 24;
+  message[1] = data >> 16;
+  message[2] = data >> 8;
+  SendData(message, 20, configuration);
 }
 
 //---------------------------------------------------------------------------
@@ -175,8 +327,17 @@ void Infrared::SendSony20Message(uint32_t address, uint32_t command,
 
 #include "../unit_test.h"
 
+TEST_BEGIN("Infrared Dyson data is calculated correctly") {
+  Infrared::SendMessage("Dyson", 9, 0x3f, 0);
+  assert(
+      infraRedData ==
+      0b1001000'11111100'0'00000000'00000000'00000000'00000000'00000000'00000000ull);
+  assert(infraredBitCount == 15);
+}
+TEST_END
+
 TEST_BEGIN("Infrared NEC data is calculated correctly") {
-  Infrared::SendMessage(InfraredProtocol::NEC, 0, 0xad, 0);
+  Infrared::SendMessage("NEC", 0, 0xad, 0);
   assert(
       infraRedData ==
       0b00000000'11111111'10110101'01001010'00000000'00000000'00000000'00000000ull);
@@ -184,14 +345,23 @@ TEST_BEGIN("Infrared NEC data is calculated correctly") {
 }
 TEST_END
 
+TEST_BEGIN("Infrared RCA data is calculated correctly") {
+  Infrared::SendMessage("RCA", 10, 0x68, 0);
+  assert(
+      infraRedData ==
+      0b1010'01101000'0101'10010111'00000000'00000000'00000000'00000000'00000000ull);
+  assert(infraredBitCount == 24);
+}
+TEST_END
+
 TEST_BEGIN("Infrared RC5 data is calculated correctly") {
-  Infrared::SendMessage(InfraredProtocol::RC5, 0x5, 0x35, 0);
+  Infrared::SendMessage("RC5", 0x5, 0x35, 0);
   assert(
       infraRedData ==
       0b0101'10'1010011001'010110011001'0000'00000000'00000000'00000000'00000000ull);
   assert(infraredBitCount == 28);
 
-  Infrared::SendMessage(InfraredProtocol::RC5, 0x5, 0x75, 1);
+  Infrared::SendMessage("RC5", 0x5, 0x75, 1);
   assert(
       infraRedData ==
       0b0110'01'1010011001'010110011001'0000'00000000'00000000'00000000'00000000ull);
@@ -200,7 +370,7 @@ TEST_BEGIN("Infrared RC5 data is calculated correctly") {
 TEST_END
 
 TEST_BEGIN("Infrared Samsung data is calculated correctly") {
-  Infrared::SendMessage(InfraredProtocol::SAMSUNG, 0x7, 0x4, 0);
+  Infrared::SendMessage("Samsung", 0x7, 0x4, 0);
   assert(
       infraRedData ==
       0b11100000'11100000'00100000'11011111'00000000'00000000'00000000'00000000ull);
@@ -209,7 +379,7 @@ TEST_BEGIN("Infrared Samsung data is calculated correctly") {
 TEST_END
 
 TEST_BEGIN("Infrared Sony12 data is calculated correctly") {
-  Infrared::SendMessage(InfraredProtocol::SONY12, 1, 0x13, 0);
+  Infrared::SendMessage("Sony", 1, 0x13, 12);
   assert(
       infraRedData ==
       0b1100100'10000'0000'00000000'00000000'00000000'00000000'00000000'00000000ull);
@@ -218,7 +388,7 @@ TEST_BEGIN("Infrared Sony12 data is calculated correctly") {
 TEST_END
 
 TEST_BEGIN("Infrared Sony15 data is calculated correctly") {
-  Infrared::SendMessage(InfraredProtocol::SONY15, 1, 0x13, 0);
+  Infrared::SendMessage("Sony", 1, 0x13, 15);
   assert(
       infraRedData ==
       0b1100100'10000'0000'00000000'00000000'00000000'00000000'00000000'00000000ull);
@@ -227,10 +397,10 @@ TEST_BEGIN("Infrared Sony15 data is calculated correctly") {
 TEST_END
 
 TEST_BEGIN("Infrared Sony20 data is calculated correctly") {
-  Infrared::SendMessage(InfraredProtocol::SONY20, 1, 0x13, 0x30);
+  Infrared::SendMessage("Sony", 1, 0x13 + (0x39 << 7), 20);
   assert(
       infraRedData ==
-      0b1100100'10000'00001100'0000'00000000'00000000'00000000'00000000'00000000ull);
+      0b1100100'10000'10011100'0000'00000000'00000000'00000000'00000000'00000000ull);
   assert(infraredBitCount == 20);
 }
 TEST_END

@@ -1,7 +1,6 @@
 //---------------------------------------------------------------------------
 
 #include "engine.h"
-#include "dictionary/invalid_dictionary.h"
 
 #include JAVELIN_BOARD_CONFIG
 

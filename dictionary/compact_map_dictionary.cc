@@ -7,6 +7,7 @@
 #include "../mem.h"
 #include "../str.h"
 #include "../uint24.h"
+#include "dictionary_definition.h"
 
 //---------------------------------------------------------------------------
 

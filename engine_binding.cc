@@ -1,7 +1,6 @@
 //---------------------------------------------------------------------------
 
 #include "console.h"
-#include "dictionary/dictionary_list.h"
 #include "engine.h"
 #include "hal/external_flash.h"
 #include "stroke_list_parser.h"

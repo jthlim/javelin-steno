@@ -3,11 +3,12 @@
 #pragma once
 #include "../interval.h"
 #include "dictionary.h"
-#include "dictionary_definition.h"
 
 //---------------------------------------------------------------------------
 
 struct CompactStenoMapDictionaryDataEntry;
+struct StenoCompactMapDictionaryDefinition;
+struct StenoCompactMapDictionaryStrokesDefinition;
 
 //---------------------------------------------------------------------------
 

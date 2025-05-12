@@ -1161,24 +1161,32 @@ public:
 
   static void SendInfraredMessage(ButtonScript &script,
                                   const ScriptByteCode *byteCode) {
-    const uint32_t d2 = script.Pop();
-    const uint32_t d1 = script.Pop();
-    const uint32_t d0 = script.Pop();
-    const InfraredProtocol protocol = (InfraredProtocol)script.Pop();
+    const uint32_t d2 = (uint32_t)script.Pop();
+    const uint32_t d1 = (uint32_t)script.Pop();
+    const uint32_t d0 = (uint32_t)script.Pop();
+    const intptr_t protocolNameOffset = script.Pop();
 
-    Infrared::SendMessage(protocol, d0, d1, d2);
+    const char *protocolName =
+        protocolNameOffset < 4
+            ? ""
+            : byteCode->GetScriptData<char>(protocolNameOffset);
+
+    Infrared::SendMessage(protocolName, d0, d1, d2);
   }
 
   static void SendInfraredData(ButtonScript &script,
                                const ScriptByteCode *byteCode) {
-    const size_t configurationOffset = script.Pop();
-    const uint32_t bitCount = script.Pop();
-    const uint32_t d1 = script.Pop();
-    const uint32_t d0 = script.Pop();
+    const intptr_t configurationOffset = script.Pop();
+    const uint32_t bitCount = (uint32_t)script.Pop();
+    const intptr_t dataOffset = script.Pop();
 
-    const uint64_t data = ((uint64_t)d0 << 32) | d1;
+    if (configurationOffset == 0 || bitCount == 0 || dataOffset == 0) {
+      return;
+    }
+
     const InfraredDataConfiguration *configuration =
         byteCode->GetScriptData<InfraredDataConfiguration>(configurationOffset);
+    const uint8_t *data = byteCode->GetScriptData<uint8_t>(dataOffset);
 
     Infrared::SendData(data, bitCount, *configuration);
   }

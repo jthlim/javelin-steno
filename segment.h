@@ -3,7 +3,6 @@
 #pragma once
 #include "container/sized_list.h"
 #include "dictionary/dictionary.h"
-#include "malloc_allocate.h"
 #include "state.h"
 
 //---------------------------------------------------------------------------

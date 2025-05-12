@@ -5,6 +5,7 @@
 #include "../console.h"
 #include "../flash.h"
 #include "../mem.h"
+#include "dictionary_definition.h"
 
 //---------------------------------------------------------------------------
 

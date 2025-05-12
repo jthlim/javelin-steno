@@ -6,7 +6,7 @@
 //---------------------------------------------------------------------------
 
 struct Uint16 {
-  uint32_t ToUint32() const { return b[0] + (b[1] << 8); }
+  uint32_t ToUint32() const { return b[0] | (b[1] << 8); }
 
   uint8_t b[2];
 };
