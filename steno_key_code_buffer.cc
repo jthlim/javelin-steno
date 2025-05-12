@@ -357,6 +357,23 @@ const char *StenoKeyCodeBuffer::AddParameter(List<char *> &parameters,
   return result;
 }
 
+void StenoKeyCodeBuffer::AppendSpace() {
+  // Append a space, then shift it to the first keycode in the buffer.
+  StenoKeyCode *startSpace = currentOutput;
+  AppendText(state.GetSpace(), state.spaceLength, StenoCaseMode::NORMAL);
+  StenoKeyCode *start = startSpace;
+  while (start > buffer && start[-1].IsRawKeyCode()) {
+    --start;
+  }
+  if (start == startSpace) {
+    return;
+  }
+
+  Reverse(start, startSpace);
+  Reverse(startSpace, currentOutput);
+  Reverse(start, currentOutput);
+}
+
 //---------------------------------------------------------------------------
 
 void StenoKeyCodeBuffer::ProcessOrthographicSuffix(const char *text,

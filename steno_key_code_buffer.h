@@ -56,9 +56,7 @@ public:
   void ProcessCommand(const char *command, size_t length);
   void ProcessOrthographicSuffix(const char *text, size_t length);
 
-  void AppendSpace() {
-    AppendText(state.GetSpace(), state.spaceLength, StenoCaseMode::NORMAL);
-  }
+  void AppendSpace();
   void AppendText(const char *p, size_t n, StenoCaseMode outputCaseMode);
   void AppendTextNoCaseModeOverride(const char *p, size_t n,
                                     StenoCaseMode outputCaseMode);
