@@ -587,6 +587,11 @@ the button index, then underglow lights after.
     const FONT_ID_HUGE_DIGITS = 6;
     ```
 
+- `func measureTextWidth(<fontId>, <text>)`
+
+  - Returns the width of the text in pixels.
+  - `fontId` uses the same constants as drawText.
+
 - `func drawRect(<displayId>, <left>, <top>, <right>, <bottom>)`
 
   - Draws a rectangle using the current draw color

@@ -119,6 +119,22 @@ public:
     Push(op(a, b));
   }
 
+  template <typename T> void TernaryVoidOp(T op) {
+#if JAVELIN_CPU_CORTEX_M0
+    intptr_t a, b, c;
+    asm("sub %3, #12\n\t"
+        "ldr %0, [%3]\n\t"
+        "ldr %1, [%3, #4]\n\t"
+        "ldr %2, [%3, #8]\n\t"
+        : "=l"(a), "=l"(b), "=l"(c), "+l"(p));
+#else
+    const intptr_t c = Pop();
+    const intptr_t b = Pop();
+    const intptr_t a = Pop();
+#endif
+    op(a, b, c);
+  }
+
 private:
   intptr_t *p;
 };
@@ -330,13 +346,13 @@ next:
   case BC::OPERATOR_START + (int)OP::LOGICAL_SHIFT_RIGHT:
     stack.BinaryOp([](intptr_t a, intptr_t b) { return uintptr_t(a) >> b; });
     CONTINUE;
-  case BC::OPERATOR_START + (int)OP::BYTE_LOOKUP:
+  case BC::OPERATOR_START + (int)OP::READ_BYTE_INDEX:
     stack.BinaryOp([=](intptr_t offset, intptr_t index) {
       const uint8_t *data = byteCode + offset;
       return data[index];
     });
     CONTINUE;
-  case BC::OPERATOR_START + (int)OP::WORD_LOOKUP:
+  case BC::OPERATOR_START + (int)OP::READ_WORD_INDEX:
     stack.BinaryOp([=](intptr_t offset, intptr_t index) {
       const intptr_t *data = (const intptr_t *)(byteCode + offset);
       return data[index];
@@ -348,10 +364,28 @@ next:
   case BC::OPERATOR_START + (int)OP::DECREMENT:
     stack.UnaryOp([](intptr_t a) { return a - 1; });
     CONTINUE;
-  case BC::OPERATOR_START + (int)OP::HALF_WORD_LOOKUP:
+  case BC::OPERATOR_START + (int)OP::READ_HALF_WORD_INDEX:
     stack.BinaryOp([=](intptr_t offset, intptr_t index) {
       const uint16_t *data = (const uint16_t *)(byteCode + offset);
       return data[index];
+    });
+    CONTINUE;
+  case BC::OPERATOR_START + (int)OP::WRITE_BYTE_INDEX:
+    stack.TernaryVoidOp([=](intptr_t offset, intptr_t index, intptr_t value) {
+      uint8_t *data = (uint8_t *)(byteCode + offset);
+      data[index] = value;
+    });
+    CONTINUE;
+  case BC::OPERATOR_START + (int)OP::WRITE_HALF_WORD_INDEX:
+    stack.TernaryVoidOp([=](intptr_t offset, intptr_t index, intptr_t value) {
+      uint16_t *data = (uint16_t *)(byteCode + offset);
+      data[index] = value;
+    });
+    CONTINUE;
+  case BC::OPERATOR_START + (int)OP::WRITE_WORD_INDEX:
+    stack.TernaryVoidOp([=](intptr_t offset, intptr_t index, intptr_t value) {
+      uint32_t *data = (uint32_t *)(byteCode + offset);
+      data[index] = value;
     });
     CONTINUE;
   case BC::CALL_INTERNAL: {

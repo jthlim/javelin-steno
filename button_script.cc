@@ -10,6 +10,7 @@
 #include "console.h"
 #include "engine.h"
 #include "flash.h"
+#include "font/monochrome/font.h"
 #include "hal/ble.h"
 #include "hal/connection.h"
 #include "hal/display.h"
@@ -1167,7 +1168,7 @@ public:
     const intptr_t protocolNameOffset = script.Pop();
 
     const char *protocolName =
-        protocolNameOffset < 4
+        protocolNameOffset == 0
             ? ""
             : byteCode->GetScriptData<char>(protocolNameOffset);
 
@@ -1194,6 +1195,31 @@ public:
   static void StopInfrared(ButtonScript &script,
                            const ScriptByteCode *byteCode) {
     Infrared::Stop();
+  }
+
+  static void PrintData(ButtonScript &script, const ScriptByteCode *byteCode) {
+    const size_t dataLength = script.Pop();
+    const intptr_t dataOffset = script.Pop();
+    const intptr_t textOffset = script.Pop();
+
+    const uint8_t *text = byteCode->GetScriptData<uint8_t>(textOffset);
+    const void *data = byteCode->GetScriptData<void>(dataOffset);
+    Console::Printf("%s: %D\n\n", text, data, dataLength);
+  }
+
+  static void MeasureTextWidth(ButtonScript &script,
+                               const ScriptByteCode *byteCode) {
+    const intptr_t textOffset = script.Pop();
+    const FontId fontId = (FontId)script.Pop();
+
+    const Font *font = Font::GetFont(fontId);
+    if (font == nullptr) {
+      script.Push(0);
+      return;
+    }
+
+    const char *text = byteCode->GetScriptData<char>(textOffset);
+    script.Push(font->GetStringWidth(text));
   }
 };
 
@@ -1314,6 +1340,8 @@ constexpr void (*ButtonScript::FUNCTION_TABLE[])(ButtonScript &,
     &Function::SendInfraredMessage,
     &Function::SendInfraredData,
     &Function::StopInfrared,
+    &Function::PrintData,
+    &Function::MeasureTextWidth,
 };
 
 void ButtonScript::PrintEventHistory() {

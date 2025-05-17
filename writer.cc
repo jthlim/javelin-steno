@@ -14,6 +14,7 @@
 // * %u     - uint32_t
 // * %x     - Hex
 // * %X     - Upper case hex
+// * %Z     - Writes a zero (nul) byte. This takes no parameters.
 //
 //---------------------------------------------------------------------------
 
@@ -335,6 +336,9 @@ void IWriter::Vprintf(const char *p, va_list args) {
       }
       goto NextSegment;
     }
+    case 'Z':
+      WriteByte('\0');
+      goto NextSegment;
 
     case '\0': // Shouldn't happen
     default:

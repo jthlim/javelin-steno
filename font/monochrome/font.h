@@ -6,11 +6,16 @@
 
 //---------------------------------------------------------------------------
 
-enum FontId : int {
+enum class FontId : uint32_t {
   DEFAULT,
+  LARGE,
+  DOS,
   SMALL_DIGITS,
   MEDIUM_DIGITS,
   LARGE_DIGITS,
+  HUGE_DIGITS,
+
+  COUNT,
 };
 
 struct Font {
@@ -30,6 +35,11 @@ struct Font {
   const uint8_t *GetCharacterData(uint32_t c) const;
   uint32_t GetStringWidth(const char *p) const;
 
+  static const Font *GetFont(FontId fontId) {
+    return (size_t)fontId < (size_t)FontId::COUNT ? FONTS[(size_t)fontId]
+                                                  : &DEFAULT;
+  }
+
   static const Font DEFAULT;
   static const Font LARGE;
   static const Font DOS;
@@ -38,12 +48,8 @@ struct Font {
   static const Font LARGE_DIGITS;
   static const Font HUGE_DIGITS;
 
+private:
   static const Font *const FONTS[];
-  static constexpr size_t FONT_COUNT = 7;
-
-  static const Font *GetFont(size_t fontId) {
-    return fontId < FONT_COUNT ? FONTS[fontId] : &DEFAULT;
-  }
 };
 
 //---------------------------------------------------------------------------

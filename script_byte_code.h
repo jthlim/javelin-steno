@@ -93,11 +93,14 @@ enum class StenoScriptOperator : uint8_t {
   SHIFT_LEFT,               // 0x12
   ARITHMETIC_SHIFT_RIGHT,   // 0x13
   LOGICAL_SHIFT_RIGHT,      // 0x14
-  BYTE_LOOKUP,              // 0x15
-  WORD_LOOKUP,              // 0x16
+  READ_BYTE_INDEX,          // 0x15
+  READ_WORD_INDEX,          // 0x16
   INCREMENT,                // 0x17
   DECREMENT,                // 0x18
-  HALF_WORD_LOOKUP,         // 0x19
+  READ_HALF_WORD_INDEX,     // 0x19
+  WRITE_BYTE_INDEX,         // 0x1a
+  WRITE_HALF_WORD_INDEX,    // 0x1b
+  WRITE_WORD_INDEX,         // 0x1c
 };
 
 struct StenoScriptHashTable {
