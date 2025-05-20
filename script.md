@@ -533,6 +533,13 @@ const SK_X26 = 63;
     - s = saturation, 0-256 represents 0.0 - 1.0
     - v = value, 0-255 represents 0.0 - 1.0
 
+- `func enableScriptRgb()`
+- `func disableScriptRgb()`
+
+  - Controls whether setRgb/setHsv commands are performed. This is to allow
+    external control of RGB.
+  - When disabled, only external scripts or console commands will take effect.
+
 By convention, boards with per-key rgb lights have each key rgb id match
 the button index, then underglow lights after.
 

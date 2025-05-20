@@ -95,6 +95,7 @@ ButtonScript::ButtonScript(const uint8_t *byteCode)
 
 void ButtonScript::Reset() {
   ReleaseAll();
+  isScriptRgbEnabled = true;
   inPressAllCount = 0;
   inReleaseAllCount = 0;
   pressCount = 0;
@@ -468,7 +469,9 @@ public:
     const int g = script.Pop() & 0xff;
     const int r = script.Pop() & 0xff;
     const int id = (int)script.Pop();
-    Rgb::SetRgb(id, r, g, b);
+    if (script.isScriptRgbEnabled || !script.IsInbuiltByteCode(byteCode)) {
+      Rgb::SetRgb(id, r, g, b);
+    }
   }
 
   static void GetTime(ButtonScript &script, const ScriptByteCode *byteCode) {
@@ -590,7 +593,9 @@ public:
     const int s = (int)script.Pop();
     const int h = (int)script.Pop();
     const int id = (int)script.Pop();
-    Rgb::SetHsv(id, h, s, v);
+    if (script.isScriptRgbEnabled || !script.IsInbuiltByteCode(byteCode)) {
+      Rgb::SetHsv(id, h, s, v);
+    }
   }
 
   static void Rand(ButtonScript &script, const ScriptByteCode *byteCode) {
@@ -1221,6 +1226,16 @@ public:
     const char *text = byteCode->GetScriptData<char>(textOffset);
     script.Push(font->GetStringWidth(text));
   }
+
+  static void EnableScriptRgb(ButtonScript &script,
+                              const ScriptByteCode *byteCode) {
+    script.isScriptRgbEnabled = true;
+  }
+
+  static void DisableScriptRgb(ButtonScript &script,
+                               const ScriptByteCode *byteCode) {
+    script.isScriptRgbEnabled = false;
+  }
 };
 
 constexpr void (*ButtonScript::FUNCTION_TABLE[])(ButtonScript &,
@@ -1342,6 +1357,8 @@ constexpr void (*ButtonScript::FUNCTION_TABLE[])(ButtonScript &,
     &Function::StopInfrared,
     &Function::PrintData,
     &Function::MeasureTextWidth,
+    &Function::EnableScriptRgb,
+    &Function::DisableScriptRgb,
 };
 
 void ButtonScript::PrintEventHistory() {

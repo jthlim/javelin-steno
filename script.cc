@@ -460,6 +460,8 @@ next:
   case BC::DUP:
     stack.Push(stack.Peek());
     CONTINUE;
+  case BC::NOP:
+    CONTINUE;
   case BC::JUMP_SHORT_BEGIN... BC::JUMP_SHORT_END: {
     const int offset = c + 1 - BC::JUMP_SHORT_BEGIN;
     p.Advance(offset);

@@ -111,6 +111,7 @@ private:
   };
 
   bool isInReinit;
+  bool isScriptRgbEnabled = true;
   uint8_t inPressAllCount;
   uint8_t inReleaseAllCount;
   uint32_t pressCount;
