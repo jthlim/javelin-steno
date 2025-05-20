@@ -14,7 +14,8 @@ enum InfraredRepeatDelayMode : uint8_t {
 };
 
 struct InfraredDataConfiguration {
-  // Number of times to repeat the message.
+  // Number of times to send the message.
+  // Use 0 for infinite.
   Uint32 playbackCount = 1;
   // Delay after data, measured in microseconds.
   Uint32 repeatDelay;

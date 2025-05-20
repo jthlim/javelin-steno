@@ -58,7 +58,7 @@ private:
 
 class SplitSerialBuffer {
 public:
-  static void Add(const uint8_t *data) {}
+  static void Add(const uint8_t *data, size_t length) {}
 
   static void RegisterTxHandler() {}
   static void RegisterRxHandler() {}

@@ -193,7 +193,7 @@ void Infrared::SendSamsungMessage(uint32_t address, uint32_t command,
   command = Bit<1>::ReverseBits(command);
 
   static constexpr InfraredDataConfiguration configuration = {
-      .playbackCount = (uint32_t)-1,
+      .playbackCount = 0,
       .repeatDelay = 108300,
       .repeatDelayMode = InfraredRepeatDelayMode::START_TO_START,
       .carrierFrequency = 38000,
@@ -216,7 +216,7 @@ void Infrared::SendSamsungMessage(uint32_t address, uint32_t command,
 void Infrared::SendSony38Message(uint32_t address, uint32_t command,
                                  uint32_t bits) {
   static constexpr InfraredDataConfiguration configuration = {
-      .playbackCount = (uint32_t)-1,
+      .playbackCount = 0,
       .repeatDelay = 45000,
       .repeatDelayMode = InfraredRepeatDelayMode::START_TO_START,
       .carrierFrequency = 38000,
@@ -233,7 +233,7 @@ void Infrared::SendSony38Message(uint32_t address, uint32_t command,
 void Infrared::SendSony40Message(uint32_t address, uint32_t command,
                                  uint32_t bits) {
   static constexpr InfraredDataConfiguration configuration = {
-      .playbackCount = (uint32_t)-1,
+      .playbackCount = 0,
       .repeatDelay = 45000,
       .repeatDelayMode = InfraredRepeatDelayMode::START_TO_START,
       .carrierFrequency = 40000,

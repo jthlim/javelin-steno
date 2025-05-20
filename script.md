@@ -28,6 +28,8 @@ A value could be:
 - A pointer to a byte list.
 
   - `[[00 ff 12 34]]`
+  - Accessing individual bytes in a byte list is done with `[n]`
+    - `byteList[i]`
 
 - A pointer to a function
   - Named function: `@functionName`
@@ -38,6 +40,13 @@ A value could be:
   - The programmer will need to ensure pointers to functions are called
     with the right number of parameters, and that return values are used;
     no checks are provided by the compiler.
+
+- A pointer to unsigned 16-bit values, which includes string, byte list and
+  function pointers.
+
+  - `[< "string1", [[11 22 33]], @func1 >]`
+  - Accessing individual elements in a 16-bit value list is done using `[<n>]`
+    - `stringTable[<i>]`
 
 There are no explicit boolean values -- for conditions (e.g. `if` statements)
 only the value 0 is considered falsy. All other values are truthy.
