@@ -125,6 +125,8 @@ statements.
   - `a[x]` will look up the xth byte in a byte list, unless `a` is
     a global or local variable name.
   - No bounds checking is performed on _index_
+- `+=`, `-=`, `*=`, `/=`, `%=`, `&=`, `|=`, `<<=`, `>>=`, `>>>=` syntactic
+  shortcuts are supported with some limitations.
 
 The fallback operator `<identifier> ?? <expr>` specifies to use the
 right hand _expr_ if the identifier is not defined.
