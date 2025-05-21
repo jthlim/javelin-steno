@@ -1,6 +1,7 @@
 //---------------------------------------------------------------------------
 
 #include "button_script.h"
+#include "writer.h"
 
 #include JAVELIN_BOARD_CONFIG
 
@@ -1129,12 +1130,15 @@ public:
     const intptr_t offset = script.Pop();
     const char *text = byteCode->GetScriptData<char>(offset);
 
-    script.consoleWriter.Reset();
-    script.consoleWriter.Printf(text, value);
-    script.consoleWriter.AddTrailingNull();
+    LimitedBufferWriter &writer =
+        script.formatStringWriter[script.formatStringWriterIndex];
+    script.formatStringWriterIndex = (script.formatStringWriterIndex + 1) & 1;
 
-    const uint8_t *result =
-        byteCode->FindStringOrReturnOriginal(script.consoleWriter.buffer);
+    writer.Reset();
+    writer.Printf(text, value);
+    writer.AddTrailingNull();
+
+    const uint8_t *result = byteCode->FindStringOrReturnOriginal(writer.buffer);
     script.Push(byteCode->GetDataOffset(result));
   }
 

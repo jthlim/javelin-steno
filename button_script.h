@@ -114,6 +114,7 @@ private:
   bool isScriptRgbEnabled = true;
   uint8_t inPressAllCount;
   uint8_t inReleaseAllCount;
+  uint8_t formatStringWriterIndex;
   uint32_t pressCount;
   uint32_t releaseCount;
   uint32_t scriptTime;
@@ -123,6 +124,7 @@ private:
   ButtonState buttonState;
   BitField<256> keyState;
   BitField<32> mouseButtonState;
+  LimitedBufferWriter formatStringWriter[2];
   LimitedBufferWriter consoleWriter;
 
   void ExecuteScript(size_t offset, uint32_t scriptTime);
