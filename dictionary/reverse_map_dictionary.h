@@ -22,7 +22,7 @@ public:
   const uint8_t *FindMapDataLookup(const char *text) const;
 
 private:
-  const uint8_t *baseAddress;
+  const uint8_t *const baseAddress;
   const SizedList<uint8_t> textBlock;
 
   static constexpr size_t INDEX_SIZE = 256;

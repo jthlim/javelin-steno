@@ -17,6 +17,10 @@ template <typename T> struct Interval {
   }
 
   bool Contains(T value) const { return min <= value && value < max; }
+
+  bool HasIntersection(const Interval &o) const {
+    return min < o.max && o.min < max;
+  }
 };
 
 //---------------------------------------------------------------------------

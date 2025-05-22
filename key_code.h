@@ -7,25 +7,6 @@
 
 //---------------------------------------------------------------------------
 
-// pico-sdk defines F# macros, that interfere with the KeyCodes
-#undef F1
-#undef F2
-#undef F3
-#undef F4
-#undef F5
-#undef F6
-#undef F7
-#undef F8
-#undef F9
-#undef F10
-#undef F11
-#undef F12
-#undef F13
-#undef F14
-#undef F15
-
-//---------------------------------------------------------------------------
-
 struct KeyCode {
   enum Value : uint8_t {
     A = 0x04,

@@ -1,5 +1,6 @@
 //---------------------------------------------------------------------------
 
+#include "clamp.h"
 #include "console.h"
 #include "engine.h"
 #include "key.h"
@@ -966,7 +967,7 @@ void StenoEngine::PrintTextLog(
       "\\b\\b\\b\\b\\b\\b\\b\\b\\b\\b\\b\\b\\b\\b\\b\\b";
 
   while (backspaceCount > 0) {
-    const size_t writeCount = backspaceCount > 16 ? 16 : backspaceCount;
+    const size_t writeCount = ClampMax(backspaceCount, 16);
     Console::Write(BACKSPACES, 2 * writeCount);
     backspaceCount -= writeCount;
   }

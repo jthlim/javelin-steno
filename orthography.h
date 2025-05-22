@@ -67,7 +67,7 @@ public:
   const StenoOrthography &data;
 
 private:
-  const Pattern *patterns;
+  const Pattern *const patterns;
 
 #if USE_ORTHOGRAPHY_CACHE
   struct CacheBlock;

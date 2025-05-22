@@ -79,7 +79,7 @@ void StenoReverseDictionaryLookup::AddResult(
     const StenoStroke *strokes, size_t length,
     const StenoDictionary *dictionary) {
   // Ignore if above or equal to the threshold.
-  if (length >= strokeThreshold) {
+  if (length >= ignoreStrokeThreshold) {
     return;
   }
 
@@ -133,11 +133,14 @@ void StenoReverseDictionaryLookup::AddMapLookupData(
   while ((mapDataLookup.HasData())) {
     // This should never happen if the converter limits work.
     if (mapLookupData.IsFull()) {
-      return;
+      break;
     }
 
     mapLookupData.Add(mapDataLookup.GetData(baseAddress));
     ++mapDataLookup;
+  }
+  if (!mapLookupData.IsEmpty()) {
+    mapLookupDataRange.Set(mapLookupData.Front(), mapLookupData.Back());
   }
 }
 
@@ -209,6 +212,8 @@ void StenoDictionary::GetDictionariesForOutline(
 
 void StenoDictionary::ReverseLookup(
     StenoReverseDictionaryLookup &lookup) const {}
+
+StenoDictionary *StenoDictionary::GetLookupDictionary() { return this; }
 
 void StenoDictionary::PrintInfo(int depth) const {
   Console::Printf("%s%s\n", Spaces(depth), GetName());

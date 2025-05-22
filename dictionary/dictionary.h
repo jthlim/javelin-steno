@@ -187,24 +187,27 @@ class StenoReverseDictionaryLookup : public JavelinMallocAllocate {
 public:
   StenoReverseDictionaryLookup(const char *definition,
                                size_t strokeThreshold = MAX_STROKE_THRESHOLD)
-      : strokeThreshold(strokeThreshold), definition(definition),
+      : ignoreStrokeThreshold(strokeThreshold), definition(definition),
         definitionLength(Str::Length(definition)),
-        definitionCrc(Crc32::Hash(definition, definitionLength)) {}
+        definitionCrc(Crc32::Hash(definition, definitionLength)) {
+    mapLookupDataRange.max = nullptr;
+  }
 
   // Results with stroke count equal to, or above this will not be captured.
   // i.e. Only stroke count less than this will be returned.
-  size_t strokeThreshold;
+  const size_t ignoreStrokeThreshold;
 
-  const char *definition;
-  size_t definitionLength;
-  uint32_t definitionCrc;
+  const char *const definition;
+  const size_t definitionLength;
+  const uint32_t definitionCrc;
 
   // Used to prevent recursing prefixes too far.
   size_t prefixLookupDepth = 0;
 
   // These are used as an optimization for map lookup.
   // Since the first step of all map lookups is the same, do it once and
-  // pass it down.
+  // pass it into each map dictionary.
+  Interval<const void *> mapLookupDataRange;
   StaticList<const void *, 24> mapLookupData;
 
   StaticList<StenoReverseDictionaryResult, 24> results;
@@ -324,9 +327,7 @@ public:
   // Returns the lookup dictionary within a WrappedDictionary.
   //
   // This optimization avoids multiple wrapped chain calls.
-  virtual StenoDictionary *GetWrappedLookupDictionary() const {
-    return nullptr;
-  }
+  virtual StenoDictionary *GetLookupDictionary();
 
   virtual void PrintInfo(int depth) const;
   virtual void PrintDictionary(PrintDictionaryContext &context) const {}

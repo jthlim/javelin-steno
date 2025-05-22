@@ -24,8 +24,7 @@ private:
 
   static constexpr size_t MAXIMUM_REVERSE_PREFIX_DEPTH = 2;
 
-  const uint8_t *baseAddress;
-
+  const uint8_t *const baseAddress;
   const SizedList<Prefix> prefixes;
 
   void AddPrefixReverseLookup(ReverseLookupContext &context,

@@ -24,7 +24,7 @@ private:
   StenoInvalidDictionary(const char *message)
       : StenoDictionary(MAXIMUM_OUTLINE_LENGTH), message(message) {}
 
-  const char *message;
+  const char *const message;
 };
 
 //---------------------------------------------------------------------------

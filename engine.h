@@ -94,8 +94,8 @@ private:
   StenoDictionary *activeDictionary;
   StenoDictionary *storedDictionaries;
 
-  const StenoCompiledOrthography& orthography;
-  StenoUserDictionary *userDictionary;
+  const StenoCompiledOrthography &orthography;
+  StenoUserDictionary *const userDictionary;
 
   StenoState state;
   StenoState altTranslationState;

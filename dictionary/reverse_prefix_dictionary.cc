@@ -98,7 +98,7 @@ StenoReversePrefixDictionary::StenoReversePrefixDictionary(
 void StenoReversePrefixDictionary::ReverseLookup(
     StenoReverseDictionaryLookup &lookup) const {
   super::ReverseLookup(lookup);
-  if (lookup.definitionLength > 1 && lookup.strokeThreshold > 2 &&
+  if (lookup.definitionLength > 1 && lookup.ignoreStrokeThreshold > 2 &&
       lookup.prefixLookupDepth < MAXIMUM_REVERSE_PREFIX_DEPTH &&
       !Str::Contains(lookup.definition, ' ')) {
     ReverseLookupContext context;
@@ -147,7 +147,7 @@ void StenoReversePrefixDictionary::AddPrefixReverseLookup(
     // Use "1" as an quick approximation.
     StenoReverseDictionaryLookup *suffixLookup =
         new StenoReverseDictionaryLookup(test.suffix,
-                                         lookup.strokeThreshold - 1);
+                                         lookup.ignoreStrokeThreshold - 1);
 
     suffixLookup->prefixLookupDepth = lookup.prefixLookupDepth + 1;
     ReverseLookup(*suffixLookup);
@@ -157,10 +157,10 @@ void StenoReversePrefixDictionary::AddPrefixReverseLookup(
       // Suffix lookup succeeded.
       const size_t minimumSuffixStrokeCount =
           suffixLookup->GetMinimumStrokeCount();
-      if (lookup.strokeThreshold > minimumSuffixStrokeCount + 1) {
+      if (lookup.ignoreStrokeThreshold > minimumSuffixStrokeCount + 1) {
         StenoReverseDictionaryLookup *prefixLookup =
             new StenoReverseDictionaryLookup(test.prefix->GetText(),
-                                             lookup.strokeThreshold -
+                                             lookup.ignoreStrokeThreshold -
                                                  minimumSuffixStrokeCount);
 
         // Add map lookup hints.
@@ -183,7 +183,7 @@ void StenoReversePrefixDictionary::AddPrefixReverseLookup(
             for (const StenoReverseDictionaryResult &prefix :
                  prefixLookup->results) {
               const size_t combinedLength = prefix.length + suffix.length;
-              if (combinedLength >= lookup.strokeThreshold) {
+              if (combinedLength >= lookup.ignoreStrokeThreshold) {
                 continue;
               }
               StenoStroke strokes[combinedLength];

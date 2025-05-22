@@ -127,7 +127,7 @@ StenoReverseSuffixDictionary::CreateSuffixList(
 void StenoReverseSuffixDictionary::ReverseLookup(
     StenoReverseDictionaryLookup &lookup) const {
   super::ReverseLookup(lookup);
-  if (lookup.definitionLength > 1 && lookup.strokeThreshold > 2 &&
+  if (lookup.definitionLength > 1 && lookup.ignoreStrokeThreshold > 2 &&
       !Str::Contains(lookup.definition, ' ')) {
     ReverseLookupContext context;
     context.left = begin(suffixes);
@@ -189,7 +189,7 @@ void StenoReverseSuffixDictionary::AddSuffixReverseLookup(
 
     StenoReverseDictionaryLookup *prefixLookup =
         new StenoReverseDictionaryLookup(withoutSuffix,
-                                         lookup.strokeThreshold - 1);
+                                         lookup.ignoreStrokeThreshold - 1);
 
     prefixDictionary->ReverseLookup(*prefixLookup);
     free(withoutSuffix);
@@ -198,11 +198,11 @@ void StenoReverseSuffixDictionary::AddSuffixReverseLookup(
       // Prefix lookup succeeded, get the suffixes.
       const size_t minimumPrefixStrokeCount =
           prefixLookup->GetMinimumStrokeCount();
-      if (lookup.strokeThreshold > minimumPrefixStrokeCount + 1) {
+      if (lookup.ignoreStrokeThreshold > minimumPrefixStrokeCount + 1) {
         StenoReverseDictionaryLookup *suffixLookup =
             new StenoReverseDictionaryLookup(
                 (const char *)test.suffix->GetText(suffixLength),
-                lookup.strokeThreshold - minimumPrefixStrokeCount);
+                lookup.ignoreStrokeThreshold - minimumPrefixStrokeCount);
 
         // Add map lookup hints.
         suffixLookup->AddMapLookupData(test.suffix->GetMapLookupData(),
@@ -216,7 +216,7 @@ void StenoReverseSuffixDictionary::AddSuffixReverseLookup(
             for (const StenoReverseDictionaryResult &suffix :
                  suffixLookup->results) {
               const size_t combinedLength = prefix.length + suffix.length;
-              if (combinedLength >= lookup.strokeThreshold) {
+              if (combinedLength >= lookup.ignoreStrokeThreshold) {
                 continue;
               }
               StenoStroke strokes[combinedLength];

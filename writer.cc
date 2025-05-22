@@ -19,6 +19,7 @@
 //---------------------------------------------------------------------------
 
 #include "writer.h"
+#include "clamp.h"
 #include "str.h"
 #include "stroke.h"
 #include "utf8_pointer.h"
@@ -361,7 +362,7 @@ void IWriter::WriteSegment(int flags, char *start, char *end, int width) {
   if (length < width) {
     size_t fillCount = width - length;
     while (fillCount) {
-      const size_t fillSegmentCount = fillCount > 16 ? 16 : fillCount;
+      const size_t fillSegmentCount = ClampMax(fillCount, 16);
 
       const char *fill = (flags & FLAG_FILL_ZERO) ? ZEROS : SPACES;
       Write(fill, fillSegmentCount);

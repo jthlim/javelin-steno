@@ -31,7 +31,7 @@ public:
 
 private:
   // Whether pressing A or E specifies spaces (vs. specifying glue).
-  bool isSpecifySpacesMode;
+  const bool isSpecifySpacesMode;
 };
 
 //---------------------------------------------------------------------------

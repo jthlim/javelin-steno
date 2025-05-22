@@ -44,12 +44,12 @@ private:
     void Update(const HashStats &stats);
   };
 
-  const uint8_t *textBlock;
+  const uint8_t *const textBlock;
   const StenoFullMapDictionaryDefinition &definition;
   Interval<const void *> dataRange;
 
   // This is offset by 1 to simplify lookup code marginally.
-  const StenoFullMapDictionaryStrokesDefinition *strokes;
+  const StenoFullMapDictionaryStrokesDefinition *const strokes;
 
   const FullStenoMapDictionaryDataEntry *
   FindEntry(const StenoDictionaryLookup &lookup) const;

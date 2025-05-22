@@ -30,11 +30,10 @@ private:
   struct Suffix;
   struct ReverseLookupContext;
 
-  const uint8_t *baseAddress;
-
+  const uint8_t *const baseAddress;
   const SizedList<Suffix> suffixes;
   const StenoCompiledOrthography &orthography;
-  const StenoDictionary *prefixDictionary;
+  const StenoDictionary *const prefixDictionary;
 
   static SizedList<Suffix>
   CreateSuffixList(const SizedList<const uint8_t *> suffixes,

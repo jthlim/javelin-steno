@@ -36,12 +36,12 @@ public:
   virtual void PrintDictionary(PrintDictionaryContext &context) const;
 
 private:
-  const uint8_t *textBlock;
+  const uint8_t *const textBlock;
   const StenoCompactMapDictionaryDefinition &definition;
   Interval<const void *> dataRange;
 
   // This is offset by 1 to simplify lookup code marginally.
-  const StenoCompactMapDictionaryStrokesDefinition *strokes;
+  const StenoCompactMapDictionaryStrokesDefinition *const strokes;
 
   const CompactStenoMapDictionaryDataEntry *
   FindEntry(const StenoDictionaryLookup &lookup) const;

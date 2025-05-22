@@ -43,10 +43,10 @@ public:
   virtual bool ToggleDictionary(const char *name);
 
 private:
-  StenoDictionary *lookupDictionary;
-  StenoDictionary *dictionary;
+  StenoDictionary *const lookupDictionary;
+  StenoDictionary *const dictionary;
 
-  virtual StenoDictionary *GetWrappedLookupDictionary() const final {
+  virtual StenoDictionary *GetLookupDictionary() final {
     return lookupDictionary;
   }
 };
