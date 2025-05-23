@@ -51,8 +51,7 @@ void Infrared::SendMessage(const char *protocolName, uint32_t d0, uint32_t d1,
       {"rca", SendRCAMessage},         //
       {"rc5", SendRC5Message},         //
       {"samsung", SendSamsungMessage}, //
-      {"sony38", SendSony38Message},   //
-      {"sony40", SendSony40Message},   //
+      {"sirc", SendSircMessage},       //
   };
   for (const InfraredProtocol &protocol : protocols) {
     if (Str::Eq(protocolName, protocol.name)) {
@@ -213,25 +212,8 @@ void Infrared::SendSamsungMessage(uint32_t address, uint32_t command,
   SendData(message, 32, configuration);
 }
 
-void Infrared::SendSony38Message(uint32_t address, uint32_t command,
-                                 uint32_t bits) {
-  static constexpr InfraredDataConfiguration configuration = {
-      .playbackCount = 0,
-      .repeatDelay = 45000,
-      .repeatDelayMode = InfraredRepeatDelayMode::START_TO_START,
-      .carrierFrequency = 38000,
-      .dutyCycle = 33,
-      .cycleCount = 23,
-      .header = {4, 1},
-      .zeroBit = {1, 1},
-      .oneBit = {2, 1},
-      .trailer = {0, 0},
-  };
-  SendSonyMessage(address, command, bits, configuration);
-}
-
-void Infrared::SendSony40Message(uint32_t address, uint32_t command,
-                                 uint32_t bits) {
+void Infrared::SendSircMessage(uint32_t address, uint32_t command,
+                               uint32_t bits) {
   static constexpr InfraredDataConfiguration configuration = {
       .playbackCount = 0,
       .repeatDelay = 45000,
@@ -244,42 +226,37 @@ void Infrared::SendSony40Message(uint32_t address, uint32_t command,
       .oneBit = {2, 1},
       .trailer = {0, 0},
   };
-  SendSonyMessage(address, command, bits, configuration);
-}
 
-void Infrared::SendSonyMessage(uint32_t address, uint32_t command,
-                               uint32_t bits,
-                               const InfraredDataConfiguration &configuration) {
   switch (bits) {
   case 0:
     // Try and use the lowest number of bits.
     if (command < 0x80) {
       if (address < 0x20) {
-        return SendSony12Message(address, command, configuration);
+        return SendSirc12Message(address, command, configuration);
       } else if (address < 0x100) {
-        return SendSony15Message(address, command, configuration);
+        return SendSirc15Message(address, command, configuration);
       }
     } else if (command < 0x8000 && address < 0x20) {
-      return SendSony20Message(address, command, configuration);
+      return SendSirc20Message(address, command, configuration);
     }
     Console::Printf("Unable to encode message\n\n");
     return;
   case 12:
-    return SendSony12Message(address, command, configuration);
+    return SendSirc12Message(address, command, configuration);
 
   case 15:
-    return SendSony15Message(address, command, configuration);
+    return SendSirc15Message(address, command, configuration);
 
   case 20:
-    return SendSony20Message(address, command, configuration);
+    return SendSirc20Message(address, command, configuration);
 
   default:
     Console::Printf(
-        "Sony protocol requires 0(infer)/12/15/20 bits as last parameter\n\n");
+        "Sirc protocol requires 0(infer)/12/15/20 bits as last parameter\n\n");
   }
 }
 
-void Infrared::SendSony12Message(
+void Infrared::SendSirc12Message(
     uint32_t address, uint32_t command,
     const InfraredDataConfiguration &configuration) {
   address = Bit<4>::ReverseBits(address);
@@ -292,7 +269,7 @@ void Infrared::SendSony12Message(
   SendData(message, 12, configuration);
 }
 
-void Infrared::SendSony15Message(
+void Infrared::SendSirc15Message(
     uint32_t address, uint32_t command,
     const InfraredDataConfiguration &configuration) {
   address = Bit<4>::ReverseBits(address);
@@ -306,7 +283,7 @@ void Infrared::SendSony15Message(
 }
 
 // Command is 15 bits.
-void Infrared::SendSony20Message(
+void Infrared::SendSirc20Message(
     uint32_t address, uint32_t command,
     const InfraredDataConfiguration &configuration) {
   const uint32_t extended = Bit<4>::ReverseBits(command >> 7);
@@ -328,7 +305,7 @@ void Infrared::SendSony20Message(
 #include "../unit_test.h"
 
 TEST_BEGIN("Infrared Dyson data is calculated correctly") {
-  Infrared::SendMessage("Dyson", 9, 0x3f, 0);
+  Infrared::SendMessage("dyson", 9, 0x3f, 0);
   assert(
       infraRedData ==
       0b1001000'11111100'0'00000000'00000000'00000000'00000000'00000000'00000000ull);
@@ -337,7 +314,7 @@ TEST_BEGIN("Infrared Dyson data is calculated correctly") {
 TEST_END
 
 TEST_BEGIN("Infrared NEC data is calculated correctly") {
-  Infrared::SendMessage("NEC", 0, 0xad, 0);
+  Infrared::SendMessage("nec", 0, 0xad, 0);
   assert(
       infraRedData ==
       0b00000000'11111111'10110101'01001010'00000000'00000000'00000000'00000000ull);
@@ -346,7 +323,7 @@ TEST_BEGIN("Infrared NEC data is calculated correctly") {
 TEST_END
 
 TEST_BEGIN("Infrared RCA data is calculated correctly") {
-  Infrared::SendMessage("RCA", 10, 0x68, 0);
+  Infrared::SendMessage("rca", 10, 0x68, 0);
   assert(
       infraRedData ==
       0b1010'01101000'0101'10010111'00000000'00000000'00000000'00000000'00000000ull);
@@ -355,13 +332,13 @@ TEST_BEGIN("Infrared RCA data is calculated correctly") {
 TEST_END
 
 TEST_BEGIN("Infrared RC5 data is calculated correctly") {
-  Infrared::SendMessage("RC5", 0x5, 0x35, 0);
+  Infrared::SendMessage("rc5", 0x5, 0x35, 0);
   assert(
       infraRedData ==
       0b0101'10'1010011001'010110011001'0000'00000000'00000000'00000000'00000000ull);
   assert(infraredBitCount == 28);
 
-  Infrared::SendMessage("RC5", 0x5, 0x75, 1);
+  Infrared::SendMessage("rc5", 0x5, 0x75, 1);
   assert(
       infraRedData ==
       0b0110'01'1010011001'010110011001'0000'00000000'00000000'00000000'00000000ull);
@@ -370,7 +347,7 @@ TEST_BEGIN("Infrared RC5 data is calculated correctly") {
 TEST_END
 
 TEST_BEGIN("Infrared Samsung data is calculated correctly") {
-  Infrared::SendMessage("Samsung", 0x7, 0x4, 0);
+  Infrared::SendMessage("samsung", 0x7, 0x4, 0);
   assert(
       infraRedData ==
       0b11100000'11100000'00100000'11011111'00000000'00000000'00000000'00000000ull);
@@ -378,8 +355,8 @@ TEST_BEGIN("Infrared Samsung data is calculated correctly") {
 }
 TEST_END
 
-TEST_BEGIN("Infrared Sony12 data is calculated correctly") {
-  Infrared::SendMessage("Sony", 1, 0x13, 12);
+TEST_BEGIN("Infrared Sirc12 data is calculated correctly") {
+  Infrared::SendMessage("sirc", 1, 0x13, 12);
   assert(
       infraRedData ==
       0b1100100'10000'0000'00000000'00000000'00000000'00000000'00000000'00000000ull);
@@ -387,8 +364,8 @@ TEST_BEGIN("Infrared Sony12 data is calculated correctly") {
 }
 TEST_END
 
-TEST_BEGIN("Infrared Sony15 data is calculated correctly") {
-  Infrared::SendMessage("Sony", 1, 0x13, 15);
+TEST_BEGIN("Infrared Sirc15 data is calculated correctly") {
+  Infrared::SendMessage("sirc", 1, 0x13, 15);
   assert(
       infraRedData ==
       0b1100100'10000'0000'00000000'00000000'00000000'00000000'00000000'00000000ull);
@@ -396,8 +373,8 @@ TEST_BEGIN("Infrared Sony15 data is calculated correctly") {
 }
 TEST_END
 
-TEST_BEGIN("Infrared Sony20 data is calculated correctly") {
-  Infrared::SendMessage("Sony", 1, 0x13 + (0x39 << 7), 20);
+TEST_BEGIN("Infrared Sirc20 data is calculated correctly") {
+  Infrared::SendMessage("sirc", 1, 0x13 + (0x39 << 7), 20);
   assert(
       infraRedData ==
       0b1100100'10000'10011100'0000'00000000'00000000'00000000'00000000'00000000ull);

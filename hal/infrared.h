@@ -58,17 +58,13 @@ private:
                              uint32_t toggle);
   static void SendSamsungMessage(uint32_t address, uint32_t command,
                                  uint32_t _);
-  static void SendSony38Message(uint32_t address, uint32_t command,
-                                uint32_t bits);
-  static void SendSony40Message(uint32_t address, uint32_t command,
-                                uint32_t bits);
-  static void SendSonyMessage(uint32_t address, uint32_t command, uint32_t bits,
-                              const InfraredDataConfiguration &configuration);
-  static void SendSony12Message(uint32_t address, uint32_t command,
+  static void SendSircMessage(uint32_t address, uint32_t command,
+                              uint32_t bits);
+  static void SendSirc12Message(uint32_t address, uint32_t command,
                                 const InfraredDataConfiguration &configuration);
-  static void SendSony15Message(uint32_t address, uint32_t command,
+  static void SendSirc15Message(uint32_t address, uint32_t command,
                                 const InfraredDataConfiguration &configuration);
-  static void SendSony20Message(uint32_t address, uint32_t command,
+  static void SendSirc20Message(uint32_t address, uint32_t command,
                                 const InfraredDataConfiguration &configuration);
 };
 

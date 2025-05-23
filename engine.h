@@ -141,7 +141,7 @@ private:
   bool HandleAddTranslationModeScanCode(uint32_t scanCodeAndModifiers,
                                         ScanCodeAction action);
   void UpdateAddTranslationModeTextBuffer(ConversionBuffer &buffer);
-  void EndAddTranslationMode(bool hasAddedTranslation);
+  void EndAddTranslationMode();
   void FreeAddTranslationText();
 
   void InitiateConsoleMode();

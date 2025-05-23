@@ -66,7 +66,7 @@ void StenoEngine::ProcessAddTranslationModeStroke(StenoStroke stroke) {
     }
     if (addTranslationText) {
       AddTranslation(altTranslationHistory.GetCount());
-      EndAddTranslationMode(true);
+      EndAddTranslationMode();
       return;
     }
     if (newlineIndex != 0) {
@@ -76,7 +76,7 @@ void StenoEngine::ProcessAddTranslationModeStroke(StenoStroke stroke) {
       } else {
         AddTranslation(newlineIndex);
       }
-      EndAddTranslationMode(true);
+      EndAddTranslationMode();
       return;
     }
   } else if (newlineIndex == 0) {
@@ -111,7 +111,7 @@ void StenoEngine::ProcessAddTranslationModeStroke(StenoStroke stroke) {
 
 void StenoEngine::ProcessAddTranslationModeUndo() {
   if (altTranslationHistory.IsEmpty()) {
-    EndAddTranslationMode(false);
+    EndAddTranslationMode();
     return;
   }
 
@@ -185,18 +185,14 @@ void StenoEngine::UpdateAddTranslationModeTextBuffer(ConversionBuffer &buffer) {
   }
 }
 
-void StenoEngine::EndAddTranslationMode(bool hasAddedTranslation) {
+void StenoEngine::EndAddTranslationMode() {
   UpdateAddTranslationModeTextBuffer(previousConversionBuffer);
   nextConversionBuffer.keyCodeBuffer.Reset();
   emitter.Process(previousConversionBuffer.keyCodeBuffer,
                   nextConversionBuffer.keyCodeBuffer);
 
   mode = StenoEngineMode::NORMAL;
-  if (!hasAddedTranslation) {
-    ProcessNormalModeUndo();
-  } else {
-    history.Reset();
-  }
+  ProcessNormalModeUndo();
 
   FreeAddTranslationText();
 }
