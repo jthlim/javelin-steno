@@ -1240,6 +1240,25 @@ public:
                                const ScriptByteCode *byteCode) {
     script.isScriptRgbEnabled = false;
   }
+
+  static void SendInfraredSignal(ButtonScript &script,
+                                 const ScriptByteCode *byteCode) {
+    const intptr_t configurationOffset = script.Pop();
+    const uint32_t dataCount = (uint32_t)script.Pop();
+    const intptr_t dataOffset = script.Pop();
+
+    if (configurationOffset == 0 || dataCount == 0 || dataOffset == 0) {
+      return;
+    }
+
+    const InfraredRawDataConfiguration *configuration =
+        byteCode->GetScriptData<InfraredRawDataConfiguration>(
+            configurationOffset);
+    const FixedPoint<uint16_t, 2> *data =
+        byteCode->GetScriptData<FixedPoint<uint16_t, 2>>(dataOffset);
+
+    Infrared::SendRawData(data, dataCount, *configuration);
+  }
 };
 
 constexpr void (*ButtonScript::FUNCTION_TABLE[])(ButtonScript &,
@@ -1363,6 +1382,7 @@ constexpr void (*ButtonScript::FUNCTION_TABLE[])(ButtonScript &,
     &Function::MeasureTextWidth,
     &Function::EnableScriptRgb,
     &Function::DisableScriptRgb,
+    &Function::SendInfraredSignal,
 };
 
 void ButtonScript::PrintEventHistory() {

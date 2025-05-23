@@ -13,37 +13,44 @@ enum InfraredRepeatDelayMode : uint8_t {
   END_TO_START,
 };
 
-struct InfraredDataConfiguration {
+struct InfraredRawDataConfiguration {
   // Number of times to send the message.
   // Use 0 for infinite.
   Uint32 playbackCount = 1;
-  // Delay after data, measured in microseconds.
-  Uint32 repeatDelay;
-  InfraredRepeatDelayMode repeatDelayMode;
 
   uint16_t carrierFrequency;
   uint16_t dutyCycle;
-  uint16_t cycleCount;
 
-  // Time in multiples of period defined by carrierFrequency
-  struct PulseTicks {
-    FixedPoint<uint16_t, 8> onTicks;
-    FixedPoint<uint16_t, 8> offTicks;
+  // Delay after data, measured in microseconds.
+  FixedPoint<Uint32, 2> repeatDelay;
+  InfraredRepeatDelayMode repeatDelayMode;
+};
+
+struct InfraredDataConfiguration {
+  InfraredRawDataConfiguration rawConfiguration;
+  // Time in microseconds.
+  struct PulseTime {
+    FixedPoint<uint16_t, 2> onTime;
+    FixedPoint<uint16_t, 2> offTime;
   };
-  PulseTicks header;
-  PulseTicks zeroBit;
-  PulseTicks oneBit;
-  PulseTicks trailer;
+  PulseTime header;
+  PulseTime zeroBit;
+  PulseTime oneBit;
+  PulseTime trailer;
 
-  const PulseTicks &GetBitPulseTicks(size_t index) const {
+  const PulseTime &GetBitPulseTime(size_t index) const {
     return (&zeroBit)[index];
   }
 };
 
 class Infrared {
 public:
-  static void SendData(const void *data, int bitCount,
+  static void SendData(const void *data, size_t bitCount,
                        const InfraredDataConfiguration &configuration);
+
+  // playCount = 0 -> infinite playback.
+  static void SendRawData(const FixedPoint<uint16_t, 2> *data, size_t dataCount,
+                          const InfraredRawDataConfiguration &rawData);
 
   static void SendMessage(const char *protocolName, uint32_t d0, uint32_t d1,
                           uint32_t d2);

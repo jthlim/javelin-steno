@@ -27,7 +27,7 @@ public:
     return value <= o.value;
   }
   constexpr bool operator>(const FixedPoint &o) const {
-    return value < o.value;
+    return value > o.value;
   }
   constexpr bool operator>=(const FixedPoint &o) const {
     return value >= o.value;
@@ -51,6 +51,9 @@ public:
   constexpr FixedPoint operator/(unsigned int o) const {
     return FixedPoint(value / o, true);
   }
+
+  void operator+=(const FixedPoint &o) { value += o.value; }
+  void operator-=(const FixedPoint &o) { value -= o.value; }
 
   T value;
 
