@@ -1,7 +1,6 @@
 //---------------------------------------------------------------------------
 
 #include "infrared.h"
-#include "../bit.h"
 #include "../console.h"
 #include "../str.h"
 
@@ -76,17 +75,19 @@ void RawInfraredData::Add(const InfraredDataConfiguration::PulseTime &time) {
 
 #if RUN_TESTS
 static uint64_t testInfraRedData;
-static int testInfraredBitCount;
-void SetInfraredDataBits(const void *data, int bitCount) {
+static size_t testInfraredBitCount;
+void SetInfraredDataBits(const void *data, size_t bitCount,
+                         InfraredEndianness endianness) {
   testInfraredBitCount = bitCount;
   testInfraRedData = 0;
   const uint8_t *p = (const uint8_t *)data;
   uint32_t mask = 0;
   for (size_t i = 0; i < bitCount; ++i) {
-    if ((mask << 1) == 0) {
-      mask = (*p++ << 24) | 0x800000;
-    }
-    if (mask >> 31) {
+    const uint32_t byte = p[i / 8];
+    const size_t rightShift =
+        endianness == InfraredEndianness::MSB_FIRST ? ~i : i;
+    const uint32_t bit = (byte >> (rightShift & 7)) & 1;
+    if (bit) {
       testInfraRedData |= 1ull << (63 - i);
     }
     mask <<= 1;
@@ -119,7 +120,8 @@ void Infrared::SendData(const void *data, size_t bitCount,
   }
 
 #if RUN_TESTS
-  SetInfraredDataBits(data, bitCount);
+  SetInfraredDataBits(data, bitCount,
+                      configuration.rawConfiguration.endianness);
 #endif
 
   RawInfraredData rawData;
@@ -127,7 +129,13 @@ void Infrared::SendData(const void *data, size_t bitCount,
 
   const uint8_t *p = (const uint8_t *)data;
   for (size_t i = 0; i < bitCount; ++i) {
-    rawData.Add(configuration.GetBitPulseTime((p[i / 8] >> (~i & 7)) & 1));
+    const uint32_t byte = p[i / 8];
+    const size_t rightShift = configuration.rawConfiguration.endianness ==
+                                      InfraredEndianness::MSB_FIRST
+                                  ? ~i
+                                  : i;
+    const uint32_t bit = (byte >> (rightShift & 7)) & 1;
+    rawData.Add(configuration.GetBitPulseTime(bit));
   }
   rawData.Add(configuration.trailer);
 
@@ -175,13 +183,10 @@ void Infrared::SendMessage(const char *protocolName, uint32_t d0, uint32_t d1,
 
 void Infrared::SendDysonMessage(uint32_t address, uint32_t command,
                                 uint32_t _) {
-  address = Bit<4>::ReverseBits(address);
-  command = Bit<4>::ReverseBits(command);
-
-  const uint32_t data = address | (command >> 7);
+  const uint32_t data = address | (command << 7);
   uint8_t message[2];
-  message[0] = data >> 24;
-  message[1] = data >> 16;
+  message[0] = data;
+  message[1] = data >> 8;
 
   constexpr float TICK = 789.5;
   static constexpr InfraredDataConfiguration configuration = {
@@ -189,6 +194,7 @@ void Infrared::SendDysonMessage(uint32_t address, uint32_t command,
           {
               .playbackCount = 2,
               .repeatDelayMode = InfraredRepeatDelayMode::END_TO_START,
+              .endianness = InfraredEndianness::LSB_FIRST,
               .repeatDelay = 100000,
           },
       .header = {3 * TICK, 1 * TICK},
@@ -201,8 +207,8 @@ void Infrared::SendDysonMessage(uint32_t address, uint32_t command,
 
 void Infrared::SendJvcMessage(uint32_t address, uint32_t command, uint32_t _) {
   uint8_t message[2];
-  message[0] = Bit<1>::ReverseBits(address);
-  message[1] = Bit<1>::ReverseBits(command);
+  message[0] = address;
+  message[1] = command;
 
   constexpr float TICK = 526.0f;
   static constexpr InfraredDataConfiguration configuration = {
@@ -211,6 +217,7 @@ void Infrared::SendJvcMessage(uint32_t address, uint32_t command, uint32_t _) {
               .playbackCount = 0,
               .repeatDelayMode = InfraredRepeatDelayMode::START_TO_START,
               .repeatDataMode = InfraredRepeatDataMode::NO_HEADER,
+              .endianness = InfraredEndianness::LSB_FIRST,
               .repeatDelay = 55000,
           },
       .header = {16 * TICK, 8 * TICK},
@@ -223,19 +230,15 @@ void Infrared::SendJvcMessage(uint32_t address, uint32_t command, uint32_t _) {
 
 void Infrared::SendKaseikyoMessage(uint32_t address, uint32_t command,
                                    uint32_t vendor) {
-  vendor = Bit<4>::ReverseBits(vendor);
-  address = Bit<4>::ReverseBits(address);
-  command = Bit<1>::ReverseBits(command);
-
-  const uint32_t vendorParityBytes = (vendor ^ (vendor >> 8)) >> 16;
+  const uint32_t vendorParityBytes = (vendor ^ (vendor >> 8));
   const uint32_t vendorParity =
       (vendorParityBytes ^ (vendorParityBytes >> 4)) & 0xf;
 
   uint8_t message[6];
-  message[0] = vendor >> 24;
-  message[1] = vendor >> 16;
-  message[2] = (vendorParity << 4) | (address >> 28);
-  message[3] = address >> 20;
+  message[0] = vendor;
+  message[1] = vendor >> 8;
+  message[2] = vendorParity | (address << 4);
+  message[3] = address >> 4;
   message[4] = command;
   message[5] = message[2] ^ message[3] ^ message[4];
 
@@ -246,6 +249,7 @@ void Infrared::SendKaseikyoMessage(uint32_t address, uint32_t command,
               .playbackCount = 0,
               .carrierFrequency = 37000,
               .repeatDelayMode = InfraredRepeatDelayMode::START_TO_START,
+              .endianness = InfraredEndianness::LSB_FIRST,
               .repeatDelay = 130000,
           },
       .header = {8 * TICK, 4 * TICK},
@@ -264,6 +268,7 @@ static const InfraredDataConfiguration &GetNECConfiguration() {
               .playbackCount = 0,
               .repeatDelayMode = InfraredRepeatDelayMode::START_TO_START,
               .repeatDataMode = InfraredRepeatDataMode::HEADER_AND_TRAILER,
+              .endianness = InfraredEndianness::LSB_FIRST,
               .repeatDelay = 110000,
           },
       .header = {16 * TICK, 8 * TICK},
@@ -275,9 +280,6 @@ static const InfraredDataConfiguration &GetNECConfiguration() {
 }
 
 void Infrared::SendNECMessage(uint32_t address, uint32_t command, uint32_t _) {
-  address = Bit<1>::ReverseBits(address);
-  command = Bit<1>::ReverseBits(command);
-
   uint8_t message[4];
   message[0] = address;
   message[1] = ~address;
@@ -288,12 +290,9 @@ void Infrared::SendNECMessage(uint32_t address, uint32_t command, uint32_t _) {
 }
 
 void Infrared::SendNECXMessage(uint32_t address, uint32_t command, uint32_t _) {
-  address = Bit<4>::ReverseBits(address);
-  command = Bit<1>::ReverseBits(command);
-
   uint8_t message[4];
-  message[0] = address >> 24;
-  message[1] = address >> 16;
+  message[0] = address;
+  message[1] = address >> 8;
   message[2] = command;
   message[3] = ~command;
 
@@ -412,9 +411,6 @@ void Infrared::SendRCAMessage(uint32_t address, uint32_t command, uint32_t _) {
 
 void Infrared::SendSamsungMessage(uint32_t address, uint32_t command,
                                   uint32_t _) {
-  address = Bit<1>::ReverseBits(address);
-  command = Bit<1>::ReverseBits(command);
-
   uint8_t message[4];
   message[0] = address;
   message[1] = address;
@@ -427,6 +423,7 @@ void Infrared::SendSamsungMessage(uint32_t address, uint32_t command,
           {
               .playbackCount = 0,
               .repeatDelayMode = InfraredRepeatDelayMode::START_TO_START,
+              .endianness = InfraredEndianness::LSB_FIRST,
               .repeatDelay = 108300,
           },
       .header = {8 * TICK, 8 * TICK},
@@ -451,6 +448,7 @@ void Infrared::SendSircMessage(uint32_t address, uint32_t command,
               .carrierFrequency = 40000,
               .dutyCycle = 33,
               .repeatDelayMode = InfraredRepeatDelayMode::START_TO_START,
+              .endianness = InfraredEndianness::LSB_FIRST,
               .repeatDelay = 45000,
           },
       .header = {4 * TICK, 1 * TICK},
@@ -489,15 +487,12 @@ void Infrared::SendSircMessage(uint32_t address, uint32_t command,
 void Infrared::SendSircMessageBits(
     uint32_t address, uint32_t command, uint32_t bits,
     const InfraredDataConfiguration &configuration) {
-  address = Bit<4>::ReverseBits(address);
-  command = Bit<4>::ReverseBits(command);
-
-  const uint32_t data = command | (address >> 7);
+  const uint32_t data = command | (address << 7);
 
   uint8_t message[3];
-  message[0] = data >> 24;
-  message[1] = data >> 16;
-  message[2] = data >> 8;
+  message[0] = data;
+  message[1] = data >> 8;
+  message[2] = data >> 16;
   SendData(message, bits, configuration);
 }
 

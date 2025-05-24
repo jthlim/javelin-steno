@@ -1017,7 +1017,7 @@ Javelin provides 3 ways of sending infrared data:
 
 - `func sendInfraredData(data, dataBits, configuration)`
 
-  - Send `dataBits` worth of `data`, which is in big endian order
+  - Send `dataBits` worth of `data`.
   - `sendInfraredData([[23 50]], 12, CONFIGURATION);` will send
     `0010 0011 0101` encoded using CONFIGURATION.
 
@@ -1025,14 +1025,17 @@ Javelin provides 3 ways of sending infrared data:
       - `playbackCount`: Number of times the signal is sent. 0 = infinite.
       - `carrierFrequency`: Frequency in Hz
       - `dutyCycle`: Typically 33, representing 33% duty cycle.
-      - `repeatMode`: OR-ing of the following flags:
-        - Delay Flags:
-           * 0: repeatDelay represents start-to-start timing.
-           * 1: repeatDelay represents time between repeats.
-        - Data Flags:
-           * 0: Full data repeat each signal
-           * 2: Repeat just header + trailer
-           * 4: Repeat without header
+      - `flags`: OR-ing of the following flags:
+        - Repeat Delay Flags:
+          * 0: repeatDelay represents start-to-start period of signal pulses
+          * 1: repeatDelay represents time between signal pulses
+        - Data Repeat Flags:
+          * 0: Full data repeat each signal
+          * 2: Repeat just header + trailer
+          * 4: Repeat without header
+        - Endian flags:
+          * 0: Transmit most significant bit of data byte first
+          * 0x8000: Transmit least significant bit of data byte first
       - `repeatDelayLow`, `repeatDelayHigh`: Repeat delay in microsecond increments
       - `headerTime`
       - `zeroBitTime`
@@ -1055,7 +1058,7 @@ Javelin provides 3 ways of sending infrared data:
       const MITSUBISHI_CONFIGURATION = [<
         2,            // Playback count
         38000, 33,    // Freq & Duty Cycle
-        1, 17000, 0,  // Repeat mode & delay low + high
+        1, 34000, 0,  // 17ms delay between pulses
         6632, 3869,   // Header time
         737, 996,     // Zero bit time
         737, 2709,    // One bit time
@@ -1076,7 +1079,8 @@ Javelin provides 3 ways of sending infrared data:
       - `playbackCount`: Number of times the signal is sent. 0 = infinite.
       - `carrierFrequency`: Frequency in Hz
       - `dutyCycle`: Typically 33, representing 33% duty cycle.
-      - `repeatMode`: Same flags as described for sendInfraredData.
+      - `flags`: Same flags as described for sendInfraredData.
+                 Endian flags are not used.
       - `repeatDelayLow`, `repeatDelayHigh`: Repeat delay in microseconds.
 
 ## Miscellaneous Functions

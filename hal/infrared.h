@@ -12,10 +12,16 @@ enum class InfraredRepeatDelayMode : uint16_t {
   START_TO_START,
   END_TO_START,
 };
+
 enum class InfraredRepeatDataMode : uint16_t {
   FULL,
   HEADER_AND_TRAILER,
   NO_HEADER,
+};
+
+enum class InfraredEndianness : uint16_t {
+  MSB_FIRST,
+  LSB_FIRST,
 };
 
 using InfraredTime = FixedPoint<uint16_t, 1>;
@@ -31,9 +37,12 @@ struct InfraredRawDataConfiguration {
   // Delay after data, measured in microseconds.
   InfraredRepeatDelayMode repeatDelayMode : 1;
   InfraredRepeatDataMode repeatDataMode : 2;
+  uint16_t filler : 12;
+  InfraredEndianness endianness : 1;
 
   FixedPoint<Uint32, 1> repeatDelay;
 };
+static_assert(sizeof(InfraredRawDataConfiguration) == 12);
 
 struct InfraredDataConfiguration {
   InfraredRawDataConfiguration rawConfiguration;
