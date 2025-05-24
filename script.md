@@ -948,19 +948,38 @@ Javelin provides 3 ways of sending infrared data:
   - Sends an infrared message. `protocol` is a string that controls
     how the message is encoded.
 
-    Example: `sendInfraredMessage("sirc", 1, 18, 0); // Sony Volume Up
+    Example: `sendInfraredMessage("sirc", 1, 18, 0); // Sony TV Volume Up
 
   - Protocol details:
-    
+
+    - `jvc`:
+      - address: 8 bits
+      - command: 8 bits
+      - extra: unused
+      - This signal repeats, and must be stopped using `stopInfrared()`
+
+    - `kaseikyo`:
+      - address: 12 bits
+      - command: 8 bits
+      - extra: Vendor ID
+        - Panasonic = 0x2002
+        - Denon = 0x3254
+        - Mitsubishi = 0xcb23
+        - Sharp = 0x5aaa
+        - JVC = 0x0103
+      - This signal repeats, and must be stopped using `stopInfrared()`
+
     - `nec`:
       - address: 8 bits
       - command: 8 bits
       - extra: unused
+      - This signal repeats, and must be stopped using `stopInfrared()`
 
     - `necx`:
       - address: 16 bits
       - command: 8 bits
       - extra: unused
+      - This signal repeats, and must be stopped using `stopInfrared()`
 
     - `rc5`:
       - address: 5 bits
@@ -978,6 +997,7 @@ Javelin provides 3 ways of sending infrared data:
       - address: 4 bits
       - command: 8 bits
       - extra: unused
+      - This signal repeats, and must be stopped using `stopInfrared()`
 
     - `samsung`:
       - address: 8 bits
@@ -1005,15 +1025,24 @@ Javelin provides 3 ways of sending infrared data:
       - `playbackCount`: Number of times the signal is sent. 0 = infinite.
       - `carrierFrequency`: Frequency in Hz
       - `dutyCycle`: Typically 33, representing 33% duty cycle.
-      - `repeatDelayMode`: 0 = repeatDelay represents start-to-start timing.
-                           1 = repeatDelay represents time between repeats.
+      - `repeatMode`: OR-ing of the following flags:
+        - Delay Flags:
+           * 0: repeatDelay represents start-to-start timing.
+           * 1: repeatDelay represents time between repeats.
+        - Data Flags:
+           * 0: Full data repeat each signal
+           * 2: Repeat just header + trailer
+           * 4: Repeat without header
       - `repeatDelayLow`, `repeatDelayHigh`: Repeat delay in microsecond increments
       - `headerTime`
       - `zeroBitTime`
       - `oneBitTime`
       - `trailerTime`
 
-      The last 4 values are specified as 15-bit values of on-time, off-time
+    - `repeatDelayLow` is the low 16 bits of the delay, and `repeatDelayHigh`
+      is the upper 16 bits. e.g. A 100ms delay is represented by `34464, 1`
+
+    - The last 4 values are specified as 15-bit values of on-time, off-time
       in half microsecond increments.
         - e.g. `4000, 1000` represents on for 2ms, off for 500µs.
       
@@ -1026,7 +1055,7 @@ Javelin provides 3 ways of sending infrared data:
       const MITSUBISHI_CONFIGURATION = [<
         2,            // Playback count
         38000, 33,    // Freq & Duty Cycle
-        1, 17000, 0,  // Repeat delay mode & delay low + high
+        1, 17000, 0,  // Repeat mode & delay low + high
         6632, 3869,   // Header time
         737, 996,     // Zero bit time
         737, 2709,    // One bit time
@@ -1047,12 +1076,8 @@ Javelin provides 3 ways of sending infrared data:
       - `playbackCount`: Number of times the signal is sent. 0 = infinite.
       - `carrierFrequency`: Frequency in Hz
       - `dutyCycle`: Typically 33, representing 33% duty cycle.
-      - `repeatDelayMode`: 0 = repeatDelay represents start-to-start timing.
-                           1 = repeatDelay represents time between repeats.
+      - `repeatMode`: Same flags as described for sendInfraredData.
       - `repeatDelayLow`, `repeatDelayHigh`: Repeat delay in microseconds.
-
-    - `repeatDelayLow` is the low 16 bits of the delay, and `repeatDelayHigh`
-      is the upper 16 bits. e.g. A 100ms delay is represented by `34464, 1`
 
 ## Miscellaneous Functions
 

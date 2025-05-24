@@ -8,9 +8,14 @@
 
 //---------------------------------------------------------------------------
 
-enum InfraredRepeatDelayMode : uint8_t {
+enum class InfraredRepeatDelayMode : uint16_t {
   START_TO_START,
   END_TO_START,
+};
+enum class InfraredRepeatDataMode : uint16_t {
+  FULL,
+  HEADER_AND_TRAILER,
+  NO_HEADER,
 };
 
 using InfraredTime = FixedPoint<uint16_t, 1>;
@@ -24,7 +29,9 @@ struct InfraredRawDataConfiguration {
   uint16_t dutyCycle = 33;
 
   // Delay after data, measured in microseconds.
-  InfraredRepeatDelayMode repeatDelayMode;
+  InfraredRepeatDelayMode repeatDelayMode : 1;
+  InfraredRepeatDataMode repeatDataMode : 2;
+
   FixedPoint<Uint32, 1> repeatDelay;
 };
 
@@ -61,6 +68,9 @@ public:
 
 private:
   static void SendDysonMessage(uint32_t address, uint32_t command, uint32_t _);
+  static void SendJvcMessage(uint32_t address, uint32_t command, uint32_t _);
+  static void SendKaseikyoMessage(uint32_t address, uint32_t command,
+                                  uint32_t vendor);
   static void SendNECMessage(uint32_t address, uint32_t command, uint32_t _);
   static void SendNECXMessage(uint32_t address, uint32_t command, uint32_t _);
   static void SendRC5Message(uint32_t address, uint32_t command,

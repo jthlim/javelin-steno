@@ -147,14 +147,16 @@ void Infrared::SendMessage(const char *protocolName, uint32_t d0, uint32_t d1,
   };
 
   static constexpr InfraredProtocol protocols[] = {
-      {"dyson", SendDysonMessage},     //
-      {"nec", SendNECMessage},         //
-      {"necx", SendNECXMessage},       //
-      {"rc5", SendRC5Message},         //
-      {"rc6", SendRC6Message},         //
-      {"rca", SendRCAMessage},         //
-      {"samsung", SendSamsungMessage}, //
-      {"sirc", SendSircMessage},       //
+      {"dyson", SendDysonMessage},       //
+      {"jvc", SendJvcMessage},           //
+      {"kaseikyo", SendKaseikyoMessage}, //
+      {"nec", SendNECMessage},           //
+      {"necx", SendNECXMessage},         //
+      {"rc5", SendRC5Message},           //
+      {"rc6", SendRC6Message},           //
+      {"rca", SendRCAMessage},           //
+      {"samsung", SendSamsungMessage},   //
+      {"sirc", SendSircMessage},         //
   };
   for (const InfraredProtocol &protocol : protocols) {
     if (Str::Eq(protocolName, protocol.name)) {
@@ -197,6 +199,81 @@ void Infrared::SendDysonMessage(uint32_t address, uint32_t command,
   SendData(message, 15, configuration);
 }
 
+void Infrared::SendJvcMessage(uint32_t address, uint32_t command, uint32_t _) {
+  uint8_t message[2];
+  message[0] = Bit<1>::ReverseBits(address);
+  message[1] = Bit<1>::ReverseBits(command);
+
+  constexpr float TICK = 526.0f;
+  static constexpr InfraredDataConfiguration configuration = {
+      .rawConfiguration =
+          {
+              .playbackCount = 0,
+              .repeatDelayMode = InfraredRepeatDelayMode::START_TO_START,
+              .repeatDataMode = InfraredRepeatDataMode::NO_HEADER,
+              .repeatDelay = 55000,
+          },
+      .header = {16 * TICK, 8 * TICK},
+      .zeroBit = {1 * TICK, 1 * TICK},
+      .oneBit = {1 * TICK, 3 * TICK},
+      .trailer = {1 * TICK, 0},
+  };
+  SendData(message, 16, configuration);
+}
+
+void Infrared::SendKaseikyoMessage(uint32_t address, uint32_t command,
+                                   uint32_t vendor) {
+  vendor = Bit<4>::ReverseBits(vendor);
+  address = Bit<4>::ReverseBits(address);
+  command = Bit<1>::ReverseBits(command);
+
+  const uint32_t vendorParityBytes = (vendor ^ (vendor >> 8)) >> 16;
+  const uint32_t vendorParity =
+      (vendorParityBytes ^ (vendorParityBytes >> 4)) & 0xf;
+
+  uint8_t message[6];
+  message[0] = vendor >> 24;
+  message[1] = vendor >> 16;
+  message[2] = (vendorParity << 4) | (address >> 28);
+  message[3] = address >> 20;
+  message[4] = command;
+  message[5] = message[2] ^ message[3] ^ message[4];
+
+  constexpr float TICK = 432.0f;
+  static constexpr InfraredDataConfiguration configuration = {
+      .rawConfiguration =
+          {
+              .playbackCount = 0,
+              .carrierFrequency = 37000,
+              .repeatDelayMode = InfraredRepeatDelayMode::START_TO_START,
+              .repeatDelay = 130000,
+          },
+      .header = {8 * TICK, 4 * TICK},
+      .zeroBit = {1 * TICK, 1 * TICK},
+      .oneBit = {1 * TICK, 3 * TICK},
+      .trailer = {1 * TICK, 0},
+  };
+  SendData(message, 48, configuration);
+}
+
+static const InfraredDataConfiguration &GetNECConfiguration() {
+  constexpr float TICK = 562.5f;
+  static constexpr InfraredDataConfiguration configuration = {
+      .rawConfiguration =
+          {
+              .playbackCount = 0,
+              .repeatDelayMode = InfraredRepeatDelayMode::START_TO_START,
+              .repeatDataMode = InfraredRepeatDataMode::HEADER_AND_TRAILER,
+              .repeatDelay = 110000,
+          },
+      .header = {16 * TICK, 8 * TICK},
+      .zeroBit = {1 * TICK, 1 * TICK},
+      .oneBit = {1 * TICK, 3 * TICK},
+      .trailer = {1 * TICK, 0},
+  };
+  return configuration;
+}
+
 void Infrared::SendNECMessage(uint32_t address, uint32_t command, uint32_t _) {
   address = Bit<1>::ReverseBits(address);
   command = Bit<1>::ReverseBits(command);
@@ -207,14 +284,7 @@ void Infrared::SendNECMessage(uint32_t address, uint32_t command, uint32_t _) {
   message[2] = command;
   message[3] = ~command;
 
-  constexpr float TICK = 562.5f;
-  static constexpr InfraredDataConfiguration configuration = {
-      .header = {16 * TICK, 8 * TICK},
-      .zeroBit = {1 * TICK, 1 * TICK},
-      .oneBit = {1 * TICK, 3 * TICK},
-      .trailer = {1 * TICK, 0},
-  };
-  SendData(message, 32, configuration);
+  SendData(message, 32, GetNECConfiguration());
 }
 
 void Infrared::SendNECXMessage(uint32_t address, uint32_t command, uint32_t _) {
@@ -227,14 +297,7 @@ void Infrared::SendNECXMessage(uint32_t address, uint32_t command, uint32_t _) {
   message[2] = command;
   message[3] = ~command;
 
-  constexpr float TICK = 562.5f;
-  static constexpr InfraredDataConfiguration configuration = {
-      .header = {16 * TICK, 8 * TICK},
-      .zeroBit = {1 * TICK, 1 * TICK},
-      .oneBit = {1 * TICK, 3 * TICK},
-      .trailer = {1 * TICK, 0},
-  };
-  SendData(message, 32, configuration);
+  SendData(message, 32, GetNECConfiguration());
 }
 
 // Address is 5 bits.
@@ -334,7 +397,10 @@ void Infrared::SendRCAMessage(uint32_t address, uint32_t command, uint32_t _) {
   static constexpr InfraredDataConfiguration configuration = {
       .rawConfiguration =
           {
+              .playbackCount = 0,
               .carrierFrequency = 56000,
+              .repeatDelayMode = InfraredRepeatDelayMode::START_TO_START,
+              .repeatDelay = 64000,
           },
       .header = {8 * TICK, 8 * TICK},
       .zeroBit = {1 * TICK, 2 * TICK},
@@ -446,6 +512,24 @@ TEST_BEGIN("Infrared Dyson data is calculated correctly") {
       testInfraRedData ==
       0b1001000'11111100'0'00000000'00000000'00000000'00000000'00000000'00000000ull);
   assert(testInfraredBitCount == 15);
+}
+TEST_END
+
+TEST_BEGIN("Infrared JVC data is calculated correctly") {
+  Infrared::SendMessage("jvc", 0x12, 0xad, 0);
+  assert(
+      testInfraRedData ==
+      0b01001000'10110101'00000000'00000000'00000000'00000000'00000000'00000000ull);
+  assert(testInfraredBitCount == 16);
+}
+TEST_END
+
+TEST_BEGIN("Infrared Kaseikyo data is calculated correctly") {
+  Infrared::SendMessage("kaseikyo", 0x123, 0xad, 0x2002);
+  assert(
+      testInfraRedData ==
+      0b01000000'00000100'0000'1100'01001000'10110101'11110001'00000000'00000000ull);
+  assert(testInfraredBitCount == 48);
 }
 TEST_END
 
