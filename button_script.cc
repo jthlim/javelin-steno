@@ -1254,8 +1254,8 @@ public:
     const InfraredRawDataConfiguration *configuration =
         byteCode->GetScriptData<InfraredRawDataConfiguration>(
             configurationOffset);
-    const FixedPoint<uint16_t, 2> *data =
-        byteCode->GetScriptData<FixedPoint<uint16_t, 2>>(dataOffset);
+    const InfraredTime *data =
+        byteCode->GetScriptData<InfraredTime>(dataOffset);
 
     Infrared::SendRawData(data, dataCount, *configuration);
   }

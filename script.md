@@ -931,6 +931,129 @@ These methods are only available on chips with secure storage.
 
   - Returns an angle from -32767 to 32768.
 
+## Infrared functions
+_This section is preliminary. These functions may change without notice._
+
+Javelin provides 3 ways of sending infrared data:
+- Sending high level messages using `sendInfraredMessage`
+- Sending bits with bit encoding information using `sendInfraredData`
+- Sending arbitrary pulses using `sendInfraredSignal`
+
+- `func stopInfrared()`
+
+  - Stops all infrared transmission
+
+- `func sendInfraredMessage(protocol, address, command, extra)`
+
+  - Sends an infrared message. `protocol` is a string that controls
+    how the message is encoded.
+
+    Example: `sendInfraredMessage("sirc", 1, 18, 0); // Sony Volume Up
+
+  - Protocol details:
+    
+    - `nec`:
+      - address: 8 bits
+      - command: 8 bits
+      - extra: unused
+
+    - `necx`:
+      - address: 16 bits
+      - command: 8 bits
+      - extra: unused
+
+    - `rc5`:
+      - address: 5 bits
+      - command: 7 bits
+      - extra: toggle flag
+      - This signal repeats, and must be stopped using `stopInfrared()`
+
+    - `rc6`:
+      - address: 8 bits
+      - command: 8 bits
+      - extra: 4 bit header
+      - This signal repeats, and must be stopped using `stopInfrared()`
+
+    - `rca`:
+      - address: 4 bits
+      - command: 8 bits
+      - extra: unused
+
+    - `samsung`:
+      - address: 8 bits
+      - command: 8 bits
+      - extra: unused
+      - This signal repeats, and must be stopped using `stopInfrared()`
+
+    - `sirc`:
+      - address: 5, 8 or 13 bits
+      - command: 7 bits
+      - extra: sirc variation. 
+        - 0 = auto
+        - 12 = sirc12
+        - 15 = sirc15
+        - 20 = sirc20
+      - This signal repeats, and must be stopped using `stopInfrared()`
+
+- `func sendInfraredData(data, dataBits, configuration)`
+
+  - Send `dataBits` worth of `data`, which is in big endian order
+  - `sendInfraredData([[23 50]], 12, CONFIGURATION);` will send
+    `0010 0011 0101` encoded using CONFIGURATION.
+
+    - CONFIGURATION is a 16-bit list as follows:
+      - `playbackCount`: Number of times the signal is sent. 0 = infinite.
+      - `carrierFrequency`: Frequency in Hz
+      - `dutyCycle`: Typically 33, representing 33% duty cycle.
+      - `repeatDelayMode`: 0 = repeatDelay represents start-to-start timing.
+                           1 = repeatDelay represents time between repeats.
+      - `repeatDelayLow`, `repeatDelayHigh`: Repeat delay in microsecond increments
+      - `headerTime`
+      - `zeroBitTime`
+      - `oneBitTime`
+      - `trailerTime`
+
+      The last 4 values are specified as 15-bit values of on-time, off-time
+      in half microsecond increments.
+        - e.g. `4000, 1000` represents on for 2ms, off for 500µs.
+      
+      To represent a pulse with opposite order (off time then on time), specify
+      the top bit in the first value:
+        - e.g. `4000 | 0x8000, 1000` represents off for 2ms, then on for 500µs.
+
+    - An example configuration that works with Mitsubishi air conditioners is:
+    ```
+      const MITSUBISHI_CONFIGURATION = [<
+        2,            // Playback count
+        38000, 33,    // Freq & Duty Cycle
+        1, 17000, 0,  // Repeat delay mode & delay low + high
+        6632, 3869,   // Header time
+        737, 996,     // Zero bit time
+        737, 2709,    // One bit time
+        737, 0        // Trailer time
+      >];
+      ```
+
+- `func sendInfraredSignal(timing, timeCount, configuration)`
+  - Send a signal with times specified in timing.
+
+  - Timing is a 16-bit list, with each value representing the time in
+    half microsecond increments. The values must be between 4 and 32767.
+
+  - `sendInfraredData([<1000, 500, 500>], 3, CONFIGURATION);` will send
+    on for 500µs, off for 250µs, on for 250µs, then off.
+
+    - CONFIGURATION is a 16-bit list as follows:
+      - `playbackCount`: Number of times the signal is sent. 0 = infinite.
+      - `carrierFrequency`: Frequency in Hz
+      - `dutyCycle`: Typically 33, representing 33% duty cycle.
+      - `repeatDelayMode`: 0 = repeatDelay represents start-to-start timing.
+                           1 = repeatDelay represents time between repeats.
+      - `repeatDelayLow`, `repeatDelayHigh`: Repeat delay in microseconds.
+
+    - `repeatDelayLow` is the low 16 bits of the delay, and `repeatDelayHigh`
+      is the upper 16 bits. e.g. A 100ms delay is represented by `34464, 1`
+
 ## Miscellaneous Functions
 
 - `func rand() var`

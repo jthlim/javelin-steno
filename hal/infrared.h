@@ -13,25 +13,27 @@ enum InfraredRepeatDelayMode : uint8_t {
   END_TO_START,
 };
 
+using InfraredTime = FixedPoint<uint16_t, 1>;
+
 struct InfraredRawDataConfiguration {
   // Number of times to send the message.
   // Use 0 for infinite.
-  Uint32 playbackCount = 1;
+  uint16_t playbackCount = 1;
 
-  uint16_t carrierFrequency;
-  uint16_t dutyCycle;
+  uint16_t carrierFrequency = 38000;
+  uint16_t dutyCycle = 33;
 
   // Delay after data, measured in microseconds.
-  FixedPoint<Uint32, 2> repeatDelay;
   InfraredRepeatDelayMode repeatDelayMode;
+  FixedPoint<Uint32, 1> repeatDelay;
 };
 
 struct InfraredDataConfiguration {
   InfraredRawDataConfiguration rawConfiguration;
   // Time in microseconds.
   struct PulseTime {
-    FixedPoint<uint16_t, 2> onTime;
-    FixedPoint<uint16_t, 2> offTime;
+    InfraredTime onTime;
+    InfraredTime offTime;
   };
   PulseTime header;
   PulseTime zeroBit;
@@ -49,7 +51,7 @@ public:
                        const InfraredDataConfiguration &configuration);
 
   // playCount = 0 -> infinite playback.
-  static void SendRawData(const FixedPoint<uint16_t, 2> *data, size_t dataCount,
+  static void SendRawData(const InfraredTime *data, size_t dataCount,
                           const InfraredRawDataConfiguration &rawData);
 
   static void SendMessage(const char *protocolName, uint32_t d0, uint32_t d1,
@@ -60,19 +62,19 @@ public:
 private:
   static void SendDysonMessage(uint32_t address, uint32_t command, uint32_t _);
   static void SendNECMessage(uint32_t address, uint32_t command, uint32_t _);
-  static void SendRCAMessage(uint32_t address, uint32_t command, uint32_t _);
+  static void SendNECXMessage(uint32_t address, uint32_t command, uint32_t _);
   static void SendRC5Message(uint32_t address, uint32_t command,
                              uint32_t toggle);
+  static void SendRC6Message(uint32_t address, uint32_t command,
+                             uint32_t toggle);
+  static void SendRCAMessage(uint32_t address, uint32_t command, uint32_t _);
   static void SendSamsungMessage(uint32_t address, uint32_t command,
                                  uint32_t _);
   static void SendSircMessage(uint32_t address, uint32_t command,
                               uint32_t bits);
-  static void SendSirc12Message(uint32_t address, uint32_t command,
-                                const InfraredDataConfiguration &configuration);
-  static void SendSirc15Message(uint32_t address, uint32_t command,
-                                const InfraredDataConfiguration &configuration);
-  static void SendSirc20Message(uint32_t address, uint32_t command,
-                                const InfraredDataConfiguration &configuration);
+  static void
+  SendSircMessageBits(uint32_t address, uint32_t command, uint32_t bits,
+                      const InfraredDataConfiguration &configuration);
 };
 
 //---------------------------------------------------------------------------

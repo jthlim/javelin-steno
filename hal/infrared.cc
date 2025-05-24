@@ -8,34 +8,15 @@
 //---------------------------------------------------------------------------
 
 struct RawInfraredData {
+  static constexpr size_t DATA_COUNT = 512;
+
   size_t index = 0;
-  FixedPoint<uint16_t, 2> data[512];
-  FixedPoint<uint32_t, 2> totalTime;
+  InfraredTime totalTime;
+  InfraredTime data[DATA_COUNT];
 
-  void Add(const InfraredDataConfiguration::PulseTime &time) {
-    if (index >= 510) {
-      return;
-    }
-    totalTime.value += time.onTime.value;
-    totalTime.value += time.offTime.value;
-
-    if (time.onTime != 0) {
-      if (index & 1) {
-        // Last time was on, extend it
-        data[index - 1] += time.onTime;
-      } else {
-        data[index++] = time.onTime;
-      }
-    }
-
-    if (time.offTime != 0) {
-      if (index & 1) {
-        data[index++] = time.offTime;
-      } else {
-        data[index - 1] += time.offTime;
-      }
-    }
-  }
+  void AddOnTime(InfraredTime time);
+  void AddOffTime(InfraredTime time);
+  void Add(const InfraredDataConfiguration::PulseTime &time);
 
   void Trim() {
     // If last time is for an off-pulse, remove it.
@@ -44,8 +25,52 @@ struct RawInfraredData {
     }
   }
 
-  bool IsValid() const { return index > 0 && index < 510; }
+  bool IsValid() const { return index > 0 && index < DATA_COUNT - 2; }
 };
+
+void RawInfraredData::AddOnTime(InfraredTime time) {
+  if (time == 0) {
+    return;
+  }
+  if (index & 1) {
+    // Last time was on, extend it
+    data[index - 1] += time;
+  } else {
+    data[index++] = time;
+  }
+}
+
+void RawInfraredData::AddOffTime(InfraredTime time) {
+  if (time == 0) {
+    return;
+  }
+  if (index & 1) {
+    data[index++] = time;
+  } else {
+    // Last time was off, extend it
+    data[index - 1] += time;
+  }
+}
+
+void RawInfraredData::Add(const InfraredDataConfiguration::PulseTime &time) {
+  if (index >= DATA_COUNT - 2) {
+    return;
+  }
+
+  totalTime.value += time.onTime.value & 0x7fff;
+  totalTime.value += time.offTime.value & 0x7fff;
+
+  if (time.onTime.value & 0x8000) {
+    AddOffTime(time.offTime);
+
+    InfraredTime onTime =
+        InfraredTime(time.onTime.value & 0x7fff, InfraredTime::raw);
+    AddOnTime(onTime);
+  } else {
+    AddOnTime(time.onTime);
+    AddOffTime(time.offTime);
+  }
+}
 
 //---------------------------------------------------------------------------
 
@@ -68,18 +93,17 @@ void SetInfraredDataBits(const void *data, int bitCount) {
   }
 }
 
-FixedPoint<uint16_t, 2> testRawData[512];
+InfraredTime testRawData[512];
 size_t testRawDataCount;
 
-void Infrared::SendRawData(const FixedPoint<uint16_t, 2> *data,
-                           size_t dataCount,
+void Infrared::SendRawData(const InfraredTime *data, size_t dataCount,
                            const InfraredRawDataConfiguration &configuration) {
   memcpy(testRawData, data, 2 * dataCount);
   testRawDataCount = dataCount;
 }
 #else
 [[gnu::weak]] void
-Infrared::SendRawData(const FixedPoint<uint16_t, 2> *data, size_t dataCount,
+Infrared::SendRawData(const InfraredTime *data, size_t dataCount,
                       const InfraredRawDataConfiguration &configuration) {}
 #endif
 
@@ -125,8 +149,10 @@ void Infrared::SendMessage(const char *protocolName, uint32_t d0, uint32_t d1,
   static constexpr InfraredProtocol protocols[] = {
       {"dyson", SendDysonMessage},     //
       {"nec", SendNECMessage},         //
-      {"rca", SendRCAMessage},         //
+      {"necx", SendNECXMessage},       //
       {"rc5", SendRC5Message},         //
+      {"rc6", SendRC6Message},         //
+      {"rca", SendRCAMessage},         //
       {"samsung", SendSamsungMessage}, //
       {"sirc", SendSircMessage},       //
   };
@@ -150,26 +176,24 @@ void Infrared::SendDysonMessage(uint32_t address, uint32_t command,
   address = Bit<4>::ReverseBits(address);
   command = Bit<4>::ReverseBits(command);
 
+  const uint32_t data = address | (command >> 7);
+  uint8_t message[2];
+  message[0] = data >> 24;
+  message[1] = data >> 16;
+
   constexpr float TICK = 789.5;
   static constexpr InfraredDataConfiguration configuration = {
       .rawConfiguration =
           {
               .playbackCount = 2,
-              .carrierFrequency = 38000,
-              .dutyCycle = 33,
-              .repeatDelay = 100000,
               .repeatDelayMode = InfraredRepeatDelayMode::END_TO_START,
+              .repeatDelay = 100000,
           },
       .header = {3 * TICK, 1 * TICK},
       .zeroBit = {1 * TICK, 1 * TICK},
       .oneBit = {1 * TICK, 2 * TICK},
       .trailer = {1 * TICK, 0},
   };
-
-  const uint32_t data = address | (command >> 7);
-  uint8_t message[2];
-  message[0] = data >> 24;
-  message[1] = data >> 16;
   SendData(message, 15, configuration);
 }
 
@@ -177,48 +201,40 @@ void Infrared::SendNECMessage(uint32_t address, uint32_t command, uint32_t _) {
   address = Bit<1>::ReverseBits(address);
   command = Bit<1>::ReverseBits(command);
 
-  constexpr float TICK = 552.63f;
-  static constexpr InfraredDataConfiguration configuration = {
-      .rawConfiguration =
-          {
-              .carrierFrequency = 38000,
-              .dutyCycle = 33,
-          },
-      .header = {16 * TICK, 8 * TICK},
-      .zeroBit = {1 * TICK, 1 * TICK},
-      .oneBit = {1 * TICK, 3 * TICK},
-      .trailer = {1 * TICK, 0},
-  };
-
   uint8_t message[4];
   message[0] = address;
   message[1] = ~address;
   message[2] = command;
   message[3] = ~command;
+
+  constexpr float TICK = 562.5f;
+  static constexpr InfraredDataConfiguration configuration = {
+      .header = {16 * TICK, 8 * TICK},
+      .zeroBit = {1 * TICK, 1 * TICK},
+      .oneBit = {1 * TICK, 3 * TICK},
+      .trailer = {1 * TICK, 0},
+  };
   SendData(message, 32, configuration);
 }
 
-void Infrared::SendRCAMessage(uint32_t address, uint32_t command, uint32_t _) {
-  constexpr float TICK = 500;
-  static constexpr InfraredDataConfiguration configuration = {
-      .rawConfiguration =
-          {
-              .carrierFrequency = 56000,
-              .dutyCycle = 33,
-          },
-      .header = {8 * TICK, 8 * TICK},
-      .zeroBit = {1 * TICK, 2 * TICK},
-      .oneBit = {1 * TICK, 4 * TICK},
-      .trailer = {0, 0},
-  };
+void Infrared::SendNECXMessage(uint32_t address, uint32_t command, uint32_t _) {
+  address = Bit<4>::ReverseBits(address);
+  command = Bit<1>::ReverseBits(command);
 
-  const uint32_t combined = address << 8 | command;
-  const uint32_t message = (combined << 12) | (~combined & 0xfff);
-  uint8_t data[3];
-  data[0] = message >> 16;
-  data[1] = message >> 8;
-  data[2] = message;
-  SendData(data, 24, configuration);
+  uint8_t message[4];
+  message[0] = address >> 24;
+  message[1] = address >> 16;
+  message[2] = command;
+  message[3] = ~command;
+
+  constexpr float TICK = 562.5f;
+  static constexpr InfraredDataConfiguration configuration = {
+      .header = {16 * TICK, 8 * TICK},
+      .zeroBit = {1 * TICK, 1 * TICK},
+      .oneBit = {1 * TICK, 3 * TICK},
+      .trailer = {1 * TICK, 0},
+  };
+  SendData(message, 32, configuration);
 }
 
 // Address is 5 bits.
@@ -245,34 +261,87 @@ void Infrared::SendRC5Message(uint32_t address, uint32_t command,
       .start = 1,
   };
 
-  uint32_t value = message.value << 18;
-
-  // Manchester encode it.
-  uint32_t data = 0;
-  for (size_t i = 0; i < 14; ++i) {
-    data = (data << 2) | (2 >> (value >> 31));
-    value <<= 1;
-  }
+  uint8_t dataBytes[2];
+  dataBytes[0] = message.value >> 6;
+  dataBytes[1] = message.value << 2;
 
   constexpr float TICK = 888.89f;
   static constexpr InfraredDataConfiguration configuration = {
       .rawConfiguration =
           {
+              .playbackCount = 0,
               .carrierFrequency = 36000,
               .dutyCycle = 25,
+              .repeatDelayMode = InfraredRepeatDelayMode::START_TO_START,
+              .repeatDelay = 114000,
           },
       .header = {0, 0},
-      .zeroBit = {0, TICK},
-      .oneBit = {TICK, 0},
+      .zeroBit = {TICK, TICK},
+      .oneBit =
+          {
+              InfraredTime(InfraredTime(TICK).value | 0x8000,
+                           InfraredTime::raw),
+              TICK,
+          },
       .trailer = {0, 0},
   };
+  SendData(dataBytes, 14, configuration);
+}
 
-  uint8_t dataBytes[4];
-  dataBytes[0] = data >> 20;
-  dataBytes[1] = data >> 12;
-  dataBytes[2] = data >> 4;
-  dataBytes[3] = data << 4;
-  SendData(dataBytes, 28, configuration);
+void Infrared::SendRC6Message(uint32_t address, uint32_t command,
+                              uint32_t header) {
+  constexpr float TICK = 444.5f;
+
+  RawInfraredData data;
+  constexpr InfraredDataConfiguration::PulseTime HEADER = {6 * TICK, 2 * TICK};
+  data.Add(HEADER);
+
+  const uint32_t value =
+      ((0x3 << 20) | (header << 16) | (address << 8) | command) << 10;
+  for (size_t i = 0; i < 22; ++i) {
+    const InfraredTime tick =
+        (i == 3) ? InfraredTime(2 * TICK) : InfraredTime(TICK);
+    if ((value << i) & 0x80000000) {
+      data.AddOnTime(tick);
+      data.AddOffTime(tick);
+    } else {
+      data.AddOffTime(tick);
+      data.AddOnTime(tick);
+    }
+  }
+
+  // data.AddOffTime(6 * TICK);
+
+  static constexpr InfraredRawDataConfiguration configuration = {
+      .playbackCount = 0,
+      .carrierFrequency = 36000,
+      .dutyCycle = 25,
+      .repeatDelayMode = InfraredRepeatDelayMode::START_TO_START,
+      .repeatDelay = 100000,
+  };
+  SendRawData(data.data, data.index, configuration);
+}
+
+void Infrared::SendRCAMessage(uint32_t address, uint32_t command, uint32_t _) {
+  const uint32_t combined = address << 8 | command;
+  const uint32_t message = (combined << 12) | (~combined & 0xfff);
+  uint8_t data[3];
+  data[0] = message >> 16;
+  data[1] = message >> 8;
+  data[2] = message;
+
+  constexpr float TICK = 500;
+  static constexpr InfraredDataConfiguration configuration = {
+      .rawConfiguration =
+          {
+              .carrierFrequency = 56000,
+          },
+      .header = {8 * TICK, 8 * TICK},
+      .zeroBit = {1 * TICK, 2 * TICK},
+      .oneBit = {1 * TICK, 4 * TICK},
+      .trailer = {0, 0},
+  };
+  SendData(data, 24, configuration);
 }
 
 void Infrared::SendSamsungMessage(uint32_t address, uint32_t command,
@@ -280,32 +349,34 @@ void Infrared::SendSamsungMessage(uint32_t address, uint32_t command,
   address = Bit<1>::ReverseBits(address);
   command = Bit<1>::ReverseBits(command);
 
+  uint8_t message[4];
+  message[0] = address;
+  message[1] = address;
+  message[2] = command;
+  message[3] = ~command;
+
   constexpr float TICK = 552.63f;
   static constexpr InfraredDataConfiguration configuration = {
       .rawConfiguration =
           {
               .playbackCount = 0,
-              .carrierFrequency = 38000,
-              .dutyCycle = 33,
-              .repeatDelay = 108300,
               .repeatDelayMode = InfraredRepeatDelayMode::START_TO_START,
+              .repeatDelay = 108300,
           },
       .header = {8 * TICK, 8 * TICK},
       .zeroBit = {1 * TICK, 1 * TICK},
       .oneBit = {1 * TICK, 3 * TICK},
       .trailer = {1 * TICK, 0 * TICK},
   };
-
-  uint8_t message[4];
-  message[0] = address;
-  message[1] = address;
-  message[2] = command;
-  message[3] = ~command;
   SendData(message, 32, configuration);
 }
 
 void Infrared::SendSircMessage(uint32_t address, uint32_t command,
                                uint32_t bits) {
+  if (command >= 0x80) {
+    return Console::Printf("sirc protocol requires command between 0-127\n\n");
+  }
+
   constexpr float TICK = 600;
   static constexpr InfraredDataConfiguration configuration = {
       .rawConfiguration =
@@ -313,8 +384,8 @@ void Infrared::SendSircMessage(uint32_t address, uint32_t command,
               .playbackCount = 0,
               .carrierFrequency = 40000,
               .dutyCycle = 33,
-              .repeatDelay = 45000,
               .repeatDelayMode = InfraredRepeatDelayMode::START_TO_START,
+              .repeatDelay = 45000,
           },
       .header = {4 * TICK, 1 * TICK},
       .zeroBit = {1 * TICK, 1 * TICK},
@@ -325,73 +396,43 @@ void Infrared::SendSircMessage(uint32_t address, uint32_t command,
   switch (bits) {
   case 0:
     // Try and use the lowest number of bits.
-    if (command < 0x80) {
-      if (address < 0x20) {
-        return SendSirc12Message(address, command, configuration);
-      } else if (address < 0x100) {
-        return SendSirc15Message(address, command, configuration);
-      }
-    } else if (command < 0x8000 && address < 0x20) {
-      return SendSirc20Message(address, command, configuration);
+    if (address < 0x20) {
+      return SendSircMessageBits(address, command, 12, configuration);
+    } else if (address < 0x100) {
+      return SendSircMessageBits(address, command, 15, configuration);
+    } else if (address < 0x2000) {
+      return SendSircMessageBits(address, command, 20, configuration);
     }
-    Console::Printf("Unable to encode message\n\n");
-    return;
+    return Console::Printf("sirc address must be between 0-8191\n\n");
   case 12:
-    return SendSirc12Message(address, command, configuration);
+    return SendSircMessageBits(address, command, 12, configuration);
 
   case 15:
-    return SendSirc15Message(address, command, configuration);
+    return SendSircMessageBits(address, command, 15, configuration);
 
   case 20:
-    return SendSirc20Message(address, command, configuration);
+    return SendSircMessageBits(address, command, 20, configuration);
 
   default:
-    Console::Printf("Sirc protocol requires 0(infer)/12/15/20 bits as "
+    Console::Printf("sirc protocol requires 0(infer)/12/15/20 bits as "
                     "last parameter\n\n");
   }
 }
 
-void Infrared::SendSirc12Message(
-    uint32_t address, uint32_t command,
+[[gnu::noinline]]
+void Infrared::SendSircMessageBits(
+    uint32_t address, uint32_t command, uint32_t bits,
     const InfraredDataConfiguration &configuration) {
   address = Bit<4>::ReverseBits(address);
   command = Bit<4>::ReverseBits(command);
 
   const uint32_t data = command | (address >> 7);
-  uint8_t message[2];
-  message[0] = data >> 24;
-  message[1] = data >> 16;
-  SendData(message, 12, configuration);
-}
-
-void Infrared::SendSirc15Message(
-    uint32_t address, uint32_t command,
-    const InfraredDataConfiguration &configuration) {
-  address = Bit<4>::ReverseBits(address);
-  command = Bit<4>::ReverseBits(command);
-
-  const uint32_t data = command | (address >> 7);
-  uint8_t message[2];
-  message[0] = data >> 24;
-  message[1] = data >> 16;
-  SendData(message, 15, configuration);
-}
-
-// Command is 15 bits.
-void Infrared::SendSirc20Message(
-    uint32_t address, uint32_t command,
-    const InfraredDataConfiguration &configuration) {
-  const uint32_t extended = Bit<4>::ReverseBits(command >> 7);
-  address = Bit<4>::ReverseBits(address);
-  command = Bit<4>::ReverseBits(command & 0x7f);
-
-  const uint32_t data = command | (address >> 7) | (extended >> 12);
 
   uint8_t message[3];
   message[0] = data >> 24;
   message[1] = data >> 16;
   message[2] = data >> 8;
-  SendData(message, 20, configuration);
+  SendData(message, bits, configuration);
 }
 
 //---------------------------------------------------------------------------
@@ -409,11 +450,35 @@ TEST_BEGIN("Infrared Dyson data is calculated correctly") {
 TEST_END
 
 TEST_BEGIN("Infrared NEC data is calculated correctly") {
-  Infrared::SendMessage("nec", 0, 0xad, 0);
+  Infrared::SendMessage("nec", 0x12, 0xad, 0);
   assert(
       testInfraRedData ==
-      0b00000000'11111111'10110101'01001010'00000000'00000000'00000000'00000000ull);
+      0b01001000'10110111'10110101'01001010'00000000'00000000'00000000'00000000ull);
   assert(testInfraredBitCount == 32);
+}
+TEST_END
+
+TEST_BEGIN("Infrared NECX data is calculated correctly") {
+  Infrared::SendMessage("necx", 0x1234, 0xad, 0);
+  assert(
+      testInfraRedData ==
+      0b00101100'01001000'10110101'01001010'00000000'00000000'00000000'00000000ull);
+  assert(testInfraredBitCount == 32);
+}
+TEST_END
+
+TEST_BEGIN("Infrared RC5 data is calculated correctly") {
+  Infrared::SendMessage("rc5", 0x5, 0x35, 0);
+  assert(
+      testInfraRedData ==
+      0b11'0'00101'110101'00'00000000'00000000'00000000'00000000'00000000'00000000ull);
+  assert(testInfraredBitCount == 14);
+
+  Infrared::SendMessage("rc5", 0x5, 0x75, 1);
+  assert(
+      testInfraRedData ==
+      0b10'1'00101'110101'00'00000000'00000000'00000000'00000000'00000000'00000000ull);
+  assert(testInfraredBitCount == 14);
 }
 TEST_END
 
@@ -423,21 +488,6 @@ TEST_BEGIN("Infrared RCA data is calculated correctly") {
       testInfraRedData ==
       0b1010'01101000'0101'10010111'00000000'00000000'00000000'00000000'00000000ull);
   assert(testInfraredBitCount == 24);
-}
-TEST_END
-
-TEST_BEGIN("Infrared RC5 data is calculated correctly") {
-  Infrared::SendMessage("rc5", 0x5, 0x35, 0);
-  assert(
-      testInfraRedData ==
-      0b0101'10'1010011001'010110011001'0000'00000000'00000000'00000000'00000000ull);
-  assert(testInfraredBitCount == 28);
-
-  Infrared::SendMessage("rc5", 0x5, 0x75, 1);
-  assert(
-      testInfraRedData ==
-      0b0110'01'1010011001'010110011001'0000'00000000'00000000'00000000'00000000ull);
-  assert(testInfraredBitCount == 28);
 }
 TEST_END
 
@@ -457,7 +507,7 @@ TEST_BEGIN("Infrared Sirc12 data is calculated correctly") {
       0b1100100'10000'0000'00000000'00000000'00000000'00000000'00000000'00000000ull);
   assert(testInfraredBitCount == 12);
 
-  assert(testRawDataSize == 25);
+  assert(testRawDataCount == 25);
   // Header
   assert(testRawData[0] == 4 * 600);
   assert(testRawData[1] == 1 * 600);
@@ -468,23 +518,41 @@ TEST_BEGIN("Infrared Sirc12 data is calculated correctly") {
   assert(testRawData[5] == 1 * 600);
   assert(testRawData[6] == 1 * 600);
   assert(testRawData[7] == 1 * 600);
+
+  Infrared::SendMessage("sirc", 1, 0x13, 0);
+  assert(
+      testInfraRedData ==
+      0b1100100'10000'0000'00000000'00000000'00000000'00000000'00000000'00000000ull);
+  assert(testInfraredBitCount == 12);
 }
 TEST_END
 
 TEST_BEGIN("Infrared Sirc15 data is calculated correctly") {
-  Infrared::SendMessage("sirc", 1, 0x13, 15);
+  Infrared::SendMessage("sirc", 0xa5, 0x13, 15);
   assert(
       testInfraRedData ==
-      0b1100100'10000'0000'00000000'00000000'00000000'00000000'00000000'00000000ull);
+      0b1100100'10100101'0'00000000'00000000'00000000'00000000'00000000'00000000ull);
+  assert(testInfraredBitCount == 15);
+
+  Infrared::SendMessage("sirc", 0xa5, 0x13, 0);
+  assert(
+      testInfraRedData ==
+      0b1100100'10100101'0'00000000'00000000'00000000'00000000'00000000'00000000ull);
   assert(testInfraredBitCount == 15);
 }
 TEST_END
 
 TEST_BEGIN("Infrared Sirc20 data is calculated correctly") {
-  Infrared::SendMessage("sirc", 1, 0x13 + (0x39 << 7), 20);
+  Infrared::SendMessage("sirc", 0x15a5, 0x13, 20);
   assert(
       testInfraRedData ==
-      0b1100100'10000'10011100'0000'00000000'00000000'00000000'00000000'00000000ull);
+      0b1100100'1010010110101'0000'00000000'00000000'00000000'00000000'00000000ull);
+  assert(testInfraredBitCount == 20);
+
+  Infrared::SendMessage("sirc", 0x15a5, 0x13, 0);
+  assert(
+      testInfraRedData ==
+      0b1100100'1010010110101'0000'00000000'00000000'00000000'00000000'00000000ull);
   assert(testInfraredBitCount == 20);
 }
 TEST_END
