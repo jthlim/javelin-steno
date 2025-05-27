@@ -265,11 +265,10 @@ static const InfraredDataConfiguration &GetNECConfiguration() {
   static constexpr InfraredDataConfiguration configuration = {
       .rawConfiguration =
           {
-              .playbackCount = 0,
+              .playbackCount = 2,
               .repeatDelayMode = InfraredRepeatDelayMode::START_TO_START,
-              .repeatDataMode = InfraredRepeatDataMode::HEADER_AND_TRAILER,
               .endianness = InfraredEndianness::LSB_FIRST,
-              .repeatDelay = 110000,
+              .repeatDelay = 108000,
           },
       .header = {16 * TICK, 8 * TICK},
       .zeroBit = {1 * TICK, 1 * TICK},

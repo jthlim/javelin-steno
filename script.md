@@ -1033,8 +1033,7 @@ Javelin provides 3 ways of sending infrared data:
           * 1: repeatDelay represents time between signal pulses
         - Data Repeat Flags:
           * 0: Full data repeat each signal
-          * 2: Repeat just header + trailer
-          * 4: Repeat without header
+          * 2: Repeat without header
         - Endian flags:
           * 0: Transmit most significant bit of data byte first
           * 0x8000: Transmit least significant bit of data byte first

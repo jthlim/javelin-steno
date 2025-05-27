@@ -15,7 +15,6 @@ enum class InfraredRepeatDelayMode : uint16_t {
 
 enum class InfraredRepeatDataMode : uint16_t {
   FULL,
-  HEADER_AND_TRAILER,
   NO_HEADER,
 };
 
