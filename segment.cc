@@ -289,7 +289,7 @@ StenoToken StenoTokenizer::GetNext() {
         // Unterminated command... drop it.
         p = workingP;
         PrepareNextP();
-        return StenoToken("{}", 2, state);
+        return StenoToken("{}", 2, state, false);
       }
       if (workingP[0] == '\\') [[unlikely]] {
         if (workingP[1] != '\0') [[likely]] {
@@ -328,7 +328,7 @@ UpdatePAndReturnSpan:
 ReturnSpan:
   const size_t length = workingP - start;
   PrepareNextP();
-  return StenoToken(start, length, state);
+  return StenoToken(start, length, state, elementIndex == list.GetCount());
 }
 
 void StenoTokenizer::PrepareNextP() {

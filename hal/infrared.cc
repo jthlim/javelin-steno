@@ -62,7 +62,7 @@ void RawInfraredData::Add(const InfraredDataConfiguration::PulseTime &time) {
   if (time.onTime.value & 0x8000) {
     AddOffTime(time.offTime);
 
-    InfraredTime onTime =
+    const InfraredTime onTime =
         InfraredTime(time.onTime.value & 0x7fff, InfraredTime::raw);
     AddOnTime(onTime);
   } else {
@@ -489,10 +489,14 @@ void Infrared::SendSircMessageBits(
     const InfraredDataConfiguration &configuration) {
   const uint32_t data = command | (address << 7);
 
-  uint8_t message[3];
+  uint8_t message[4];
   message[0] = data;
   message[1] = data >> 8;
   message[2] = data >> 16;
+
+  // Writing an extra byte allows the compiler to optimize this sequence
+  // to a single 32-bit write.
+  message[3] = data >> 24;
   SendData(message, bits, configuration);
 }
 

@@ -527,7 +527,11 @@ bool StenoKeyCodeBuffer::AddTranslationFunction(
     const List<char *> &parameters) {
   free(addTranslationText);
   addTranslationText = nullptr;
-  addTranslationCount++;
+  if (!executeSideEffects) {
+    return true;
+  }
+
+  launchAddTranslation = true;
 
   if (parameters.GetCount() >= 2) {
     BufferWriter unescaped;
@@ -569,7 +573,11 @@ bool StenoKeyCodeBuffer::EnableDictionaryFunction(
     return false;
   }
 
-  ++resetStateCount;
+  if (!executeSideEffects) {
+    return true;
+  }
+
+  doResetState = true;
   return rootDictionary->EnableDictionary(parameters[1]);
 }
 
@@ -579,7 +587,11 @@ bool StenoKeyCodeBuffer::DisableDictionaryFunction(
     return false;
   }
 
-  ++resetStateCount;
+  if (!executeSideEffects) {
+    return true;
+  }
+
+  doResetState = true;
   return rootDictionary->DisableDictionary(parameters[1]);
 }
 
@@ -589,7 +601,11 @@ bool StenoKeyCodeBuffer::ToggleDictionaryFunction(
     return false;
   }
 
-  ++resetStateCount;
+  if (!executeSideEffects) {
+    return true;
+  }
+
+  doResetState = true;
   return rootDictionary->ToggleDictionary(parameters[1]);
 }
 
@@ -831,7 +847,11 @@ bool StenoKeyCodeBuffer::StitchLastWordFunction(
 }
 
 bool StenoKeyCodeBuffer::ResetStateFunction(const List<char *> &) {
-  resetStateCount++;
+  if (!executeSideEffects) {
+    return true;
+  }
+
+  doResetState = true;
   return true;
 }
 
@@ -842,20 +862,28 @@ bool StenoKeyCodeBuffer::HostLayoutFunction(const List<char *> &parameters) {
     return false;
   }
 
+  if (!executeSideEffects) {
+    return true;
+  }
+
   return HostLayouts::SetActiveLayout(parameters[1]);
 }
 
 bool StenoKeyCodeBuffer::ConsoleFunction(const List<char *> &parameters) {
-  if (parameters.GetCount() == 1) {
-    consoleCount++;
-    return true;
-  }
-
-  if (parameters.GetCount() != 2) {
+  if (parameters.GetCount() > 2) {
     return false;
   }
 
-  Console::RunCommand(parameters[1], NullWriter::instance);
+  if (!executeSideEffects) {
+    return true;
+  }
+
+  if (parameters.GetCount() == 1) {
+    launchConsole = true;
+  } else {
+    Console::RunCommand(parameters[1], *ConsoleWriter::GetActiveWriter());
+  }
+
   return true;
 }
 

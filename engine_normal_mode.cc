@@ -26,17 +26,21 @@
 
 struct StenoEngine::ConvertTextData {
   ConvertTextData(StenoEngine *engine, StenoKeyCodeBuffer *keyCodeBuffer,
-                  StenoSegmentList *segments, size_t startingOffset)
+                  StenoSegmentList *segments, size_t startingOffset,
+                  bool executeSideEffects)
       : engine(engine), keyCodeBuffer(keyCodeBuffer), segments(segments),
-        startingOffset(startingOffset) {}
+        startingOffset(startingOffset), executeSideEffects(executeSideEffects) {
+  }
 
   StenoEngine *const engine;
   StenoKeyCodeBuffer *const keyCodeBuffer;
   StenoSegmentList *const segments;
   const size_t startingOffset;
+  const bool executeSideEffects;
 
   void ConvertText() {
-    engine->ConvertText(*keyCodeBuffer, *segments, startingOffset);
+    engine->ConvertText(*keyCodeBuffer, *segments, startingOffset,
+                        executeSideEffects);
   }
 
   static void ThreadEntryPoint(void *data) {
@@ -238,12 +242,12 @@ void StenoEngine::ProcessNormalModeStroke(StenoStroke stroke) {
 
   ConvertTextData previousConvertTextData(
       this, &previousConversionBuffer.keyCodeBuffer, &previousSegments,
-      startingOffset);
+      startingOffset, false);
 #if !JAVELIN_THREADS
   previousConvertTextData.ConvertText();
 #endif
   ConvertTextData nextConvertTextData(this, &nextConversionBuffer.keyCodeBuffer,
-                                      &nextSegments, startingOffset);
+                                      &nextSegments, startingOffset, true);
 #if JAVELIN_THREADS
   RunParallel(&ConvertTextData::ThreadEntryPoint, &previousConvertTextData,
               &ConvertTextData::ThreadEntryPoint, &nextConvertTextData);
@@ -301,23 +305,20 @@ void StenoEngine::ProcessNormalModeStroke(StenoStroke stroke) {
                nextConversionBuffer.keyCodeBuffer);
   PrintPaperTape(stroke, previousSegments, nextSegments);
 
-  if (nextConversionBuffer.keyCodeBuffer.addTranslationCount >
-      previousConversionBuffer.keyCodeBuffer.addTranslationCount) {
+  if (nextConversionBuffer.keyCodeBuffer.launchAddTranslation) {
     history.SetBackNoCombineUndo();
     InitiateAddTranslationMode(
         nextConversionBuffer.keyCodeBuffer.addTranslationText);
     return;
   }
 
-  if (nextConversionBuffer.keyCodeBuffer.consoleCount >
-      previousConversionBuffer.keyCodeBuffer.consoleCount) {
+  if (nextConversionBuffer.keyCodeBuffer.launchConsole) {
     history.SetBackNoCombineUndo();
     InitiateConsoleMode();
     return;
   }
 
-  if (nextConversionBuffer.keyCodeBuffer.resetStateCount >
-      previousConversionBuffer.keyCodeBuffer.resetStateCount) {
+  if (nextConversionBuffer.keyCodeBuffer.doResetState) {
     ResetState();
     return;
   }
@@ -467,13 +468,13 @@ void StenoEngine::ProcessNormalModeUndo() {
 
   ConvertTextData previousConvertTextData(
       this, &previousConversionBuffer.keyCodeBuffer, &previousSegments,
-      startingOffset);
+      startingOffset, false);
 #if !JAVELIN_THREADS
   previousConvertTextData.ConvertText();
 #endif
 
   ConvertTextData nextConvertTextData(this, &nextConversionBuffer.keyCodeBuffer,
-                                      &nextSegments, startingOffset);
+                                      &nextSegments, startingOffset, false);
 
 #if !JAVELIN_THREADS
   nextConvertTextData.ConvertText();
@@ -567,8 +568,8 @@ void StenoEngine::CreateSegmentsUsingLongerResult(
 }
 
 void StenoEngine::ConvertText(StenoKeyCodeBuffer &keyCodeBuffer,
-                              StenoSegmentList &segments,
-                              size_t startingOffset) {
+                              StenoSegmentList &segments, size_t startingOffset,
+                              bool executeSideEffects) {
   StenoState endState;
   if (startingOffset == segments.GetCount()) {
     keyCodeBuffer.Reset();
@@ -578,7 +579,7 @@ void StenoEngine::ConvertText(StenoKeyCodeBuffer &keyCodeBuffer,
     endState = state;
   } else {
     StenoTokenizer tokenizer(segments, startingOffset);
-    keyCodeBuffer.Populate(tokenizer);
+    keyCodeBuffer.Populate(tokenizer, executeSideEffects);
     endState = keyCodeBuffer.state;
   }
 
@@ -861,7 +862,7 @@ char *StenoEngine::PrintSegmentSuggestion(size_t startSegmentIndex,
 #endif
 
   StenoTokenizer tokenizer(segments, startSegmentIndex);
-  previousConversionBuffer.keyCodeBuffer.Populate(tokenizer);
+  previousConversionBuffer.keyCodeBuffer.Populate(tokenizer, false);
 
 #if ENABLE_PROFILE_SUGGESTIONS
   const uint32_t t2 = sysTick->ReadCycleCount();

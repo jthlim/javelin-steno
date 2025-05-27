@@ -61,8 +61,10 @@ private:
 //
 // e.g. "{^}test{.}" has three tokens: "{^}", "test" and "{.}"
 struct StenoToken {
-  StenoToken(const char *text, size_t length, const StenoState *state)
-      : text(text), length(length), state(state) {}
+  StenoToken(const char *text, size_t length, const StenoState *state,
+             bool isLastSegment)
+      : text(text), length(length), state(state), isLastSegment(isLastSegment) {
+  }
 
   // This text is *not* null terminated.
   const char *const text;
@@ -70,6 +72,8 @@ struct StenoToken {
 
   // This can be null -- meaning that the state should be inferred.
   const StenoState *const state;
+
+  bool isLastSegment;
 
   // Returns text as a null-terminated string.
   char *DupText() const { return Str::DupN(text, length); }

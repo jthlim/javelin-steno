@@ -13,25 +13,28 @@
 
 void StenoKeyCodeBuffer::Reset() {
   wasLastActionAStitch = false;
-  consoleCount = 0;
-  addTranslationCount = 0;
-  resetStateCount = 0;
+  launchConsole = false;
+  launchAddTranslation = false;
+  doResetState = false;
   state.Reset();
   currentOutput = buffer;
   lastText = buffer;
 }
 
-void StenoKeyCodeBuffer::Populate(StenoTokenizer &tokenizer) {
+void StenoKeyCodeBuffer::Populate(StenoTokenizer &tokenizer,
+                                  bool executeSideEffects) {
   Reset();
-  Append(tokenizer);
+  Append(tokenizer, executeSideEffects);
 }
 
-void StenoKeyCodeBuffer::Append(StenoTokenizer &tokenizer) {
+void StenoKeyCodeBuffer::Append(StenoTokenizer &tokenizer,
+                                bool executeSideEffects) {
   for (const StenoToken token : tokenizer) {
     if (token.state != nullptr) {
       state = *token.state;
     }
     if (token.text[0] == '{') {
+      this->executeSideEffects = token.isLastSegment && executeSideEffects;
       ProcessCommand(token.text, token.length);
     } else {
       lastText = currentOutput;

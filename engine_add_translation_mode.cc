@@ -176,7 +176,7 @@ void StenoEngine::UpdateAddTranslationModeTextBuffer(ConversionBuffer &buffer) {
       i, segments, buffer.segmentBuilder.GetStrokes(0));
 
   StenoTokenizer tokenizer(segments);
-  buffer.keyCodeBuffer.Append(tokenizer);
+  buffer.keyCodeBuffer.Append(tokenizer, false);
   if (placeSpaceAfter && segments.IsNotEmpty()) {
     const StenoState lastState = buffer.keyCodeBuffer.state;
     if (!lastState.joinNext) {
@@ -219,7 +219,7 @@ void StenoEngine::AddTranslation(size_t newlineIndex) {
                                                        newlineIndex + 1);
 
     StenoTokenizer tokenizer(segments);
-    nextConversionBuffer.keyCodeBuffer.Append(tokenizer);
+    nextConversionBuffer.keyCodeBuffer.Append(tokenizer, false);
 
     word = nextConversionBuffer.keyCodeBuffer.ToString();
   }

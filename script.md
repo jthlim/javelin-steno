@@ -74,8 +74,10 @@ Variables can be declared at global or local scope.
 
 - Global variables can be inspected and changed in Global Values tool,
   available from the Visual Editor menu.
-- Local Variables can not be automatically inspected, but the `printValue`
-  method can be used to help debug if necessary.
+- Local variables cannot be automatically inspected, but the `printValue`
+  or `printData` functions can be used to help debug if necessary. These
+  will show in the Console tool only if the Show All Data setting is
+  enabled.
 
 ## Functions
 

@@ -29,18 +29,19 @@ public:
     rootDictionary = newRootDictionary;
   }
 
-  void Populate(StenoTokenizer &tokenizer);
-  void Append(StenoTokenizer &tokenizer);
+  void Populate(StenoTokenizer &tokenizer, bool executeSideEffects);
+  void Append(StenoTokenizer &tokenizer, bool executeSideEffects);
 
   static constexpr size_t BUFFER_SIZE = 2048;
 
   const StenoCompiledOrthography *orthography;
   StenoDictionary *rootDictionary;
 
+  bool executeSideEffects = false;
   bool wasLastActionAStitch = false;
-  uint8_t consoleCount = 0;
-  uint8_t addTranslationCount = 0;
-  uint8_t resetStateCount = 0;
+  bool launchConsole = false;
+  bool launchAddTranslation = false;
+  bool doResetState = false;
   StenoKeyCode *lastText;
   StenoState state;
   char *addTranslationText = nullptr;

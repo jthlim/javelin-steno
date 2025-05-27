@@ -80,7 +80,7 @@ void StenoEngine::UpdateConsoleModeTextBuffer(ConversionBuffer &buffer) {
       0, segments, buffer.segmentBuilder.GetStrokes(0));
 
   StenoTokenizer tokenizer(segments);
-  buffer.keyCodeBuffer.Append(tokenizer);
+  buffer.keyCodeBuffer.Append(tokenizer, false);
   if (placeSpaceAfter && segments.IsNotEmpty()) {
     const StenoState lastState = buffer.keyCodeBuffer.state;
     if (!lastState.joinNext) {
