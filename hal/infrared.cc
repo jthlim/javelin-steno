@@ -17,10 +17,14 @@ struct RawInfraredData {
   void AddOffTime(InfraredTime time);
   void Add(const InfraredDataConfiguration::PulseTime &time);
 
+  void AddData(const void *data, size_t bitCount,
+               const InfraredDataConfiguration &configuration);
+
   void Trim() {
     // If last time is for an off-pulse, remove it.
     if ((index & 1) == 0) {
       --index;
+      totalTime -= data[index];
     }
   }
 
@@ -69,6 +73,23 @@ void RawInfraredData::Add(const InfraredDataConfiguration::PulseTime &time) {
     AddOnTime(time.onTime);
     AddOffTime(time.offTime);
   }
+}
+
+void RawInfraredData::AddData(const void *data, size_t bitCount,
+                              const InfraredDataConfiguration &configuration) {
+  Add(configuration.header);
+
+  const uint8_t *p = (const uint8_t *)data;
+  for (size_t i = 0; i < bitCount; ++i) {
+    const uint32_t byte = p[i / 8];
+    const size_t rightShift = configuration.rawConfiguration.endianness ==
+                                      InfraredEndianness::MSB_FIRST
+                                  ? ~i
+                                  : i;
+    const uint32_t bit = (byte >> (rightShift & 7)) & 1;
+    Add(configuration.GetBitPulseTime(bit));
+  }
+  Add(configuration.trailer);
 }
 
 //---------------------------------------------------------------------------
@@ -125,19 +146,7 @@ void Infrared::SendData(const void *data, size_t bitCount,
 #endif
 
   RawInfraredData rawData;
-  rawData.Add(configuration.header);
-
-  const uint8_t *p = (const uint8_t *)data;
-  for (size_t i = 0; i < bitCount; ++i) {
-    const uint32_t byte = p[i / 8];
-    const size_t rightShift = configuration.rawConfiguration.endianness ==
-                                      InfraredEndianness::MSB_FIRST
-                                  ? ~i
-                                  : i;
-    const uint32_t bit = (byte >> (rightShift & 7)) & 1;
-    rawData.Add(configuration.GetBitPulseTime(bit));
-  }
-  rawData.Add(configuration.trailer);
+  rawData.AddData(data, bitCount, configuration);
 
   if (rawData.IsValid()) {
     rawData.Trim();
@@ -260,24 +269,6 @@ void Infrared::SendKaseikyoMessage(uint32_t address, uint32_t command,
   SendData(message, 48, configuration);
 }
 
-static const InfraredDataConfiguration &GetNECConfiguration() {
-  constexpr float TICK = 562.5f;
-  static constexpr InfraredDataConfiguration configuration = {
-      .rawConfiguration =
-          {
-              .playbackCount = 2,
-              .repeatDelayMode = InfraredRepeatDelayMode::START_TO_START,
-              .endianness = InfraredEndianness::LSB_FIRST,
-              .repeatDelay = 108000,
-          },
-      .header = {16 * TICK, 8 * TICK},
-      .zeroBit = {1 * TICK, 1 * TICK},
-      .oneBit = {1 * TICK, 3 * TICK},
-      .trailer = {1 * TICK, 0},
-  };
-  return configuration;
-}
-
 void Infrared::SendNECMessage(uint32_t address, uint32_t command, uint32_t _) {
   uint8_t message[4];
   message[0] = address;
@@ -285,7 +276,7 @@ void Infrared::SendNECMessage(uint32_t address, uint32_t command, uint32_t _) {
   message[2] = command;
   message[3] = ~command;
 
-  SendData(message, 32, GetNECConfiguration());
+  SendNECData(message);
 }
 
 void Infrared::SendNECXMessage(uint32_t address, uint32_t command, uint32_t _) {
@@ -295,7 +286,44 @@ void Infrared::SendNECXMessage(uint32_t address, uint32_t command, uint32_t _) {
   message[2] = command;
   message[3] = ~command;
 
-  SendData(message, 32, GetNECConfiguration());
+  SendNECData(message);
+}
+
+void Infrared::SendNECData(const uint8_t *data) {
+  constexpr float TICK = 562.5f;
+  static constexpr InfraredDataConfiguration dataConfiguration = {
+      .rawConfiguration =
+          {
+              .endianness = InfraredEndianness::LSB_FIRST,
+          },
+      .header = {16 * TICK, 8 * TICK},
+      .zeroBit = {1 * TICK, 1 * TICK},
+      .oneBit = {1 * TICK, 3 * TICK},
+      .trailer = {1 * TICK, 0},
+  };
+
+  static constexpr InfraredDataConfiguration repeatConfiguration = {
+      .rawConfiguration =
+          {
+              .playbackCount = 0,
+              .repeatDelayMode = InfraredRepeatDelayMode::START_TO_START,
+              .repeatDataMode = InfraredRepeatDataMode::HEADER_AND_TRAILER,
+              .endianness = InfraredEndianness::LSB_FIRST,
+              .repeatDelay = 108000,
+          },
+      .header = {16 * TICK, 4 * TICK},
+      .zeroBit = {0 * TICK, 0 * TICK},
+      .oneBit = {0 * TICK, 0 * TICK},
+      .trailer = {1 * TICK, 0},
+  };
+
+  RawInfraredData rawData;
+  rawData.AddData(data, 32, dataConfiguration);
+  if (rawData.IsValid()) {
+    rawData.Trim();
+    SendRawData(rawData.data, rawData.index,
+                repeatConfiguration.rawConfiguration);
+  }
 }
 
 // Address is 5 bits.
