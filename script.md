@@ -170,11 +170,11 @@ sufficient to determine the result, the right hand side will not be evaluated.
 
 - `func vWheelMouse(<delta>)`
 
-  - _delta_ is a value between -32768 and 32767 inclusive.
+  - Vertical mouse wheel. _delta_ is a value between -32768 and 32767 inclusive.
 
 - `func hWheelMouse(<delta>)`
 
-  - _delta_ is a value between -32768 and 32767 inclusive.
+  - Horizontal mouse wheel. _delta_ is a value between -32768 and 32767 inclusive.
 
 - `func pressMouseButton(<buttonIndex>)`
 
