@@ -240,16 +240,17 @@ size_t ButtonScriptManager::TriggerMaximumMatch(size_t maxComboLength) {
   for (size_t comboLength = maxComboLength; comboLength > 0; --comboLength) {
     const ComboMatches matches = Match(comboLength);
     if (matches.fullMatch != nullptr) {
-      TriggerCombo(*matches.fullMatch,
-                   pendingComboButtons[comboLength - 1].scriptTime);
+      const uint32_t scriptTime =
+          pendingComboButtons[comboLength - 1].scriptTime;
       pendingComboButtons.PopFrontCount(comboLength);
+      TriggerCombo(*matches.fullMatch, scriptTime);
       return comboLength;
     }
   }
 
-  const PendingComboButton &button = pendingComboButtons.Front();
-  TriggerPress(button.buttonIndex, button.scriptTime);
+  const PendingComboButton button = pendingComboButtons.Front();
   pendingComboButtons.PopFront();
+  TriggerPress(button.buttonIndex, button.scriptTime);
   return 1;
 }
 
