@@ -17,6 +17,7 @@
 #define ENABLE_PROFILE_SUGGESTIONS 0
 #define DEBUG_SEGMENTS 0
 #define DEBUG_KEY_CODE_BUFFERS 0
+#define DEBUG_KEY_CODE_BUFFER_ELEMENTS 0
 
 #if ENABLE_PROFILE || ENABLE_PROFILE_SUGGESTIONS
 #include "arm/systick.h"
@@ -272,6 +273,10 @@ void StenoEngine::ProcessNormalModeStroke(StenoStroke stroke) {
   }
 #endif
 
+#if DEBUG_KEY_CODE_BUFFER_ELEMENTS
+  DumpKeyCodeBufferElements();
+#endif
+
   state = nextConversionBuffer.keyCodeBuffer.GetPersistentState();
 
   bool printSuggestions = true;
@@ -500,6 +505,10 @@ void StenoEngine::ProcessNormalModeUndo() {
   }
 #endif
 
+#if DEBUG_KEY_CODE_BUFFER_ELEMENTS
+  DumpKeyCodeBufferElements();
+#endif
+
   emitter.Process(previousConversionBuffer.keyCodeBuffer,
                   nextConversionBuffer.keyCodeBuffer);
 
@@ -587,6 +596,37 @@ void StenoEngine::ConvertText(StenoKeyCodeBuffer &keyCodeBuffer,
     keyCodeBuffer.AppendSpace();
   }
 }
+
+#if DEBUG_KEY_CODE_BUFFER_ELEMENTS
+
+void StenoEngine::DumpKeyCodeBufferElements() const {
+  Console::Printf("Previous: %zu\n",
+                  previousConversionBuffer.keyCodeBuffer.GetCount());
+  for (size_t i = 0; i < previousConversionBuffer.keyCodeBuffer.GetCount();
+       ++i) {
+    StenoKeyCode keyCode = previousConversionBuffer.keyCodeBuffer.buffer[i];
+    if (keyCode.IsRawKeyCode()) {
+      Console::Printf("%zu: raw %u: %d\n", i, keyCode.GetRawKeyCode(),
+                      keyCode.IsPress());
+    } else {
+      Console::Printf("%zu: '%C'\n", i, keyCode.GetUnicode());
+    }
+  }
+
+  Console::Printf("Next: %zu\n", nextConversionBuffer.keyCodeBuffer.GetCount());
+  for (size_t i = 0; i < nextConversionBuffer.keyCodeBuffer.GetCount(); ++i) {
+    StenoKeyCode keyCode = nextConversionBuffer.keyCodeBuffer.buffer[i];
+    if (keyCode.IsRawKeyCode()) {
+      Console::Printf("%zu: raw %u: %d\n", i, keyCode.GetRawKeyCode(),
+                      keyCode.IsPress());
+    } else {
+      Console::Printf("%zu: '%C'\n", i, keyCode.GetUnicode());
+    }
+  }
+  Console::Printf("\n");
+}
+
+#endif
 
 //---------------------------------------------------------------------------
 

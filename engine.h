@@ -176,6 +176,8 @@ private:
                    StenoSegmentList &segments, size_t startingOffset,
                    bool executeSideEffects);
 
+  void DumpKeyCodeBufferElements() const;
+
   void PrintPaperTape(StenoStroke stroke,
                       const StenoSegmentList &previousSegments,
                       const StenoSegmentList &nextSegments) const;

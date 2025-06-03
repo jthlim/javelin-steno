@@ -941,6 +941,8 @@ Javelin provides 3 ways of sending infrared data:
 - Sending bits with bit encoding information using `sendInfraredData`
 - Sending arbitrary pulses using `sendInfraredSignal`
 
+### Reference
+
 - `func stopInfrared()`
 
   - Stops all infrared transmission
@@ -1190,6 +1192,27 @@ Javelin provides 3 ways of sending infrared data:
 
   - Returns whether the script is reinitializing after a script upload.
   - This can be used to avoid disabling console and flash write access.
+
+- `func createBuffer(<bytesToAllocate>) var`
+
+  _This function is preliminary and may change at any stage._
+
+  - Returns a pointer to a region that can be used as as mutable 8-bit, 16-bit
+    or 32-bit buffer.
+  - This function cannot be used and will return 0 if called outside of init()
+    or a global variable declaration.
+    - This restriction is intentional to avoid memory fragmentation and
+      situations that cause scripts to fail unexpectedly that are difficult
+      to debug.
+      - Related reading: [Rule 3](https://en.wikipedia.org/wiki/The_Power_of_10:_Rules_for_Developing_Safety-Critical_Code) from NASA Coding Standards.
+    - Suggested usage:
+      ```
+      // Allocate 18 bytes for infrared data.
+      var mitsubishiAirConditionerInfraredData = createBuffer(18);
+
+      // Allocate 42x 32-bit values for key colors.
+      var keyColorData = createBuffer(42 * 4);
+      ```
 
 # Visual Editor Script Templates
 

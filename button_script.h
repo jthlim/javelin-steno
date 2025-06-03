@@ -47,7 +47,9 @@ public:
   ButtonScript(const uint8_t *byteCode);
 
   void ExecuteInitScript(uint32_t scriptTime) {
+    isInInit = true;
     ExecuteScriptIndex(0, scriptTime);
+    isInInit = false;
   }
   void ExecuteTickScript(uint32_t scriptTime) {
     ExecuteScriptIndex(1, scriptTime);
@@ -110,6 +112,7 @@ private:
     }
   };
 
+  bool isInInit;
   bool isInReinit;
   bool isScriptRgbEnabled = true;
   uint8_t inPressAllCount;
@@ -126,6 +129,7 @@ private:
   BitField<32> mouseButtonState;
   LimitedBufferWriter formatStringWriter[2];
   LimitedBufferWriter consoleWriter;
+  List<void *> buffers;
 
   void ExecuteScript(size_t offset, uint32_t scriptTime);
 

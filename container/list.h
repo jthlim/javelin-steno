@@ -66,6 +66,18 @@ public:
       Add(v);
     }
   }
+  bool Remove(const T &v) {
+    for (size_t i = 0; i < count; ++i) {
+      if ((*this)[i] == v) {
+        --count;
+        for (; i < count; ++i) {
+          (*this)[i] = (*this)[i + 1];
+        }
+        return true;
+      }
+    }
+    return false;
+  }
 
   void InsertAt(size_t i, const T &v) { super::InsertAt(&v, i, sizeof(T)); }
 

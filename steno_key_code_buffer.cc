@@ -331,6 +331,9 @@ void StenoKeyCodeBuffer::ProcessCommand(const char *p, size_t length) {
   }
 
   if (p[1] == '#') {
+    if (!executeSideEffects) {
+      return;
+    }
     if (ProcessKeyPresses(p + 2, end)) {
       return;
     }

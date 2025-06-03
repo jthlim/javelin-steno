@@ -385,7 +385,7 @@ next:
   case BC::OPERATOR_START + (int)OP::WRITE_WORD_INDEX:
     stack.TernaryVoidOp([=](intptr_t offset, intptr_t index, intptr_t value) {
       uint32_t *data = (uint32_t *)(byteCode + offset);
-      data[index] = value;
+      data[index] = (uint32_t) value;
     });
     CONTINUE;
   case BC::CALL_INTERNAL: {

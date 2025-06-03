@@ -107,6 +107,10 @@ void ButtonScript::Reset() {
   eventHistory[2] = nullptr;
   eventHistory[3] = nullptr;
   Mem::Clear(scriptCallbacks);
+  for (void *buffer : buffers) {
+    free(buffer);
+  }
+  buffers.Reset();
   Script::Reset();
 }
 
@@ -1259,6 +1263,36 @@ public:
 
     Infrared::SendRawData(data, dataCount, *configuration);
   }
+
+  static void CreateBuffer(ButtonScript &script,
+                           const ScriptByteCode *byteCode) {
+    const size_t bufferSize = script.Pop();
+
+    if (!script.isInInit) {
+      script.Push(0);
+      return;
+    }
+
+    void *buffer = malloc(bufferSize);
+    if (buffer == nullptr) {
+      script.Push(0);
+      return;
+    }
+
+    memset(buffer, 0, bufferSize);
+    script.buffers.Add(buffer);
+    script.Push(byteCode->GetDataOffset(buffer));
+  }
+
+  // static void FreeBuffer(ButtonScript &script, const ScriptByteCode
+  // *byteCode) {
+  //   const size_t bufferOffset = script.Pop();
+  //   void *buffer = (void *)byteCode->GetScriptData<void>(bufferOffset);
+  //   if (!script.buffers.Remove(buffer)) {
+  //     return;
+  //   }
+  //   free(buffer);
+  // }
 };
 
 constexpr void (*ButtonScript::FUNCTION_TABLE[])(ButtonScript &,
@@ -1383,6 +1417,8 @@ constexpr void (*ButtonScript::FUNCTION_TABLE[])(ButtonScript &,
     &Function::EnableScriptRgb,
     &Function::DisableScriptRgb,
     &Function::SendInfraredSignal,
+    &Function::CreateBuffer,
+    // &Function::FreeBuffer,
 };
 
 void ButtonScript::PrintEventHistory() {
