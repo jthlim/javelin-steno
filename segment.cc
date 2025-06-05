@@ -327,8 +327,9 @@ UpdatePAndReturnSpan:
 
 ReturnSpan:
   const size_t length = workingP - start;
+  const bool isLastToken = elementIndex == list.GetCount();
   PrepareNextP();
-  return StenoToken(start, length, state, elementIndex == list.GetCount());
+  return StenoToken(start, length, state, isLastToken);
 }
 
 void StenoTokenizer::PrepareNextP() {
