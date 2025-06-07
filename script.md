@@ -610,8 +610,8 @@ the button index, then underglow lights after.
 
 - `func measureTextWidth(<fontId>, <text>)`
 
-  - Returns the width of the text in pixels.
-  - `fontId` uses the same constants as drawText.
+  - Returns the width of _text_ in pixels.
+  - _fontId_ uses the same constants as drawText.
 
 - `func drawRect(<displayId>, <left>, <top>, <right>, <bottom>)`
 
@@ -703,11 +703,16 @@ const CONNECTION_ID_USB2 = 3;
 
 ## Combo Support Functions
 
+Combo support functions make it much easier to configure and handle
+multi-button press actions. Calls to underlying button press/release methods
+are suppressed until it is confirmed that no combo is involved.
+
 - `func addCombo(isOrdered, comboTimeOut, buttons, pressFunction, releaseFunction)`
 
   - Adds a combo trigger.
     - Combo triggers suppress calls to button presses/releases until
       _comboTimeOut_ (milliseconds) expires.
+    - Using 0 for _comboTimeOut_ represents no timeout.
     - _buttons_ is a byte list terminated in `ff`.
     - If _isOrdered_ is non-zero, the combo is only triggered if buttons are
       pressed in the specified order.
@@ -950,7 +955,7 @@ Javelin provides 3 ways of sending infrared data:
 
 - `func sendInfraredMessage(protocol, address, command, extra)`
 
-  - Sends an infrared message. `protocol` is a string that controls
+  - Sends an infrared message. _protocol_ is a string that controls
     how the message is encoded.
 
     Example: `sendInfraredMessage("sirc", 1, 18, 0); // Sony TV Volume Up
@@ -1022,13 +1027,13 @@ Javelin provides 3 ways of sending infrared data:
 
 - `func sendInfraredData(data, dataBits, configuration)`
 
-  - Send `dataBits` worth of `data`.
-  - `sendInfraredData([[23 50]], 12, CONFIGURATION);` will send
-    `0010 0011 0101` encoded using CONFIGURATION.
+  - Send _dataBits_ worth of _data_.
+  - `sendInfraredData([[23 50]], 12, configuration);` will send
+    `0010 0011 0101` encoded using _configuration_.
 
-    - CONFIGURATION is a 16-bit list as follows:
+    - _configuration_ is a 16-bit list as follows:
       - `playbackCount`: Number of times the signal is sent. 0 = infinite.
-      - `carrierFrequency`: Frequency in Hz
+      - `carrierFrequency`: Frequency in Hz of the carrier signal.
       - `dutyCycle`: Typically 33, representing 33% duty cycle.
       - `flags`: OR-ing of the following flags:
         - Repeat Delay Flags:
@@ -1071,9 +1076,9 @@ Javelin provides 3 ways of sending infrared data:
       ```
 
 - `func sendInfraredSignal(timing, timeCount, configuration)`
-  - Send a signal with times specified in timing.
+  - Send a signal _timeCount_ times with times specified in _timing_.
 
-  - Timing is a 16-bit list, with each value representing the time in
+  - _timing_ is a 16-bit list, with each value representing the time in
     half microsecond increments. The values must be between 4 and 32767.
 
   - `sendInfraredData([<1000, 500, 500>], 3, CONFIGURATION);` will send
@@ -1086,6 +1091,34 @@ Javelin provides 3 ways of sending infrared data:
       - `flags`: Same flags as described for sendInfraredData.
                  Endian flags are not used.
       - `repeatDelayLow`, `repeatDelayHigh`: Repeat delay in microseconds.
+
+## Debug Functions
+
+These functions print information to the console. "Show All Data" option
+needs to be enabled in Web Tools to be able to see this information.
+
+- `func printValue(<name>, <value>)`
+
+  - Prints _value_ to the console.
+  - Example:
+    ```go
+      var myValue = 123;
+      printValue("value", myValue);
+    ```
+  - This will show the following in the console:
+    ```
+    value: 123 (0x7b)
+    ```
+
+- `func printData(<name>, <data>, <dataLength>)`
+
+  - Prints a hex dump of _data_ for _dataLength_ bytes to the console.
+  - Example:
+    ```go
+      var bufferGlobalVar = createBuffer(50);
+      ...
+      printValue("buffer", bufferGlobalVar, 50);
+    ```
 
 ## Miscellaneous Functions
 
@@ -1147,31 +1180,17 @@ Javelin provides 3 ways of sending infrared data:
     const SCRIPT_ID_USER8 = 18;
     ```
 
-- `func printValue(<name>, <value>)`
-
-  - Used for debugging -- _value_ will be printed to the console, with
-    "Show All Data" enabled.
-  - Example:
-    ```go
-      var myValue = 123;
-      printValue("value", myValue);
-    ```
-  - This will show the following in the console:
-    ```
-    value: 123 (0x7b)
-    ```
-
 - `func formatString(<format>, <value>) var`
 
   - Intended only for use with `getAsset`.
-  - `format` must be a string constant and can contain C printf like formatters.
+  - _format_ must be a string constant and can contain C printf like formatters.
     Check [writer.cc](writer.cc) for a full list.
-  - `value` is a single integer value to format. Pointer values cannot be used
+  - _value_ is a single integer value to format. Pointer values cannot be used
     and will likely crash the script.
 
 - `func getAsset(<assetName>) var`
 
-  - Returns the data for `assetName` or 0 if not found.
+  - Returns the data for _assetName_ or 0 if not found.
 
 - `func sendEvent(<eventString>)`
 
@@ -1227,6 +1246,8 @@ will just show in the settings for that layer.
 
 ```
 #option(<attributeName>, <displayCategory>, <optionName>, <functionName>)
+
 #dispatch(<"local" | "per_layer">, <attributeName>, <displayCategory>, <defaultFunctionName>)
+
 #flag(<"local" | "per_layer">, <displayCategory>, <default: "true" | "false">)
 ```
