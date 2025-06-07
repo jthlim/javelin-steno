@@ -74,10 +74,12 @@ Variables can be declared at global or local scope.
 
 - Global variables can be inspected and changed in Global Values tool,
   available from the Visual Editor menu.
+- Global values start with the initial value of 0.
 - Local variables cannot be automatically inspected, but the `printValue`
   or `printData` functions can be used to help debug if necessary. These
   will show in the Console tool only if the Show All Data setting is
   enabled.
+- Local variables that are not assigned a value have an undefined value.
 
 ## Functions
 
