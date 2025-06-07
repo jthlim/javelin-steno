@@ -56,7 +56,6 @@ floating point hardware.
 
 ## Constants
 
-- `const constName;`
 - `const constName = <expr>;`
 
 Constants are fixed at compile-time, and the value they are given must be
@@ -1215,6 +1214,10 @@ Javelin provides 3 ways of sending infrared data:
       // Allocate 42x 32-bit values for key colors.
       var keyColorData = createBuffer(42 * 4);
       ```
+  - Data can be read/written using the following syntax:
+    - `[n]` for 8-bit values
+    - `[<n>]` for 16-bit values
+    - `[{n}]` for 32-bit values
 
 # Visual Editor Script Templates
 
