@@ -196,15 +196,23 @@ ConsolePrintDictionaryContext::Print(const StenoStroke *strokes, size_t length,
 void PrintPartialOutlineContext::Print(const StenoStroke *strokes,
                                        size_t length, const char *definition,
                                        const StenoDictionary *dictionary) {
-  const char *format =
-      ",{\"outline\":\"%T\",\"definition\":\"%J\",\"dictionary\":\"%J\"}";
+  const char *format = ",{\"o\":\"%T\",\"t\":\"%J\",\"d\":\"%J\"}";
   if (!count) {
     ++format;
   }
   if (++count > MAX_COUNT) {
     return;
   }
-  Console::Printf(format, strokes, length, definition, dictionary->GetName());
+  const char *name = dictionary->GetName();
+  char buffer[16];
+  const size_t index = dictionaries.FindIndex(dictionary);
+  if (index == -1) {
+    dictionaries.Add(dictionary);
+  } else {
+    Str::Sprintf(buffer, "#%zu", index);
+    name = buffer;
+  }
+  Console::Printf(format, strokes, length, definition, name);
 }
 
 //---------------------------------------------------------------------------

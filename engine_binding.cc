@@ -139,6 +139,7 @@ void StenoEngine::Lookup_Binding(void *context, const char *commandLine) {
   engine->ReverseLookup(lookup);
 
   Console::Printf("[");
+  List<const StenoDictionary *> dictionaries;
   for (const StenoReverseDictionaryResult &entry : lookup.results) {
     StenoSegmentList segments(entry.length);
     ConversionBuffer &buffer = engine->previousConversionBuffer;
@@ -146,8 +147,8 @@ void StenoEngine::Lookup_Binding(void *context, const char *commandLine) {
                            entry.length);
 
     Console::Printf(&entry == begin(lookup.results) ? "\n{" : ",\n{", nullptr);
-    Console::Printf("\"outline\":\"%T\"", entry.strokes, entry.length);
-    Console::Printf(",\"definition\":\"");
+    Console::Printf("\"o\":\"%T\"", entry.strokes, entry.length);
+    Console::Printf(",\"t\":\"");
 
     bool isFirst = true;
     for (const StenoToken token : StenoTokenizer(segments)) {
@@ -161,9 +162,15 @@ void StenoEngine::Lookup_Binding(void *context, const char *commandLine) {
 
     const char *name = entry.dictionary->GetName();
     if (*name != '#') {
-      Console::Printf(",\"dictionary\":\"%J\"", name);
+      const size_t index = dictionaries.FindIndex(entry.dictionary);
+      if (index == -1) {
+        dictionaries.Add(entry.dictionary);
+        Console::Printf(",\"d\":\"%J\"", name);
+      } else {
+        Console::Printf(",\"d\":\"#%zu\"", index);
+      }
       if (entry.dictionary->CanRemove()) {
-        Console::Printf(",\"can_remove\":true");
+        Console::Printf(",\"r\":true");
       }
     }
 
@@ -199,12 +206,12 @@ void StenoEngine::LookupStroke_Binding(void *context, const char *commandLine) {
       const StenoDictionaryLookupResult result =
           dictionary->Lookup(parser.strokes, parser.length);
 
-      const char *format = ",\n\t{\"definition\":\"%J\",\"dictionary\":\"%J\"";
+      const char *format = ",\n\t{\"t\":\"%J\",\"d\":\"%J\"";
       Console::Printf(format + isFirstTime, result.GetText(),
                       dictionary->GetName());
 
       if (dictionary->CanRemove()) {
-        Console::Printf(",\"can_remove\":true");
+        Console::Printf(",\"r\":true");
       }
 
       Console::Printf("}");
@@ -218,7 +225,7 @@ void StenoEngine::LookupStroke_Binding(void *context, const char *commandLine) {
                            parser.length);
 
     if (!buffer.segmentBuilder.HasRawStroke()) {
-      Console::Printf("{\"definition\":\"");
+      Console::Printf("{\"t\":\"");
 
       const char *format = "%J";
       for (const StenoToken token : StenoTokenizer(segments)) {

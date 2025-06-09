@@ -79,6 +79,15 @@ public:
     return false;
   }
 
+  size_t FindIndex(const T &v) const {
+    for (size_t i = 0; i < count; ++i) {
+      if ((*this)[i] == v) {
+        return i;
+      }
+    }
+    return (size_t)-1;
+  }
+
   void InsertAt(size_t i, const T &v) { super::InsertAt(&v, i, sizeof(T)); }
 
   void Sort(int (*comparator)(const T *, const T *)) {

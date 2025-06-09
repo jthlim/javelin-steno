@@ -275,10 +275,11 @@ public:
   const StenoStroke *const strokes;
   const size_t length;
 
-  static const size_t MAX_COUNT = 32;
+  static const size_t MAX_COUNT = 128;
 
 private:
   size_t count = 0;
+  List<const StenoDictionary *> dictionaries;
 };
 
 //---------------------------------------------------------------------------
