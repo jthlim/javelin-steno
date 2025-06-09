@@ -87,6 +87,7 @@ bool Flash::RequiresProgram(const void *target, const void *data, size_t size) {
 void Flash::BeginWrite(const uint8_t *address) {
   target = address;
   writeStart = address;
+  writeInProgress = true;
 
   const void *baseAddress =
       (const void *)(intptr_t(address) & -WRITE_DATA_BUFFER_SIZE);
@@ -131,6 +132,7 @@ void Flash::WriteRemaining() {
   }
 
   target = nullptr;
+  writeInProgress = false;
 }
 
 [[gnu::noinline]] void Flash::Write(const void *target, const void *data,
@@ -281,7 +283,7 @@ void Flash::BeginWriteBinding(void *context, const char *commandLine) {
     return;
   }
 
-  if (instance.target != nullptr) {
+  if (IsUpdating()) {
     Console::Printf("ERR Write in progress\n\n");
   }
 
@@ -308,7 +310,7 @@ void Flash::WriteBinding(void *context, const char *commandLine) {
     return;
   }
 
-  if (instance.target == nullptr) {
+  if (!IsUpdating()) {
     Console::Printf("ERR No write in progress\n\n");
     return;
   }
@@ -327,7 +329,7 @@ void Flash::WriteBinding(void *context, const char *commandLine) {
 }
 
 void Flash::EndWriteBinding(void *context, const char *commandLine) {
-  if (instance.target == nullptr) {
+  if (!IsUpdating()) {
     Console::Printf("ERR No write in progress\n\n");
     return;
   }

@@ -34,7 +34,7 @@ enum class FlashWriteMode {
 
 class Flash {
 public:
-  static bool IsUpdating() { return instance.target != nullptr; }
+  static bool IsUpdating() { return instance.writeInProgress; }
 
   // Sets all bits in the region to 1.
   static void EraseBlock(const void *target, size_t size);
@@ -81,6 +81,7 @@ private:
   static constexpr size_t WRITE_DATA_BUFFER_SIZE = BLOCK_SIZE;
 
   bool isLocked = false;
+  bool writeInProgress = false;
   size_t erasedBytes;
   size_t programmedBytes;
   size_t reprogrammedBytes;
