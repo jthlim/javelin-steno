@@ -195,7 +195,7 @@ void StenoKeyCodeEmitter::EmitterContext::EmitIBus(uint32_t unicode) {
 
   EmitKeyCode(MODIFIER_L_CTRL_FLAG | MODIFIER_L_SHIFT_FLAG | uKeyCode);
   RecurseEmitIBus(unicode);
-  EmitAscii('\n');
+  EmitAscii(' ');
   EmitIBusDelay();
 }
 
