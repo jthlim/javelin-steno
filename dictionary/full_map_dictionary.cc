@@ -98,6 +98,9 @@ size_t StenoFullMapDictionaryStrokesDefinition::GetEntryCount() const {
 void StenoFullMapDictionaryStrokesDefinition::PrintDictionary(
     PrintDictionaryContext &context, size_t strokeLength,
     const uint8_t *textBlock) const {
+  if (hashMapMask == 0) [[unlikely]] {
+    return;
+  }
   const size_t dataStride = 4 * (1 + strokeLength);
   for (const uint8_t *data = this->data; data < (const uint8_t *)offsets;
        data += dataStride) {
@@ -114,29 +117,61 @@ void StenoFullMapDictionaryStrokesDefinition::PrintDictionary(
 void StenoFullMapDictionaryStrokesDefinition::PrintEntriesWithPartialOutline(
     PrintPartialOutlineContext &context, size_t definitionStrokeLength,
     const uint8_t *textBlock, const StenoDictionary *dictionary) const {
+  if (hashMapMask == 0) [[unlikely]] {
+    return;
+  }
 
+  // This routine finds candidate strokes, then ensured they're valid matches.
+  // It is about 4x faster than stepping through each entry and checking if
+  // there's a partial match.
+  const uintptr_t dataStart = uintptr_t(data);
+  const uintptr_t dataEnd = uintptr_t(offsets);
+  const uintptr_t wordCount = (dataEnd - dataStart) / 4;
   const size_t dataStride = 4 * (1 + definitionStrokeLength);
-  const size_t maxOffset = definitionStrokeLength - context.length;
 
-  for (const uint8_t *data = this->data; data < (const uint8_t *)offsets;
-       data += dataStride) {
-    const FullStenoMapDictionaryDataEntry &entry =
-        (const FullStenoMapDictionaryDataEntry &)*data;
+  const StenoStroke *strokeData = (const StenoStroke *)dataStart + 1;
+  const StenoStroke *searchEnd = strokeData + wordCount - context.length;
 
-    if (entry.IsDeleted()) [[unlikely]] {
+  const StenoStroke firstStroke = context.strokes[0];
+  while (strokeData < searchEnd) {
+    if (*strokeData != firstStroke) [[likely]] {
+    next:
+      ++strokeData;
       continue;
     }
 
-    if (!StenoStroke::HasPartialOutline(entry.strokes, context.strokes,
-                                        context.length, maxOffset)) [[likely]] {
-      continue;
+    if (!StenoStroke::Equals(strokeData, context.strokes, context.length))
+        [[likely]] {
+      goto next;
     }
 
-    context.Print(entry.strokes, definitionStrokeLength,
-                  (char *)textBlock + entry.textOffset, dictionary);
+    // Now figure out if it's actually a valid match.
+    const size_t dataIndex = (size_t(strokeData) - dataStart) / dataStride;
+    const FullStenoMapDictionaryDataEntry *entry =
+        (const FullStenoMapDictionaryDataEntry *)(dataStart +
+                                                  dataIndex * dataStride);
+
+    // Ensure the stroke does not overlap the textOffset data.
+    if (strokeData < entry->strokes) {
+      goto next;
+    }
+
+    // Ensure the stroke data does not overflow the entry.
+    const void *nextEntry = (const void *)(uintptr_t(entry) + dataStride);
+    if (strokeData + context.length > nextEntry) {
+      goto next;
+    }
+
+    if (entry->IsDeleted()) {
+      goto next;
+    }
+
+    context.Print(entry->strokes, definitionStrokeLength,
+                  (char *)textBlock + entry->textOffset, dictionary);
     if (context.IsDone()) [[unlikely]] {
       return;
     }
+    strokeData = (const StenoStroke *)nextEntry;
   }
 }
 

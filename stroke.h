@@ -150,7 +150,7 @@ public:
                                 const StenoStroke *strokes, size_t length,
                                 size_t maxOffset) {
     const StenoStroke firstStroke = strokes[0];
-    for (size_t i = 0; i < maxOffset; ++i) {
+    for (size_t i = 0; i <= maxOffset; ++i) {
       if (outline[i] == firstStroke) [[unlikely]] {
         if (Equals(strokes, outline + i, length)) {
           return true;

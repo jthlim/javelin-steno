@@ -97,6 +97,10 @@ size_t StenoCompactMapDictionaryStrokesDefinition::GetEntryCount() const {
 void StenoCompactMapDictionaryStrokesDefinition::PrintDictionary(
     PrintDictionaryContext &context, size_t strokeLength,
     const uint8_t *textBlock) const {
+  if (hashMapMask == 0) [[unlikely]] {
+    return;
+  }
+
   StenoStroke strokes[strokeLength];
 
   const size_t dataStride = 3 * (1 + strokeLength);
@@ -117,6 +121,10 @@ void StenoCompactMapDictionaryStrokesDefinition::PrintDictionary(
 void StenoCompactMapDictionaryStrokesDefinition::PrintEntriesWithPartialOutline(
     PrintPartialOutlineContext &context, size_t definitionStrokeLength,
     const uint8_t *textBlock, const StenoDictionary *dictionary) const {
+  if (hashMapMask == 0) [[unlikely]] {
+    return;
+  }
+
   StenoStroke strokeBuffer[definitionStrokeLength];
 
   const size_t dataStride = 3 * (1 + definitionStrokeLength);

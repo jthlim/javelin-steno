@@ -169,14 +169,18 @@ const StenoDictionary *StenoUserDictionary::GetDictionaryForOutline(
 
 void StenoUserDictionary::PrintEntriesWithPartialOutline(
     PrintPartialOutlineContext &context) const {
-  for (size_t i = 0; i < activeDescriptorCopy.data.hashTableSize; ++i) {
-    const uint32_t offset = activeDescriptorCopy.data.hashTable[i];
+  const size_t hashTableSize = activeDescriptorCopy.data.hashTableSize;
+  const uint32_t *const hashTable = activeDescriptorCopy.data.hashTable;
+  for (size_t i = 0; i < hashTableSize; ++i) {
+    const uint32_t offset = hashTable[i];
     switch (offset) {
-    case OFFSET_EMPTY:
-    case OFFSET_DELETED:
+    [[likely]] case OFFSET_EMPTY:
       break;
 
-    default:
+    [[unlikely]] case OFFSET_DELETED:
+      break;
+
+    [[unlikely]] default:
       const StenoUserDictionaryEntry *entry =
           (const StenoUserDictionaryEntry
                *)(activeDescriptorCopy.data.dataBlock + offset - OFFSET_DATA);
