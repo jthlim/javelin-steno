@@ -36,6 +36,7 @@
 
 template <typename T> class List;
 class PrintDictionaryContext;
+class PrintPartialOutlineContext;
 class StenoDictionary;
 struct StenoDictionaryListEntry;
 
@@ -73,6 +74,10 @@ struct StenoCompactMapDictionaryStrokesDefinition {
   size_t GetEntryCount() const;
   void PrintDictionary(PrintDictionaryContext &context, size_t strokeLength,
                        const uint8_t *textBlock) const;
+  void PrintEntriesWithPartialOutline(PrintPartialOutlineContext &context,
+                                      size_t strokeLength,
+                                      const uint8_t *textBlock,
+                                      const StenoDictionary *dictionary) const;
 };
 
 struct StenoFullMapDictionaryStrokesDefinition {
@@ -91,6 +96,10 @@ struct StenoFullMapDictionaryStrokesDefinition {
   size_t GetEntryCount() const;
   void PrintDictionary(PrintDictionaryContext &context, size_t strokeLength,
                        const uint8_t *textBlock) const;
+  void PrintEntriesWithPartialOutline(PrintPartialOutlineContext &context,
+                                      size_t strokeLength,
+                                      const uint8_t *textBlock,
+                                      const StenoDictionary *dictionary) const;
 };
 
 //---------------------------------------------------------------------------

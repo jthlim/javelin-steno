@@ -167,6 +167,35 @@ const StenoDictionary *StenoUserDictionary::GetDictionaryForOutline(
   return entry != nullptr ? this : nullptr;
 }
 
+void StenoUserDictionary::PrintEntriesWithPartialOutline(
+    PrintPartialOutlineContext &context) const {
+  for (size_t i = 0; i < activeDescriptorCopy.data.hashTableSize; ++i) {
+    const uint32_t offset = activeDescriptorCopy.data.hashTable[i];
+    switch (offset) {
+    case OFFSET_EMPTY:
+    case OFFSET_DELETED:
+      break;
+
+    default:
+      const StenoUserDictionaryEntry *entry =
+          (const StenoUserDictionaryEntry
+               *)(activeDescriptorCopy.data.dataBlock + offset - OFFSET_DATA);
+
+      if (entry->strokeLength > context.length) {
+        if (StenoStroke::HasPartialOutline(
+                entry->strokes, context.strokes, context.length,
+                entry->strokeLength - context.length)) {
+          context.Print(entry->strokes, entry->strokeLength, entry->GetText(),
+                        this);
+          if (context.IsDone()) {
+            return;
+          }
+        }
+      }
+    }
+  }
+}
+
 void StenoUserDictionary::ReverseLookup(
     StenoReverseDictionaryLookup &lookup) const {
   uint32_t entryIndex = lookup.definitionCrc;
@@ -550,7 +579,7 @@ void StenoUserDictionary::AddEntry_Binding(void *context,
                                            const char *commandLine) {
   const char *strokeStart = strchr(commandLine, ' ');
   if (!strokeStart) {
-    Console::Printf("ERR No stroke specified\n\n");
+    Console::Printf("ERR No strokes specified\n\n");
     return;
   }
 
@@ -580,7 +609,7 @@ void StenoUserDictionary::RemoveEntry_Binding(void *context,
                                               const char *commandLine) {
   const char *strokeStart = strchr(commandLine, ' ');
   if (!strokeStart) {
-    Console::Printf("ERR No stroke specified\n\n");
+    Console::Printf("ERR No strokes specified\n\n");
     return;
   }
 

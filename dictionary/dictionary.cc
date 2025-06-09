@@ -193,6 +193,22 @@ ConsolePrintDictionaryContext::Print(const StenoStroke *strokes, size_t length,
 
 //---------------------------------------------------------------------------
 
+void PrintPartialOutlineContext::Print(const StenoStroke *strokes,
+                                       size_t length, const char *definition,
+                                       const StenoDictionary *dictionary) {
+  const char *format =
+      ",{\"outline\":\"%T\",\"definition\":\"%J\",\"dictionary\":\"%J\"}";
+  if (!count) {
+    ++format;
+  }
+  if (++count > MAX_COUNT) {
+    return;
+  }
+  Console::Printf(format, strokes, length, definition, dictionary->GetName());
+}
+
+//---------------------------------------------------------------------------
+
 const StenoDictionary *StenoDictionary::GetDictionaryForOutline(
     const StenoDictionaryLookup &lookup) const {
   StenoDictionaryLookupResult lookupResult = Lookup(lookup);

@@ -24,6 +24,9 @@ public:
   virtual const StenoDictionary *
   GetDictionaryForOutline(const StenoDictionaryLookup &lookup) const;
 
+  virtual void
+  PrintEntriesWithPartialOutline(PrintPartialOutlineContext &context) const;
+
   virtual void ReverseLookup(StenoReverseDictionaryLookup &lookup) const;
 
   virtual bool CanRemove() const { return true; }

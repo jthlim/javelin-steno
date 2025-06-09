@@ -206,7 +206,9 @@ private:
   static void PrintDictionary_Binding(void *context, const char *commandLine);
   static void Lookup_Binding(void *context, const char *commandLine);
   static void LookupStroke_Binding(void *context, const char *commandLine);
-  static void RemoveStroke_Binding(void *context, const char *commandLine);
+  static void LookupPartialOutline_Binding(void *context,
+                                           const char *commandLine);
+  static void RemoveOutline_Binding(void *context, const char *commandLine);
   static void ProcessStrokes_Binding(void *context, const char *commandLine);
 
   static void ListTemplateValues_Binding(void *context,

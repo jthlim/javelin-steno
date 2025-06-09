@@ -43,7 +43,9 @@ void StenoFullMapDictionary::HashStats::Update(const HashStats &stats) {
 
 struct FullStenoMapDictionaryDataEntry {
   uint32_t textOffset;
-  StenoStroke strokes[1];
+  StenoStroke strokes[0];
+
+  bool IsDeleted() const { return strokes[0].IsEmpty(); }
 
   bool Equals(const StenoStroke *strokes, size_t length) const {
     return StenoStroke::Equals(this->strokes, strokes, length);
@@ -96,15 +98,44 @@ size_t StenoFullMapDictionaryStrokesDefinition::GetEntryCount() const {
 void StenoFullMapDictionaryStrokesDefinition::PrintDictionary(
     PrintDictionaryContext &context, size_t strokeLength,
     const uint8_t *textBlock) const {
-  const size_t entryCount = GetEntryCount();
-  for (size_t i = 0; i < entryCount; ++i) {
-    const size_t dataIndex = 4 * i * (1 + strokeLength);
+  const size_t dataStride = 4 * (1 + strokeLength);
+  for (const uint8_t *data = this->data; data < (const uint8_t *)offsets;
+       data += dataStride) {
     const FullStenoMapDictionaryDataEntry &entry =
-        (const FullStenoMapDictionaryDataEntry &)data[dataIndex];
+        *(const FullStenoMapDictionaryDataEntry *)data;
 
-    if (!entry.strokes[0].IsEmpty()) {
+    if (!entry.IsDeleted()) {
       context.Print(entry.strokes, strokeLength,
                     (char *)textBlock + entry.textOffset);
+    }
+  }
+}
+
+void StenoFullMapDictionaryStrokesDefinition::PrintEntriesWithPartialOutline(
+    PrintPartialOutlineContext &context, size_t definitionStrokeLength,
+    const uint8_t *textBlock, const StenoDictionary *dictionary) const {
+
+  const size_t dataStride = 4 * (1 + definitionStrokeLength);
+  const size_t maxOffset = definitionStrokeLength - context.length;
+
+  for (const uint8_t *data = this->data; data < (const uint8_t *)offsets;
+       data += dataStride) {
+    const FullStenoMapDictionaryDataEntry &entry =
+        (const FullStenoMapDictionaryDataEntry &)*data;
+
+    if (entry.IsDeleted()) [[unlikely]] {
+      continue;
+    }
+
+    if (!StenoStroke::HasPartialOutline(entry.strokes, context.strokes,
+                                        context.length, maxOffset)) [[likely]] {
+      continue;
+    }
+
+    context.Print(entry.strokes, definitionStrokeLength,
+                  (char *)textBlock + entry.textOffset, dictionary);
+    if (context.IsDone()) [[unlikely]] {
+      return;
     }
   }
 }
@@ -174,6 +205,25 @@ const StenoDictionary *StenoFullMapDictionary::GetDictionaryForOutline(
   return entry == nullptr ? nullptr : this;
 }
 
+void StenoFullMapDictionary::PrintEntriesWithPartialOutline(
+    PrintPartialOutlineContext &context) const {
+  for (size_t length = context.length + 1; length <= maximumOutlineLength;
+       ++length) {
+    const StenoFullMapDictionaryStrokesDefinition &strokesDefinition =
+        strokes[length];
+
+    if (strokesDefinition.hashMapMask == 0) {
+      continue;
+    }
+
+    strokesDefinition.PrintEntriesWithPartialOutline(context, length, textBlock,
+                                                     this);
+    if (context.IsDone()) {
+      return;
+    }
+  }
+}
+
 void StenoFullMapDictionary::ReverseLookup(
     StenoReverseDictionaryLookup &lookup) const {
   if (!dataRange.HasIntersection(lookup.mapLookupDataRange)) {
@@ -195,7 +245,7 @@ void StenoFullMapDictionary::ReverseLookup(
     StenoReverseDictionaryLookup &lookup,
     const FullStenoMapDictionaryDataEntry *entry) const {
   // Check for deletion
-  if (entry->strokes[0].IsEmpty()) {
+  if (entry->IsDeleted()) {
     return;
   }
 

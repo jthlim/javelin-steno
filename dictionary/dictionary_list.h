@@ -71,6 +71,9 @@ public:
   GetDictionariesForOutline(List<const StenoDictionary *> &results,
                             const StenoDictionaryLookup &lookup) const;
 
+  virtual void
+  PrintEntriesWithPartialOutline(PrintPartialOutlineContext &context) const;
+
   virtual void ReverseLookup(StenoReverseDictionaryLookup &lookup) const;
 
   virtual bool Remove(const char *dictionaryName, const StenoStroke *strokes,

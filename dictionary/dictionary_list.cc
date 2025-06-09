@@ -78,6 +78,20 @@ void StenoDictionaryList::GetDictionariesForOutline(
   }
 }
 
+void StenoDictionaryList::PrintEntriesWithPartialOutline(
+    PrintPartialOutlineContext &context) const {
+  for (const StenoDictionaryListEntry &entry : dictionaries) {
+    if (entry.combinedMaximumOutlineLength <= context.length) {
+      continue;
+    }
+
+    entry->PrintEntriesWithPartialOutline(context);
+    if (context.IsDone()) {
+      return;
+    }
+  }
+}
+
 void StenoDictionaryList::ReverseLookup(
     StenoReverseDictionaryLookup &lookup) const {
 #if ENABLE_DICTIONARY_STATS

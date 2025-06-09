@@ -27,7 +27,7 @@ size_t StenoCompactHashMapEntryBlock::PopCount() const {
 
 struct CompactStenoMapDictionaryDataEntry {
   Uint24 textOffset;
-  Uint24 strokes[1];
+  Uint24 strokes[0];
 
   bool Equals(const StenoStroke *strokes, size_t length) const;
   void ExpandTo(StenoStroke *strokes, size_t length) const;
@@ -97,20 +97,51 @@ size_t StenoCompactMapDictionaryStrokesDefinition::GetEntryCount() const {
 void StenoCompactMapDictionaryStrokesDefinition::PrintDictionary(
     PrintDictionaryContext &context, size_t strokeLength,
     const uint8_t *textBlock) const {
-  const size_t entryCount = GetEntryCount();
   StenoStroke strokes[strokeLength];
-  for (size_t i = 0; i < entryCount; ++i) {
-    const size_t dataIndex = 3 * i * (1 + strokeLength);
-    const CompactStenoMapDictionaryDataEntry &entry =
-        (const CompactStenoMapDictionaryDataEntry &)data[dataIndex];
 
-    for (size_t j = 0; j < strokeLength; ++j) {
-      strokes[j] = entry.strokes[j].ToUint32();
-    }
+  const size_t dataStride = 3 * (1 + strokeLength);
+  for (const uint8_t *data = this->data;
+       data + dataStride <= (const uint8_t *)offsets; data += dataStride) {
+    const CompactStenoMapDictionaryDataEntry &entry =
+        *(const CompactStenoMapDictionaryDataEntry *)data;
+
+    entry.ExpandTo(strokes, strokeLength);
 
     if (!strokes[0].IsEmpty()) {
       context.Print(strokes, strokeLength,
                     (char *)textBlock + entry.textOffset.ToUint32());
+    }
+  }
+}
+
+void StenoCompactMapDictionaryStrokesDefinition::PrintEntriesWithPartialOutline(
+    PrintPartialOutlineContext &context, size_t definitionStrokeLength,
+    const uint8_t *textBlock, const StenoDictionary *dictionary) const {
+  StenoStroke strokeBuffer[definitionStrokeLength];
+
+  const size_t dataStride = 3 * (1 + definitionStrokeLength);
+  const size_t maxOffset = definitionStrokeLength - context.length;
+
+  for (const uint8_t *data = this->data;
+       data + dataStride <= (const uint8_t *)offsets; data += dataStride) {
+    const CompactStenoMapDictionaryDataEntry &entry =
+        *(const CompactStenoMapDictionaryDataEntry *)data;
+
+    entry.ExpandTo(strokeBuffer, definitionStrokeLength);
+
+    if (strokeBuffer[0].IsEmpty()) [[unlikely]] {
+      continue;
+    }
+
+    if (!StenoStroke::HasPartialOutline(strokeBuffer, context.strokes,
+                                        context.length, maxOffset)) [[likely]] {
+      continue;
+    }
+
+    context.Print(strokeBuffer, definitionStrokeLength,
+                  (char *)textBlock + entry.textOffset.ToUint32(), dictionary);
+    if (context.IsDone()) [[unlikely]] {
+      return;
     }
   }
 }
@@ -180,6 +211,24 @@ const StenoDictionary *StenoCompactMapDictionary::GetDictionaryForOutline(
   return entry == nullptr ? nullptr : this;
 }
 
+void StenoCompactMapDictionary::PrintEntriesWithPartialOutline(
+    PrintPartialOutlineContext &context) const {
+  for (size_t length = context.length + 1; length <= maximumOutlineLength;
+       ++length) {
+    const StenoCompactMapDictionaryStrokesDefinition &strokesDefinition =
+        strokes[length];
+
+    if (strokesDefinition.hashMapMask == 0) {
+      continue;
+    }
+
+    strokesDefinition.PrintEntriesWithPartialOutline(context, length, textBlock,
+                                                     this);
+    if (context.IsDone()) {
+      return;
+    }
+  }
+}
 void StenoCompactMapDictionary::ReverseLookup(
     StenoReverseDictionaryLookup &lookup) const {
   if (!dataRange.HasIntersection(lookup.mapLookupDataRange)) {

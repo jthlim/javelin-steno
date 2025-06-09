@@ -25,6 +25,9 @@ public:
                             const StenoDictionaryLookup &lookup) const;
   using super::GetDictionariesForOutline;
 
+  virtual void PrintEntriesWithPartialOutline(
+      PrintPartialOutlineContext &context) const final;
+
   virtual void ReverseLookup(StenoReverseDictionaryLookup &lookup) const;
 
   virtual bool Remove(const char *dictionaryName, const StenoStroke *strokes,

@@ -26,6 +26,11 @@ void StenoWrappedDictionary::GetDictionariesForOutline(
   return lookupDictionary->GetDictionariesForOutline(results, lookup);
 }
 
+void StenoWrappedDictionary::PrintEntriesWithPartialOutline(
+    PrintPartialOutlineContext &context) const {
+  return lookupDictionary->PrintEntriesWithPartialOutline(context);
+}
+
 //---------------------------------------------------------------------------
 
 void StenoWrappedDictionary::ReverseLookup(

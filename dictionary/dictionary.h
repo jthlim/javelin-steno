@@ -262,6 +262,25 @@ private:
   const char *name;
 };
 
+class PrintPartialOutlineContext {
+public:
+  PrintPartialOutlineContext(const StenoStroke *strokes, size_t length)
+      : strokes(strokes), length(length) {}
+
+  void Print(const StenoStroke *strokes, size_t length, const char *definition,
+             const StenoDictionary *dictionary);
+
+  bool IsDone() const { return count >= MAX_COUNT; }
+
+  const StenoStroke *const strokes;
+  const size_t length;
+
+  static const size_t MAX_COUNT = 32;
+
+private:
+  size_t count = 0;
+};
+
 //---------------------------------------------------------------------------
 
 class StenoDictionary {
@@ -286,6 +305,9 @@ public:
                                         size_t length) const {
     GetDictionariesForOutline(results, StenoDictionaryLookup(strokes, length));
   }
+
+  virtual void
+  PrintEntriesWithPartialOutline(PrintPartialOutlineContext &context) const {}
 
   // GetDictionaryForOutline is used to determine which dictionary, if any,
   // can provide a definition for the specified outline.

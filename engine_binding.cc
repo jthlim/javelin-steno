@@ -1,6 +1,7 @@
 //---------------------------------------------------------------------------
 
 #include "console.h"
+#include "dictionary/dictionary.h"
 #include "engine.h"
 #include "hal/external_flash.h"
 #include "stroke_list_parser.h"
@@ -175,7 +176,7 @@ void StenoEngine::Lookup_Binding(void *context, const char *commandLine) {
 void StenoEngine::LookupStroke_Binding(void *context, const char *commandLine) {
   const char *strokeStart = strchr(commandLine, ' ');
   if (!strokeStart) {
-    Console::Printf("ERR No stroke specified\n\n");
+    Console::Printf("ERR No strokes specified\n\n");
     return;
   }
 
@@ -198,8 +199,8 @@ void StenoEngine::LookupStroke_Binding(void *context, const char *commandLine) {
       const StenoDictionaryLookupResult result =
           dictionary->Lookup(parser.strokes, parser.length);
 
-      Console::Printf("%s{\"definition\":\"%J\",\"dictionary\":\"%J\"",
-                      isFirstTime ? "\n\t" : ",\n\t", result.GetText(),
+      const char *format = ",\n\t{\"definition\":\"%J\",\"dictionary\":\"%J\"";
+      Console::Printf(format + isFirstTime, result.GetText(),
                       dictionary->GetName());
 
       if (dictionary->CanRemove()) {
@@ -233,7 +234,31 @@ void StenoEngine::LookupStroke_Binding(void *context, const char *commandLine) {
   }
 }
 
-void StenoEngine::RemoveStroke_Binding(void *context, const char *commandLine) {
+void StenoEngine::LookupPartialOutline_Binding(void *context,
+                                               const char *commandLine) {
+  const char *strokeStart = strchr(commandLine, ' ');
+  if (!strokeStart) {
+    Console::Printf("ERR No strokes specified\n\n");
+    return;
+  }
+
+  StrokeListParser parser;
+  if (!parser.Parse(strokeStart + 1)) {
+    Console::Printf("ERR Cannot parse stroke near %s\n\n", parser.failureOrEnd);
+    return;
+  }
+
+  const ExternalFlashSentry externalFlashSentry;
+  StenoEngine *engine = (StenoEngine *)context;
+
+  Console::Printf("[");
+  PrintPartialOutlineContext lookupContext(parser.strokes, parser.length);
+  engine->GetDictionary().PrintEntriesWithPartialOutline(lookupContext);
+  Console::Printf("]\n\n");
+}
+
+void StenoEngine::RemoveOutline_Binding(void *context,
+                                        const char *commandLine) {
   const char *dictionaryStart = strchr(commandLine, ' ');
   const char *strokeStart = strrchr(commandLine, ' ');
   if (!dictionaryStart || dictionaryStart == strokeStart) {
@@ -268,7 +293,7 @@ void StenoEngine::ProcessStrokes_Binding(void *context,
                                          const char *commandLine) {
   const char *strokeStart = strchr(commandLine, ' ');
   if (!strokeStart) {
-    Console::Printf("ERR No stroke specified\n\n");
+    Console::Printf("ERR No strokes specified\n\n");
     return;
   }
 
@@ -324,9 +349,10 @@ void StenoEngine::SetTemplateValue_Binding(void *context,
   }
   ++p;
 
+  Console::SendOk();
+
   StenoEngine *engine = (StenoEngine *)context;
   engine->SetTemplateValue(index, Str::Trim(p));
-  Console::SendOk();
 }
 
 //---------------------------------------------------------------------------
@@ -348,11 +374,14 @@ void StenoEngine::AddConsoleCommands(Console &console) {
                           StenoEngine::PrintDictionary_Binding, this);
   console.RegisterCommand("lookup", "Looks up a word",
                           StenoEngine::Lookup_Binding, this);
-  console.RegisterCommand("lookup_stroke", "Looks up a stroke",
+  console.RegisterCommand("lookup_stroke", "Looks up an outline",
                           StenoEngine::LookupStroke_Binding, this);
-  console.RegisterCommand("remove_stroke",
-                          "Removes a stroke from specified dictionary",
-                          StenoEngine::RemoveStroke_Binding, this);
+  console.RegisterCommand("lookup_partial_outline",
+                          "Looks up entries which contain the given outline",
+                          StenoEngine::LookupPartialOutline_Binding, this);
+  console.RegisterCommand("remove_outline",
+                          "Removes an outline from specified dictionary",
+                          StenoEngine::RemoveOutline_Binding, this);
   console.RegisterCommand("process_strokes", "Processes a stroke list",
                           StenoEngine::ProcessStrokes_Binding, this);
   console.RegisterCommand("list_template_values", "Lists all template values",
