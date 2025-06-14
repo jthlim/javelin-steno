@@ -41,6 +41,26 @@ char *Str::Asprintf(const char *p, ...) {
   return bufferWriter.TerminateStringAndAdoptBuffer();
 }
 
+bool Str::TrimEq(const char *a, const char *b) {
+  while (*a && Unicode::IsWhitespace(*a)) {
+    ++a;
+  }
+  while (*b) {
+    if (*a++ != *b++) {
+      return false;
+    }
+  }
+  for (;;) {
+    if (*a == '\0') {
+      return true;
+    }
+    if (!Unicode::IsWhitespace(*a)) {
+      return false;
+    }
+    ++a;
+  }
+}
+
 size_t Str::Sprintf(char *target, const char *p, ...) {
   va_list args;
   va_start(args, p);

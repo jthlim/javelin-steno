@@ -170,7 +170,7 @@ void StenoDictionaryList::ListDictionaries() const {
     if (name[0] == '#') {
       continue;
     }
-    const char *format = ",\n {\"dictionary\":\"%J\",\"enabled\":%B}";
+    const char *format = ",\n{\"d\":\"%J\",\"v\":%d}";
     Console::Printf(format + isFirst, name, entry.IsEnabled());
     isFirst = false;
   }
@@ -219,12 +219,7 @@ void StenoDictionaryList::SendDictionaryStatus(const char *name,
     return;
   }
 
-  Console::Printf("EV {"
-                  "\"event\":\"dictionary_status\","
-                  "\"dictionary\":\"%J\","
-                  "\"enabled\":%B"
-                  "}\n\n",
-                  name, enabled);
+  Console::Printf("EV {\"e\":\"d\",\"d\":\"%J\",\"v\":%d}\n\n", name, enabled);
 }
 
 //---------------------------------------------------------------------------

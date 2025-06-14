@@ -136,8 +136,6 @@ void StenoEngine::PrintInfo() const {
 
   orthography.PrintInfo();
 
-  const ExternalFlashSentry externalFlashSentry;
-
   Console::Printf("    Dictionaries\n");
   GetDictionary().PrintInfo(4);
 }
@@ -201,9 +199,7 @@ void StenoEngine::SetTemplateValue(size_t index, char *data) {
   }
   templateValues[index].Set(data);
   if (Console::IsEventEnabled(ConsoleEvent::TEMPLATE_VALUE)) {
-    Console::Printf(
-        "EV {\"event\":\"template_value\",\"index\":%zu,\"value\":\"%J\"}\n\n",
-        index, data);
+    Console::Printf("EV {\"e\":\"v\",\"i\":%zu,\"v\":\"%J\"}\n\n", index, data);
   }
 }
 

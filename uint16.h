@@ -11,6 +11,7 @@ struct Uint16 {
   uint8_t b[2];
 };
 
+static_assert(alignof(Uint16) == 1);
 static_assert(sizeof(Uint16) == 2);
 static_assert(sizeof(Uint16[2]) == 4);
 

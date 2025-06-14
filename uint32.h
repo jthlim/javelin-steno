@@ -19,6 +19,7 @@ struct Uint32 {
   uint8_t b[4];
 };
 
+static_assert(alignof(Uint32) == 1);
 static_assert(sizeof(Uint32) == 4);
 static_assert(sizeof(Uint32[2]) == 8);
 

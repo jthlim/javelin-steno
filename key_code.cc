@@ -1,6 +1,7 @@
 //---------------------------------------------------------------------------
 
 #include "key_code.h"
+#include "hal/external_flash.h"
 #include "host_layout.h"
 #include "steno_key_code.h"
 #include <stdint.h>
@@ -155,6 +156,7 @@ KeyCode KeyCode::TranslateForHostLayout() const {
     return *this;
   }
 
+  const ExternalFlashSentry externalFlashSentry;
   const uint32_t hostLayoutCode =
       HostLayouts::GetActiveLayout().asciiKeyCodes[unicode];
   if (hostLayoutCode == 0) {

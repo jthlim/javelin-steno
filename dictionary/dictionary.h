@@ -264,21 +264,21 @@ private:
 
 class PrintPartialOutlineContext {
 public:
-  PrintPartialOutlineContext(const StenoStroke *strokes, size_t length)
-      : strokes(strokes), length(length) {}
+  PrintPartialOutlineContext(const StenoStroke *strokes, size_t length,
+                             size_t maxCount)
+      : strokes(strokes), length(length), maxCount(maxCount) {}
 
   void Print(const StenoStroke *strokes, size_t length, const char *definition,
              const StenoDictionary *dictionary);
 
-  bool IsDone() const { return count >= MAX_COUNT; }
+  bool IsDone() const { return count >= maxCount; }
 
   const StenoStroke *const strokes;
   const size_t length;
 
-  static const size_t MAX_COUNT = 128;
-
 private:
   size_t count = 0;
+  size_t maxCount;
   List<const StenoDictionary *> dictionaries;
 };
 

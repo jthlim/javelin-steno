@@ -114,6 +114,76 @@ void StenoFullMapDictionaryStrokesDefinition::PrintDictionary(
   }
 }
 
+static inline void FindNeedle(const StenoStroke *needle, size_t needleLength,
+                              const StenoStroke *&haystack,
+                              const StenoStroke *haystackEnd) {
+  const StenoStroke firstStroke = *needle;
+  const StenoStroke *strokeData = haystack;
+
+#if JAVELIN_CPU_CORTEX_M4 || JAVELIN_CPU_CORTEX_M33
+  uint32_t scratch0, scratch1, scratch2;
+  asm volatile(R"(
+      .align 2
+    1:
+      cmp %0, %3
+      bhs 4f
+
+      ldrd %1, %2, [%0], #8
+      cmp %1, %6
+      it  ne
+      cmpne %2, %6
+      bne 1b
+
+      cmp %1, %6
+      it  eq
+      subseq %0, %0, #4
+      
+      // Check equals
+      push {%4, %0, %5}
+    2:
+      subs %5, #1
+      beq 3f
+      ldr %1, [%0], #4
+      ldr %2, [%4, #4]!
+      cmp %1, %2
+      beq 2b
+
+      pop {%4, %0, %5}
+      b 1b
+
+    3:
+      pop {%4, %0, %5}
+      subs %0, #4
+      b 5f
+
+    4:
+      mov %0, #0
+
+    5:
+      // Exit
+  )"
+               : "+r"(strokeData), "+r"(scratch0), "+r"(scratch1)
+               : "r"(haystackEnd), "r"(needle), "r"(needleLength),
+                 "r"(firstStroke));
+  haystack = strokeData;
+#else
+  while (strokeData < haystackEnd) {
+    if (*strokeData != firstStroke) [[likely]] {
+    next:
+      ++strokeData;
+      continue;
+    }
+
+    if (!StenoStroke::Equals(strokeData, needle, needleLength)) [[likely]] {
+      goto next;
+    }
+    haystack = strokeData;
+    return;
+  }
+  haystack = nullptr;
+#endif
+}
+
 void StenoFullMapDictionaryStrokesDefinition::PrintEntriesWithPartialOutline(
     PrintPartialOutlineContext &context, size_t definitionStrokeLength,
     const uint8_t *textBlock, const StenoDictionary *dictionary) const {
@@ -132,17 +202,10 @@ void StenoFullMapDictionaryStrokesDefinition::PrintEntriesWithPartialOutline(
   const StenoStroke *strokeData = (const StenoStroke *)dataStart + 1;
   const StenoStroke *searchEnd = strokeData + wordCount - context.length;
 
-  const StenoStroke firstStroke = context.strokes[0];
-  while (strokeData < searchEnd) {
-    if (*strokeData != firstStroke) [[likely]] {
-    next:
-      ++strokeData;
-      continue;
-    }
-
-    if (!StenoStroke::Equals(strokeData, context.strokes, context.length))
-        [[likely]] {
-      goto next;
+  for (;;) {
+    FindNeedle(context.strokes, context.length, strokeData, searchEnd);
+    if (strokeData == nullptr) {
+      return;
     }
 
     // Now figure out if it's actually a valid match.
@@ -153,17 +216,20 @@ void StenoFullMapDictionaryStrokesDefinition::PrintEntriesWithPartialOutline(
 
     // Ensure the stroke does not overlap the textOffset data.
     if (strokeData < entry->strokes) {
-      goto next;
+      strokeData++;
+      continue;
     }
 
     // Ensure the stroke data does not overflow the entry.
     const void *nextEntry = (const void *)(uintptr_t(entry) + dataStride);
     if (strokeData + context.length > nextEntry) {
-      goto next;
+      strokeData++;
+      continue;
     }
 
     if (entry->IsDeleted()) {
-      goto next;
+      strokeData++;
+      continue;
     }
 
     context.Print(entry->strokes, definitionStrokeLength,

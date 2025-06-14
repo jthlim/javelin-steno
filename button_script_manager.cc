@@ -291,8 +291,7 @@ ComboMatches ButtonScriptManager::Match(size_t buttonCount) {
 void ButtonScriptManager::SendButtonStateUpdate(
     const ButtonState &state) const {
   if (Console::IsEventEnabled(ConsoleEvent::BUTTON_STATE)) {
-    Console::Printf("EV {\"event\":\"button_state\",\"data\":\"%D\"}\n\n",
-                    &state, sizeof(state));
+    Console::Printf("EV {\"e\":\"b\",\"d\":\"%D\"}\n\n", &state, sizeof(state));
   }
 }
 

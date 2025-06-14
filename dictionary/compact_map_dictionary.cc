@@ -299,7 +299,7 @@ bool StenoCompactMapDictionary::Remove(const char *name,
             strokesDefinition.data[dataIndex];
 
     if (entry.Equals(strokes, length)) {
-      const Uint24 emptyStroke = Uint24::Create(0);
+      constexpr Uint24 emptyStroke = Uint24::Create(0);
       Flash::Write(&entry.strokes, &emptyStroke, sizeof(Uint24),
                    FlashWriteMode::PRESERVE);
       return true;

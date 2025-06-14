@@ -706,7 +706,7 @@ public:
     }
     script.eventHistory[EVENT_HISTORY_COUNT - 1] = text;
     if (Console::IsEventEnabled(ConsoleEvent::SCRIPT)) {
-      Console::Printf("EV {\"event\":\"script\",\"text\":\"%J\"}\n\n", text);
+      Console::Printf("EV {\"e\":\"c\",\"t\":\"%J\"}\n\n", text);
     }
   }
 

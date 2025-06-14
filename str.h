@@ -41,6 +41,9 @@ public:
     return strcmp(a, b) == 0;
   }
 
+  // Compares Trim(a) == b without allocations.
+  static bool TrimEq(const char *a, const char *b);
+
   static inline int Compare(const char *a, const char *b) {
     return strcmp(a, b);
   }

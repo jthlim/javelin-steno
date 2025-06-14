@@ -148,17 +148,22 @@ void StenoEngine::Lookup_Binding(void *context, const char *commandLine) {
 
     Console::Printf(&entry == begin(lookup.results) ? "\n{" : ",\n{", nullptr);
     Console::Printf("\"o\":\"%T\"", entry.strokes, entry.length);
-    Console::Printf(",\"t\":\"");
+    if (segments.GetCount() == 1 &&
+        Str::TrimEq(segments[0].lookup.GetText(), definition)) {
+      // Special case -- don't send text if it matches the lookup text.
+    } else {
+      Console::Printf(",\"t\":\"");
 
-    bool isFirst = true;
-    for (const StenoToken token : StenoTokenizer(segments)) {
-      const char *format = " %J";
-      char *text = token.DupText();
-      Console::Printf(format + isFirst, text);
-      free(text);
-      isFirst = false;
+      bool isFirst = true;
+      for (const StenoToken token : StenoTokenizer(segments)) {
+        const char *format = " %J";
+        char *text = token.DupText();
+        Console::Printf(format + isFirst, text);
+        free(text);
+        isFirst = false;
+      }
+      Console::Printf("\"");
     }
-    Console::Printf("\"");
 
     const char *name = entry.dictionary->GetName();
     if (*name != '#') {
@@ -167,10 +172,10 @@ void StenoEngine::Lookup_Binding(void *context, const char *commandLine) {
         dictionaries.Add(entry.dictionary);
         Console::Printf(",\"d\":\"%J\"", name);
       } else {
-        Console::Printf(",\"d\":\"#%zu\"", index);
+        Console::Printf(",\"d\":%zu", index);
       }
       if (entry.dictionary->CanRemove()) {
-        Console::Printf(",\"r\":true");
+        Console::Printf(",\"r\":1");
       }
     }
 
@@ -206,12 +211,12 @@ void StenoEngine::LookupStroke_Binding(void *context, const char *commandLine) {
       const StenoDictionaryLookupResult result =
           dictionary->Lookup(parser.strokes, parser.length);
 
-      const char *format = ",\n\t{\"t\":\"%J\",\"d\":\"%J\"";
+      const char *format = ",\n{\"t\":\"%J\",\"d\":\"%J\"";
       Console::Printf(format + isFirstTime, result.GetText(),
                       dictionary->GetName());
 
       if (dictionary->CanRemove()) {
-        Console::Printf(",\"r\":true");
+        Console::Printf(",\"r\":1");
       }
 
       Console::Printf("}");
@@ -255,11 +260,21 @@ void StenoEngine::LookupPartialOutline_Binding(void *context,
     return;
   }
 
+  int count = 0;
+  const char *p = parser.failureOrEnd;
+  if (*p != '\0') {
+    Str::ParseInteger(&count, p, false);
+  }
+  if (count == 0) {
+    --count;
+  }
+
   const ExternalFlashSentry externalFlashSentry;
-  StenoEngine *engine = (StenoEngine *)context;
 
   Console::Printf("[");
-  PrintPartialOutlineContext lookupContext(parser.strokes, parser.length);
+  PrintPartialOutlineContext lookupContext(parser.strokes, parser.length,
+                                           size_t(count));
+  StenoEngine *engine = (StenoEngine *)context;
   engine->GetDictionary().PrintEntriesWithPartialOutline(lookupContext);
   Console::Printf("]\n\n");
 }
