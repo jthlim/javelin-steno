@@ -146,7 +146,7 @@ void StenoEngine::Lookup_Binding(void *context, const char *commandLine) {
     engine->CreateSegments(segments, buffer.segmentBuilder, entry.strokes,
                            entry.length);
 
-    Console::Printf(&entry == begin(lookup.results) ? "\n{" : ",\n{", nullptr);
+    Console::Printf(&entry == begin(lookup.results) ? "{" : ",{", nullptr);
     Console::Printf("\"o\":\"%T\"", entry.strokes, entry.length);
     if (segments.GetCount() == 1 &&
         Str::TrimEq(segments[0].lookup.GetText(), definition)) {
@@ -211,18 +211,14 @@ void StenoEngine::LookupStroke_Binding(void *context, const char *commandLine) {
       const StenoDictionaryLookupResult result =
           dictionary->Lookup(parser.strokes, parser.length);
 
-      const char *format = ",\n{\"t\":\"%J\",\"d\":\"%J\"";
+      const char *format = ",{\"t\":\"%J\",\"d\":\"%J\"%s}";
       Console::Printf(format + isFirstTime, result.GetText(),
-                      dictionary->GetName());
+                      dictionary->GetName(),
+                      dictionary->CanRemove() ? ",\"r\":1" : "");
 
-      if (dictionary->CanRemove()) {
-        Console::Printf(",\"r\":1");
-      }
-
-      Console::Printf("}");
       isFirstTime = false;
     }
-    Console::Printf("\n]\n\n");
+    Console::Printf("]\n\n");
   } else {
     StenoSegmentList segments(parser.length);
     ConversionBuffer &buffer = engine->previousConversionBuffer;
@@ -341,7 +337,7 @@ void StenoEngine::ListTemplateValues_Binding(void *context,
 
   Console::Printf("[");
   for (size_t i = 0; i < TEMPLATE_VALUE_COUNT; ++i) {
-    Console::Printf(i == 0 ? "\n  \"%J\"" : ",\n  \"%J\"",
+    Console::Printf(i == 0 ? "\"%J\"" : ",\"%J\"",
                     engine->templateValues[i].GetValue());
   }
   Console::Printf("\n]\n\n");

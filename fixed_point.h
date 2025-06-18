@@ -6,14 +6,13 @@
 
 template <typename T, int N> class FixedPoint {
 public:
-  class Raw;
-  static const Raw raw;
+  static const bool raw = true;
 
   constexpr FixedPoint() = default;
   constexpr FixedPoint(int value) : value(value << N) {}
   constexpr FixedPoint(unsigned int value) : value(value << N) {}
   consteval FixedPoint(double value) : value((T)(value * (1 << N) + 0.5)) {}
-  constexpr FixedPoint(T value, const Raw &) : value(value) {}
+  constexpr FixedPoint(T value, bool) : value(value) {}
 
   constexpr int GetIntegral() const { return value >> N; }
   constexpr FixedPoint GetFractional() const {

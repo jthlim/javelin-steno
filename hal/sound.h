@@ -11,6 +11,13 @@ class Console;
 
 //---------------------------------------------------------------------------
 
+struct SoundWaveformData {
+  uint16_t format;
+  uint16_t sampleRate;
+  uint32_t length;
+  uint8_t data[0];
+};
+
 struct SoundSequenceData {
   Uint16 data;
 
@@ -38,8 +45,7 @@ public:
 
   static void PlaySequence(const SoundSequenceData *data);
 
-  static void PlayWaveform(const uint8_t *data, size_t length,
-                           uint32_t sampleRate);
+  static void PlayWaveform(const SoundWaveformData *data);
 };
 
 //---------------------------------------------------------------------------

@@ -25,6 +25,7 @@ enum class SplitHandlerId {
   ENCODER,
   VERSION,
   POINTER,
+  MIDI,
 
   COUNT,
 };

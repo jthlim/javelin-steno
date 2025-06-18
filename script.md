@@ -186,6 +186,7 @@ sufficient to determine the result, the right hand side will not be evaluated.
 - `func isMouseButtonPressed(<buttonIndex>) var`
 
 - `func sendText("Example")`
+
   - Sends all of the key presses required to emit the specified string.
   - e.g.,
     - Press Shift
@@ -197,6 +198,27 @@ sufficient to determine the result, the right hand side will not be evaluated.
     - Press A
     - Release A
     - etc.
+  - These use the active host layout information to convert unicode to key
+    presses.
+
+- `func sendMidi(<command>, <param1>, <param2>)`
+
+  _command_                      | _param1_     | _param2_
+  -------------------------------|--------------|---------
+  `0x80-0x8f`: Note off          | Key          | Off Velocity
+  `0x90-0x9f`: Note on           | Key          | On Velocity
+  `0xa0-0xaf`: Aftertouch        | Key          | Pressure
+  `0xb0-0xbf`: Control Change    | Controller   | Value
+  `0xc0-0xbf`: Program Change    | Program      | 0 (unused)
+  `0xd0-0xbf`: Channel Pressure  | Pressure     | 0 (unused)
+  `0xe0-0xef`: Pitch Bend        | LSB (7 bits) | MSB (7 bits)
+  `0xf0-0xff`: System            |              |
+
+  - `sendMidi` has been implemented on pico devices over USB and Jarne over
+    USB and BLE.
+  - Users who paired their Jarne before MIDI support was added will need to
+    delete the pairing on their host and re-pair BLE to get MIDI
+    functionality working.
 
 ### Constants
 
@@ -873,7 +895,7 @@ are suppressed until it is confirmed that no combo is involved.
     - C8 for 100ms, E8 for 100ms repeated 3 times is:
     - `playSequence([[62 05 66 05 62 05 66 05 62 05 66 05 00 00]])`
 
-- `func playWaveform(<data>, <length>, <frequency>)`
+- `func playWaveform(<data>)`
 
   - Placeholder, currently not available on any platform.
 
@@ -1018,7 +1040,7 @@ Javelin provides 3 ways of sending infrared data:
     - `sirc`:
       - address: 5, 8 or 13 bits
       - command: 7 bits
-      - extra: sirc variation. 
+      - extra: sirc variation.
         - 0 = auto
         - 12 = sirc12
         - 15 = sirc15
@@ -1057,7 +1079,7 @@ Javelin provides 3 ways of sending infrared data:
     - The last 4 values are specified as 15-bit values of on-time, off-time
       in half microsecond increments.
         - e.g. `4000, 1000` represents on for 2ms, off for 500µs.
-      
+
       To represent a pulse with opposite order (off time then on time), specify
       the top bit in the first value:
         - e.g. `4000 | 0x8000, 1000` represents off for 2ms, then on for 500µs.

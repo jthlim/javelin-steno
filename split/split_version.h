@@ -35,7 +35,7 @@ public:
   }
 
 private:
-  static constexpr uint32_t VERSION = 3 + JAVELIN_SPLIT_VERSION_INCREMENT;
+  static constexpr uint32_t VERSION = 4 + JAVELIN_SPLIT_VERSION_INCREMENT;
 
 #if JAVELIN_SPLIT_IS_MASTER
   void OnReceiveConnected() final;

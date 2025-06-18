@@ -17,6 +17,7 @@
 #include "hal/display.h"
 #include "hal/gpio.h"
 #include "hal/infrared.h"
+#include "hal/midi.h"
 #include "hal/mouse.h"
 #include "hal/power.h"
 #include "hal/rgb.h"
@@ -880,10 +881,10 @@ public:
 
   static void PlayWaveform(ButtonScript &script,
                            const ScriptByteCode *byteCode) {
-    const uint32_t sampleRate = (uint32_t)script.Pop();
-    const uint32_t length = (uint32_t)script.Pop();
-    const uint8_t *data = (const uint8_t *)script.Pop();
-    Sound::PlayWaveform(data, length, sampleRate);
+    const intptr_t offset = script.Pop();
+    const SoundWaveformData *data =
+        byteCode->GetScriptData<SoundWaveformData>(offset);
+    Sound::PlayWaveform(data);
   }
 
   static void CallAllReleaseScripts(ButtonScript &script,
@@ -1284,15 +1285,54 @@ public:
     script.Push(byteCode->GetDataOffset(buffer));
   }
 
-  // static void FreeBuffer(ButtonScript &script, const ScriptByteCode
-  // *byteCode) {
-  //   const size_t bufferOffset = script.Pop();
-  //   void *buffer = (void *)byteCode->GetScriptData<void>(bufferOffset);
-  //   if (!script.buffers.Remove(buffer)) {
-  //     return;
-  //   }
-  //   free(buffer);
-  // }
+  static void SendMidi(ButtonScript &script, const ScriptByteCode *byteCode) {
+    const int param2 = (int)script.Pop();
+    const int param1 = (int)script.Pop();
+    const int command = (int)script.Pop();
+
+    if (command < 0x80 || command >= 0x100) {
+      Console::Printf("Midi command out of range: 0x%x\n\n", command);
+      return;
+    }
+
+    const uint8_t data[3] = {
+        uint8_t(command),
+        uint8_t(param1),
+        uint8_t(param2),
+    };
+
+    static constexpr uint8_t STATUS_DATA_LENGTHS[8] = {
+        3, // Note off
+        3, // Note on
+        3, // Aftertouch
+        3, // Control Change
+        2, // Program Change
+        2, // Channel Pressure
+        3, // Pitch Bend
+        0, // System
+    };
+
+    static constexpr uint8_t SYSTEM_DATA_LENGTHS[16] = {
+        0, // Sysex Start -- don't send
+        2, // Quarter frame
+        3, // Song Pointer
+        2, // Song Select
+        0, //
+        0, //
+        1, // Tune request
+        0, // Sysex End -- don't send
+        1, // Timing Clock
+        1, // Measure End
+        1, // Start
+        1, // Continue
+        1, // Stop
+        0, //
+        1, // Active Sensing
+        1, // Reset
+    };
+    Midi::Send(data, command >= 0xf0 ? SYSTEM_DATA_LENGTHS[command - 0xf0]
+                                     : STATUS_DATA_LENGTHS[(command >> 4) - 8]);
+  }
 };
 
 constexpr void (*ButtonScript::FUNCTION_TABLE[])(ButtonScript &,
@@ -1418,7 +1458,7 @@ constexpr void (*ButtonScript::FUNCTION_TABLE[])(ButtonScript &,
     &Function::DisableScriptRgb,
     &Function::SendInfraredSignal,
     &Function::CreateBuffer,
-    // &Function::FreeBuffer,
+    &Function::SendMidi,
 };
 
 void ButtonScript::PrintEventHistory() {

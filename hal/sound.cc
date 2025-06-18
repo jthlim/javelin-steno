@@ -21,8 +21,7 @@ uint32_t Sound::CalculateFrequencyForNote(int note) {
 [[gnu::weak]] void Sound::Stop() {}
 [[gnu::weak]] void Sound::PlayFrequency(uint32_t frequency) {}
 [[gnu::weak]] void Sound::PlaySequence(const SoundSequenceData *data) {}
-[[gnu::weak]] void Sound::PlayWaveform(const uint8_t *data, size_t length,
-                                       uint32_t sampleRate) {}
+[[gnu::weak]] void Sound::PlayWaveform(const SoundWaveformData *data) {}
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
