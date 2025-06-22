@@ -129,8 +129,8 @@ bool StenoCompiledOrthography::CacheEntry::IsEqual(uint32_t crc,
   if (crc != this->crc) [[likely]] {
     return false;
   }
-  return Str::HasPrefix(word, GetWordPointer(), GetWordLength()) &&
-         Str::HasPrefix(suffix, GetSuffixPointer(), GetSuffixLength());
+  return Str::Eq(word, GetWordPointer(), GetWordLength()) &&
+         Str::Eq(suffix, GetSuffixPointer(), GetSuffixLength());
 }
 
 size_t StenoCompiledOrthography::CacheEntry::GetMemoryUsage() const {

@@ -40,6 +40,7 @@ public:
   static inline bool Eq(const char *a, const char *b) {
     return strcmp(a, b) == 0;
   }
+  static bool Eq(const char *a, const char *b, size_t bLength);
 
   // Compares Trim(a) == b without allocations.
   static bool TrimEq(const char *a, const char *b);

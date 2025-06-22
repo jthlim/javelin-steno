@@ -159,6 +159,16 @@ char *Str::CreateEmpty() {
   return buffer;
 }
 
+bool Str::Eq(const char *a, const char *b, size_t bLength) {
+  while (bLength) {
+    if (*a++ != *b++) {
+      return false;
+    }
+    --bLength;
+  }
+  return *a == '\0';
+}
+
 bool Str::HasPrefix(const char *p, const char *prefix) {
   for (;;) {
     const int c = *prefix++;
