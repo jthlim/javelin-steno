@@ -171,6 +171,16 @@ bool Str::HasPrefix(const char *p, const char *prefix) {
   }
 }
 
+bool Str::HasPrefix(const char *p, const char *prefix, size_t prefixLength) {
+  while (prefixLength) {
+    if (*p++ != *prefix++) {
+      return false;
+    }
+    --prefixLength;
+  }
+  return true;
+}
+
 bool Str::HasSuffix(const char *p, const char *suffix) {
   const size_t length = Length(p);
   const size_t suffixLength = Length(suffix);

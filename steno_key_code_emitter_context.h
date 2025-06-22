@@ -43,7 +43,8 @@ struct StenoKeyCodeEmitter::EmitterContext {
   void EmitSequence(const HostLayoutEntry &sequence);
   void EmitMacOsUnicodeHex(uint32_t unicode);
   void EmitIBus(uint32_t unicode);
-  void RecurseEmitIBus(uint32_t unicode);
+  void EmitWinCompose(uint32_t unicode);
+  void RecurseEmitHex(uint32_t unicode);
   static void EmitIBusDelay();
   void EmitWindowsHex(uint32_t unicode);
   void EmitUCS2AltHex(uint32_t unicode);

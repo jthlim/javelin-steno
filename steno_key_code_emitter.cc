@@ -156,14 +156,17 @@ void StenoKeyCodeEmitter::EmitterContext::EmitNonAscii(uint32_t unicode) {
 
   // Unicode point.
   switch (hostLayout.unicodeMode) {
+  case UnicodeMode::LINUX_IBUS:
+    return EmitIBus(unicode);
+
   case UnicodeMode::MACOS_UNICODE_HEX:
     return EmitMacOsUnicodeHex(unicode);
 
   case UnicodeMode::WINDOWS_HEX:
     return EmitWindowsHex(unicode);
 
-  case UnicodeMode::LINUX_IBUS:
-    return EmitIBus(unicode);
+  case UnicodeMode::WIN_COMPOSE:
+    return EmitWinCompose(unicode);
 
   case UnicodeMode::NONE:
   default:
@@ -194,22 +197,26 @@ void StenoKeyCodeEmitter::EmitterContext::EmitIBus(uint32_t unicode) {
   const uint32_t uKeyCode = hostLayout.asciiKeyCodes[uint32_t('u')];
 
   EmitKeyCode(MODIFIER_L_CTRL_FLAG | MODIFIER_L_SHIFT_FLAG | uKeyCode);
-  RecurseEmitIBus(unicode);
+  RecurseEmitHex(unicode);
   EmitAscii(' ');
   EmitIBusDelay();
 }
 
-void StenoKeyCodeEmitter::EmitterContext::EmitIBusDelay() {
-  Key::Flush();
-  Key::Flush();
+void StenoKeyCodeEmitter::EmitterContext::EmitWinCompose(uint32_t unicode) {
+  const uint32_t uKeyCode = hostLayout.asciiKeyCodes[uint32_t('u')];
+
+  EmitKeyCode(MODIFIER_R_ALT_FLAG | uKeyCode);
+  RecurseEmitHex(unicode);
+  EmitAscii('\n');
 }
 
-[[gnu::noinline]] void
-StenoKeyCodeEmitter::EmitterContext::RecurseEmitIBus(uint32_t code) {
+void StenoKeyCodeEmitter::EmitterContext::EmitIBusDelay() { Key::Flush(); }
+
+void StenoKeyCodeEmitter::EmitterContext::RecurseEmitHex(uint32_t code) {
   const uint32_t quotient = code / 16;
   const uint32_t remainder = code % 16;
   if (quotient != 0) {
-    RecurseEmitIBus(quotient);
+    RecurseEmitHex(quotient);
   }
   EmitAscii("0123456789abcdef"[remainder]);
 }
@@ -242,8 +249,7 @@ void StenoKeyCodeEmitter::EmitterContext::EmitUCS2AltHex(uint32_t unicode) {
   }
 }
 
-[[gnu::weak]] void
-StenoKeyCodeEmitter::EmitterContext::EmitKeyCode(uint32_t keyCode) {
+void StenoKeyCodeEmitter::EmitterContext::EmitKeyCode(uint32_t keyCode) {
   ReleaseModifiers(modifiers & ~keyCode);
   PressModifiers((keyCode & ~modifiers) & MODIFIER_MASK);
   modifiers = keyCode & MODIFIER_MASK;

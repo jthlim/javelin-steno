@@ -12,9 +12,10 @@ class Console;
 
 enum UnicodeMode : uint8_t {
   NONE,
-  MACOS_UNICODE_HEX,
-  WINDOWS_HEX,
   LINUX_IBUS,
+  MACOS_UNICODE_HEX,
+  WIN_COMPOSE,
+  WINDOWS_HEX,
 };
 
 //---------------------------------------------------------------------------

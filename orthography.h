@@ -77,29 +77,36 @@ private:
 
     bool IsEqual(uint32_t crc, const char *word, const char *suffix) const;
 
-    const char *GetWord() const { return base; }
-    const char *GetSuffix() const { return base + suffixOffset; }
-    const char *GetResult() const { return base + resultOffset; }
+    const char *GetWordPointer() const { return data; }
+    const size_t GetWordLength() const { return suffixOffset; }
+    const char *GetSuffixPointer() const { return data + suffixOffset; }
+    const size_t GetSuffixLength() const { return resultOffset - suffixOffset; }
+    const char *GetResultPointer() const { return data + resultOffset; }
     char *DupResult() const;
     size_t GetMemoryUsage() const;
 
     void Reset();
 
   private:
-    char *base;
+    static constexpr size_t MAXIMUM_DATA_LENGTH = 31;
+
+    uint32_t crc;
     uint8_t suffixOffset;
     uint8_t resultOffset;
     uint8_t resultLength;
 
-    // The index of the currently used CacheEntry for a block.
-    //
-    // This should be stored in CacheBlock, but put here for better data
-    // packing.
-    //
-    // Only the first entry in each cache block is used.
-    uint8_t nextEntryIndex;
+    // The number of prefix bytes the result shares with the word.
+    uint8_t commonWordLength;
 
-    uint32_t crc;
+    // The number of suffix bytes the result shares with the suffix.
+    uint8_t commonSuffixLength;
+
+    // Contiguous (non-zero terminated data):
+    //  * Word bytes, e.g. "stealthy"
+    //  * Suffix bytes, e.g. "est"
+    //  * Result bytes, excluding common word/suffix, e.g. "i"
+    // With common (word, suffix) lengths = (7, 3), the result is `stealthiest`.
+    char data[MAXIMUM_DATA_LENGTH];
 
     friend class CacheBlock;
   };
@@ -112,9 +119,8 @@ private:
   static constexpr size_t CACHE_BLOCK_COUNT = CACHE_SIZE / CACHE_ASSOCIATIVITY;
 
   struct CacheBlock {
-    // Stored within CacheEntry for better data packing.
-    // uint8_t nextEntryIndex;
-
+    // The index of the currently used CacheEntry for a block.
+    uint8_t nextEntryIndex;
     CacheEntry entries[CACHE_ASSOCIATIVITY];
 
     char *Lookup(uint32_t crc, const char *word, const char *suffix) const;
