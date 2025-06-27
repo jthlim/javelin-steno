@@ -50,18 +50,19 @@ public:
   }
 
   static inline bool ShortEq(const char *a, const char *b) {
-    while (*a == *b) {
-      if (!*a) {
+    for (;;) {
+      const int ca = *a++;
+      const int cb = *b++;
+      if (ca != cb) {
+        return false;
+      }
+      if (ca == '\0') {
         return true;
       }
-      ++a;
-      ++b;
     }
-    return false;
   }
 
   static bool HasPrefix(const char *p, const char *prefix);
-  static bool HasPrefix(const char *p, const char *prefix, size_t prefixLength);
   static bool HasSuffix(const char *p, const char *suffix);
 
   // Returns the end of the write area. buffer must have enough space to store

@@ -115,9 +115,19 @@ StenoReverseSuffixDictionary::CreateSuffixList(
   SizedList<Suffix> filteredSuffixes =
       SizedList<Suffix>::CreateWithCapacity(suffixes.GetCount());
 
+  const uint8_t *ignoreSuffix = nullptr;
+  size_t ignoreSuffixIndex = 0;
+  if (ignoreSuffixes.IsNotEmpty()) {
+    ignoreSuffix = ignoreSuffixes[ignoreSuffixIndex++];
+  }
+
   for (const uint8_t *suffix : suffixes) {
-    if (!ignoreSuffixes.Contains(suffix)) {
+    if (suffix != ignoreSuffix) [[likely]] {
       filteredSuffixes.Add(Suffix{.suffix = suffix});
+    } else if (ignoreSuffixIndex < ignoreSuffixes.GetCount()) {
+      ignoreSuffix = ignoreSuffixes[ignoreSuffixIndex++];
+    } else {
+      ignoreSuffix = nullptr;
     }
   }
 

@@ -100,7 +100,7 @@ bool Str::IsFingerSpellingCommand(const char *p) {
 }
 
 bool Str::IsJoinPrevious(const char *p) {
-  return p[0] == '{' && p[1] == '^' && !Str::Contains(p + 2, '\n');
+  return p[0] == '{' && p[1] == '^' && !Contains(p + 2, '\n');
 }
 
 bool Str::ContainsKeyCode(const char *p) {
@@ -181,16 +181,6 @@ bool Str::HasPrefix(const char *p, const char *prefix) {
   }
 }
 
-bool Str::HasPrefix(const char *p, const char *prefix, size_t prefixLength) {
-  while (prefixLength) {
-    if (*p++ != *prefix++) {
-      return false;
-    }
-    --prefixLength;
-  }
-  return true;
-}
-
 bool Str::HasSuffix(const char *p, const char *suffix) {
   const size_t length = Length(p);
   const size_t suffixLength = Length(suffix);
@@ -198,7 +188,7 @@ bool Str::HasSuffix(const char *p, const char *suffix) {
     return false;
   }
 
-  return Str::Eq(p + length - suffixLength, suffix);
+  return Eq(p + length - suffixLength, suffix, suffixLength);
 }
 
 char *Str::Trim(const char *data) {
@@ -214,7 +204,7 @@ char *Str::Trim(const char *data) {
     }
   }
 
-  return Str::DupN(start, end - start);
+  return DupN(start, end - start);
 }
 
 char *Str::WriteJson(char *p, const char *text) {
@@ -304,6 +294,15 @@ const char *Str::AdvanceToNonWordCharacter(const char *p) {
 //---------------------------------------------------------------------------
 
 #include "unit_test.h"
+
+TEST_BEGIN("Str::ShortEq returns correct results") {
+  assert(Str::ShortEq("", ""));
+  assert(Str::ShortEq("abc", "abc"));
+  assert(!Str::ShortEq("abc", "ade"));
+  assert(!Str::ShortEq("abc", "abcde"));
+  assert(!Str::ShortEq("abcde", "abc"));
+}
+TEST_END
 
 TEST_BEGIN("Str::HasPrefix returns correct results") {
   assert(Str::HasPrefix("abcd", "ab"));
