@@ -6,12 +6,13 @@ evolved over time to have a wealth of features as a keyboard firmware.
 A quick summary of it's capabilities:
 
 - Stenography support -- write at 200+ wpm
-  - Embedded stenography engine, with customized customized host layouts,
-    stenography systems and personal dictionaries.
+  - Embedded stenography engine, with customized host layouts, stenography
+    systems and personal dictionaries.
   - Supports steno writer protocols: Gemini PR, TX Bolt, ProCAT, Plover HID.
 - [Online web tools](https://www.lim.au/#/software/javelin-steno-tools) to
   customize and control the keyboard. This includes a visual layout editor.
-- Supports input via encoders & touchpad.
+- Supports input via direct gpio switches, matrix switches, capacitive touch,
+  encoders & touchpad.
 - Supports displays, rgb lighting, audio output. 
 - Fully scriptable configuration, without requiring firmware recompilation.
   Can act as a keyboard, pointer device, security key, infrared controller,
