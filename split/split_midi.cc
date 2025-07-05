@@ -34,6 +34,10 @@ void SplitMidi::SplitMidiData::Add(const uint8_t *data, size_t length) {
 #if JAVELIN_SPLIT_IS_MASTER
 
 void SplitMidi::SplitMidiData::UpdateBuffer(TxBuffer &buffer) {
+  if (!head) [[likely]] {
+    return;
+  }
+
   while (head) {
     if (!buffer.Add(SplitHandlerId::MIDI, &head->data.data,
                     head->data.length)) {

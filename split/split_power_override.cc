@@ -15,7 +15,7 @@ SplitPowerOverride SplitPowerOverride::instance;
 #if JAVELIN_SPLIT_IS_MASTER
 
 void SplitPowerOverride::UpdateBuffer(TxBuffer &buffer) {
-  if (!dirty) {
+  if (!dirty) [[likely]] {
     return;
   }
   dirty = false;

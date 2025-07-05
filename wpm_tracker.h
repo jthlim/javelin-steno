@@ -25,6 +25,7 @@ private:
   int charactersTyped[NUMBER_OF_SECONDS];
 
   void UpdateToNow(uint32_t now);
+  void OnTallyUpdated();
 };
 
 //---------------------------------------------------------------------------

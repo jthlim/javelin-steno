@@ -124,6 +124,7 @@ private:
   ButtonScriptManager(const uint8_t *scriptByteCode);
 
   bool isScriptValid;
+  bool hasTickScript;
 
   // Controlled by scripts.
   bool allowButtonStateUpdates;

@@ -86,6 +86,7 @@ ComboMatch Combo::Match(const PendingComboButtons &buttons, size_t buttonCount,
 ButtonScriptManager::ButtonScriptManager(const uint8_t *scriptByteCode)
     : script(scriptByteCode) {
   isScriptValid = script.IsValid();
+  hasTickScript = isScriptValid && HasTickScript();
   if (isScriptValid) {
     script.ExecuteInitScript(Clock::GetMilliseconds());
   }
@@ -375,13 +376,11 @@ void ButtonScriptManager::CancelAllCombosForByteCode(
 //---------------------------------------------------------------------------
 
 void ButtonScriptManager::Tick(uint32_t scriptTime) {
-  if (Flash::IsUpdating()) [[unlikely]] {
-    return;
+  script.SetScriptTime(scriptTime);
+  if (hasTickScript) [[unlikely]] {
+    script.ExecuteTickScript(scriptTime);
   }
-  if (!isScriptValid) [[unlikely]] {
-    return;
-  }
-  script.ExecuteTickScript(scriptTime);
+  TimerManager::instance.ProcessTimers(scriptTime);
 }
 
 //---------------------------------------------------------------------------
@@ -392,6 +391,7 @@ void ButtonScriptManager::Reset() {
   ButtonScript::RemoveScriptTimers();
 
   isScriptValid = script.IsValid();
+  hasTickScript = isScriptValid && HasTickScript();
   if (!isScriptValid) [[unlikely]] {
     return;
   }

@@ -15,7 +15,10 @@ void WpmTracker::Tally(int count) {
   UpdateToNow(now);
 
   charactersTyped[now % NUMBER_OF_SECONDS] += count;
+  OnTallyUpdated();
 }
+
+[[gnu::weak]] void WpmTracker::OnTallyUpdated() {}
 
 int WpmTracker::GetWpm(int seconds) {
   const uint32_t now = Clock::GetMilliseconds() / 1000;

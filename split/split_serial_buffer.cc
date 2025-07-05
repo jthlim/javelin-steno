@@ -36,6 +36,10 @@ void SplitSerialBuffer::SplitSerialBufferData::Add(const uint8_t *data,
 #if JAVELIN_SPLIT_IS_MASTER
 
 void SplitSerialBuffer::SplitSerialBufferData::UpdateBuffer(TxBuffer &buffer) {
+  if (!head) [[likely]] {
+    return;
+  }
+
   while (head) {
     if (!buffer.Add(SplitHandlerId::SERIAL, &head->data.data,
                     head->data.length)) {

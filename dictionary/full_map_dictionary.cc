@@ -121,7 +121,7 @@ static inline void FindNeedle(const StenoStroke *needle, size_t needleLength,
   const StenoStroke *strokeData = haystack;
 
 #if JAVELIN_CPU_CORTEX_M4 || JAVELIN_CPU_CORTEX_M33
-  uint32_t scratch0, scratch1, scratch2;
+  uint32_t scratch0, scratch1;
   asm volatile(R"(
       .align 2
     1:
@@ -136,7 +136,7 @@ static inline void FindNeedle(const StenoStroke *needle, size_t needleLength,
 
       cmp %1, %6
       it  eq
-      subseq %0, %0, #4
+      subeq %0, %0, #4
       
       // Check equals
       push {%4, %0, %5}

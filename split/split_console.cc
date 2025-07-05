@@ -30,6 +30,10 @@ void SplitConsole::AddInternal(const char *data, size_t length) {
 
 void SplitConsole::ProcessInternal() {
 #if !JAVELIN_SPLIT_IS_MASTER
+  if (!head) [[likely]] {
+    return;
+  }
+
   while (head) {
     Console::RunCommand(head->data.data, NullWriter::instance);
     RemoveHead();
@@ -39,6 +43,10 @@ void SplitConsole::ProcessInternal() {
 
 #if JAVELIN_SPLIT_IS_MASTER
 void SplitConsole::UpdateBuffer(TxBuffer &buffer) {
+  if (!head) [[likely]] {
+    return;
+  }
+
   while (head) {
     if (!buffer.Add(SplitHandlerId::PAIR_CONSOLE, head->data.data,
                     head->data.length)) {

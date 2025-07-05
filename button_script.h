@@ -91,6 +91,8 @@ public:
   void CancelAllScriptsForByteCode(const ScriptByteCode *byteCode,
                                    size_t byteCodeSize);
 
+  void SetScriptTime(uint32_t scriptTime) { this->scriptTime = scriptTime; }
+
   class TestHelper;
 
 private:

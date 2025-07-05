@@ -32,7 +32,7 @@ void ConsoleInputBuffer::ConsoleInputBufferData::Add(
 }
 
 void ConsoleInputBuffer::ConsoleInputBufferData::Process() {
-  if (!head) {
+  if (!head) [[likely]] {
     return;
   }
 
@@ -64,6 +64,10 @@ void ConsoleInputBuffer::ConsoleInputBufferData::OnDataReceived(
 #else
 void ConsoleInputBuffer::ConsoleInputBufferData::UpdateBuffer(
     TxBuffer &buffer) {
+  if (!head) [[likely]] {
+    return;
+  }
+
   while (head) {
     if (!buffer.Add(SplitHandlerId::CONSOLE, head->data.data,
                     head->data.length)) {

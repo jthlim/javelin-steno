@@ -59,7 +59,7 @@ void SplitVersion::ClearError() {
 
 #else
 void SplitVersion::UpdateBuffer(TxBuffer &buffer) {
-  if (!isDirty) {
+  if (!isDirty) [[likely]] {
     return;
   }
 

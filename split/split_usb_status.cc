@@ -54,7 +54,7 @@ void SplitUsbStatus::SetBatteryPercentage(int percentage) {
 }
 
 void SplitUsbStatus::UpdateBuffer(TxBuffer &buffer) {
-  if (!dirty) {
+  if (!dirty) [[likely]] {
     return;
   }
   dirty = false;

@@ -146,8 +146,9 @@ void StenoEngine::Lookup_Binding(void *context, const char *commandLine) {
     engine->CreateSegments(segments, buffer.segmentBuilder, entry.strokes,
                            entry.length);
 
-    Console::Printf(&entry == begin(lookup.results) ? "{" : ",{", nullptr);
-    Console::Printf("\"o\":\"%T\"", entry.strokes, entry.length);
+    const char *format = ",{\"o\":\"%T\"";
+    const bool isFirstEntry = &entry == begin(lookup.results);
+    Console::Printf(format + isFirstEntry, entry.strokes, entry.length);
     if (segments.GetCount() == 1 &&
         Str::TrimEq(segments[0].lookup.GetText(), definition)) {
       // Special case -- don't send text if it matches the lookup text.
@@ -182,7 +183,7 @@ void StenoEngine::Lookup_Binding(void *context, const char *commandLine) {
     Console::Printf("}");
   }
 
-  Console::Printf("\n]\n\n");
+  Console::Printf("]\n\n");
 }
 
 void StenoEngine::LookupStroke_Binding(void *context, const char *commandLine) {
@@ -340,7 +341,7 @@ void StenoEngine::ListTemplateValues_Binding(void *context,
     Console::Printf(i == 0 ? "\"%J\"" : ",\"%J\"",
                     engine->templateValues[i].GetValue());
   }
-  Console::Printf("\n]\n\n");
+  Console::Printf("]\n\n");
 }
 
 void StenoEngine::SetTemplateValue_Binding(void *context,
