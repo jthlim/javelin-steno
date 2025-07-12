@@ -1,12 +1,11 @@
 //---------------------------------------------------------------------------
 
 #include "steno_key_code_emitter.h"
-#include "hal/connection.h"
 #include "host_layout.h"
 #include "key.h"
-#include "keyboard_led_status.h"
 #include "steno_key_code.h"
 #include "steno_key_code_emitter_context.h"
+#include "unicode_script.h"
 
 //---------------------------------------------------------------------------
 
@@ -16,46 +15,10 @@ constexpr KeyCode::Value StenoKeyCodeEmitter::EmitterContext::MASK_KEY_CODES[] =
         KeyCode::R_CTRL, KeyCode::R_SHIFT, KeyCode::R_ALT, KeyCode::R_META,
 };
 
-constexpr KeyCode::Value StenoKeyCodeEmitter::EmitterContext::HEX_KEY_CODES[] =
-    {
-        KeyCode::_0, KeyCode::_1, KeyCode::_2, KeyCode::_3,
-        KeyCode::_4, KeyCode::_5, KeyCode::_6, KeyCode::_7,
-        KeyCode::_8, KeyCode::_9, KeyCode::A,  KeyCode::B,
-        KeyCode::C,  KeyCode::D,  KeyCode::E,  KeyCode::F,
-};
-
-#define M MODIFIER_L_ALT_FLAG
-constexpr uint16_t StenoKeyCodeEmitter::EmitterContext::ALT_HEX_KEY_CODES[] = {
-    M | KeyCode::_0, M | KeyCode::_1, M | KeyCode::_2, M | KeyCode::_3,
-    M | KeyCode::_4, M | KeyCode::_5, M | KeyCode::_6, M | KeyCode::_7,
-    M | KeyCode::_8, M | KeyCode::_9, M | KeyCode::A,  M | KeyCode::B,
-    M | KeyCode::C,  M | KeyCode::D,  M | KeyCode::E,  M | KeyCode::F,
-};
-
-constexpr uint16_t StenoKeyCodeEmitter::EmitterContext::KP_ALT_HEX_KEY_CODES[] =
-    {
-        M | KeyCode::KP_0, M | KeyCode::KP_1, M | KeyCode::KP_2,
-        M | KeyCode::KP_3, M | KeyCode::KP_4, M | KeyCode::KP_5,
-        M | KeyCode::KP_6, M | KeyCode::KP_7, M | KeyCode::KP_8,
-        M | KeyCode::KP_9, M | KeyCode::A,    M | KeyCode::B,
-        M | KeyCode::C,    M | KeyCode::D,    M | KeyCode::E,
-        M | KeyCode::F,
-};
-
-#undef M
-
 //---------------------------------------------------------------------------
 
 StenoKeyCodeEmitter::EmitterContext::EmitterContext()
     : hostLayout(HostLayouts::GetActiveLayout()) {}
-
-bool StenoKeyCodeEmitter::EmitterContext::GetIsNumLockOn() {
-  if (!hasDeterminedNumLockState) {
-    hasDeterminedNumLockState = true;
-    isNumLockOn = Connection::GetActiveKeyboardLedStatus().IsNumLockOn();
-  }
-  return isNumLockOn;
-}
 
 //---------------------------------------------------------------------------
 
@@ -86,8 +49,14 @@ bool StenoKeyCodeEmitter::Process(const StenoKeyCode *previous,
     }
   }
 
-  for (size_t i = 0; i < valueLength; ++i) {
-    context.ProcessStenoKeyCode(value[i]);
+  if (valueLength > 0) {
+    UnicodeScript::instance.SetContext(&context);
+    UnicodeScript::instance.ExecuteBeginScript();
+
+    for (size_t i = 0; i < valueLength; ++i) {
+      context.ProcessStenoKeyCode(value[i]);
+    }
+    UnicodeScript::instance.ExecuteEndScript();
   }
 
   context.ReleaseModifiers(context.modifiers);
@@ -144,35 +113,12 @@ void StenoKeyCodeEmitter::EmitterContext::EmitAscii(uint32_t unicode) {
 }
 
 void StenoKeyCodeEmitter::EmitterContext::EmitNonAscii(uint32_t unicode) {
-  if (0xd800 <= unicode && unicode <= 0xdfff) {
-    // Emit question mark. Can't display surrogate pairs.
-    return EmitAscii('?');
-  }
-
   const HostLayoutEntry *sequence = hostLayout.GetSequenceForUnicode(unicode);
   if (sequence != nullptr) {
     return EmitSequence(*sequence);
   }
 
-  // Unicode point.
-  switch (hostLayout.unicodeMode) {
-  case UnicodeMode::LINUX_IBUS:
-    return EmitIBus(unicode);
-
-  case UnicodeMode::MACOS_UNICODE_HEX:
-    return EmitMacOsUnicodeHex(unicode);
-
-  case UnicodeMode::WINDOWS_HEX:
-    return EmitWindowsHex(unicode);
-
-  case UnicodeMode::WIN_COMPOSE:
-    return EmitWinCompose(unicode);
-
-  case UnicodeMode::NONE:
-  default:
-    // Can't emit this keycode..
-    return EmitAscii('?');
-  }
+  UnicodeScript::instance.ExecuteEmitScript(unicode);
 }
 
 void StenoKeyCodeEmitter::EmitterContext::EmitSequence(
@@ -182,74 +128,8 @@ void StenoKeyCodeEmitter::EmitterContext::EmitSequence(
   }
 }
 
-void StenoKeyCodeEmitter::EmitterContext::EmitMacOsUnicodeHex(
-    uint32_t unicode) {
-  if (unicode < 0x10000) {
-    EmitUCS2AltHex(unicode);
-  } else {
-    unicode -= 0x10000;
-    EmitUCS2AltHex(0xd800 | ((unicode >> 10) & 0x3ff));
-    EmitUCS2AltHex(0xdc00 | (unicode & 0x3ff));
-  }
-}
-
-void StenoKeyCodeEmitter::EmitterContext::EmitIBus(uint32_t unicode) {
-  const uint32_t uKeyCode = hostLayout.asciiKeyCodes[uint32_t('u')];
-
-  EmitKeyCode(MODIFIER_L_CTRL_FLAG | MODIFIER_L_SHIFT_FLAG | uKeyCode);
-  RecurseEmitHex(unicode);
-  EmitAscii(' ');
-  EmitIBusDelay();
-}
-
-void StenoKeyCodeEmitter::EmitterContext::EmitWinCompose(uint32_t unicode) {
-  const uint32_t uKeyCode = hostLayout.asciiKeyCodes[uint32_t('u')];
-
-  EmitKeyCode(MODIFIER_R_ALT_FLAG | uKeyCode);
-  RecurseEmitHex(unicode);
-  EmitAscii('\n');
-}
-
-void StenoKeyCodeEmitter::EmitterContext::EmitIBusDelay() { Key::Flush(); }
-
-void StenoKeyCodeEmitter::EmitterContext::RecurseEmitHex(uint32_t code) {
-  const uint32_t quotient = code / 16;
-  const uint32_t remainder = code % 16;
-  if (quotient != 0) {
-    RecurseEmitHex(quotient);
-  }
-  EmitAscii("0123456789abcdef"[remainder]);
-}
-
-void StenoKeyCodeEmitter::EmitterContext::EmitWindowsHex(uint32_t unicode) {
-  if (unicode >= 0x10000) {
-    // Can't emit this keycode..
-    EmitAscii('?');
-    return;
-  }
-
-  const bool isNumLockOn = GetIsNumLockOn();
-  if (!isNumLockOn) {
-    TapKey(KeyCode::NUM_LOCK);
-  }
-  EmitKeyCode(MODIFIER_L_ALT_FLAG | KeyCode::KP_PLUS);
-  for (int i = 12; i >= 0; i -= 4) {
-    EmitKeyCode(KP_ALT_HEX_KEY_CODES[(unicode >> i) & 0xf]);
-  }
-  ReleaseModifiers(modifiers);
-  modifiers = 0;
-  if (!isNumLockOn) {
-    TapKey(KeyCode::NUM_LOCK);
-  }
-}
-
-void StenoKeyCodeEmitter::EmitterContext::EmitUCS2AltHex(uint32_t unicode) {
-  for (int i = 0; i < 4; ++i) {
-    EmitKeyCode(ALT_HEX_KEY_CODES[(unicode >> (12 - 4 * i)) & 0xf]);
-  }
-}
-
-void StenoKeyCodeEmitter::EmitterContext::EmitKeyCode(uint32_t keyCode) {
+[[gnu::weak]] void
+StenoKeyCodeEmitter::EmitterContext::EmitKeyCode(uint32_t keyCode) {
   ReleaseModifiers(modifiers & ~keyCode);
   PressModifiers((keyCode & ~modifiers) & MODIFIER_MASK);
   modifiers = keyCode & MODIFIER_MASK;
@@ -259,9 +139,6 @@ void StenoKeyCodeEmitter::EmitterContext::EmitKeyCode(uint32_t keyCode) {
 void StenoKeyCodeEmitter::EmitterContext::PressModifiers(uint32_t modifiers) {
   if (modifiers == 0) {
     return;
-  }
-  if (hostLayout.unicodeMode == UnicodeMode::LINUX_IBUS) {
-    EmitIBusDelay();
   }
   while (modifiers != 0) {
     PressKey(MASK_KEY_CODES[__builtin_ctzl(modifiers) - MODIFIER_BIT_SHIFT]);
@@ -275,15 +152,17 @@ void StenoKeyCodeEmitter::EmitterContext::ReleaseModifiers(uint32_t modifiers) {
   if (modifiers == 0) {
     return;
   }
-  if (hostLayout.unicodeMode == UnicodeMode::LINUX_IBUS) {
-    EmitIBusDelay();
-  }
   while (modifiers != 0) {
     ReleaseKey(MASK_KEY_CODES[__builtin_ctzl(modifiers) - MODIFIER_BIT_SHIFT]);
 
     // Zero the lowest bit.
     modifiers &= modifiers - 1;
   }
+}
+
+void StenoKeyCodeEmitter::EmitterContext::ReleaseModifiers() {
+  ReleaseModifiers(modifiers);
+  modifiers = 0;
 }
 
 //---------------------------------------------------------------------------
@@ -377,104 +256,6 @@ TEST_BEGIN("StenoKeyCodeEmitter: Shared modifier tests") {
   assert_tap(KeyCode::T);
   assert_release(KeyCode::L_SHIFT);
   assert_end();
-}
-TEST_END
-
-TEST_BEGIN("StenoKeyCodeEmitter: MacOS Unicode Hex test") {
-  HostLayout layout = HostLayout::ansi;
-  layout.unicodeMode = UnicodeMode::MACOS_UNICODE_HEX;
-  HostLayouts::SetActiveLayout(layout);
-  StenoKeyCodeEmitter emitter;
-
-  const StenoKeyCode codes[] = {
-      StenoKeyCode(0x4f60, StenoCaseMode::NORMAL),  // '你'
-      StenoKeyCode(0x597d, StenoCaseMode::NORMAL),  // '好'
-      StenoKeyCode(0x1f600, StenoCaseMode::NORMAL), // '😀'
-      StenoKeyCode(0x1f60e, StenoCaseMode::NORMAL), // '😎'
-  };
-
-  emitter.Process(nullptr, 0, codes, 4);
-
-  assert_begin();
-  assert_press(KeyCode::L_ALT);
-
-  assert_tap(KeyCode::_4);
-  assert_tap(KeyCode::F);
-  assert_tap(KeyCode::_6);
-  assert_tap(KeyCode::_0);
-
-  assert_tap(KeyCode::_5);
-  assert_tap(KeyCode::_9);
-  assert_tap(KeyCode::_7);
-  assert_tap(KeyCode::D);
-
-  assert_tap(KeyCode::D);
-  assert_tap(KeyCode::_8);
-  assert_tap(KeyCode::_3);
-  assert_tap(KeyCode::D);
-  assert_tap(KeyCode::D);
-  assert_tap(KeyCode::E);
-  assert_tap(KeyCode::_0);
-  assert_tap(KeyCode::_0);
-
-  assert_tap(KeyCode::D);
-  assert_tap(KeyCode::_8);
-  assert_tap(KeyCode::_3);
-  assert_tap(KeyCode::D);
-  assert_tap(KeyCode::D);
-  assert_tap(KeyCode::E);
-  assert_tap(KeyCode::_0);
-  assert_tap(KeyCode::E);
-
-  assert_release(KeyCode::L_ALT);
-  assert_end();
-
-  HostLayouts::SetActiveLayout(HostLayout::ansi);
-}
-TEST_END
-
-TEST_BEGIN("StenoKeyCodeEmitter: Windows Hex test") {
-  HostLayout layout = HostLayout::ansi;
-  layout.unicodeMode = UnicodeMode::WINDOWS_HEX;
-  HostLayouts::SetActiveLayout(layout);
-  StenoKeyCodeEmitter emitter;
-
-  const StenoKeyCode codes[] = {
-      StenoKeyCode('a', StenoCaseMode::NORMAL),
-      StenoKeyCode(u'Ä', StenoCaseMode::NORMAL), // Alt code 142
-      StenoKeyCode(u'É', StenoCaseMode::NORMAL), // Alt code 144
-      StenoKeyCode('e', StenoCaseMode::NORMAL),
-  };
-
-  emitter.Process(nullptr, 0, codes, 4);
-
-  assert_begin();
-  assert_tap(KeyCode::A);
-
-  assert_tap(KeyCode::NUM_LOCK);
-  assert_press(KeyCode::L_ALT);
-  assert_tap(KeyCode::KP_PLUS);
-  assert_tap(KeyCode::KP_0);
-  assert_tap(KeyCode::KP_0);
-  assert_tap(KeyCode::C);
-  assert_tap(KeyCode::KP_4);
-  assert_release(KeyCode::L_ALT);
-  assert_tap(KeyCode::NUM_LOCK);
-
-  assert_tap(KeyCode::NUM_LOCK);
-  assert_press(KeyCode::L_ALT);
-  assert_tap(KeyCode::KP_PLUS);
-  assert_tap(KeyCode::KP_0);
-  assert_tap(KeyCode::KP_0);
-  assert_tap(KeyCode::C);
-  assert_tap(KeyCode::KP_9);
-  assert_release(KeyCode::L_ALT);
-  assert_tap(KeyCode::NUM_LOCK);
-
-  assert_tap(KeyCode::E);
-  assert_end();
-
-  HostLayouts::SetActiveLayout(HostLayout::ansi);
 }
 TEST_END
 

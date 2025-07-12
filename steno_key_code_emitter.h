@@ -1,8 +1,6 @@
 //---------------------------------------------------------------------------
 
 #pragma once
-#include <stddef.h>
-
 #include "steno_key_code.h"
 #include "steno_key_code_buffer.h"
 

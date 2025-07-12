@@ -123,7 +123,9 @@ static inline void FindNeedle(const StenoStroke *needle, size_t needleLength,
 #if JAVELIN_CPU_CORTEX_M4 || JAVELIN_CPU_CORTEX_M33
   uint32_t scratch0, scratch1;
   asm volatile(R"(
-      .align 2
+      b 1f
+
+      .align 4
     1:
       cmp %0, %3
       bhs 4f

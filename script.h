@@ -80,13 +80,15 @@ protected:
     return byteCode->GetScriptData<uint8_t>(offset);
   }
 
+  void SetScript(const ScriptByteCode *byteCode) { this->byteCode = byteCode; }
+
 private:
   class StackPointer;
   class ProgramCounter;
 
   static constexpr size_t MAX_STACK_SIZE = 256;
 
-  const ScriptByteCode *const byteCode;
+  const ScriptByteCode *byteCode;
   intptr_t *stackTop = stack;
   void (*const *const functionTable)(Script &, const ScriptByteCode *byteCode);
   intptr_t globals[256];

@@ -17,8 +17,6 @@ struct StenoKeyCodeEmitter::EmitterContext {
 
   uint32_t modifiers = 0;
   bool shouldCombineUndo = true;
-  bool hasDeterminedNumLockState = false;
-  bool isNumLockOn;
   const HostLayout &hostLayout;
 
   static const KeyCode::Value MASK_KEY_CODES[];
@@ -26,28 +24,22 @@ struct StenoKeyCodeEmitter::EmitterContext {
   static const uint16_t ALT_HEX_KEY_CODES[];
   static const uint16_t KP_ALT_HEX_KEY_CODES[];
 
-  bool GetIsNumLockOn();
   void ProcessStenoKeyCode(StenoKeyCode stenoKeyCode);
 
   static void PressKey(KeyCode keyCode) { Key::Press(keyCode); }
   static void ReleaseKey(KeyCode keyCode) { Key::Release(keyCode); };
   static void TapKey(KeyCode keyCode) { Key::Tap(keyCode); }
+  static void Flush() { Key::Flush(); }
 
   void EmitKeyCode(uint32_t keyCode);
 
   void PressModifiers(uint32_t modifiers);
   void ReleaseModifiers(uint32_t modifiers);
+  void ReleaseModifiers();
 
   void EmitAscii(uint32_t unicode);
   void EmitNonAscii(uint32_t unicode);
   void EmitSequence(const HostLayoutEntry &sequence);
-  void EmitMacOsUnicodeHex(uint32_t unicode);
-  void EmitIBus(uint32_t unicode);
-  void EmitWinCompose(uint32_t unicode);
-  void RecurseEmitHex(uint32_t unicode);
-  static void EmitIBusDelay();
-  void EmitWindowsHex(uint32_t unicode);
-  void EmitUCS2AltHex(uint32_t unicode);
 };
 
 //---------------------------------------------------------------------------

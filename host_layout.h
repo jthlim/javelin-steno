@@ -7,16 +7,7 @@
 //---------------------------------------------------------------------------
 
 class Console;
-
-//---------------------------------------------------------------------------
-
-enum UnicodeMode : uint8_t {
-  NONE,
-  LINUX_IBUS,
-  MACOS_UNICODE_HEX,
-  WIN_COMPOSE,
-  WINDOWS_HEX,
-};
+struct ScriptByteCode;
 
 //---------------------------------------------------------------------------
 
@@ -32,12 +23,13 @@ static_assert(sizeof(HostLayoutEntry) == 16,
 
 // This is used to translate steno unicode -> scan codes.
 struct HostLayout {
-  const char name[15];
-  UnicodeMode unicodeMode;
+  char name[18];
+  uint16_t scriptOffset;
   uint16_t asciiKeyCodes[128];
   StaticList<HostLayoutEntry> entries;
 
   const char *GetName() const { return name; }
+  const ScriptByteCode *GetScript() const;
   const HostLayoutEntry *GetSequenceForUnicode(uint32_t unicode) const;
   uint32_t GetUnicodeForScancode(uint32_t scanCode) const;
 
@@ -50,9 +42,7 @@ class HostLayouts {
 public:
   static void SetData(const HostLayouts &layouts);
 
-  static void SetActiveLayout(const HostLayout &layout) {
-    activeLayout = &layout;
-  }
+  static void SetActiveLayout(const HostLayout &layout);
   static bool SetActiveLayout(const char *name);
   static const HostLayout &GetActiveLayout() { return *activeLayout; }
 

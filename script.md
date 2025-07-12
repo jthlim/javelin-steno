@@ -1204,7 +1204,7 @@ needs to be enabled in Web Tools to be able to see this information.
 
 - `func formatString(<format>, <value>) var`
 
-  - Intended only for use with `getAsset`.
+  - Intended only for use with `getAsset` and `drawText`.
   - _format_ must be a string constant and can contain C printf like formatters.
     Check [writer.cc](writer.cc) for a full list.
   - _value_ is a single integer value to format. Pointer values cannot be used

@@ -70,7 +70,6 @@ private:
   const Pattern *const patterns;
 
 #if USE_ORTHOGRAPHY_CACHE
-  struct CacheBlock;
   struct CacheEntry {
     void Set(uint32_t crc, const char *word, size_t wordLength,
              const char *suffix, size_t suffixLength, const char *result);
@@ -107,8 +106,6 @@ private:
     //  * Result bytes, excluding common word/suffix, e.g. "i"
     // With common (word, suffix) lengths = (7, 3), the result is `stealthiest`.
     char data[MAXIMUM_DATA_LENGTH];
-
-    friend class CacheBlock;
   };
 
   static void LockCache();

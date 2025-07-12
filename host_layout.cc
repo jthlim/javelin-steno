@@ -6,6 +6,7 @@
 #include "key_code.h"
 #include "steno_key_code_emitter.h"
 #include "str.h"
+#include "unicode_script.h"
 
 //---------------------------------------------------------------------------
 
@@ -16,7 +17,7 @@
 constexpr HostLayout HostLayout::ansi =
     {
         .name = "us",
-        .unicodeMode = UnicodeMode::NONE,
+        .scriptOffset = 0,
         .asciiKeyCodes =
             {
 // clang-format off
@@ -101,19 +102,32 @@ uint32_t HostLayout::GetUnicodeForScancode(uint32_t scanCode) const {
   return 0;
 }
 
-//---------------------------------------------------------------------------
-
-void HostLayouts::SetData(const HostLayouts &layouts) {
-  instance = &layouts;
-  activeLayout = layouts.layouts.Front();
+const ScriptByteCode *HostLayout::GetScript() const {
+  if (scriptOffset == 0) {
+    return (const ScriptByteCode *)UnicodeScript::EMPTY_SCRIPT;
+  }
+  return (const ScriptByteCode *)(intptr_t(this) + scriptOffset);
 }
 
 //---------------------------------------------------------------------------
 
+void HostLayouts::SetData(const HostLayouts &layouts) {
+  instance = &layouts;
+  SetActiveLayout(*layouts.layouts.Front());
+}
+
+//---------------------------------------------------------------------------
+
+void HostLayouts::SetActiveLayout(const HostLayout &layout) {
+  activeLayout = &layout;
+  UnicodeScript::instance.SetScript(activeLayout->GetScript());
+  UnicodeScript::instance.ExecuteInitScript();
+}
+
 bool HostLayouts::SetActiveLayout(const char *name) {
   for (const HostLayout *layout : instance->layouts) {
-    if (Str::Eq(name, layout->name)) {
-      activeLayout = layout;
+    if (Str::Eq(name, layout->GetName())) {
+      SetActiveLayout(*layout);
       return true;
     }
   }
@@ -141,18 +155,8 @@ void HostLayouts::SetHostLayout_Binding(void *context,
 
 void HostLayouts::DumpHostLayout_Binding(void *context,
                                          const char *commandLine) {
-
-  static constexpr const char *UNICODE_MODE_NAMES[] = {
-      "None",
-      "MacOS Unicode Hex",
-      "Windows Hex",
-      "Linux IBus",
-  };
-
   const ExternalFlashSentry sentry;
-  Console::Printf("HostLayout: %s\n", activeLayout->name);
-  Console::Printf("UnicodeMode: %s",
-                  UNICODE_MODE_NAMES[activeLayout->unicodeMode]);
+  Console::Printf("HostLayout: %s\n", activeLayout->GetName());
   for (size_t i = 0; i < 128; ++i) {
     if (i % 16 == 0)
       Console::Printf("\n%04zx:", i);
