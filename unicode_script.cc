@@ -1,6 +1,7 @@
 //---------------------------------------------------------------------------
 
 #include "unicode_script.h"
+#include "clock.h"
 #include "hal/connection.h"
 #include "script_byte_code.h"
 
@@ -73,6 +74,11 @@ public:
                                const ScriptByteCode *byteCode) {
     script.context->ReleaseModifiers();
   }
+
+  static void Sleep(UnicodeScript &script, const ScriptByteCode *byteCode) {
+    const int duration = script.Pop();
+    Clock::Sleep(duration);
+  }
 };
 
 //---------------------------------------------------------------------------
@@ -86,6 +92,7 @@ constexpr void (*UnicodeScript::FUNCTION_TABLE[])(UnicodeScript &,
     &Function::Flush,            //
     &Function::GetLedStatus,     //
     &Function::ReleaseModifiers, //
+    &Function::Sleep,            //
 };
 
 //---------------------------------------------------------------------------

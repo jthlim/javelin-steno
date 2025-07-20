@@ -21,6 +21,8 @@ public:
     currentMicroseconds += amount;
   }
 
+  static void Sleep(uint32_t milliseconds) {}
+
 private:
   static uint64_t currentMicroseconds;
 };
@@ -31,6 +33,8 @@ class Clock {
 public:
   static uint32_t GetMilliseconds();
   static uint32_t GetMicroseconds();
+
+  static void Sleep(uint32_t milliseconds);
 
   static void AdvanceMilliseconds(uint32_t amount) {}
 };
