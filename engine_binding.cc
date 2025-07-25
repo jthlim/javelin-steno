@@ -327,7 +327,7 @@ void StenoEngine::ProcessStrokes_Binding(void *context,
   ConsoleWriter::Push(&ConsoleWriter::instance);
   StenoEngine *engine = (StenoEngine *)context;
   for (size_t i = 0; i < parser.length; ++i) {
-    engine->ProcessStroke(parser.strokes[i]);
+    engine->Process(parser.strokes[i]);
   }
   ConsoleWriter::Pop();
 }

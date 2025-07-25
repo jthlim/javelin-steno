@@ -51,8 +51,11 @@ void StenoEngine::Process(const StenoKeyState &value, StenoAction action) {
     return;
   }
 
+  Process(value.ToStroke());
+}
+
+void StenoEngine::Process(StenoStroke stroke) {
   ++strokeCount;
-  const StenoStroke stroke = value.ToStroke();
   if (stroke == undoStroke) {
     ProcessUndo();
   } else {

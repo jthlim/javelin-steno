@@ -34,6 +34,7 @@ public:
   size_t GetStrokeCount() const { return strokeCount; }
 
   void Process(const StenoKeyState &value, StenoAction action);
+  void Process(StenoStroke stroke);
   void ProcessUndo();
   void ProcessStroke(StenoStroke stroke);
   bool ProcessScanCode(uint32_t scanCodeAndModifiers, ScanCodeAction action);
