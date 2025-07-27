@@ -21,9 +21,11 @@ static_assert(sizeof(HostLayoutEntry) == 16,
 
 //---------------------------------------------------------------------------
 
+constexpr int HOST_LAYOUTS_VERSION = 2;
+
 // This is used to translate steno unicode -> scan codes.
 struct HostLayout {
-  char name[18];
+  char name[30];
   uint16_t scriptOffset;
   uint16_t asciiKeyCodes[128];
   StaticList<HostLayoutEntry> entries;

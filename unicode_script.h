@@ -15,7 +15,11 @@ public:
   UnicodeScript();
 
   void SetScript(const ScriptByteCode *byteCode);
-  void ExecuteInitScript() { ExecuteScriptIndex(0); }
+  void ExecuteInitScript() {
+    if (IsValid()) {
+      ExecuteScriptIndex(0);
+    }
+  }
   void ExecuteBeginScript() { ExecuteScriptIndex(1); }
   void ExecuteEmitScript(uint32_t unicode);
   void ExecuteEndScript() { ExecuteScriptIndex(3); }
