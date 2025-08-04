@@ -6,6 +6,45 @@
 
 //---------------------------------------------------------------------------
 
+#if RUN_TESTS
+static uint64_t testInfraRedData;
+static size_t testInfraredBitCount;
+void SetInfraredDataBits(const void *data, size_t bitCount,
+                         InfraredEndianness endianness) {
+  testInfraredBitCount = bitCount;
+  testInfraRedData = 0;
+  const uint8_t *p = (const uint8_t *)data;
+  uint32_t mask = 0;
+  for (size_t i = 0; i < bitCount; ++i) {
+    const uint32_t byte = p[i / 8];
+    const size_t rightShift =
+        endianness == InfraredEndianness::MSB_FIRST ? ~i : i;
+    const uint32_t bit = (byte >> (rightShift & 7)) & 1;
+    if (bit) {
+      testInfraRedData |= 1ull << (63 - i);
+    }
+    mask <<= 1;
+  }
+}
+
+InfraredTime testRawData[512];
+size_t testRawDataCount;
+
+void Infrared::SendRawData(const InfraredTime *data, size_t dataCount,
+                           const InfraredRawDataConfiguration &configuration) {
+  memcpy(testRawData, data, 2 * dataCount);
+  testRawDataCount = dataCount;
+}
+#else
+[[gnu::weak]] void
+Infrared::SendRawData(const InfraredTime *data, size_t dataCount,
+                      const InfraredRawDataConfiguration &configuration) {}
+#endif
+
+[[gnu::weak]] void Infrared::Stop() {}
+
+//---------------------------------------------------------------------------
+
 struct RawInfraredData {
   static constexpr size_t DATA_COUNT = 512;
 
@@ -79,6 +118,10 @@ void RawInfraredData::AddData(const void *data, size_t bitCount,
                               const InfraredDataConfiguration &configuration) {
   Add(configuration.header);
 
+#if RUN_TESTS
+  SetInfraredDataBits(data, bitCount,
+                      configuration.rawConfiguration.endianness);
+#endif
   const uint8_t *p = (const uint8_t *)data;
   for (size_t i = 0; i < bitCount; ++i) {
     const uint32_t byte = p[i / 8];
@@ -91,45 +134,6 @@ void RawInfraredData::AddData(const void *data, size_t bitCount,
   }
   Add(configuration.trailer);
 }
-
-//---------------------------------------------------------------------------
-
-#if RUN_TESTS
-static uint64_t testInfraRedData;
-static size_t testInfraredBitCount;
-void SetInfraredDataBits(const void *data, size_t bitCount,
-                         InfraredEndianness endianness) {
-  testInfraredBitCount = bitCount;
-  testInfraRedData = 0;
-  const uint8_t *p = (const uint8_t *)data;
-  uint32_t mask = 0;
-  for (size_t i = 0; i < bitCount; ++i) {
-    const uint32_t byte = p[i / 8];
-    const size_t rightShift =
-        endianness == InfraredEndianness::MSB_FIRST ? ~i : i;
-    const uint32_t bit = (byte >> (rightShift & 7)) & 1;
-    if (bit) {
-      testInfraRedData |= 1ull << (63 - i);
-    }
-    mask <<= 1;
-  }
-}
-
-InfraredTime testRawData[512];
-size_t testRawDataCount;
-
-void Infrared::SendRawData(const InfraredTime *data, size_t dataCount,
-                           const InfraredRawDataConfiguration &configuration) {
-  memcpy(testRawData, data, 2 * dataCount);
-  testRawDataCount = dataCount;
-}
-#else
-[[gnu::weak]] void
-Infrared::SendRawData(const InfraredTime *data, size_t dataCount,
-                      const InfraredRawDataConfiguration &configuration) {}
-#endif
-
-[[gnu::weak]] void Infrared::Stop() {}
 
 //---------------------------------------------------------------------------
 
@@ -169,6 +173,8 @@ void Infrared::SendMessage(const char *protocolName, uint32_t d0, uint32_t d1,
       {"kaseikyo", SendKaseikyoMessage}, //
       {"nec", SendNECMessage},           //
       {"necx", SendNECXMessage},         //
+      {"nec42", SendNEC42Message},       //
+      {"nec42x", SendNEC42XMessage},     //
       {"rc5", SendRC5Message},           //
       {"rc6", SendRC6Message},           //
       {"rca", SendRCAMessage},           //
@@ -319,6 +325,76 @@ void Infrared::SendNECData(const uint8_t *data) {
 
   RawInfraredData rawData;
   rawData.AddData(data, 32, dataConfiguration);
+  if (rawData.IsValid()) {
+    rawData.Trim();
+    SendRawData(rawData.data, rawData.index,
+                repeatConfiguration.rawConfiguration);
+  }
+}
+
+void Infrared::SendNEC42Message(uint32_t address, uint32_t command,
+                                uint32_t _) {
+  const uint32_t addressData = (address & 0x1fff) | ((~address & 0x1fff) << 13);
+  const uint32_t commandData = (command & 0xff) | ((~command & 0xff) << 8);
+
+  const uint32_t upper24 = (addressData >> 24) | (commandData << 2);
+
+  uint8_t message[6];
+  message[0] = addressData;
+  message[1] = addressData >> 8;
+  message[2] = addressData >> 16;
+  message[3] = upper24;
+  message[4] = upper24 >> 8;
+  message[5] = upper24 >> 16;
+
+  SendNEC42Data(message);
+}
+
+void Infrared::SendNEC42XMessage(uint32_t address, uint32_t command,
+                                 uint32_t _) {
+  const uint32_t upper24 = (address >> 24) | (command << 2);
+
+  uint8_t message[6];
+  message[0] = address;
+  message[1] = address >> 8;
+  message[2] = address >> 16;
+  message[3] = upper24;
+  message[4] = upper24 >> 8;
+  message[5] = upper24 >> 16;
+
+  SendNEC42Data(message);
+}
+
+void Infrared::SendNEC42Data(const uint8_t *data) {
+  constexpr float TICK = 562.5f;
+  static constexpr InfraredDataConfiguration dataConfiguration = {
+      .rawConfiguration =
+          {
+              .endianness = InfraredEndianness::LSB_FIRST,
+          },
+      .header = {16 * TICK, 8 * TICK},
+      .zeroBit = {1 * TICK, 1 * TICK},
+      .oneBit = {1 * TICK, 3 * TICK},
+      .trailer = {1 * TICK, 0},
+  };
+
+  static constexpr InfraredDataConfiguration repeatConfiguration = {
+      .rawConfiguration =
+          {
+              .playbackCount = 0,
+              .repeatDelayMode = InfraredRepeatDelayMode::START_TO_START,
+              .repeatDataMode = InfraredRepeatDataMode::HEADER_AND_TRAILER,
+              .endianness = InfraredEndianness::LSB_FIRST,
+              .repeatDelay = 108000,
+          },
+      .header = {16 * TICK, 4 * TICK},
+      .zeroBit = {0 * TICK, 0 * TICK},
+      .oneBit = {0 * TICK, 0 * TICK},
+      .trailer = {1 * TICK, 0},
+  };
+
+  RawInfraredData rawData;
+  rawData.AddData(data, 42, dataConfiguration);
   if (rawData.IsValid()) {
     rawData.Trim();
     SendRawData(rawData.data, rawData.index,
@@ -561,19 +637,37 @@ TEST_END
 
 TEST_BEGIN("Infrared NEC data is calculated correctly") {
   Infrared::SendMessage("nec", 0x12, 0xad, 0);
-//  assert(
-//      testInfraRedData ==
-//      0b01001000'10110111'10110101'01001010'00000000'00000000'00000000'00000000ull);
-//  assert(testInfraredBitCount == 32);
+  assert(
+      testInfraRedData ==
+      0b01001000'10110111'10110101'01001010'00000000'00000000'00000000'00000000ull);
+  assert(testInfraredBitCount == 32);
 }
 TEST_END
 
 TEST_BEGIN("Infrared NECX data is calculated correctly") {
   Infrared::SendMessage("necx", 0x1234, 0xad, 0);
-//  assert(
-//      testInfraRedData ==
-//      0b00101100'01001000'10110101'01001010'00000000'00000000'00000000'00000000ull);
-//  assert(testInfraredBitCount == 32);
+  assert(
+      testInfraRedData ==
+      0b00101100'01001000'10110101'01001010'00000000'00000000'00000000'00000000ull);
+  assert(testInfraredBitCount == 32);
+}
+TEST_END
+
+TEST_BEGIN("Infrared NEC42 data is calculated correctly") {
+  Infrared::SendMessage("nec42", 0x123, 0xad, 0);
+  assert(
+      testInfraRedData ==
+      0b1100010010000'0011101101111'10110101'01001010'000000'00000000'00000000ull);
+  assert(testInfraredBitCount == 42);
+}
+TEST_END
+
+TEST_BEGIN("Infrared NEC42X data is calculated correctly") {
+  Infrared::SendMessage("nec42x", 0x123456, 0xad, 0);
+  assert(
+      testInfraRedData ==
+      0b01101010'00101100'01001000'00'10110101'00000000'000000'00000000'00000000ull);
+  assert(testInfraredBitCount == 42);
 }
 TEST_END
 

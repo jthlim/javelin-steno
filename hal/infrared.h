@@ -83,6 +83,9 @@ private:
   static void SendNECMessage(uint32_t address, uint32_t command, uint32_t _);
   static void SendNECXMessage(uint32_t address, uint32_t command, uint32_t _);
   static void SendNECData(const uint8_t *data);
+  static void SendNEC42Message(uint32_t address, uint32_t command, uint32_t _);
+  static void SendNEC42XMessage(uint32_t address, uint32_t command, uint32_t _);
+  static void SendNEC42Data(const uint8_t *data);
   static void SendRC5Message(uint32_t address, uint32_t command,
                              uint32_t toggle);
   static void SendRC6Message(uint32_t address, uint32_t command,
