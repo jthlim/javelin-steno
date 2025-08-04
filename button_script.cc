@@ -1333,6 +1333,15 @@ public:
     Midi::Send(data, command >= 0xf0 ? SYSTEM_DATA_LENGTHS[command - 0xf0]
                                      : STATUS_DATA_LENGTHS[(command >> 4) - 8]);
   }
+
+  static void GetAssetSize(ButtonScript &script,
+                           const ScriptByteCode *byteCode) {
+    const intptr_t offset = script.Pop();
+    const char *assetName = byteCode->GetScriptData<char>(offset);
+
+    const AssetEntry *asset = AssetManager::GetAsset(assetName);
+    script.Push(asset == nullptr ? 0 : asset->size);
+  }
 };
 
 constexpr void (*ButtonScript::FUNCTION_TABLE[])(ButtonScript &,
@@ -1459,6 +1468,7 @@ constexpr void (*ButtonScript::FUNCTION_TABLE[])(ButtonScript &,
     &Function::SendInfraredSignal,
     &Function::CreateBuffer,
     &Function::SendMidi,
+    &Function::GetAssetSize,
 };
 
 void ButtonScript::PrintEventHistory() {

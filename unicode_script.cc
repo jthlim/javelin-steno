@@ -76,7 +76,7 @@ public:
   }
 
   static void Sleep(UnicodeScript &script, const ScriptByteCode *byteCode) {
-    const int duration = script.Pop();
+    const uint32_t duration = (uint32_t) script.Pop();
     Clock::Sleep(duration);
   }
 };

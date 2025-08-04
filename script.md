@@ -1013,6 +1013,18 @@ Javelin provides 3 ways of sending infrared data:
       - extra: unused
       - This signal repeats, and must be stopped using `stopInfrared()`
 
+    - `nec42`:
+      - address: 13 bits
+      - command: 8 bits
+      - extra: unused
+      - This signal repeats, and must be stopped using `stopInfrared()`
+
+    - `nec42x`:
+      - address: 26 bits
+      - command: 16 bits
+      - extra: unused
+      - This signal repeats, and must be stopped using `stopInfrared()`
+
     - `rc5`:
       - address: 5 bits
       - command: 7 bits
@@ -1211,6 +1223,10 @@ needs to be enabled in Web Tools to be able to see this information.
     and will likely crash the script.
 
 - `func getAsset(<assetName>) var`
+
+  - Returns the data for _assetName_ or 0 if not found.
+
+- `func getAssetSize(<assetName>) var`
 
   - Returns the data for _assetName_ or 0 if not found.
 
