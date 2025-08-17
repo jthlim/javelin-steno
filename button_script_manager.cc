@@ -368,7 +368,7 @@ void ButtonScriptManager::CancelAllCombosForByteCode(
         byteCodeRange.Contains(combo.byteCode->GetScriptData<uint8_t>(
             combo.releaseScriptOffset))) {
       combos.RemoveIndex(i);
-      Console::Printf("Removed stale combo\n");
+      Console::Printf("Removed stale combo\n\n");
     }
   }
 }
@@ -463,11 +463,10 @@ void ButtonScriptManager::RunScript_Binding(void *context,
     return;
   }
 
-  static uint8_t buffer[256];
+  static uint8_t buffer[Console::BUFFER_SIZE * 3 / 4];
 
   ButtonScriptManager *manager = (ButtonScriptManager *)context;
   ScriptByteCode *byteCode = (ScriptByteCode *)buffer;
-  manager->CancelAllScriptsForByteCode(byteCode, 256);
 
   Base64::Decode(buffer, (const uint8_t *)p + 1);
   if (!byteCode->IsValid()) {
@@ -476,7 +475,7 @@ void ButtonScriptManager::RunScript_Binding(void *context,
   }
 
   Console::SendOk();
-
+  manager->CancelAllScriptsForByteCode(byteCode, 256);
   manager->ExecuteByteCode(byteCode);
 }
 

@@ -70,8 +70,8 @@ public:
   static void SendRawData(const InfraredTime *data, size_t dataCount,
                           const InfraredRawDataConfiguration &rawData);
 
-  static void SendMessage(const char *protocolName, uint32_t d0, uint32_t d1,
-                          uint32_t d2);
+  static void SendMessage(const char *protocolName, uint32_t address,
+                          uint32_t command, uint32_t extraData);
 
   static void Stop();
 

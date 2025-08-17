@@ -160,8 +160,8 @@ void Infrared::SendData(const void *data, size_t bitCount,
 
 //---------------------------------------------------------------------------
 
-void Infrared::SendMessage(const char *protocolName, uint32_t d0, uint32_t d1,
-                           uint32_t d2) {
+void Infrared::SendMessage(const char *protocolName, uint32_t address,
+                           uint32_t command, uint32_t extraData) {
   struct InfraredProtocol {
     const char *name;
     void (*handler)(uint32_t, uint32_t, uint32_t);
@@ -183,7 +183,7 @@ void Infrared::SendMessage(const char *protocolName, uint32_t d0, uint32_t d1,
   };
   for (const InfraredProtocol &protocol : protocols) {
     if (Str::Eq(protocolName, protocol.name)) {
-      protocol.handler(d0, d1, d2);
+      protocol.handler(address, command, extraData);
       return;
     }
   }

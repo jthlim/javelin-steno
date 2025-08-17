@@ -135,6 +135,7 @@ public:
     instance.isEventEnabled[(size_t)event] = false;
   }
 
+  static const size_t BUFFER_SIZE = 2048;
   static Console instance;
 
 private:
@@ -142,7 +143,7 @@ private:
     int8_t id;
     bool isTooLong;
     uint16_t bufferCount;
-    char buffer[256];
+    char buffer[BUFFER_SIZE];
 
     void Reset(uint32_t channelId) {
       id = channelId;

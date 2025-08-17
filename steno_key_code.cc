@@ -4,7 +4,8 @@
 
 //---------------------------------------------------------------------------
 
-uint32_t StenoKeyCode::ResolveUnicodeInterrnal(uint32_t unicode, StenoCaseMode mode) {
+uint32_t StenoKeyCode::ResolveUnicodeInterrnal(uint32_t unicode,
+                                               StenoCaseMode mode) {
   switch (mode) {
   case StenoCaseMode::NORMAL:
     return unicode;

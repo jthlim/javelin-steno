@@ -203,7 +203,7 @@ void ButtonScript::CancelAllCallbacksForByteCode(
         callback.byteCode->GetScriptData<uint8_t>(callback.offset);
     if (byteCodeRange.Contains(p)) {
       scriptCallbacks[i].offset = 0;
-      Console::Printf("Cancelled stale scriptId: %zu\n", i);
+      Console::Printf("Cancelled stale scriptId: %zu\n\n", i);
     }
   }
 }
@@ -221,7 +221,7 @@ void ButtonScript::CancelAllTimersForByteCode(
             *(const Interval<const uint8_t *> *)context;
 
         if (byteCodeRange.Contains(timerContext->GetInstructions())) {
-          Console::Printf("Cancelled stale timerId: %d\n", timerId);
+          Console::Printf("Cancelled stale timerId: %d\n\n", timerId);
           TimerManager::instance.StopTimer(timerId, Clock::GetMilliseconds());
         }
       });
