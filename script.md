@@ -591,6 +591,7 @@ the button index, then underglow lights after.
     const AUTO_DRAW_PAPER_TAPE = 1;
     const AUTO_DRAW_STENO_LAYOUT = 2;
     const AUTO_DRAW_WPM = 3;
+    const AUTO_DRAW_STROKES = 4;
     ```
 - `func setScreenOn(<displayId>, <on>)`
 
