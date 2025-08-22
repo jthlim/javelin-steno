@@ -1,6 +1,8 @@
 //---------------------------------------------------------------------------
 
 #include "orthospelling_dictionary.h"
+#include "../unicode.h"
+#include "../utf8_pointer.h"
 #include "../writer.h"
 #include "dictionary_definition.h"
 #include "orthospelling_data.h"
@@ -44,7 +46,10 @@ StenoDictionaryLookupResult StenoOrthospellingDictionary::Lookup(
     ProcessStroke(result, buffer, lookup.strokes[i]);
   }
 
-  return StenoDictionaryLookupResult::CreateFromBuffer(result);
+  char *p = result.TerminateStringAndAdoptBuffer();
+  TidyResult(p);
+
+  return StenoDictionaryLookupResult::CreateDynamicString(p);
 }
 
 void StenoOrthospellingDictionary::ProcessStroke(
@@ -72,6 +77,40 @@ void StenoOrthospellingDictionary::ReverseLookup(
 void StenoOrthospellingDictionary::PrintDictionary(
     PrintDictionaryContext &context) const {
   // Do nothing
+}
+
+void StenoOrthospellingDictionary::TidyResult(char *p) {
+  if (!Str::Contains(p, '{')) {
+    return;
+  }
+
+  // This code changes "{^}{-|}" sequence to capitalize the next letter inline.
+  // It should have equivalent behavior, but cleaner paper tape display.
+  bool capitalizeNext = false;
+  Utf8Pointer s(p);
+  Utf8Pointer d(p);
+
+  for (;;) {
+    uint32_t c = *s;
+    if (c == '{') {
+      const char *sRaw = s.GetRawPointer();
+      if (sRaw != p && memcmp(sRaw, "{^}{-|}", 7) == 0 &&
+          !Unicode::IsWhitespace(sRaw[7])) {
+        s = sRaw + 7;
+        capitalizeNext = true;
+        continue;
+      }
+    }
+    if (capitalizeNext) {
+      capitalizeNext = false;
+      c = Unicode::ToUpper(c);
+    }
+    d.SetAndAdvance(c);
+    if (c == 0) {
+      break;
+    }
+    ++s;
+  }
 }
 
 //---------------------------------------------------------------------------

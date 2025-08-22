@@ -36,6 +36,8 @@ private:
 
   void ProcessStroke(BufferWriter &result, OrthospellingData::Context context,
                      StenoStroke stroke) const;
+
+  static void TidyResult(char *p);
 };
 
 //---------------------------------------------------------------------------

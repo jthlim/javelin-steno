@@ -64,13 +64,13 @@ static int LetterComparator(const OrthospellingData::Letter **a,
   if ((*a)->order != (*b)->order) {
     return (*a)->order - (*b)->order;
   }
-  return int(intptr_t(a) - intptr_t(b));
+  return int(intptr_t(*a) - intptr_t(*b));
 }
 
 void OrthospellingData::Context::WriteToBuffer(BufferWriter &writer) {
   const size_t count = GetCount();
   qsort(letters, count, sizeof(*letters),
-        (int (*)(const void *, const void *)) & LetterComparator);
+        (int (*)(const void *, const void *))&LetterComparator);
   for (const Letter **letter = letters; *letter; ++letter) {
     writer.WriteString((*letter)->data);
   }
