@@ -1084,7 +1084,8 @@ Javelin provides 3 ways of sending infrared data:
       - `headerTime`
       - `zeroBitTime`
       - `oneBitTime`
-      - `trailerTime`
+      - `trailer0Time`
+      - `trailer1Time`
 
     - `repeatDelayLow` is the low 16 bits of the delay, and `repeatDelayHigh`
       is the upper 16 bits. e.g. A 100ms delay is represented by `34464, 1`
@@ -1106,7 +1107,8 @@ Javelin provides 3 ways of sending infrared data:
         6632, 3869,   // Header time
         737, 996,     // Zero bit time
         737, 2709,    // One bit time
-        737, 0        // Trailer time
+        737, 0        // Trailer0 time
+        0, 0          // Trailer1 time -- unused
       >];
       ```
 

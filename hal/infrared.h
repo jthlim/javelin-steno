@@ -50,11 +50,13 @@ struct InfraredDataConfiguration {
   struct PulseTime {
     InfraredTime onTime;
     InfraredTime offTime;
+
+    uint32_t GetTotalTimeValue() const { return onTime.value + offTime.value; }
   };
   PulseTime header;
   PulseTime zeroBit;
   PulseTime oneBit;
-  PulseTime trailer;
+  PulseTime trailer[2];
 
   const PulseTime &GetBitPulseTime(size_t index) const {
     return (&zeroBit)[index];

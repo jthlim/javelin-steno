@@ -132,7 +132,8 @@ void RawInfraredData::AddData(const void *data, size_t bitCount,
     const uint32_t bit = (byte >> (rightShift & 7)) & 1;
     Add(configuration.GetBitPulseTime(bit));
   }
-  Add(configuration.trailer);
+  Add(configuration.trailer[0]);
+  Add(configuration.trailer[1]);
 }
 
 //---------------------------------------------------------------------------
