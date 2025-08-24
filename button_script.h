@@ -24,6 +24,7 @@ enum class ButtonScriptId : int {
   U2F_WINK,
   STENO_MODE_UPDATE,
   BLE_PAIR_COMPLETE,
+  SET_LAYER,
 
   USER1,
   USER2,
@@ -32,7 +33,6 @@ enum class ButtonScriptId : int {
   USER5,
   USER6,
   USER7,
-  USER8,
 
   CONSOLE_ACCESS_REQUESTED,
   FLASH_WRITE_ACCESS_REQUESTED,

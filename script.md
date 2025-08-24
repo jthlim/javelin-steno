@@ -1206,15 +1206,18 @@ needs to be enabled in Web Tools to be able to see this information.
     const SCRIPT_ID_U2F_WINK = 8;
     const SCRIPT_ID_STENO_MODE_UPDATE = 9;
     const SCRIPT_ID_BLE_PAIR_COMPLETE = 10;
+    const SCRIPT_ID_SET_LAYER = 11;
 
-    const SCRIPT_ID_USER1 = 11;
-    const SCRIPT_ID_USER2 = 12;
-    const SCRIPT_ID_USER3 = 13;
-    const SCRIPT_ID_USER4 = 14;
-    const SCRIPT_ID_USER5 = 15;
-    const SCRIPT_ID_USER6 = 16;
-    const SCRIPT_ID_USER7 = 17;
-    const SCRIPT_ID_USER8 = 18;
+    const SCRIPT_ID_USER1 = 12;
+    const SCRIPT_ID_USER2 = 13;
+    const SCRIPT_ID_USER3 = 14;
+    const SCRIPT_ID_USER4 = 15;
+    const SCRIPT_ID_USER5 = 16;
+    const SCRIPT_ID_USER6 = 17;
+    const SCRIPT_ID_USER7 = 18;
+
+    const CONSOLE_ACCESS_REQUESTED = 19;
+    const FLASH_WRITE_ACCESS_REQUESTED = 20;
     ```
 
 - `func formatString(<format>, <value>) var`
