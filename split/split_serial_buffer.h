@@ -10,8 +10,8 @@
 
 class SplitSerialBuffer {
 public:
-  static void Add(const uint8_t *data, size_t length) {
-    instance.Add(data, length);
+  static void Add(const void *data, size_t length) {
+    instance.Add((const uint8_t *)data, length);
   }
 
   static void RegisterTxHandler() {

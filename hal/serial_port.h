@@ -20,7 +20,7 @@ public:
   static void SendByte(const uint8_t byte);
 #endif
 
-  static void SendData(const uint8_t *data, size_t length);
+  static void SendData(const void *data, size_t length);
 };
 
 //---------------------------------------------------------------------------
