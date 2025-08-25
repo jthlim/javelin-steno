@@ -22,6 +22,10 @@ public:
 
 template <> class Bit<4> {
 public:
+  static inline uint32_t CountLeadingZeros(uint32_t v) {
+    return __builtin_clz(v);
+  }
+
   static inline uint32_t CountTrailingZeros(uint32_t v) {
     return __builtin_ctz(v);
   }
@@ -44,6 +48,10 @@ public:
 
 template <> class Bit<8> {
 public:
+  static inline uint32_t CountLeadingZeros(uint64_t v) {
+    return __builtin_clzll(v);
+  }
+
   static inline uint32_t CountTrailingZeros(uint64_t v) {
     return __builtin_ctzll(v);
   }

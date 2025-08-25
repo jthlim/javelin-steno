@@ -1,6 +1,7 @@
 //---------------------------------------------------------------------------
 
 #include "timer_manager.h"
+#include "bit.h"
 #include "console.h"
 
 //---------------------------------------------------------------------------
@@ -65,6 +66,23 @@ void TimerManager::StopTimer(int32_t timerId, uint32_t currentTime) {
 
   timers[index].handler->OnTimerRemovedFromManager();
   RemoveTimerIndex(index, currentTime);
+}
+
+int TimerManager::FindFreeTimerId() const {
+  for (int baseTimerId = -32;; baseTimerId -= 32) {
+    uint32_t bitmask = 0xffffffff;
+    for (size_t i = 0; i < timerCount; ++i) {
+      const uint32_t bitIndex = timers[i].id - baseTimerId;
+      if (bitIndex < 32) {
+        bitmask &= ~(1u << bitIndex);
+      }
+    }
+
+    if (bitmask != 0) {
+      const int topBit = Bit<sizeof(uint32_t)>::CountLeadingZeros(bitmask);
+      return baseTimerId + 31 - topBit;
+    }
+  }
 }
 
 void TimerManager::StartTimer(int32_t timerId, uint32_t interval,

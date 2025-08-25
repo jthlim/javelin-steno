@@ -836,6 +836,9 @@ are suppressed until it is confirmed that no combo is involved.
   - _handler_ is either:
     - `func handler() { ... }`, or
     - `func handler(<timerId>) { ... }`
+  - A special timerId of -1 can be used to specify that a timerId should be
+    allocated by the system. This should only be used with `isRepeating` set
+    to 0. This timer cannot be checked with `stopTimer` or `isTimerActive`.
 
 - `func stopTimer(<timerId>)`
 

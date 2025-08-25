@@ -30,6 +30,8 @@ public:
   }
   uint32_t GetLastUpdateTime() const { return lastUpdateTime; }
 
+  int FindFreeTimerId() const;
+
   // A previously matched timerId will have its destructor called.
   // If the timer can't be started, destructor will immediately be called on
   // context.
