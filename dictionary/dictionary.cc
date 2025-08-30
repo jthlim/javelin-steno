@@ -202,21 +202,31 @@ void PrintDictionaryEntryContext::Print(const StenoStroke *strokes,
     return;
   }
 
-  const char *format = ",{\"o\":\"%T\",\"t\":\"%J\",\"d\":\"%J\"}";
+  const char *format = ",{\"o\":\"%T\"";
   if (!count) {
     ++format;
   }
   ++count;
-
-  const size_t index = dictionaries.FindIndex(dictionary);
-  if (index == -1) {
-    dictionaries.Add(dictionary);
-    Console::Printf(format, strokes, length, definition, dictionary->GetName());
-  } else {
-    // If the dictionary exists, it cannot be the first entry.
-    Console::Printf(",{\"o\":\"%T\",\"t\":\"%J\",\"d\":%zu}", strokes, length,
-                    definition, index);
+  Console::Printf(format, strokes, length);
+  if (definition != nullptr) {
+    Console::Printf(",\"t\":\"%J\"", definition);
   }
+
+  const char *dictionaryName = dictionary->GetName();
+  if (*dictionaryName != '#') {
+    const size_t index = dictionaries.FindIndex(dictionary);
+    if (index == -1) {
+      dictionaries.Add(dictionary);
+      Console::Printf(",\"d\":\"%J\"", dictionaryName);
+    } else {
+      // If the dictionary has already been used before, emit an index.
+      Console::Printf(",\"d\":%zu", index);
+    }
+    if (dictionary->CanRemove()) {
+      Console::Printf(",\"r\":1");
+    }
+  }
+  Console::Printf("}");
 }
 
 //---------------------------------------------------------------------------

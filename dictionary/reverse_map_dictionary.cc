@@ -31,6 +31,9 @@ void StenoReverseMapDictionary::PrintEntriesWithPrefix(
     context.mapLookupData.Reset();
     context.mapLookupData.Add(data, baseAddress);
     super::PrintEntriesWithPrefix(context);
+    if (context.IsDone()) {
+      return;
+    }
     prefix = StenoTextBlock::FindNextWordStart(data);
   }
 }

@@ -146,9 +146,12 @@ void StenoEngine::Lookup_Binding(void *context, const char *commandLine) {
     engine->CreateSegments(segments, buffer.segmentBuilder, entry.strokes,
                            entry.length);
 
+    // Print strokes.
     const char *format = ",{\"o\":\"%T\"";
     const bool isFirstEntry = &entry == begin(lookup.results);
     Console::Printf(format + isFirstEntry, entry.strokes, entry.length);
+
+    // Print definition.
     if (segments.GetCount() == 1 &&
         Str::TrimEq(segments[0].lookup.GetText(), definition)) {
       // Special case -- don't send text if it matches the lookup text.
@@ -156,16 +159,15 @@ void StenoEngine::Lookup_Binding(void *context, const char *commandLine) {
       Console::Printf(",\"t\":\"");
 
       bool isFirst = true;
-      for (const StenoToken token : StenoTokenizer(segments)) {
+      for (const StenoSegment &segment : segments) {
         const char *format = " %J";
-        char *text = token.DupText();
-        Console::Printf(format + isFirst, text);
-        free(text);
+        Console::Printf(format + isFirst, segment.lookup.GetText());
         isFirst = false;
       }
       Console::Printf("\"");
     }
 
+    // Print dictionary.
     const char *name = entry.dictionary->GetName();
     if (*name != '#') {
       const size_t index = dictionaries.FindIndex(entry.dictionary);
