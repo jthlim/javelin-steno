@@ -215,8 +215,8 @@ void StenoReverseSuffixDictionary::AddSuffixReverseLookup(
                 lookup.ignoreStrokeThreshold - minimumPrefixStrokeCount);
 
         // Add map lookup hints.
-        suffixLookup->AddMapLookupData(test.suffix->GetMapLookupData(),
-                                       baseAddress);
+        suffixLookup->mapLookupData.Add(test.suffix->GetMapLookupData(),
+                                        baseAddress);
 
         super::ReverseLookup(*suffixLookup);
 

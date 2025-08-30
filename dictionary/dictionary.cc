@@ -128,19 +128,21 @@ bool StenoReverseDictionaryLookup::HasResult(const StenoStroke *strokes,
   return false;
 }
 
-void StenoReverseDictionaryLookup::AddMapLookupData(
-    MapDataLookup mapDataLookup, const uint8_t *baseAddress) {
+void MapLookupData::Add(MapDataLookup mapDataLookup,
+                        const uint8_t *baseAddress) {
   while ((mapDataLookup.HasData())) {
     // This should never happen if the converter limits work.
-    if (mapLookupData.IsFull()) {
+    if (entries.IsFull()) {
       break;
     }
 
-    mapLookupData.Add(mapDataLookup.GetData(baseAddress));
+    entries.Add(mapDataLookup.GetData(baseAddress));
     ++mapDataLookup;
   }
-  if (!mapLookupData.IsEmpty()) {
-    mapLookupDataRange.Set(mapLookupData.Front(), mapLookupData.Back());
+  if (!entries.IsEmpty()) {
+    range.Set(entries.Front(), entries.Back());
+  } else {
+    range.max = nullptr;
   }
 }
 
@@ -193,12 +195,13 @@ ConsolePrintDictionaryContext::Print(const StenoStroke *strokes, size_t length,
 
 //---------------------------------------------------------------------------
 
-void PrintPartialOutlineContext::Print(const StenoStroke *strokes,
-                                       size_t length, const char *definition,
-                                       const StenoDictionary *dictionary) {
+void PrintDictionaryEntryContext::Print(const StenoStroke *strokes,
+                                        size_t length, const char *definition,
+                                        const StenoDictionary *dictionary) {
   if (IsDone()) {
     return;
   }
+
   const char *format = ",{\"o\":\"%T\",\"t\":\"%J\",\"d\":\"%J\"}";
   if (!count) {
     ++format;

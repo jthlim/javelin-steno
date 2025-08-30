@@ -92,6 +92,16 @@ void StenoDictionaryList::PrintEntriesWithPartialOutline(
   }
 }
 
+void StenoDictionaryList::PrintEntriesWithPrefix(
+    PrintPrefixContext &context) const {
+  for (const StenoDictionaryListEntry &entry : dictionaries) {
+    entry->PrintEntriesWithPrefix(context);
+    if (context.IsDone()) {
+      return;
+    }
+  }
+}
+
 void StenoDictionaryList::ReverseLookup(
     StenoReverseDictionaryLookup &lookup) const {
 #if ENABLE_DICTIONARY_STATS

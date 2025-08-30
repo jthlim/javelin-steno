@@ -51,9 +51,6 @@ private:
 
   static const StenoCompactMapDictionaryStrokesDefinition *
   CreateStrokeCache(const StenoCompactMapDictionaryDefinition &definition);
-
-  void ReverseLookup(StenoReverseDictionaryLookup &lookup,
-                     const CompactStenoMapDictionaryDataEntry *entry) const;
 };
 
 //---------------------------------------------------------------------------

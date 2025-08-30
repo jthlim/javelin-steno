@@ -19,7 +19,10 @@ public:
 
   virtual const char *GetName() const;
 
+  virtual void PrintEntriesWithPrefix(PrintPrefixContext &context) const;
+
   const uint8_t *FindMapDataLookup(const char *text) const;
+  const uint8_t *FindPrefixLookup(const char *text) const;
 
 private:
   const uint8_t *const baseAddress;

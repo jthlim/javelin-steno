@@ -186,6 +186,35 @@ void StenoEngine::Lookup_Binding(void *context, const char *commandLine) {
   Console::Printf("]\n\n");
 }
 
+void StenoEngine::LookupPrefix_Binding(void *context, const char *commandLine) {
+  const char *p = strchr(commandLine, ' ');
+  if (!p) {
+    Console::Printf("ERR No count specified\n\n");
+    return;
+  }
+
+  int count = 0;
+  p = Str::ParseInteger(&count, p + 1, false);
+  if (!p) {
+    Console::Printf("ERR No count specified\n\n");
+    return;
+  }
+
+  if (!*p) {
+    Console::Printf("ERR No text specified\n\n");
+    return;
+  }
+
+  const ExternalFlashSentry externalFlashSentry;
+
+  Console::Printf("[");
+  PrintPrefixContext lookupContext(p + 1, size_t(count));
+
+  StenoEngine *engine = (StenoEngine *)context;
+  engine->GetDictionary().PrintEntriesWithPrefix(lookupContext);
+  Console::Printf("]\n\n");
+}
+
 void StenoEngine::LookupStroke_Binding(void *context, const char *commandLine) {
   const char *strokeStart = strchr(commandLine, ' ');
   if (!strokeStart) {
@@ -261,9 +290,6 @@ void StenoEngine::LookupPartialOutline_Binding(void *context,
   const char *p = parser.failureOrEnd;
   if (*p != '\0') {
     Str::ParseInteger(&count, p, false);
-  }
-  if (count == 0) {
-    --count;
   }
 
   const ExternalFlashSentry externalFlashSentry;
@@ -393,6 +419,9 @@ void StenoEngine::AddConsoleCommands(Console &console) {
                           StenoEngine::PrintDictionary_Binding, this);
   console.RegisterCommand("lookup", "Looks up a word",
                           StenoEngine::Lookup_Binding, this);
+  console.RegisterCommand("lookup_prefix",
+                          "Looks up entries with the given prefix",
+                          StenoEngine::LookupPrefix_Binding, this);
   console.RegisterCommand("lookup_stroke", "Looks up an outline",
                           StenoEngine::LookupStroke_Binding, this);
   console.RegisterCommand("lookup_partial_outline",

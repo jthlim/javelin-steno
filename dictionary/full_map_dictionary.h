@@ -27,6 +27,8 @@ public:
   virtual void
   PrintEntriesWithPartialOutline(PrintPartialOutlineContext &context) const;
 
+  virtual void PrintEntriesWithPrefix(PrintPrefixContext &context) const;
+
   virtual void ReverseLookup(StenoReverseDictionaryLookup &lookup) const;
 
   virtual bool CanRemove() const { return true; }
@@ -59,9 +61,6 @@ private:
 
   static const StenoFullMapDictionaryStrokesDefinition *
   CreateStrokeCache(const StenoFullMapDictionaryDefinition &definition);
-
-  void ReverseLookup(StenoReverseDictionaryLookup &lookup,
-                     const FullStenoMapDictionaryDataEntry *entry) const;
 };
 
 //---------------------------------------------------------------------------

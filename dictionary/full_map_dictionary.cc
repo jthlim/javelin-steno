@@ -329,35 +329,62 @@ void StenoFullMapDictionary::PrintEntriesWithPartialOutline(
 
 void StenoFullMapDictionary::ReverseLookup(
     StenoReverseDictionaryLookup &lookup) const {
-  if (!dataRange.HasIntersection(lookup.mapLookupDataRange)) {
+  if (!dataRange.HasIntersection(lookup.mapLookupData.range)) {
     return;
   }
 
-  for (const void *data : lookup.mapLookupData) {
+  size_t strokeLength = 1;
+  for (const void *data : lookup.mapLookupData.entries) {
     if (data < dataRange.min) {
       continue;
     }
     if (data >= dataRange.max) {
       return;
     }
-    ReverseLookup(lookup, (const FullStenoMapDictionaryDataEntry *)data);
+    const FullStenoMapDictionaryDataEntry *entry =
+        (const FullStenoMapDictionaryDataEntry *)data;
+    // Check for deletion
+    if (entry->IsDeleted()) {
+      continue;
+    }
+
+    while (strokes[strokeLength].IsEntryAfter(entry)) {
+      ++strokeLength;
+    }
+
+    lookup.AddResult(entry->strokes, strokeLength, this);
   }
 }
 
-void StenoFullMapDictionary::ReverseLookup(
-    StenoReverseDictionaryLookup &lookup,
-    const FullStenoMapDictionaryDataEntry *entry) const {
-  // Check for deletion
-  if (entry->IsDeleted()) {
+void StenoFullMapDictionary::PrintEntriesWithPrefix(
+    PrintPrefixContext &context) const {
+  if (!dataRange.HasIntersection(context.mapLookupData.range)) {
     return;
   }
 
   size_t strokeLength = 1;
-  while (strokes[strokeLength].IsEntryAfter(entry)) {
-    ++strokeLength;
-  }
+  for (const void *data : context.mapLookupData.entries) {
+    if (data < dataRange.min) {
+      continue;
+    }
+    if (data >= dataRange.max) {
+      return;
+    }
 
-  lookup.AddResult(entry->strokes, strokeLength, this);
+    const FullStenoMapDictionaryDataEntry *entry =
+        (const FullStenoMapDictionaryDataEntry *)data;
+    // Check for deletion
+    if (entry->IsDeleted()) {
+      continue;
+    }
+
+    while (strokes[strokeLength].IsEntryAfter(entry)) {
+      ++strokeLength;
+    }
+
+    context.Print(entry->strokes, strokeLength,
+                  (const char *)(textBlock + entry->textOffset), this);
+  }
 }
 
 bool StenoFullMapDictionary::Remove(const char *name,

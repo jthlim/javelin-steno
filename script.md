@@ -893,10 +893,10 @@ are suppressed until it is confirmed that no combo is involved.
   - noteIndex is:
     - 00: End of sequence
     - 01: Pause
-    - 02+: Note, with middle-C at 50, concert A at 59, each increment is one
-      semitone.
+    - 02+: Note, with middle-C at 50 (decimal), concert A at 59 (decimal),
+           each increment is one semitone.
   - Example:
-    - C8 for 100ms, E8 for 100ms repeated 3 times is:
+    - C7 for 100ms, E7 for 100ms repeated 3 times is:
     - `playSequence([[62 05 66 05 62 05 66 05 62 05 66 05 00 00]])`
 
 - `func playWaveform(<data>)`
@@ -1225,7 +1225,7 @@ needs to be enabled in Web Tools to be able to see this information.
 
 - `func formatString(<format>, <value>) var`
 
-  - Intended only for use with `getAsset` and `drawText`.
+  - Intended only for use with `getAsset`, `drawText` and `sendEvent`.
   - _format_ must be a string constant and can contain C printf like formatters.
     Check [writer.cc](writer.cc) for a full list.
   - _value_ is a single integer value to format. Pointer values cannot be used

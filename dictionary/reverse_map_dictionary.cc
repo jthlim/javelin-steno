@@ -23,6 +23,18 @@ void StenoReverseMapDictionary::ReverseLookup(
   FilterResult(lookup);
 }
 
+void StenoReverseMapDictionary::PrintEntriesWithPrefix(
+    PrintPrefixContext &context) const {
+  const uint8_t *prefix = FindPrefixLookup(context.prefix);
+  while (Str::HasPrefix((const char *)prefix, context.prefix)) {
+    const uint8_t *data = StenoTextBlock::FindDataStart(prefix);
+    context.mapLookupData.Reset();
+    context.mapLookupData.Add(data, baseAddress);
+    super::PrintEntriesWithPrefix(context);
+    prefix = StenoTextBlock::FindNextWordStart(data);
+  }
+}
+
 const uint8_t *
 StenoReverseMapDictionary::FindMapDataLookup(const char *text) const {
   size_t indexLeft = 0;
@@ -79,12 +91,50 @@ StenoReverseMapDictionary::FindMapDataLookup(const char *text) const {
   return nullptr;
 }
 
+const uint8_t *
+StenoReverseMapDictionary::FindPrefixLookup(const char *text) const {
+  size_t indexLeft = 0;
+  size_t indexRight = indexSize;
+  while (indexLeft + 1 < indexRight) {
+    const size_t mid = (indexLeft + indexRight) >> 1;
+    const int compare = Str::Compare(text, (const char *)index[mid]);
+    if (compare < 0) {
+      indexRight = mid;
+    } else {
+      indexLeft = mid;
+    }
+  }
+
+  const uint8_t *left = index[indexLeft];
+  const uint8_t *right = index[indexRight];
+
+  while (left < right) {
+    const uint8_t *mid = left + size_t(right - left) / 2;
+    const uint8_t *wordStart = StenoTextBlock::FindPreviousWordStart(mid);
+
+    int compare = Str::Compare(text, (const char *)wordStart);
+    if (compare < 0) {
+      right = wordStart;
+      continue;
+    }
+
+    if (compare > 0) {
+      left = StenoTextBlock::FindNextWordStart(mid);
+      continue;
+    }
+
+    // Explicitly ignore exact matches -- they'll be returned by lookup
+    return StenoTextBlock::FindNextWordStart(mid);
+  }
+  return left;
+}
+
 void StenoReverseMapDictionary::AddMapDictionaryData(
     StenoReverseDictionaryLookup &lookup) const {
   const uint8_t *p = FindMapDataLookup(lookup.definition);
 
   if (p) {
-    lookup.AddMapLookupData(p, baseAddress);
+    lookup.mapLookupData.Add(p, baseAddress);
   }
 }
 

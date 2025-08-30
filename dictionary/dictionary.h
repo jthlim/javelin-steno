@@ -183,15 +183,25 @@ struct StenoReverseDictionaryResult {
   const StenoDictionary *dictionary;
 };
 
+struct MapLookupData {
+  MapLookupData() { range.max = nullptr; }
+
+  Interval<const void *> range;
+  StaticList<const void *, 24> entries;
+
+  bool IsEmpty() const { return entries.IsEmpty(); }
+  void Reset() { entries.Reset(); }
+
+  void Add(MapDataLookup mapDataLookup, const uint8_t *baseAddress);
+};
+
 class StenoReverseDictionaryLookup : public JavelinMallocAllocate {
 public:
   StenoReverseDictionaryLookup(const char *definition,
                                size_t strokeThreshold = MAX_STROKE_THRESHOLD)
       : ignoreStrokeThreshold(strokeThreshold), definition(definition),
         definitionLength(Str::Length(definition)),
-        definitionCrc(Crc32::Hash(definition, definitionLength)) {
-    mapLookupDataRange.max = nullptr;
-  }
+        definitionCrc(Crc32::Hash(definition, definitionLength)) {}
 
   // Results with stroke count equal to, or above this will not be captured.
   // i.e. Only stroke count less than this will be returned.
@@ -207,16 +217,12 @@ public:
   // These are used as an optimization for map lookup.
   // Since the first step of all map lookups is the same, do it once and
   // pass it into each map dictionary.
-  Interval<const void *> mapLookupDataRange;
-  StaticList<const void *, 24> mapLookupData;
+  MapLookupData mapLookupData;
 
   StaticList<StenoReverseDictionaryResult, 24> results;
   StaticList<StenoStroke, 64> strokes;
 
   static constexpr size_t MAX_STROKE_THRESHOLD = 31;
-
-  void AddMapLookupData(MapDataLookup mapDataLookup,
-                        const uint8_t *baseAddress);
 
   void AddResult(const StenoStroke *strokes, size_t length,
                  const StenoDictionary *dictionary);
@@ -262,24 +268,48 @@ private:
   const char *name;
 };
 
-class PrintPartialOutlineContext {
+class PrintDictionaryEntryContext {
 public:
-  PrintPartialOutlineContext(const StenoStroke *strokes, size_t length,
-                             size_t maxCount)
-      : strokes(strokes), length(length), maxCount(maxCount) {}
+  PrintDictionaryEntryContext(size_t maxCount)
+      : maxCount(maxCount == 0 ? size_t(-1) : maxCount) {}
 
   void Print(const StenoStroke *strokes, size_t length, const char *definition,
              const StenoDictionary *dictionary);
 
   bool IsDone() const { return count >= maxCount; }
 
-  const StenoStroke *const strokes;
-  const size_t length;
+  Interval<const void *> mapLookupDataRange;
+  StaticList<const void *, 24> mapLookupData;
 
 private:
   size_t count = 0;
   size_t maxCount;
   List<const StenoDictionary *> dictionaries;
+};
+
+class PrintPrefixContext : public PrintDictionaryEntryContext {
+private:
+  using super = PrintDictionaryEntryContext;
+
+public:
+  PrintPrefixContext(const char *prefix, size_t maxCount)
+      : super(maxCount), prefix(prefix) {}
+
+  const char *prefix;
+  MapLookupData mapLookupData;
+};
+
+class PrintPartialOutlineContext : public PrintDictionaryEntryContext {
+private:
+  using super = PrintDictionaryEntryContext;
+
+public:
+  PrintPartialOutlineContext(const StenoStroke *strokes, size_t length,
+                             size_t maxCount)
+      : super(maxCount), strokes(strokes), length(length) {}
+
+  const StenoStroke *const strokes;
+  const size_t length;
 };
 
 //---------------------------------------------------------------------------
@@ -309,6 +339,8 @@ public:
 
   virtual void
   PrintEntriesWithPartialOutline(PrintPartialOutlineContext &context) const {}
+
+  virtual void PrintEntriesWithPrefix(PrintPrefixContext &context) const {}
 
   // GetDictionaryForOutline is used to determine which dictionary, if any,
   // can provide a definition for the specified outline.

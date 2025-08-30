@@ -73,6 +73,13 @@ struct StenoTextBlock {
     return p;
 #endif
   }
+
+  static const uint8_t *FindDataStart(const uint8_t *p) {
+    while (*p) {
+      ++p;
+    }
+    return p + 1;
+  }
 };
 
 //---------------------------------------------------------------------------

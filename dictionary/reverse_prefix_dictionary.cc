@@ -165,7 +165,7 @@ void StenoReversePrefixDictionary::AddPrefixReverseLookup(
 
         // Add map lookup hints.
         const size_t prefixLength = test.suffix - lookup.definition;
-        prefixLookup->AddMapLookupData(
+        prefixLookup->mapLookupData.Add(
             test.prefix->GetMapLookupData(prefixLength), baseAddress);
 
         super::ReverseLookup(*prefixLookup);

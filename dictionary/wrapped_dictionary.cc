@@ -31,6 +31,11 @@ void StenoWrappedDictionary::PrintEntriesWithPartialOutline(
   return lookupDictionary->PrintEntriesWithPartialOutline(context);
 }
 
+void StenoWrappedDictionary::PrintEntriesWithPrefix(
+    PrintPrefixContext &context) const {
+  return dictionary->PrintEntriesWithPrefix(context);
+}
+
 //---------------------------------------------------------------------------
 
 void StenoWrappedDictionary::ReverseLookup(

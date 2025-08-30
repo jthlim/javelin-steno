@@ -206,6 +206,7 @@ private:
   static void ToggleDictionary_Binding(void *context, const char *commandLine);
   static void PrintDictionary_Binding(void *context, const char *commandLine);
   static void Lookup_Binding(void *context, const char *commandLine);
+  static void LookupPrefix_Binding(void *context, const char *commandLine);
   static void LookupStroke_Binding(void *context, const char *commandLine);
   static void LookupPartialOutline_Binding(void *context,
                                            const char *commandLine);
