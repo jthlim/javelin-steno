@@ -329,7 +329,7 @@ void StenoFullMapDictionary::PrintEntriesWithPartialOutline(
 
 void StenoFullMapDictionary::ReverseLookup(
     StenoReverseDictionaryLookup &lookup) const {
-  if (!dataRange.HasIntersection(lookup.mapLookupData.range)) {
+  if (!dataRange.HasIntersection(lookup.mapLookupData.range)) [[likely]] {
     return;
   }
 

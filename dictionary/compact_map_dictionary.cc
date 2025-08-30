@@ -239,7 +239,7 @@ void StenoCompactMapDictionary::PrintEntriesWithPartialOutline(
 }
 void StenoCompactMapDictionary::ReverseLookup(
     StenoReverseDictionaryLookup &lookup) const {
-  if (!dataRange.HasIntersection(lookup.mapLookupData.range)) {
+  if (!dataRange.HasIntersection(lookup.mapLookupData.range)) [[likely]] {
     return;
   }
 
@@ -258,15 +258,51 @@ void StenoCompactMapDictionary::ReverseLookup(
       ++strokeLength;
     }
 
-    StenoStroke strokes[strokeLength];
-    entry->ExpandTo(strokes, strokeLength);
+    StenoStroke strokeBuffer[strokeLength];
+    entry->ExpandTo(strokeBuffer, strokeLength);
 
     // Check for deletion
-    if (strokes[0].IsEmpty()) {
+    if (strokeBuffer[0].IsEmpty()) {
+      continue;
+    }
+
+    lookup.AddResult(strokeBuffer, strokeLength, this);
+  }
+}
+
+void StenoCompactMapDictionary::PrintEntriesWithPrefix(
+    PrintPrefixContext &context) const {
+  if (!dataRange.HasIntersection(context.mapLookupData.range)) {
+    return;
+  }
+
+  size_t strokeLength = 1;
+  for (const void *data : context.mapLookupData.entries) {
+    if (data < dataRange.min) {
+      continue;
+    }
+    if (data >= dataRange.max) {
       return;
     }
 
-    lookup.AddResult(strokes, strokeLength, this);
+    const CompactStenoMapDictionaryDataEntry *entry =
+        (const CompactStenoMapDictionaryDataEntry *)data;
+
+    while (strokes[strokeLength].IsEntryAfter(entry)) {
+      ++strokeLength;
+    }
+
+    StenoStroke strokeBuffer[strokeLength];
+    entry->ExpandTo(strokeBuffer, strokeLength);
+
+    // Check for deletion
+    if (strokeBuffer[0].IsEmpty()) {
+      continue;
+    }
+
+    context.Print(strokeBuffer, strokeLength,
+                  (const char *)(textBlock + entry->textOffset.ToUint32()),
+                  this);
   }
 }
 
