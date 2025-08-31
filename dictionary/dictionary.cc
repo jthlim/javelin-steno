@@ -195,9 +195,9 @@ ConsolePrintDictionaryContext::Print(const StenoStroke *strokes, size_t length,
 
 //---------------------------------------------------------------------------
 
-void PrintDictionaryEntryContext::Print(const StenoStroke *strokes,
-                                        size_t length, const char *definition,
-                                        const StenoDictionary *dictionary) {
+void LookupDictionaryContext::Add(const StenoStroke *strokes, size_t length,
+                                  const char *definition,
+                                  const StenoDictionary *dictionary) {
   if (IsDone()) {
     return;
   }
@@ -218,12 +218,12 @@ void PrintDictionaryEntryContext::Print(const StenoStroke *strokes,
     if (index == -1) {
       dictionaries.Add(dictionary);
       Console::Printf(",\"d\":\"%J\"", dictionaryName);
+      if (dictionary->CanRemove()) {
+        Console::Printf(",\"r\":1");
+      }
     } else {
       // If the dictionary has already been used before, emit an index.
       Console::Printf(",\"d\":%zu", index);
-    }
-    if (dictionary->CanRemove()) {
-      Console::Printf(",\"r\":1");
     }
   }
   Console::Printf("}");

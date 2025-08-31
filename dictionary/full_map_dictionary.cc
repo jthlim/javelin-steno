@@ -234,8 +234,8 @@ void StenoFullMapDictionaryStrokesDefinition::PrintEntriesWithPartialOutline(
       continue;
     }
 
-    context.Print(entry->strokes, definitionStrokeLength,
-                  (char *)textBlock + entry->textOffset, dictionary);
+    context.Add(entry->strokes, definitionStrokeLength,
+                (char *)textBlock + entry->textOffset, dictionary);
     if (context.IsDone()) [[unlikely]] {
       return;
     }
@@ -382,8 +382,8 @@ void StenoFullMapDictionary::PrintEntriesWithPrefix(
       ++strokeLength;
     }
 
-    context.Print(entry->strokes, strokeLength,
-                  (const char *)(textBlock + entry->textOffset), this);
+    context.Add(entry->strokes, strokeLength,
+                (const char *)(textBlock + entry->textOffset), this);
   }
 }
 

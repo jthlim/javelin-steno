@@ -186,7 +186,11 @@ private:
 
   const uint8_t *const byteCode = (const uint8_t *)bc;
 
+#if RUN_TESTS
+  intptr_t *locals = stackTop;
+#else
   intptr_t *locals;
+#endif
 
   // The stack point that the code needs to pop to to exit.
   intptr_t *base = stackTop;

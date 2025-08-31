@@ -8,9 +8,9 @@ std::vector<uint8_t> SerialPort::history;
 
 #endif
 
-[[gnu::weak]] void SerialPort::SendData(const uint8_t *data, size_t length) {
+[[gnu::weak]] void SerialPort::SendData(const void *data, size_t length) {
   for (size_t i = 0; i < length; ++i) {
-    SendByte(data[i]);
+    SendByte(((const uint8_t*)data)[i]);
   }
 }
 

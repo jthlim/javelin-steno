@@ -146,8 +146,8 @@ void StenoCompactMapDictionaryStrokesDefinition::PrintEntriesWithPartialOutline(
       continue;
     }
 
-    context.Print(strokeBuffer, definitionStrokeLength,
-                  (char *)textBlock + entry.textOffset.ToUint32(), dictionary);
+    context.Add(strokeBuffer, definitionStrokeLength,
+                (char *)textBlock + entry.textOffset.ToUint32(), dictionary);
     if (context.IsDone()) [[unlikely]] {
       return;
     }
@@ -300,9 +300,8 @@ void StenoCompactMapDictionary::PrintEntriesWithPrefix(
       continue;
     }
 
-    context.Print(strokeBuffer, strokeLength,
-                  (const char *)(textBlock + entry->textOffset.ToUint32()),
-                  this);
+    context.Add(strokeBuffer, strokeLength,
+                (const char *)(textBlock + entry->textOffset.ToUint32()), this);
   }
 }
 

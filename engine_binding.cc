@@ -174,11 +174,11 @@ void StenoEngine::Lookup_Binding(void *context, const char *commandLine) {
       if (index == -1) {
         dictionaries.Add(entry.dictionary);
         Console::Printf(",\"d\":\"%J\"", name);
+        if (entry.dictionary->CanRemove()) {
+          Console::Printf(",\"r\":1");
+        }
       } else {
         Console::Printf(",\"d\":%zu", index);
-      }
-      if (entry.dictionary->CanRemove()) {
-        Console::Printf(",\"r\":1");
       }
     }
 

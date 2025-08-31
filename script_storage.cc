@@ -14,14 +14,15 @@ void ScriptStorageData::HandleGetScriptStorageParameter() {
   const ExternalFlashSentry sentry;
   const uint32_t scriptCrc = ButtonScriptManager::GetInstance().Crc();
   if (scriptCrc != SCRIPT_STORAGE_ADDRESS->expectedScriptCrc) {
-    Console::Printf("ERR No matching layout\n\n");
+    Console::Printf("ERR No matching storage (0x%x vs 0x%x)\n\n", scriptCrc,
+                    SCRIPT_STORAGE_ADDRESS->expectedScriptCrc);
     return;
   }
 
   Console::Printf("\"%D\"\n\n", SCRIPT_STORAGE_ADDRESS->data,
                   SCRIPT_STORAGE_ADDRESS->length);
 #else
-  Console::Printf("ERR No layout storage\n\n");
+  Console::Printf("ERR No script storage\n\n");
 #endif
 }
 

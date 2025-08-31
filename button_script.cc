@@ -737,7 +737,7 @@ public:
     const size_t scriptOffset = script.Pop();
     const bool repeating = script.Pop() != 0;
     const uint32_t interval = (uint32_t)script.Pop();
-    int32_t id = script.Pop();
+    int32_t id = (int32_t) script.Pop();
     if (id == -1) {
       id = TimerManager::instance.FindFreeTimerId();
     } else {

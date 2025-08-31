@@ -180,7 +180,11 @@ void Flash::WriteRemaining() {
 
 void Flash::EraseBlock(const void *target, size_t size) {
   const uint8_t *eraseStart = nullptr;
+#if RUN_TESTS
+  size_t eraseSize = 0;
+#else
   size_t eraseSize;
+#endif
 
   const uint8_t *const t = (const uint8_t *)target;
   for (size_t i = 0; i < size; i += 4096) {
@@ -207,7 +211,11 @@ void Flash::EraseBlock(const void *target, const void *data, size_t size) {
   const uint8_t *const d = (const uint8_t *)data;
 
   const uint8_t *eraseStart = nullptr;
+#if RUN_TESTS
+  size_t eraseSize = 0;
+#else
   size_t eraseSize;
+#endif
 
   for (size_t i = 0; i < size; i += 4096) {
     if (RequiresErase(t + i, d + i, 4096)) {
@@ -237,7 +245,11 @@ void Flash::WriteBlock(const void *const target, const void *const data,
 
   const uint8_t *programTargetStart = nullptr;
   const uint8_t *programSourceStart;
+#if RUN_TESTS
+  size_t programSize = 0;
+#else
   size_t programSize;
+#endif
 
   for (size_t i = 0; i < size; i += 256) {
     if (RequiresProgram(t + i, d + i, 256)) {

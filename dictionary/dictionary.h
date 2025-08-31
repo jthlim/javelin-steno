@@ -268,13 +268,13 @@ private:
   const char *name;
 };
 
-class PrintDictionaryEntryContext {
+class LookupDictionaryContext {
 public:
-  PrintDictionaryEntryContext(size_t maxCount)
+  LookupDictionaryContext(size_t maxCount)
       : maxCount(maxCount == 0 ? size_t(-1) : maxCount) {}
 
-  void Print(const StenoStroke *strokes, size_t length, const char *definition,
-             const StenoDictionary *dictionary);
+  void Add(const StenoStroke *strokes, size_t length, const char *definition,
+           const StenoDictionary *dictionary);
 
   bool IsDone() const { return count >= maxCount; }
 
@@ -287,21 +287,22 @@ private:
   List<const StenoDictionary *> dictionaries;
 };
 
-class PrintPrefixContext : public PrintDictionaryEntryContext {
+class PrintPrefixContext : public LookupDictionaryContext {
 private:
-  using super = PrintDictionaryEntryContext;
+  using super = LookupDictionaryContext;
 
 public:
   PrintPrefixContext(const char *prefix, size_t maxCount)
-      : super(maxCount), prefix(prefix) {}
+      : super(maxCount), prefix(prefix), prefixLength(Str::Length(prefix)) {}
 
   const char *prefix;
+  size_t prefixLength;
   MapLookupData mapLookupData;
 };
 
-class PrintPartialOutlineContext : public PrintDictionaryEntryContext {
+class PrintPartialOutlineContext : public LookupDictionaryContext {
 private:
-  using super = PrintDictionaryEntryContext;
+  using super = LookupDictionaryContext;
 
 public:
   PrintPartialOutlineContext(const StenoStroke *strokes, size_t length,

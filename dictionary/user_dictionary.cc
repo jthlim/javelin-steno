@@ -189,13 +189,41 @@ void StenoUserDictionary::PrintEntriesWithPartialOutline(
         if (StenoStroke::HasPartialOutline(
                 entry->strokes, context.strokes, context.length,
                 entry->strokeLength - context.length)) {
-          context.Print(entry->strokes, entry->strokeLength, entry->GetText(),
-                        this);
+          context.Add(entry->strokes, entry->strokeLength, entry->GetText(),
+                      this);
           if (context.IsDone()) {
             return;
           }
         }
       }
+    }
+  }
+}
+
+void StenoUserDictionary::PrintEntriesWithPrefix(
+    PrintPrefixContext &context) const {
+  const size_t hashTableSize = activeDescriptorCopy.data.hashTableSize;
+  const uint32_t *const hashTable = activeDescriptorCopy.data.hashTable;
+  for (size_t i = 0; i < hashTableSize; ++i) {
+    const uint32_t offset = hashTable[i];
+    switch (offset) {
+    [[likely]] case OFFSET_EMPTY:
+      break;
+
+    [[unlikely]] case OFFSET_DELETED:
+      break;
+
+    [[unlikely]] default:
+      const StenoUserDictionaryEntry *entry =
+          (const StenoUserDictionaryEntry
+               *)(activeDescriptorCopy.data.dataBlock + offset - OFFSET_DATA);
+
+      const char *text = entry->GetText();
+      if (Str::HasPrefix(text, context.prefix) &&
+          text[context.prefixLength] != 0) {
+        context.Add(entry->strokes, entry->strokeLength, text, this);
+      }
+      break;
     }
   }
 }
