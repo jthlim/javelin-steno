@@ -208,7 +208,8 @@ void LookupDictionaryContext::Add(const StenoStroke *strokes, size_t length,
   }
   ++count;
   Console::Printf(format, strokes, length);
-  if (definition != nullptr) {
+  if (!Str::Eq(definition, lastDefinition)) {
+    lastDefinition = definition;
     Console::Printf(",\"t\":\"%J\"", definition);
   }
 

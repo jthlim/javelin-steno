@@ -158,11 +158,11 @@ void StenoEngine::Lookup_Binding(void *context, const char *commandLine) {
     } else {
       Console::Printf(",\"t\":\"");
 
-      bool isFirst = true;
+      const char *format = " %J";
+      format++;
       for (const StenoSegment &segment : segments) {
-        const char *format = " %J";
-        Console::Printf(format + isFirst, segment.lookup.GetText());
-        isFirst = false;
+        Console::Printf(format, segment.lookup.GetText());
+        format = " %J";
       }
       Console::Printf("\"");
     }
@@ -260,11 +260,10 @@ void StenoEngine::LookupStroke_Binding(void *context, const char *commandLine) {
     if (!buffer.segmentBuilder.HasRawStroke()) {
       Console::Printf("{\"t\":\"");
 
-      const char *format = "%J";
-      for (const StenoToken token : StenoTokenizer(segments)) {
-        char *text = token.DupText();
-        Console::Printf(format, text);
-        free(text);
+      const char *format = " %J";
+      format++;
+      for (const StenoSegment &segment : segments) {
+        Console::Printf(format, segment.lookup.GetText());
         format = " %J";
       }
       Console::Printf("\"}\n\n");

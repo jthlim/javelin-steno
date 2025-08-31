@@ -284,6 +284,7 @@ public:
 private:
   size_t count = 0;
   size_t maxCount;
+  const char *lastDefinition = "";
   List<const StenoDictionary *> dictionaries;
 };
 
