@@ -216,6 +216,11 @@ sufficient to determine the result, the right hand side will not be evaluated.
 
   - `sendMidi` has been implemented on pico devices over USB and Jarne over
     USB and BLE.
+  - Examples:
+    - A sustain pedal can be created with
+        onPress: `sendMidi(0xb0, 64, 127);`
+        onRelease: `sendMidi(0xb0, 64, 0);`
+    - A midi expression CC can use `sendMidi(0xb0, 11, value);`
   - Users who paired their Jarne before MIDI support was added will need to
     delete the pairing on their host and re-pair BLE to get MIDI
     functionality working.

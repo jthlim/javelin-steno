@@ -65,6 +65,7 @@ enum class ConsoleEvent {
   SUGGESTION,
   TEMPLATE_VALUE,
   TEXT,
+  ANALOG_DATA,
 
   COUNT,
 };

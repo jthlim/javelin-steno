@@ -93,6 +93,40 @@ public:
 
   void SetScriptTime(uint32_t scriptTime) { this->scriptTime = scriptTime; }
 
+  // Helpers.
+  static size_t GetPressScriptIndex(size_t buttonIndex) {
+    return 2 * buttonIndex + 2;
+  }
+
+  static size_t GetReleaseScriptIndex(size_t buttonIndex) {
+    return 2 * buttonIndex + 3;
+  }
+
+  static size_t GetAnalogInputScriptIndex(size_t buttonCount,
+                                          size_t analogValueIndex) {
+    return 2 + 2 * buttonCount + analogValueIndex;
+  }
+
+  static size_t GetEncoderCWScriptIndex(size_t buttonCount,
+                                        size_t analogValueCount,
+                                        size_t encoderIndex) {
+    return 2 + 2 * buttonCount + analogValueCount + 2 * encoderIndex;
+  }
+
+  static size_t GetEncoderCCWScriptIndex(size_t buttonCount,
+                                         size_t analogValueCount,
+                                         size_t encoderIndex) {
+    return 2 + 2 * buttonCount + analogValueCount + 2 * encoderIndex + 1;
+  }
+
+  static size_t GetPointerScriptIndex(size_t buttonCount,
+                                      size_t analogValueCount,
+                                      size_t encoderCount,
+                                      size_t pointerScriptIndex) {
+    return 2 + 2 * buttonCount + analogValueCount + 2 * encoderCount +
+           pointerScriptIndex;
+  }
+
   class TestHelper;
 
 private:
@@ -160,10 +194,10 @@ private:
   }
 
   void CallPress(size_t keyIndex, uint32_t scriptTime) {
-    ExecuteScriptIndex(keyIndex * 2 + 2, scriptTime);
+    ExecuteScriptIndex(GetPressScriptIndex(keyIndex), scriptTime);
   }
   void CallRelease(size_t keyIndex, uint32_t scriptTime) {
-    ExecuteScriptIndex(keyIndex * 2 + 3, scriptTime);
+    ExecuteScriptIndex(GetReleaseScriptIndex(keyIndex), scriptTime);
   }
 
   void

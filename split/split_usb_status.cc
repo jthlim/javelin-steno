@@ -79,6 +79,9 @@ void SplitUsbStatus::OnDataReceived(const void *data, size_t length) {
     ButtonScriptManager::ExecuteScript(
         ButtonScriptId::KEYBOARD_LED_STATUS_UPDATE);
   }
+  if (instance.GetBatteryPercentage() != oldStatus.GetBatteryPercentage()) {
+    OnReceivedBatteryPercentUpdated();
+  }
 }
 
 void SplitUsbStatus::OnConnectionReset() {
@@ -89,6 +92,8 @@ void SplitUsbStatus::OnConnectionReset() {
     ButtonScriptManager::ExecuteScript(ButtonScriptId::CONNECTION_UPDATE);
   }
 }
+
+[[gnu::weak]] void SplitUsbStatus::OnReceivedBatteryPercentUpdated() {}
 
 //---------------------------------------------------------------------------
 

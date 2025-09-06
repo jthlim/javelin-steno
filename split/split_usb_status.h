@@ -54,6 +54,8 @@ private:
   virtual void OnDataReceived(const void *data, size_t length) override;
 
   void OnConnectionReset();
+
+  void OnReceivedBatteryPercentUpdated();
 };
 
 #else
@@ -61,6 +63,8 @@ private:
 class SplitUsbStatus : public UsbStatus {
 public:
   static void RegisterHandlers() {}
+
+  void OnReceivedBatteryPercentUpdated();
 };
 
 #endif // JAVELIN_SPLIT

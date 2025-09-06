@@ -75,7 +75,9 @@ void StenoTxBoltPacket::Set(const StenoStroke &stroke) {
       data[length++] = (i << 6) | bits;
     }
   }
-  data[length++] = 0;
+  if (data[3] == 0) {
+    data[length++] = 0;
+  }
 };
 
 //---------------------------------------------------------------------------
