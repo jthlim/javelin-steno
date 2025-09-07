@@ -43,6 +43,7 @@ struct StenoOrthography {
   StenoStroke autoSuffixMask;
   SizedList<StenoOrthographyAutoSuffix> autoSuffixes;
   SizedList<StenoOrthographyReverseAutoSuffix> reverseAutoSuffixes;
+  SizedList<StenoOrthographyRule> reverseSuffixes;
 
   static const StenoOrthography emptyOrthography;
 

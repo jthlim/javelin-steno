@@ -83,13 +83,22 @@ void StenoReverseDictionaryLookup::AddResult(
     return;
   }
 
-  // Ignore if it'll overflow.
-  if (results.IsFull() || !this->strokes.CanAddCount(length)) {
+  // Ignore if it's already in the results.
+  if (HasResult(strokes, length)) {
     return;
   }
 
-  // Ignore if it's already in the results.
-  if (HasResult(strokes, length)) {
+  // If it'll overflow, see whether it can replace a longer result.
+  if (results.IsFull() || !this->strokes.CanAddCount(length)) {
+    for (StenoReverseDictionaryResult &result : results) {
+      if (result.length > length) {
+        // Replace this result.
+        result.length = length;
+        result.dictionary = dictionary;
+        strokes->CopyTo(result.strokes, length);
+        return;
+      }
+    }
     return;
   }
 

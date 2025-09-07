@@ -4,6 +4,7 @@
 #include "../container/list.h"
 #include "../orthography.h"
 #include "dictionary.h"
+#include "javelin/pattern.h"
 #include "map_data_lookup.h"
 #include <assert.h>
 
@@ -28,6 +29,11 @@ struct StenoReverseSuffixDictionary::Suffix {
   const uint8_t *GetMapLookupData() const { return suffix + 3; };
 };
 
+struct StenoReverseSuffixDictionary::ReverseSuffix {
+  Pattern testPattern;
+  const char *replacement;
+};
+
 //---------------------------------------------------------------------------
 
 struct StenoReverseSuffixDictionary::ReverseLookupContext {
@@ -45,7 +51,6 @@ struct StenoReverseSuffixDictionary::ReverseLookupContext {
 };
 
 void StenoReverseSuffixDictionary::ReverseLookupContext::Narrow(uint8_t c) {
-
   // Update left
   const Suffix *l = left;
   const Suffix *r = right;
@@ -100,13 +105,34 @@ StenoReverseSuffixDictionary::ReverseLookupContext::FindSuffixLookup() const {
 
 StenoReverseSuffixDictionary::StenoReverseSuffixDictionary(
     StenoDictionary *dictionary, const uint8_t *baseAddress,
+    const SizedList<StenoOrthographyRule> &reverseSuffixes,
     const StenoCompiledOrthography &orthography,
     const StenoDictionary *prefixDictionary,
     const SizedList<const uint8_t *> suffixes,
     const List<const uint8_t *> &ignoreSuffixes)
     : StenoWrappedDictionary(dictionary), baseAddress(baseAddress),
+      reversePatterns(CreateReversePatterns(reverseSuffixes)),
       suffixes(CreateSuffixList(suffixes, ignoreSuffixes)),
-      orthography(orthography), prefixDictionary(prefixDictionary) {}
+      orthography(orthography), prefixDictionary(prefixDictionary) {
+  for (const ReverseSuffix &suffix : reversePatterns) {
+    mergedQuickReject.Merge(suffix.testPattern.GetQuickReject());
+  }
+}
+
+const SizedList<StenoReverseSuffixDictionary::ReverseSuffix>
+StenoReverseSuffixDictionary::CreateReversePatterns(
+    const SizedList<StenoOrthographyRule> &patterns) {
+  ReverseSuffix *result =
+      (ReverseSuffix *)malloc(sizeof(ReverseSuffix) * patterns.GetCount());
+  for (size_t i = 0; i < patterns.GetCount(); ++i) {
+    result[i].testPattern = Pattern::Compile(patterns[i].testPattern);
+    result[i].replacement = patterns[i].replacement;
+  }
+  return SizedList<ReverseSuffix>{
+      .count = patterns.GetCount(),
+      .data = result,
+  };
+}
 
 SizedList<StenoReverseSuffixDictionary::Suffix>
 StenoReverseSuffixDictionary::CreateSuffixList(
@@ -182,69 +208,92 @@ void StenoReverseSuffixDictionary::AddSuffixReverseLookup(
     // Create the without suffix version, add the suffix, and verify it matches.
     const size_t prefixLength =
         test.prefixEnd - (const uint8_t *)lookup.definition;
-    char *withoutSuffix = Str::DupN(lookup.definition, prefixLength);
-
     const size_t suffixLength = definitionEnd - test.prefixEnd;
-    char *orthographySuffix =
-        test.suffix->CreateOrthographySuffix(suffixLength);
-    char *withSuffix = orthography.AddSuffix(withoutSuffix, orthographySuffix);
-    free(orthographySuffix);
+    char *withoutSuffix = Str::DupN(lookup.definition, prefixLength);
+    AddSuffixReverseLookup(context, lookup, withoutSuffix, test.suffix,
+                           suffixLength);
 
-    const bool isSuffixEqual = Str::Eq(withSuffix, lookup.definition);
-    free(withSuffix);
-    if (!isSuffixEqual) {
-      free(withoutSuffix);
-      continue;
-    }
+    const PatternQuickReject textReject(withoutSuffix);
 
-    StenoReverseDictionaryLookup *prefixLookup =
-        new StenoReverseDictionaryLookup(withoutSuffix,
-                                         lookup.ignoreStrokeThreshold - 1);
-
-    prefixDictionary->ReverseLookup(*prefixLookup);
-    free(withoutSuffix);
-
-    if (prefixLookup->HasResults()) {
-      // Prefix lookup succeeded, get the suffixes.
-      const size_t minimumPrefixStrokeCount =
-          prefixLookup->GetMinimumStrokeCount();
-      if (lookup.ignoreStrokeThreshold > minimumPrefixStrokeCount + 1) {
-        StenoReverseDictionaryLookup *suffixLookup =
-            new StenoReverseDictionaryLookup(
-                (const char *)test.suffix->GetText(suffixLength),
-                lookup.ignoreStrokeThreshold - minimumPrefixStrokeCount);
-
-        // Add map lookup hints.
-        suffixLookup->mapLookupData.Add(test.suffix->GetMapLookupData(),
-                                        baseAddress);
-
-        super::ReverseLookup(*suffixLookup);
-
-        if (suffixLookup->HasResults()) {
-          for (const StenoReverseDictionaryResult &prefix :
-               prefixLookup->results) {
-            for (const StenoReverseDictionaryResult &suffix :
-                 suffixLookup->results) {
-              const size_t combinedLength = prefix.length + suffix.length;
-              if (combinedLength >= lookup.ignoreStrokeThreshold) {
-                continue;
-              }
-              StenoStroke strokes[combinedLength];
-              prefix.strokes->CopyTo(strokes, prefix.length);
-              suffix.strokes->CopyTo(strokes + prefix.length, suffix.length);
-
-              if (!IsStrokeDefined(strokes, prefix.length, combinedLength)) {
-                lookup.AddResult(strokes, combinedLength, this);
-              }
-            }
-          }
+    if (mergedQuickReject.IsPossibleMergeMatch(textReject)) {
+      for (const ReverseSuffix &revereSuffix : reversePatterns) {
+        if (!revereSuffix.testPattern.IsPossibleMatch(textReject)) {
+          continue;
         }
-        delete suffixLookup;
+        const PatternMatch match =
+            revereSuffix.testPattern.Match(withoutSuffix);
+        if (!match.match) {
+          continue;
+        }
+        char *possiblePrefix = match.Replace(revereSuffix.replacement);
+        AddSuffixReverseLookup(context, lookup, possiblePrefix, test.suffix,
+                               suffixLength);
+        free(possiblePrefix);
       }
     }
 
-    delete prefixLookup;
+    free(withoutSuffix);
   }
+}
+
+void StenoReverseSuffixDictionary::AddSuffixReverseLookup(
+    ReverseLookupContext &context, StenoReverseDictionaryLookup &lookup,
+    const char *withoutSuffix, const Suffix *suffix,
+    size_t suffixLength) const {
+  char *orthographySuffix = suffix->CreateOrthographySuffix(suffixLength);
+  char *withSuffix = orthography.AddSuffix(withoutSuffix, orthographySuffix);
+  free(orthographySuffix);
+
+  const bool isWordEqual = Str::Eq(withSuffix, lookup.definition);
+  free(withSuffix);
+  if (!isWordEqual) {
+    return;
+  }
+
+  StenoReverseDictionaryLookup *prefixLookup = new StenoReverseDictionaryLookup(
+      withoutSuffix, lookup.ignoreStrokeThreshold - 1);
+
+  prefixDictionary->ReverseLookup(*prefixLookup);
+
+  if (prefixLookup->HasResults()) {
+    // Prefix lookup succeeded, get the suffixes.
+    const size_t minimumPrefixStrokeCount =
+        prefixLookup->GetMinimumStrokeCount();
+    if (lookup.ignoreStrokeThreshold > minimumPrefixStrokeCount + 1) {
+      StenoReverseDictionaryLookup *suffixLookup =
+          new StenoReverseDictionaryLookup(
+              (const char *)suffix->GetText(suffixLength),
+              lookup.ignoreStrokeThreshold - minimumPrefixStrokeCount);
+
+      // Add map lookup hints.
+      suffixLookup->mapLookupData.Add(suffix->GetMapLookupData(), baseAddress);
+
+      super::ReverseLookup(*suffixLookup);
+
+      if (suffixLookup->HasResults()) {
+        for (const StenoReverseDictionaryResult &prefix :
+             prefixLookup->results) {
+          for (const StenoReverseDictionaryResult &suffix :
+               suffixLookup->results) {
+            const size_t combinedLength = prefix.length + suffix.length;
+            if (combinedLength >= lookup.ignoreStrokeThreshold) {
+              continue;
+            }
+            StenoStroke strokes[combinedLength];
+            prefix.strokes->CopyTo(strokes, prefix.length);
+            suffix.strokes->CopyTo(strokes + prefix.length, suffix.length);
+
+            if (!IsStrokeDefined(strokes, prefix.length, combinedLength)) {
+              lookup.AddResult(strokes, combinedLength, this);
+            }
+          }
+        }
+      }
+      delete suffixLookup;
+    }
+  }
+
+  delete prefixLookup;
 }
 
 bool StenoReverseSuffixDictionary::IsStrokeDefined(

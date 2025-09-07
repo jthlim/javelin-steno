@@ -229,6 +229,17 @@ void StenoOrthography::Print() const {
                       &autoSuffixes[i].stroke, autoSuffixes[i].text + 1);
     }
   }
+  Console::Printf("\n\treverse-suffix:");
+  if (reverseSuffixes.IsEmpty()) {
+    Console::Printf(" []");
+  } else {
+    for (size_t i = 0; i < reverseSuffixes.GetCount(); ++i) {
+      Console::Printf("\n\t\t- pattern: \"%J\""
+                      "\n\t\t  replacement: \"%J\"",
+                      reverseSuffixes[i].testPattern,
+                      reverseSuffixes[i].replacement);
+    }
+  }
   Console::Printf("\n\treverse-auto-suffix:");
   if (reverseAutoSuffixes.IsEmpty()) {
     Console::Printf(" []");
@@ -428,6 +439,8 @@ void StenoCompiledOrthography::PrintInfo() const {
   Console::Printf("      Rules: %zu\n", data.rules.GetCount());
   Console::Printf("      Aliases: %zu\n", data.aliases.GetCount());
   Console::Printf("      Auto-suffixes: %zu\n", data.autoSuffixes.GetCount());
+  Console::Printf("      Reverse suffixes: %zu\n",
+                  data.reverseSuffixes.GetCount());
   Console::Printf("      Reverse auto-suffixes: %zu\n",
                   data.reverseAutoSuffixes.GetCount());
 #if RECORD_ORTHOGRAPHY_CACHE_STATS
