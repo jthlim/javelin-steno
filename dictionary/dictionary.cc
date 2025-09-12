@@ -204,6 +204,21 @@ ConsolePrintDictionaryContext::Print(const StenoStroke *strokes, size_t length,
 
 //---------------------------------------------------------------------------
 
+ConsoleLookupDictionaryContext::~ConsoleLookupDictionaryContext() {
+  for (char *p : definitions) {
+    free(p);
+  }
+}
+
+size_t ConsoleLookupDictionaryContext::FindIndex(const char *x) const {
+  for (size_t i = 0; i < definitions.GetCount(); ++i) {
+    if (Str::Eq(definitions[i], x)) {
+      return i;
+    }
+  }
+  return size_t(-1);
+}
+
 void LookupDictionaryContext::Add(const StenoStroke *strokes, size_t length,
                                   const char *definition,
                                   const StenoDictionary *dictionary) {
@@ -217,10 +232,8 @@ void LookupDictionaryContext::Add(const StenoStroke *strokes, size_t length,
   }
   ++count;
   Console::Printf(format, strokes, length);
-  if (!Str::Eq(definition, lastDefinition)) {
-    lastDefinition = definition;
-    Console::Printf(",\"t\":\"%J\"", definition);
-  }
+
+  PrintDefinition(definition);
 
   const char *dictionaryName = dictionary->GetName();
   if (*dictionaryName != '#') {
@@ -237,6 +250,27 @@ void LookupDictionaryContext::Add(const StenoStroke *strokes, size_t length,
     }
   }
   Console::Printf("}");
+}
+
+void LookupDictionaryContext::PrintDefinition(const char *definition) {
+  if (!Str::Eq(definition, lastDefinition)) {
+    lastDefinition = definition;
+    Console::Printf(",\"t\":\"%J\"", definition);
+  }
+}
+
+void ConsoleLookupDictionaryContext::PrintDefinition(const char *definition) {
+  if (Str::Eq(definition, defaultDefinition)) {
+    return;
+  }
+
+  const size_t index = FindIndex(definition);
+  if (index == size_t(-1)) {
+    Console::Printf(",\"t\":\"%J\"", definition);
+    definitions.Add(Str::Dup(definition));
+  } else {
+    Console::Printf(",\"t\":%zu", index);
+  }
 }
 
 //---------------------------------------------------------------------------

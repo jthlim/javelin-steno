@@ -377,12 +377,8 @@ void StenoCompiledOrthography::AddCandidates(BestCandidate &bestCandidate,
                                              size_t wordLength,
                                              const char *suffix,
                                              int defaultScore) const {
-  constexpr size_t MAXIMUM_PREFIX_LENGTH = 8;
-
-  const size_t offset = wordLength > MAXIMUM_PREFIX_LENGTH
-                            ? wordLength - MAXIMUM_PREFIX_LENGTH
-                            : 0;
-  char *text = Str::Join(word + offset, " ^", suffix);
+  char *text = Str::Join(word, " ^", suffix);
+  const size_t textLength = Str::Length(text);
 
   const PatternQuickReject inputQuickReject(text);
 
@@ -392,21 +388,13 @@ void StenoCompiledOrthography::AddCandidates(BestCandidate &bestCandidate,
       continue;
     }
 
-    const PatternMatch match = pattern.MatchBypassingQuickReject(text);
+    const PatternMatch match =
+        pattern.MatchBypassingQuickReject(text, textLength);
     if (!match.match) {
       continue;
     }
 
     char *candidate = match.Replace(data.rules[i].replacement);
-    if (offset != 0) {
-      const size_t candidateWithNulLength = Str::Length(candidate) + 1;
-      char *fullCandidate = (char *)malloc(offset + candidateWithNulLength);
-      memcpy(fullCandidate, word, offset);
-      memcpy(fullCandidate + offset, candidate, candidateWithNulLength);
-      free(candidate);
-      candidate = fullCandidate;
-    }
-
     const int score = WordList::GetWordRank(candidate, defaultScore);
     bestCandidate.Add(candidate, score);
   }

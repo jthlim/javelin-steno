@@ -36,7 +36,18 @@ Pattern Pattern::Compile(const char *p) {
 
   // If this assert is hit, then the entire pattern hasn't been processed.
   assert(*context.p == '\0');
+
+  PatternRecurseContext generateMetricsContext;
+  captureStart->GenerateMetrics(generateMetricsContext);
+
+  PatternRecurseContext minimumLengthContext;
+
+  const size_t minimumLength =
+      captureStart->GetMinimumLength(minimumLengthContext);
+
+#if !JAVELIN_USE_PATTERN_JIT
   captureStart->RemoveEpsilon();
+#endif
 
   PatternQuickReject quickReject;
   captureStart->UpdateQuickReject(quickReject);
@@ -47,11 +58,32 @@ Pattern Pattern::Compile(const char *p) {
   bool (*matchMethod)(const char *, const char **, const char *) =
       jitContext.Build();
   PatternComponent::ResetPoolAllocator();
-  return Pattern(matchMethod, quickReject);
+  return Pattern(matchMethod, minimumLength, quickReject);
 #else
-  return Pattern(captureStart, quickReject);
+  return Pattern(captureStart, minimumLength, quickReject);
 #endif
 }
+
+//---------------------------------------------------------------------------
+
+#if RUN_TESTS
+
+bool Pattern::HasEndAnchor() const {
+  PatternRecurseContext context;
+  return root->HasEndAnchor(context);
+}
+
+size_t Pattern::GetMinimumLength() const {
+  PatternRecurseContext context;
+  return root->GetMinimumLength(context);
+}
+
+size_t Pattern::GetMaximumLength() const {
+  PatternRecurseContext context;
+  return root->GetMaximumLength(context);
+}
+
+#endif
 
 //---------------------------------------------------------------------------
 
@@ -252,14 +284,16 @@ Pattern::BuildResult Pattern::ParseQuantifier(BuildContext &c,
   switch (*c.p) {
   case '*': {
     c.p++;
-    BranchPatternComponent *star = new BranchPatternComponent(atom.head);
+    BranchPatternComponent *star =
+        new BranchPatternComponent(atom.head, BranchType::BRANCH_BACK);
     atom.tail->next = star;
 
     return BuildResult(star);
   }
   case '+': {
     c.p++;
-    BranchPatternComponent *plus = new BranchPatternComponent(atom.head);
+    BranchPatternComponent *plus =
+        new BranchPatternComponent(atom.head, BranchType::BRANCH_BACK);
     atom.tail->next = plus;
 
     return BuildResult(atom.head, plus);
@@ -268,7 +302,8 @@ Pattern::BuildResult Pattern::ParseQuantifier(BuildContext &c,
   case '?': {
     c.p++;
     PatternComponent *epsilon = new EpsilonPatternComponent;
-    BranchPatternComponent *alternate = new BranchPatternComponent(atom.head);
+    BranchPatternComponent *alternate =
+        new BranchPatternComponent(atom.head, BranchType::NEXT_FORWARD);
     alternate->next = epsilon;
     atom.tail->next = epsilon;
     return BuildResult(alternate, epsilon);
@@ -280,59 +315,58 @@ Pattern::BuildResult Pattern::ParseQuantifier(BuildContext &c,
 
 //---------------------------------------------------------------------------
 
-PatternMatch Pattern::Match(const char *text) const {
+PatternMatch Pattern::Match(const char *text, size_t length) const {
   const PatternQuickReject textReject(text);
   if (!textReject.IsPossibleMatch(quickReject)) {
     PatternMatch result;
     result.match = false;
     return result;
   } else {
-    return MatchBypassingQuickReject(text);
+    return MatchBypassingQuickReject(text, length);
   }
 }
 
-PatternMatch Pattern::MatchBypassingQuickReject(const char *text) const {
+PatternMatch Pattern::MatchBypassingQuickReject(const char *text,
+                                                size_t length) const {
   PatternMatch result;
-
-  // This code is in the hot path.
-  // Expand this to avoid calls to __wrap_memset on rp2040.
-  result.captures[0] = nullptr;
-  result.captures[1] = nullptr;
-  result.captures[2] = nullptr;
-  result.captures[3] = nullptr;
-  result.captures[4] = nullptr;
-  result.captures[5] = nullptr;
-  result.captures[6] = nullptr;
-  result.captures[7] = nullptr;
-
-  PatternContext context = {
-      .start = text,
-      .captures = result.captures,
-  };
+  if (length < minimumLength) {
+    result.match = false;
+  } else {
+    result.end = text + length;
+    PatternContext context = {
+        .start = text,
+        .captures = result.captures,
+    };
 #if JAVELIN_USE_PATTERN_JIT
-  result.match = matchMethod(text, result.captures, text);
+    result.match = matchMethod(text, result.captures, text);
 #else
-  result.match = root->Match(text, context);
+    result.match = root->Match(text, context);
 #endif
+  }
   return result;
 }
 
-PatternMatch Pattern::Search(const char *text) const {
+PatternMatch Pattern::Search(const char *text, size_t length) const {
   PatternMatch result;
+  result.match = false;
+  if (length >= minimumLength) {
+    result.end = text + length;
+    const char *searchEnd = result.end - minimumLength;
 #if JAVELIN_USE_PATTERN_JIT
-  const char *start = text;
-  do {
-    result.match = matchMethod(start, result.captures, text);
-  } while (!result.match && *text++ != '\0');
+    const char *start = text;
+    do {
+      result.match = matchMethod(start, result.captures, text);
+    } while (!result.match && ++text < searchEnd);
 #else
-  PatternContext context = {
-      .start = text,
-      .captures = result.captures,
-  };
-  do {
-    result.match = root->Match(text, context);
-  } while (!result.match && *text++ != '\0');
+    PatternContext context = {
+        .start = text,
+        .captures = result.captures,
+    };
+    do {
+      result.match = root->Match(text, context);
+    } while (!result.match && ++text < searchEnd);
 #endif
+  }
   return result;
 }
 
@@ -383,6 +417,10 @@ TEST_BEGIN("Pattern: Simple test") {
   assert(match.captures[1] == abd + 3);
   assert(match.captures[2] == abd + 1);
   assert(match.captures[3] == abd + 2);
+
+  assert(pattern.HasEndAnchor() == false);
+  assert(pattern.GetMinimumLength() == 3);
+  assert(pattern.GetMaximumLength() == 3);
 }
 TEST_END
 
@@ -391,6 +429,10 @@ TEST_BEGIN("Pattern: Repeat test") {
   assert(pattern.Match("d").match);
   assert(pattern.Match("ad").match);
   assert(pattern.Match("aad").match);
+
+  assert(pattern.HasEndAnchor() == false);
+  assert(pattern.GetMinimumLength() == 1);
+  assert(pattern.GetMaximumLength() == size_t(-1));
 }
 TEST_END
 
@@ -399,6 +441,10 @@ TEST_BEGIN("Pattern: PlusRepeat pattern test") {
   assert(pattern.Match("bd").match == false);
   assert(pattern.Match("abd").match);
   assert(pattern.Match("aabd").match);
+
+  assert(pattern.HasEndAnchor() == false);
+  assert(pattern.GetMinimumLength() == 3);
+  assert(pattern.GetMaximumLength() == size_t(-1));
 }
 TEST_END
 
@@ -422,18 +468,43 @@ TEST_BEGIN("Pattern: BackReference Test") {
 }
 TEST_END
 
+TEST_BEGIN("Pattern: Suffix Test") {
+  const Pattern pattern = Pattern::Compile("(.+)i$");
+  char *t1 = pattern.Match("worthi").Replace("\\1y");
+  assert(Str::Eq(t1, "worthy"));
+  free(t1);
+}
+TEST_END
+
 TEST_BEGIN("Pattern: Empty alternate test") {
   const Pattern pattern = Pattern::Compile("abc|");
   assert(pattern.Match("").match);
 }
 TEST_END
 
-TEST_BEGIN("Pattern: Orthography example test") {
+TEST_BEGIN("Pattern: Orthography example1 test") {
   const Pattern pattern = Pattern::Compile(
-      R"(^(.*(?:[bcdfghjklmnprstvwxyz]|qu)[aeiou])([bcdfgklmnprtvz]) \^ ([aeiouy].*)$)");
+      R"(^(.*(?:[bcdfghjklmnprstvwxyz]|qu)[aeiou])([bcdfgklmnprtvz]) \^([aeiouy].*)$)");
 
-  char *t1 = pattern.Match("defer ^ ed").Replace(R"(\1\2\2\3)");
+  assert(pattern.HasEndAnchor() == true);
+  assert(pattern.GetMinimumLength() == 6);
+  assert(pattern.GetMaximumLength() == size_t(-1));
+
+  char *t1 = pattern.Match("defer ^ed").Replace(R"(\1\2\2\3)");
   assert(Str::Eq(t1, "deferred"));
+  free(t1);
+}
+TEST_END
+
+TEST_BEGIN("Pattern: Orthograph example2 test") {
+  const Pattern pattern = Pattern::Compile(R"(^(.+)e \^tiv(e|ity|ities)$)");
+
+  assert(pattern.HasEndAnchor() == true);
+  assert(pattern.GetMinimumLength() == 8);
+  assert(pattern.GetMaximumLength() == size_t(-1));
+
+  char *t1 = pattern.Match("restore ^tive").Replace(R"(\1ativ\2)");
+  assert(Str::Eq(t1, "restorative"));
   free(t1);
 }
 TEST_END

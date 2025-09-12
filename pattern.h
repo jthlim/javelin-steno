@@ -16,6 +16,9 @@ struct PatternMatch {
   bool match;
   const char *captures[8];
 
+  // This is input, but stored here for quick access.
+  const char *end;
+
   char *Replace(const char *format) const;
   void SetCapture(size_t n, const char *p) {
     captures[2 * n] = p;
@@ -45,13 +48,22 @@ class Pattern {
 public:
   static Pattern Compile(const char *pattern);
 
-  PatternMatch Match(const char *text) const;
-  PatternMatch MatchBypassingQuickReject(const char *text) const;
-  PatternMatch Search(const char *text) const;
+  PatternMatch Match(const char *text, size_t length) const;
+  PatternMatch Match(const char *text) const {
+    return Match(text, Str::Length(text));
+  }
+  PatternMatch MatchBypassingQuickReject(const char *text, size_t length) const;
+  PatternMatch Search(const char *text, size_t length) const;
 
   bool IsPossibleMatch(PatternQuickReject inputQuickReject) const {
     return inputQuickReject.IsPossibleMatch(quickReject);
   }
+
+#if RUN_TESTS
+  bool HasEndAnchor() const;
+  size_t GetMinimumLength() const;
+  size_t GetMaximumLength() const;
+#endif
 
   const PatternQuickReject &GetQuickReject() const { return quickReject; }
 
@@ -59,19 +71,22 @@ private:
 #if JAVELIN_USE_PATTERN_JIT
   Pattern(bool (*matchMethod)(const char *start, const char **captures,
                               const char *text),
-          PatternQuickReject quickReject)
-      : matchMethod(matchMethod), quickReject(quickReject) {}
+          size_t minimumLength, PatternQuickReject quickReject)
+      : matchMethod(matchMethod), minimumLength(minimumLength),
+        quickReject(quickReject) {}
 
   bool (*matchMethod)(const char *start, const char **captures,
                       const char *text);
 
 #else
-  Pattern(PatternComponent *root, PatternQuickReject quickReject)
-      : root(root), quickReject(quickReject) {}
+  Pattern(PatternComponent *root, size_t minimumLength,
+          PatternQuickReject quickReject)
+      : root(root), minimumLength(minimumLength), quickReject(quickReject) {}
 
   PatternComponent *root;
 #endif
 
+  size_t minimumLength;
   PatternQuickReject quickReject;
 
   struct BuildContext;

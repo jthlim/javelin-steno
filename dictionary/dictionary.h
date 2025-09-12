@@ -281,11 +281,32 @@ public:
   Interval<const void *> mapLookupDataRange;
   StaticList<const void *, 24> mapLookupData;
 
+protected:
+  virtual void PrintDefinition(const char *definition);
+
 private:
   size_t count = 0;
   size_t maxCount;
   const char *lastDefinition = "";
   List<const StenoDictionary *> dictionaries;
+};
+
+class ConsoleLookupDictionaryContext : public LookupDictionaryContext {
+private:
+  using super = LookupDictionaryContext;
+
+public:
+  ConsoleLookupDictionaryContext(const char *defaultDefinition)
+      : super(0), defaultDefinition(defaultDefinition) {}
+
+  ~ConsoleLookupDictionaryContext();
+
+private:
+  const char *defaultDefinition;
+  List<char *> definitions;
+
+  size_t FindIndex(const char *x) const;
+  virtual void PrintDefinition(const char *definition) final;
 };
 
 class PrintPrefixContext : public LookupDictionaryContext {

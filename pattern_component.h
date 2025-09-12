@@ -53,6 +53,23 @@ private:
 
 //---------------------------------------------------------------------------
 
+struct PatternRecurseContext {
+  PatternRecurseContext() : reference(++currentReference) {}
+  PatternRecurseContext(size_t reference) : reference(reference) {}
+
+  size_t reference;
+
+  void Reset() { reference = ++currentReference; }
+
+  static size_t currentReference;
+
+  bool operator==(const PatternRecurseContext &other) const {
+    return reference == other.reference;
+  }
+};
+
+//---------------------------------------------------------------------------
+
 class PatternComponent
     : public PoolAllocate<PatternComponent, PATTERN_COMPONENT_BLOCK_SIZE> {
 #if JAVELIN_USE_PATTERN_JIT
@@ -66,8 +83,14 @@ public:
   virtual bool Match(const char *p, PatternContext &context) const = 0;
   virtual bool IsEpsilon() const { return false; }
 
+  virtual void GenerateMetrics(const PatternRecurseContext &context);
+
   virtual void RemoveEpsilon();
   virtual void UpdateQuickReject(PatternQuickReject &quickReject) const;
+
+  virtual bool HasEndAnchor(const PatternRecurseContext &context) const;
+  virtual size_t GetMinimumLength(const PatternRecurseContext &context) const;
+  virtual size_t GetMaximumLength(const PatternRecurseContext &context) const;
 
 #if JAVELIN_USE_PATTERN_JIT
   virtual void Compile(PatternJitContext &context) const = 0;
@@ -76,17 +99,28 @@ public:
   static void *operator new(size_t size);
   static void operator delete(void *p) {}
 
+  static const size_t INFINITE_LENGTH = size_t(-1);
+
 protected:
   bool CallNext(const char *p, PatternContext &context) const;
   const PatternComponent *GetNext() const { return next; }
 
 private:
-  PatternComponent *next = nullptr;
+  PatternComponent *next; // Initialized to SuccessComponent::instance
 
   friend class Pattern;
   friend class BranchPatternComponent;
   friend class PatternJitContext;
   friend class AlternatePatternComponent;
+};
+
+class SingleBytePatternComponent : public PatternComponent {
+private:
+  using super = PatternComponent;
+
+public:
+  virtual size_t GetMinimumLength(const PatternRecurseContext &context) const;
+  virtual size_t GetMaximumLength(const PatternRecurseContext &context) const;
 };
 
 class SuccessPatternComponent final : public PatternComponent {
@@ -97,6 +131,18 @@ public:
   virtual void RemoveEpsilon() {}
   virtual void UpdateQuickReject(PatternQuickReject &quickReject) const {}
 
+  void GenerateMetrics(const PatternRecurseContext &context) {}
+
+  bool HasEndAnchor(const PatternRecurseContext &context) const {
+    return false;
+  }
+  size_t GetMinimumLength(const PatternRecurseContext &context) const {
+    return 0;
+  }
+  size_t GetMaximumLength(const PatternRecurseContext &context) const {
+    return 0;
+  }
+
   JIT_COMPONENT_METHOD
 
   static SuccessPatternComponent instance;
@@ -106,14 +152,33 @@ inline constexpr PatternComponent::PatternComponent()
     : next(&SuccessPatternComponent::instance) {}
 
 class EpsilonPatternComponent : public PatternComponent {
+private:
+  using super = PatternComponent;
+
 public:
   virtual bool Match(const char *p, PatternContext &context) const;
   virtual bool IsEpsilon() const { return true; }
 
+  virtual void GenerateMetrics(const PatternRecurseContext &context);
+
+  virtual bool HasEndAnchor(const PatternRecurseContext &context) const;
+  virtual size_t GetMinimumLength(const PatternRecurseContext &context) const;
+  virtual size_t GetMaximumLength(const PatternRecurseContext &context) const;
+
   JIT_COMPONENT_METHOD
+
+private:
+  union RecurseData {
+    bool hasEndAnchor;
+    size_t length;
+  };
+
+  mutable PatternRecurseContext generateMetricsContext = 0;
+  mutable PatternRecurseContext recurseContext = 0;
+  mutable RecurseData recurseData;
 };
 
-class AnyPatternComponent : public PatternComponent {
+class AnyPatternComponent : public SingleBytePatternComponent {
 public:
   virtual bool Match(const char *p, PatternContext &context) const;
 
@@ -121,10 +186,22 @@ public:
 };
 
 class AnyStarPatternComponent : public PatternComponent {
+private:
+  using super = PatternComponent;
+
 public:
   virtual bool Match(const char *p, PatternContext &context) const;
 
+  virtual void GenerateMetrics(const PatternRecurseContext &context);
+  virtual size_t GetMaximumLength(const PatternRecurseContext &context) const;
+
   JIT_COMPONENT_METHOD
+
+private:
+  bool hasProcessed = false;
+  bool hasEndAnchor;
+  size_t minimumLength;
+  size_t maximumLength;
 };
 
 class BackReferencePatternComponent : public PatternComponent {
@@ -139,7 +216,10 @@ private:
   int index;
 };
 
-class CharacterSetPatternComponent : public PatternComponent {
+class CharacterSetPatternComponent : public SingleBytePatternComponent {
+private:
+  using super = PatternComponent;
+
 public:
   virtual bool Match(const char *p, PatternContext &context) const;
 
@@ -185,16 +265,35 @@ private:
   friend class Pattern;
 };
 
+enum class BranchType {
+  BRANCH_BACK,
+  NEXT_BACK,
+  BRANCH_FORWARD,
+  NEXT_FORWARD,
+};
+
 class BranchPatternComponent : public PatternComponent {
+private:
+  using super = PatternComponent;
+
 public:
-  BranchPatternComponent(PatternComponent *branch) : branch(branch) {}
+  BranchPatternComponent(PatternComponent *branch, BranchType type)
+      : branch(branch), type(type) {}
+
   virtual bool Match(const char *p, PatternContext &context) const;
   virtual void RemoveEpsilon() final;
+
+  virtual void GenerateMetrics(const PatternRecurseContext &context);
+
+  virtual bool HasEndAnchor(const PatternRecurseContext &context) const;
+  virtual size_t GetMinimumLength(const PatternRecurseContext &context) const;
+  virtual size_t GetMaximumLength(const PatternRecurseContext &context) const;
 
   JIT_COMPONENT_METHOD
 
 private:
   PatternComponent *branch;
+  BranchType type;
   bool processed = false;
 };
 
@@ -208,6 +307,10 @@ public:
 class EndOfLinePatternComponent : public PatternComponent {
 public:
   virtual bool Match(const char *p, PatternContext &context) const;
+
+  virtual bool HasEndAnchor(const PatternRecurseContext &context) const {
+    return true;
+  }
 
   JIT_COMPONENT_METHOD
 };
@@ -224,7 +327,7 @@ private:
   size_t index;
 };
 
-class BytePatternComponent : public PatternComponent {
+class BytePatternComponent : public SingleBytePatternComponent {
 public:
   BytePatternComponent(uint8_t byte) : byte(byte) {}
 
@@ -243,6 +346,9 @@ private:
 };
 
 class LiteralPatternComponent : public PatternComponent {
+private:
+  using super = PatternComponent;
+
 public:
   LiteralPatternComponent(const char *text, size_t length) {
     char *mutableText = (char *)this->text;
@@ -253,6 +359,9 @@ public:
   virtual void UpdateQuickReject(PatternQuickReject &quickReject) const;
 
   virtual bool Match(const char *p, PatternContext &context) const final;
+
+  virtual size_t GetMinimumLength(const PatternRecurseContext &context) const;
+  virtual size_t GetMaximumLength(const PatternRecurseContext &context) const;
 
   JIT_COMPONENT_METHOD
 
@@ -284,6 +393,12 @@ public:
       : ContainerPatternComponent(initialComponent) {}
 
   virtual bool Match(const char *p, PatternContext &context) const final;
+
+  virtual void GenerateMetrics(const PatternRecurseContext &context);
+
+  virtual bool HasEndAnchor(const PatternRecurseContext &context) const;
+  virtual size_t GetMinimumLength(const PatternRecurseContext &context) const;
+  virtual size_t GetMaximumLength(const PatternRecurseContext &context) const;
 
   JIT_COMPONENT_METHOD
 };

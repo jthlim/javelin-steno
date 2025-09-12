@@ -3,8 +3,8 @@
 #include "reverse_suffix_dictionary.h"
 #include "../container/list.h"
 #include "../orthography.h"
+#include "../pattern.h"
 #include "dictionary.h"
-#include "javelin/pattern.h"
 #include "map_data_lookup.h"
 #include <assert.h>
 
@@ -216,16 +216,16 @@ void StenoReverseSuffixDictionary::AddSuffixReverseLookup(
     const PatternQuickReject textReject(withoutSuffix);
 
     if (mergedQuickReject.IsPossibleMergeMatch(textReject)) {
-      for (const ReverseSuffix &revereSuffix : reversePatterns) {
-        if (!revereSuffix.testPattern.IsPossibleMatch(textReject)) {
+      for (const ReverseSuffix &reverseSuffix : reversePatterns) {
+        if (!reverseSuffix.testPattern.IsPossibleMatch(textReject)) {
           continue;
         }
         const PatternMatch match =
-            revereSuffix.testPattern.Match(withoutSuffix);
+            reverseSuffix.testPattern.Match(withoutSuffix, prefixLength);
         if (!match.match) {
           continue;
         }
-        char *possiblePrefix = match.Replace(revereSuffix.replacement);
+        char *possiblePrefix = match.Replace(reverseSuffix.replacement);
         AddSuffixReverseLookup(context, lookup, possiblePrefix, test.suffix,
                                suffixLength);
         free(possiblePrefix);

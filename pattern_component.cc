@@ -8,6 +8,7 @@
 //---------------------------------------------------------------------------
 
 SuccessPatternComponent SuccessPatternComponent::instance;
+size_t PatternRecurseContext::currentReference;
 
 //---------------------------------------------------------------------------
 
@@ -19,6 +20,10 @@ void *PatternComponent::operator new(size_t size) {
 
 bool PatternComponent::CallNext(const char *p, PatternContext &context) const {
   return next->Match(p, context);
+}
+
+void PatternComponent::GenerateMetrics(const PatternRecurseContext &context) {
+  next->GenerateMetrics(context);
 }
 
 void PatternComponent::RemoveEpsilon() {
@@ -33,10 +38,80 @@ void PatternComponent::UpdateQuickReject(
   next->UpdateQuickReject(quickReject);
 }
 
+bool PatternComponent::HasEndAnchor(
+    const PatternRecurseContext &context) const {
+  return next->HasEndAnchor(context);
+}
+
+size_t
+PatternComponent::GetMinimumLength(const PatternRecurseContext &context) const {
+  return next->GetMinimumLength(context);
+}
+
+size_t
+PatternComponent::GetMaximumLength(const PatternRecurseContext &context) const {
+  return next->GetMaximumLength(context);
+}
+
+//---------------------------------------------------------------------------
+
+size_t SingleBytePatternComponent::GetMinimumLength(
+    const PatternRecurseContext &context) const {
+  return 1 + super::GetMinimumLength(context);
+}
+size_t SingleBytePatternComponent::GetMaximumLength(
+    const PatternRecurseContext &context) const {
+  const size_t nextLength = super::GetMaximumLength(context);
+  if (nextLength == INFINITE_LENGTH) {
+    return nextLength;
+  }
+  return 1 + nextLength;
+}
+
+//---------------------------------------------------------------------------
+
 bool EpsilonPatternComponent::Match(const char *p,
                                     PatternContext &context) const {
   return CallNext(p, context);
 }
+
+void EpsilonPatternComponent::GenerateMetrics(
+    const PatternRecurseContext &context) {
+  if (generateMetricsContext == context) {
+    return;
+  }
+  generateMetricsContext = context;
+  super::GenerateMetrics(context);
+}
+
+bool EpsilonPatternComponent::HasEndAnchor(
+    const PatternRecurseContext &context) const {
+  if (recurseContext != context) {
+    recurseData.hasEndAnchor = super::HasEndAnchor(context);
+    recurseContext = context;
+  }
+  return recurseData.hasEndAnchor;
+}
+
+size_t EpsilonPatternComponent::GetMinimumLength(
+    const PatternRecurseContext &context) const {
+  if (recurseContext != context) {
+    recurseData.length = super::GetMinimumLength(context);
+    recurseContext = context;
+  }
+  return recurseData.length;
+}
+
+size_t EpsilonPatternComponent::GetMaximumLength(
+    const PatternRecurseContext &context) const {
+  if (recurseContext != context) {
+    recurseData.length = super::GetMaximumLength(context);
+    recurseContext = context;
+  }
+  return recurseData.length;
+}
+
+//---------------------------------------------------------------------------
 
 bool AnyPatternComponent::Match(const char *p, PatternContext &context) const {
   if (*p == 0) {
@@ -50,8 +125,16 @@ bool AnyStarPatternComponent::Match(const char *p,
   const PatternComponent *localNext = GetNext();
 
   const char *start = p;
-  while (*p) {
-    ++p;
+  p = context.captures[8]; // p = end
+
+  if (hasEndAnchor) {
+    if (maximumLength != INFINITE_LENGTH) {
+      const char *startWithMaximumLength = p - maximumLength;
+      if (start < startWithMaximumLength) {
+        start = startWithMaximumLength;
+      }
+    }
+    p -= minimumLength;
   }
 
   while (p >= start) {
@@ -61,6 +144,33 @@ bool AnyStarPatternComponent::Match(const char *p,
     --p;
   }
   return false;
+}
+
+void AnyStarPatternComponent::GenerateMetrics(
+    const PatternRecurseContext &context) {
+  if (hasProcessed) {
+    return;
+  }
+  hasProcessed = true;
+
+  PatternRecurseContext dataContext;
+  hasEndAnchor = super::HasEndAnchor(dataContext);
+  if (!hasEndAnchor) {
+    minimumLength = 0;
+    maximumLength = INFINITE_LENGTH;
+    return;
+  }
+  dataContext.Reset();
+  minimumLength = super::GetMinimumLength(dataContext);
+  dataContext.Reset();
+  maximumLength = super::GetMaximumLength(dataContext);
+
+  super::GenerateMetrics(context);
+}
+
+size_t AnyStarPatternComponent::GetMaximumLength(
+    const PatternRecurseContext &context) const {
+  return INFINITE_LENGTH;
 }
 
 bool BackReferencePatternComponent::Match(const char *p,
@@ -122,6 +232,60 @@ void BranchPatternComponent::RemoveEpsilon() {
   branch->RemoveEpsilon();
 
   PatternComponent::RemoveEpsilon();
+  processed = false;
+}
+
+void BranchPatternComponent::GenerateMetrics(
+    const PatternRecurseContext &context) {
+  if (processed) {
+    return;
+  }
+  processed = true;
+
+  branch->GenerateMetrics(context);
+  PatternComponent::GenerateMetrics(context);
+  processed = false;
+}
+
+bool BranchPatternComponent::HasEndAnchor(
+    const PatternRecurseContext &context) const {
+  switch (type) {
+  case BranchType::BRANCH_BACK:
+  case BranchType::NEXT_FORWARD:
+    return next->HasEndAnchor(context);
+  case BranchType::NEXT_BACK:
+  case BranchType::BRANCH_FORWARD:
+    return branch->HasEndAnchor(context);
+  default:
+    __builtin_unreachable();
+  }
+}
+size_t BranchPatternComponent::GetMinimumLength(
+    const PatternRecurseContext &context) const {
+  switch (type) {
+  case BranchType::BRANCH_BACK:
+  case BranchType::NEXT_FORWARD:
+    return next->GetMinimumLength(context);
+  case BranchType::BRANCH_FORWARD:
+  case BranchType::NEXT_BACK:
+    return branch->GetMinimumLength(context);
+  default:
+    __builtin_unreachable();
+  }
+}
+size_t BranchPatternComponent::GetMaximumLength(
+    const PatternRecurseContext &context) const {
+  switch (type) {
+  case BranchType::BRANCH_BACK:
+  case BranchType::NEXT_BACK:
+    return INFINITE_LENGTH;
+  case BranchType::BRANCH_FORWARD:
+    return branch->GetMaximumLength(context);
+  case BranchType::NEXT_FORWARD:
+    return next->GetMaximumLength(context);
+  default:
+    __builtin_unreachable();
+  }
 }
 
 bool StartOfLinePatternComponent::Match(const char *p,
@@ -173,6 +337,19 @@ bool LiteralPatternComponent::Match(const char *p,
   }
 }
 
+size_t LiteralPatternComponent::GetMinimumLength(
+    const PatternRecurseContext &context) const {
+  return strlen(text) + super::GetMinimumLength(context);
+}
+size_t LiteralPatternComponent::GetMaximumLength(
+    const PatternRecurseContext &context) const {
+  const size_t nextLength = super::GetMaximumLength(context);
+  if (nextLength == INFINITE_LENGTH) {
+    return nextLength;
+  }
+  return strlen(text) + nextLength;
+}
+
 //---------------------------------------------------------------------------
 
 ContainerPatternComponent::ContainerPatternComponent(
@@ -220,6 +397,47 @@ bool AlternatePatternComponent::Match(const char *p,
     }
   }
   return false;
+}
+
+void AlternatePatternComponent::GenerateMetrics(
+    const PatternRecurseContext &context) {
+  for (size_t i = 0; i < componentCount; ++i) {
+    components[i]->GenerateMetrics(context);
+  }
+}
+
+bool AlternatePatternComponent::HasEndAnchor(
+    const PatternRecurseContext &context) const {
+  for (size_t i = 0; i < componentCount; ++i) {
+    if (!components[i]->HasEndAnchor(context)) {
+      return false;
+    }
+  }
+  return true;
+}
+
+size_t AlternatePatternComponent::GetMinimumLength(
+    const PatternRecurseContext &context) const {
+  size_t result = INFINITE_LENGTH;
+  for (size_t i = 0; i < componentCount; ++i) {
+    const size_t length = components[i]->GetMinimumLength(context);
+    if (length < result) {
+      result = length;
+    }
+  }
+  return result;
+}
+
+size_t AlternatePatternComponent::GetMaximumLength(
+    const PatternRecurseContext &context) const {
+  size_t result = 0;
+  for (size_t i = 0; i < componentCount; ++i) {
+    const size_t length = components[i]->GetMaximumLength(context);
+    if (length > result) {
+      result = length;
+    }
+  }
+  return result;
 }
 
 //---------------------------------------------------------------------------

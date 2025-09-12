@@ -5,6 +5,7 @@
 #include "engine.h"
 #include "hal/external_flash.h"
 #include "stroke_list_parser.h"
+#include "writer.h"
 
 //---------------------------------------------------------------------------
 
@@ -139,50 +140,33 @@ void StenoEngine::Lookup_Binding(void *context, const char *commandLine) {
   engine->ReverseLookup(lookup);
 
   Console::Printf("[");
-  List<const StenoDictionary *> dictionaries;
+
+  ConsoleLookupDictionaryContext lookupDictionaryContext(definition);
+
   for (const StenoReverseDictionaryResult &entry : lookup.results) {
     StenoSegmentList segments(entry.length);
     ConversionBuffer &buffer = engine->previousConversionBuffer;
     engine->CreateSegments(segments, buffer.segmentBuilder, entry.strokes,
                            entry.length);
 
-    // Print strokes.
-    const char *format = ",{\"o\":\"%T\"";
-    const bool isFirstEntry = &entry == begin(lookup.results);
-    Console::Printf(format + isFirstEntry, entry.strokes, entry.length);
-
     // Print definition.
-    if (segments.GetCount() == 1 &&
-        Str::TrimEq(segments[0].lookup.GetText(), definition)) {
-      // Special case -- don't send text if it matches the lookup text.
+    if (segments.GetCount() == 1) {
+      char *t = Str::Trim(segments[0].lookup.GetText());
+      lookupDictionaryContext.Add(entry.strokes, entry.length, t,
+                                  entry.dictionary);
+      free(t);
     } else {
-      Console::Printf(",\"t\":\"");
-
-      const char *format = " %J";
+      BufferWriter writer;
+      const char *format = " %s";
       format++;
       for (const StenoSegment &segment : segments) {
-        Console::Printf(format, segment.lookup.GetText());
-        format = " %J";
+        writer.Printf(format, segment.lookup.GetText());
+        format = " %s";
       }
-      Console::Printf("\"");
+      writer.WriteByte(0);
+      lookupDictionaryContext.Add(entry.strokes, entry.length,
+                                  writer.GetBuffer(), entry.dictionary);
     }
-
-    // Print dictionary.
-    const char *name = entry.dictionary->GetName();
-    if (*name != '#') {
-      const size_t index = dictionaries.FindIndex(entry.dictionary);
-      if (index == -1) {
-        dictionaries.Add(entry.dictionary);
-        Console::Printf(",\"d\":\"%J\"", name);
-        if (entry.dictionary->CanRemove()) {
-          Console::Printf(",\"r\":1");
-        }
-      } else {
-        Console::Printf(",\"d\":%zu", index);
-      }
-    }
-
-    Console::Printf("}");
   }
 
   Console::Printf("]\n\n");
