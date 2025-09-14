@@ -135,6 +135,45 @@ void IWriter::WriteBase64(const void *data, size_t length) {
   }
 }
 
+void IWriter::WriteIntList(const int32_t *data, size_t count) {
+  int i = 0;
+  while (i < count) {
+    int j = i;
+    while (j < count && data[j] == 0) {
+      ++j;
+    }
+    WriteVarUint(j - i);
+    i = j;
+
+    while (j < count && data[j] != 0) {
+      ++j;
+    }
+    WriteVarUint(j - i);
+    for (; i < j; ++i) {
+      WriteVarInt(data[i]);
+    }
+  }
+}
+
+void IWriter::WriteVarUint(uint32_t x) {
+  if (x < 0x80) {
+    WriteByte(x << 1);
+  } else if (x < 0x4000) {
+    const uint16_t buffer = (x << 2) | 1;
+    Write((const char *)&buffer, 2);
+  } else if (x < 0x200000) {
+    const uint32_t buffer = (x << 3) | 3;
+    Write((const char *)&buffer, 3);
+  } else if (x < 0x10000000) {
+    const uint32_t buffer = (x << 4) | 7;
+    Write((const char *)&buffer, 4);
+  } else {
+    WriteByte((x << 5) | 15);
+    const uint32_t buffer = x >> 3;
+    Write((const char *)&buffer, 4);
+  }
+}
+
 void IWriter::Printf(const char *p, ...) {
   va_list args;
   va_start(args, p);
@@ -423,7 +462,7 @@ void BufferWriter::WriteByte(char c) {
 void BlockWriterBase::WriteByte(char c) {
   buffer[used++] = c;
   if (used == size) {
-    next->Write(buffer, used);
+    Flush(buffer, used);
     used = 0;
   }
 }
@@ -439,11 +478,11 @@ void BlockWriterBase::Write(const char *data, size_t length) {
     memcpy(buffer + used, data, remaining);
     data += remaining;
     length -= remaining;
-    next->Write(buffer, size);
+    Flush(buffer, size);
   }
 
   while (length >= size) {
-    next->Write(data, size);
+    Flush(data, size);
     data += size;
     length -= size;
   }
@@ -454,9 +493,15 @@ void BlockWriterBase::Write(const char *data, size_t length) {
 
 void BlockWriterBase::Flush() {
   if (used) {
-    next->Write(buffer, used);
+    Flush(buffer, used);
     used = 0;
   }
+}
+
+//---------------------------------------------------------------------------
+
+void Base64Writer::Flush(const char *data, size_t length) {
+  next->WriteBase64(data, length);
 }
 
 //---------------------------------------------------------------------------

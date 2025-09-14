@@ -28,12 +28,13 @@ private:
   const uint8_t *const baseAddress;
   const SizedList<uint8_t> textBlock;
 
-  static constexpr size_t INDEX_SIZE = 256;
-  size_t indexSize = 0;
-  const uint8_t *index[INDEX_SIZE + 1];
+  // Point to the first entry that has the starting letter.
+  const uint8_t *index[257];
 
   void AddMapDictionaryData(StenoReverseDictionaryLookup &lookup) const;
   void FilterResult(StenoReverseDictionaryLookup &lookup) const;
+
+  const uint8_t *FindFirstEntryWithPrefix(int c) const;
 
   void BuildIndex();
 };

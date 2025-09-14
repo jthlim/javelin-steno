@@ -24,8 +24,10 @@ BuildSegmentContext::BuildSegmentContext(StenoSegmentList &segments,
 
 void StenoSegmentBuilder::TransferStartFrom(const StenoSegmentBuilder &source,
                                             size_t count) {
-  source.strokes->CopyTo(strokes, count);
-  source.states->CopyTo(states, count);
+  if (count) {
+    source.strokes->CopyTo(strokes, count);
+    source.states->CopyTo(states, count);
+  }
   hasModifiedStrokeHistory = false;
 }
 

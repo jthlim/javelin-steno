@@ -39,21 +39,13 @@ void StenoReverseMapDictionary::PrintEntriesWithPrefix(
 }
 
 const uint8_t *
-StenoReverseMapDictionary::FindMapDataLookup(const char *text) const {
-  size_t indexLeft = 0;
-  size_t indexRight = indexSize;
-  while (indexLeft + 1 < indexRight) {
-    const size_t mid = (indexLeft + indexRight) >> 1;
-    const int compare = Str::Compare(text, (const char *)index[mid]);
-    if (compare < 0) {
-      indexRight = mid;
-    } else {
-      indexLeft = mid;
-    }
-  }
+StenoReverseMapDictionary::FindMapDataLookup(const char *t) const {
+  const uint8_t *text = (const uint8_t *)t;
+  const uint8_t *left = index[text[0]];
+  const uint8_t *right = index[text[0] + 1];
 
-  const uint8_t *left = index[indexLeft];
-  const uint8_t *right = index[indexRight];
+  // Skip first letter as index ensures they're in range.
+  ++text;
 
   while (left < right) {
 #if JAVELIN_PLATFORM_PICO_SDK || JAVELIN_PLATFORM_NRF5_SDK
@@ -65,69 +57,63 @@ StenoReverseMapDictionary::FindMapDataLookup(const char *text) const {
 
     const uint8_t *wordStart = StenoTextBlock::FindPreviousWordStart(mid);
 
-    // Inline Str::Compare because the end of the match is useful.
-    const uint8_t *p = wordStart;
-    const uint8_t *l = (const uint8_t *)text;
-    int compare;
+    const uint8_t *p = wordStart + 1;
+    const uint8_t *l = text;
+
     for (;;) {
       const int cl = *l++;
       const int cp = *p++;
 
-      if (cl != cp || cp == 0) {
-        compare = cl - cp;
+      if (cl > cp) {
+        left = StenoTextBlock::FindNextWordStart(p);
         break;
+      } else if (cl < cp) {
+        right = wordStart;
+        break;
+      } else if (cp == 0) [[unlikely]] {
+        return p;
       }
     }
-
-    if (compare < 0) {
-      right = wordStart;
-      continue;
-    }
-
-    if (compare > 0) {
-      left = StenoTextBlock::FindNextWordStart(p);
-      continue;
-    }
-
-    return p;
   }
   return nullptr;
 }
 
 const uint8_t *
-StenoReverseMapDictionary::FindPrefixLookup(const char *text) const {
-  size_t indexLeft = 0;
-  size_t indexRight = indexSize;
-  while (indexLeft + 1 < indexRight) {
-    const size_t mid = (indexLeft + indexRight) >> 1;
-    const int compare = Str::Compare(text, (const char *)index[mid]);
-    if (compare < 0) {
-      indexRight = mid;
-    } else {
-      indexLeft = mid;
-    }
-  }
-
-  const uint8_t *left = index[indexLeft];
-  const uint8_t *right = index[indexRight];
+StenoReverseMapDictionary::FindPrefixLookup(const char *t) const {
+  const uint8_t *text = (const uint8_t *)t;
+  const uint8_t *left = index[text[0]];
+  const uint8_t *right = index[text[0] + 1];
 
   while (left < right) {
     const uint8_t *mid = left + size_t(right - left) / 2;
     const uint8_t *wordStart = StenoTextBlock::FindPreviousWordStart(mid);
 
-    int compare = Str::Compare(text, (const char *)wordStart);
+    const int compare =
+        Str::Compare((const char *)text, (const char *)wordStart);
     if (compare < 0) {
       right = wordStart;
-      continue;
-    }
-
-    if (compare > 0) {
+    } else {
       left = StenoTextBlock::FindNextWordStart(mid);
-      continue;
     }
+  }
+  return left;
+}
 
-    // Explicitly ignore exact matches -- they'll be returned by lookup
-    return StenoTextBlock::FindNextWordStart(mid);
+const uint8_t *
+StenoReverseMapDictionary::FindFirstEntryWithPrefix(int c) const {
+  const uint8_t *left = begin(textBlock) + 1;
+  const uint8_t *right = end(textBlock) - 1;
+
+  while (left < right) {
+    const uint8_t *mid = left + size_t(right - left) / 2;
+    const uint8_t *wordStart = StenoTextBlock::FindPreviousWordStart(mid);
+
+    const int firstLetter = *wordStart;
+    if (firstLetter >= c) {
+      right = wordStart;
+    } else {
+      left = StenoTextBlock::FindNextWordStart(mid);
+    }
   }
   return left;
 }
@@ -156,19 +142,10 @@ void StenoReverseMapDictionary::FilterResult(
 }
 
 void StenoReverseMapDictionary::BuildIndex() {
-  for (size_t i = 0; i < INDEX_SIZE; ++i) {
-    const size_t offset = 1 + i * textBlock.count / INDEX_SIZE;
-    const uint8_t *word =
-        StenoTextBlock::FindPreviousWordStart(textBlock.data + offset);
-
-    if (indexSize > 0 && index[indexSize - 1] == word) {
-      continue;
-    }
-
-    index[indexSize++] = word;
+  for (size_t i = 0; i < 256; ++i) {
+    index[i] = FindFirstEntryWithPrefix((uint8_t) i);
   }
-
-  index[indexSize] = end(textBlock);
+  index[256] = end(textBlock) - 1;
 }
 
 const char *StenoReverseMapDictionary::GetName() const {

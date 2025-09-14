@@ -496,7 +496,7 @@ TEST_BEGIN("Pattern: Orthography example1 test") {
 }
 TEST_END
 
-TEST_BEGIN("Pattern: Orthograph example2 test") {
+TEST_BEGIN("Pattern: Orthography example2 test") {
   const Pattern pattern = Pattern::Compile(R"(^(.+)e \^tiv(e|ity|ities)$)");
 
   assert(pattern.HasEndAnchor() == true);

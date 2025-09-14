@@ -19,12 +19,20 @@ public:
 
   void WriteString(const char *s);
   void WriteBase64(const void *data, size_t length);
+  void WriteIntList(const int32_t *data, size_t count);
+
+  void WriteVarInt(int32_t value) { WriteVarUint(ZigZagEncode(value)); }
+  void WriteVarUint(uint32_t value);
 
   void Printf(const char *p, ...);
   void Vprintf(const char *p, va_list args);
 
 private:
   void WriteSegment(int flags, char *start, char *end, int width);
+
+  static uint32_t ZigZagEncode(int32_t value) {
+    return (value << 1) ^ (value >> 31);
+  }
 };
 
 class NullWriter final : public IWriter {
@@ -101,21 +109,37 @@ public:
   void Flush();
 
 protected:
-  BlockWriterBase(size_t size, IWriter *next) : size(size), next(next) {}
+  BlockWriterBase(size_t size) : size(size) {}
+
+  virtual void Flush(const char *data, size_t length) = 0;
 
 private:
   size_t used = 0;
   size_t size;
-  IWriter *next;
-  char buffer[0];
+  char buffer[4];
 };
 
 template <size_t N> class BlockWriter : public BlockWriterBase {
 public:
-  BlockWriter(IWriter *next) : BlockWriterBase(N, next) {}
+  BlockWriter() : BlockWriterBase(N) {}
 
 private:
-  char buffer[N];
+  char buffer[N >= 4 ? N - 4 : 0];
+};
+
+class Base64Writer final : public BlockWriter<3> {
+private:
+  using super = BlockWriter<3>;
+
+public:
+  Base64Writer(IWriter *next) : next(next) {}
+
+  using super::Flush;
+
+private:
+  IWriter *next;
+
+  virtual void Flush(const char *data, size_t length);
 };
 
 class LimitedBufferWriter final : public IWriter {

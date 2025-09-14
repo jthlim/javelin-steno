@@ -3,7 +3,6 @@
 #include "script.h"
 #include "console.h"
 #include "mem.h"
-#include "varint_writer.h"
 
 #include <assert.h>
 
@@ -46,28 +45,10 @@ void Script::ExecuteScript(size_t offset, const intptr_t *parameters,
 }
 
 void Script::PrintScriptGlobals() const {
-  char buffer[256 * 5 + 4];
-  VarintWriter writer(buffer);
-
-  int i = 0;
-  while (i < 256) {
-    int j = i;
-    while (j < 256 && globals[j] == 0) {
-      ++j;
-    }
-    writer.Write(j - i);
-    i = j;
-
-    while (j < 256 && globals[j] != 0) {
-      ++j;
-    }
-    writer.Write(j - i);
-    for (; i < j; ++i) {
-      writer.Write(VarintWriter::ZigZagEncode((int32_t)globals[i]));
-    }
-  }
-
-  Console::Printf("%D\n\n", buffer, size_t(writer.p - buffer));
+  Base64Writer base64Data(ConsoleWriter::instance.GetActiveWriter());
+  base64Data.WriteIntList((const int32_t *)globals, 256);
+  base64Data.Flush();
+  Console::Printf("\n\n");
 }
 
 //---------------------------------------------------------------------------
@@ -389,7 +370,7 @@ next:
   case BC::OPERATOR_START + (int)OP::WRITE_WORD_INDEX:
     stack.TernaryVoidOp([=](intptr_t offset, intptr_t index, intptr_t value) {
       uint32_t *data = (uint32_t *)(byteCode + offset);
-      data[index] = (uint32_t) value;
+      data[index] = (uint32_t)value;
     });
     CONTINUE;
   case BC::CALL_INTERNAL: {

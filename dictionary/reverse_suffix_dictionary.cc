@@ -257,40 +257,36 @@ void StenoReverseSuffixDictionary::AddSuffixReverseLookup(
 
   if (prefixLookup->HasResults()) {
     // Prefix lookup succeeded, get the suffixes.
-    const size_t minimumPrefixStrokeCount =
-        prefixLookup->GetMinimumStrokeCount();
-    if (lookup.ignoreStrokeThreshold > minimumPrefixStrokeCount + 1) {
-      StenoReverseDictionaryLookup *suffixLookup =
-          new StenoReverseDictionaryLookup(
-              (const char *)suffix->GetText(suffixLength),
-              lookup.ignoreStrokeThreshold - minimumPrefixStrokeCount);
+    StenoReverseDictionaryLookup *suffixLookup =
+        new StenoReverseDictionaryLookup(
+            (const char *)suffix->GetText(suffixLength),
+            lookup.ignoreStrokeThreshold -
+                prefixLookup->GetMinimumStrokeCount());
 
-      // Add map lookup hints.
-      suffixLookup->mapLookupData.Add(suffix->GetMapLookupData(), baseAddress);
+    // Add map lookup hints.
+    suffixLookup->mapLookupData.Add(suffix->GetMapLookupData(), baseAddress);
 
-      super::ReverseLookup(*suffixLookup);
+    super::ReverseLookup(*suffixLookup);
 
-      if (suffixLookup->HasResults()) {
-        for (const StenoReverseDictionaryResult &prefix :
-             prefixLookup->results) {
-          for (const StenoReverseDictionaryResult &suffix :
-               suffixLookup->results) {
-            const size_t combinedLength = prefix.length + suffix.length;
-            if (combinedLength >= lookup.ignoreStrokeThreshold) {
-              continue;
-            }
-            StenoStroke strokes[combinedLength];
-            prefix.strokes->CopyTo(strokes, prefix.length);
-            suffix.strokes->CopyTo(strokes + prefix.length, suffix.length);
+    if (suffixLookup->HasResults()) {
+      for (const StenoReverseDictionaryResult &prefix : prefixLookup->results) {
+        for (const StenoReverseDictionaryResult &suffix :
+             suffixLookup->results) {
+          const size_t combinedLength = prefix.length + suffix.length;
+          if (combinedLength >= lookup.ignoreStrokeThreshold) {
+            continue;
+          }
+          StenoStroke strokes[combinedLength];
+          prefix.strokes->CopyTo(strokes, prefix.length);
+          suffix.strokes->CopyTo(strokes + prefix.length, suffix.length);
 
-            if (!IsStrokeDefined(strokes, prefix.length, combinedLength)) {
-              lookup.AddResult(strokes, combinedLength, this);
-            }
+          if (!IsStrokeDefined(strokes, prefix.length, combinedLength)) {
+            lookup.AddResult(strokes, combinedLength, this);
           }
         }
       }
-      delete suffixLookup;
     }
+    delete suffixLookup;
   }
 
   delete prefixLookup;

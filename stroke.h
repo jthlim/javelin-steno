@@ -161,9 +161,11 @@ public:
   }
 
   void CopyTo(StenoStroke *destination, size_t length) const {
-    for (size_t i = 0; i < length; ++i) {
-      destination[i] = this[i];
-    }
+    assert(length != 0);
+    const StenoStroke *source = this;
+    do {
+      *destination++ = *source++;
+    } while (--length);
   }
 
   static void SetLanguage(const SizedList<StrokeKey> &keys);
