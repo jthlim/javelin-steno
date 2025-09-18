@@ -280,9 +280,9 @@ size_t BranchPatternComponent::GetMaximumLength(
   case BranchType::NEXT_BACK:
     return INFINITE_LENGTH;
   case BranchType::BRANCH_FORWARD:
-    return branch->GetMaximumLength(context);
-  case BranchType::NEXT_FORWARD:
     return next->GetMaximumLength(context);
+  case BranchType::NEXT_FORWARD:
+    return branch->GetMaximumLength(context);
   default:
     __builtin_unreachable();
   }

@@ -508,6 +508,19 @@ TEST_BEGIN("Pattern: Orthography example2 test") {
   free(t1);
 }
 TEST_END
+
+TEST_BEGIN("Pattern: Orthography example3 test") {
+  const Pattern pattern = Pattern::Compile(R"(^(.*(?:[sz]h?|x)) \^s$)");
+
+  assert(pattern.HasEndAnchor() == true);
+  assert(pattern.GetMinimumLength() == 4);
+  assert(pattern.GetMaximumLength() == size_t(-1));
+
+  char *t1 = pattern.Match("wish ^s").Replace(R"(\1es)");
+  assert(Str::Eq(t1, "wishes"));
+  free(t1);
+}
+TEST_END
 // spellchecker: enable
 
 //---------------------------------------------------------------------------

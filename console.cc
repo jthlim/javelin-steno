@@ -201,9 +201,13 @@ Console::Channel *Console::GetChannel(int channelId) {
       }
     }
   }
-  // No channel ID? Return the last active buffer if there is one.
-  if (channelId < 0 && activeBuffers.IsNotEmpty()) {
-    return activeBuffers.Back();
+  // No channel ID? Return the last active buffer if there is one with -1 id.
+  if (channelId < 0) {
+    for (Channel *channel : activeBuffers) {
+      if (channel->id == channelId) {
+        return channel;
+      }
+    }
   }
 
   Channel *result;
