@@ -94,6 +94,8 @@ public:
 
   const char *GetBuffer() const { return buffer; }
   size_t GetCount() const { return bufferUsedCount; }
+  bool IsEmpty() const { return bufferUsedCount == 0; }
+  bool IsNotEmpty() const { return bufferUsedCount != 0; }
 
 private:
   size_t bufferUsedCount;

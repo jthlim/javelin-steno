@@ -80,17 +80,15 @@ void StenoReverseAutoSuffixDictionary::ProcessReverseAutoSuffix(
   // 3. Lookup the un-suffixed word,
   // 4. Add in the auto suffix, and verify that it produces invalid lookup.
 
-  // 1. To generate the word without suffix, run the regex on up to the last
-  // 8 letters of the definition.
+  // 1. Generate word without suffix.
   const PatternMatch match = test.reversePattern.MatchBypassingQuickReject(
       lookup.definition, lookup.definitionLength);
   if (!match.match) {
     return;
   }
-
-  // 2. Create the without suffix version, add the suffix, and verify it
-  // matches.
   char *withoutSuffix = match.Replace(test.replacement);
+
+  // 2. Add the suffix, and verify it matches.
   char *suffix = Str::DupN(test.text + 3, test.textLength - 4);
   char *withSuffix = orthography.AddSuffixToPhrase(withoutSuffix, suffix);
   free(suffix);

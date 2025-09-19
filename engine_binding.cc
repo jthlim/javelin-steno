@@ -157,11 +157,11 @@ void StenoEngine::Lookup_Binding(void *context, const char *commandLine) {
       free(t);
     } else {
       BufferWriter writer;
-      const char *format = " %s";
-      format++;
       for (const StenoSegment &segment : segments) {
-        writer.Printf(format, segment.lookup.GetText());
-        format = " %s";
+        if (writer.IsNotEmpty()) {
+          writer.WriteByte(' ');
+        }
+        writer.WriteString(segment.lookup.GetText());
       }
       writer.WriteByte(0);
       lookupDictionaryContext.Add(entry.strokes, entry.length,
