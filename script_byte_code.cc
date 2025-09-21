@@ -6,8 +6,8 @@
 
 //---------------------------------------------------------------------------
 
-const uint8_t *
-ScriptByteCode::FindStringOrReturnOriginal(const uint8_t *string) const {
+const char *
+ScriptByteCode::FindStringOrReturnOriginal(const char *string) const {
   const StenoScriptHashTable *hashTable = GetHashTable();
 
   const size_t mask = hashTable->size - 1;
@@ -20,8 +20,8 @@ ScriptByteCode::FindStringOrReturnOriginal(const uint8_t *string) const {
       return string;
     }
 
-    const uint8_t *base = (const uint8_t *)this;
-    const uint8_t *candidate = base + textOffset;
+    const char *base = (const char *)this;
+    const char *candidate = base + textOffset;
     if (Mem::Eq(string, candidate, length + 1)) {
       return candidate;
     }

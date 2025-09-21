@@ -917,8 +917,14 @@ These methods are only available on chips with secure storage.
   - Returns whether user presence has been requested.
 
 - `func replyUserPresence(<isPresent>)`
+
   - Responds whether a user is present or not.
   - `replyUserPresence(1);` is the equivalent of touching other security keys.
+
+- `func getRelyingPartyId()`
+
+  - Returns the rpId from FIDO spec during make credential and authenticate
+    operations.
 
 ## Security Functions
 

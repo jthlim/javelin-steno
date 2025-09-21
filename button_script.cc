@@ -737,7 +737,7 @@ public:
     const size_t scriptOffset = script.Pop();
     const bool repeating = script.Pop() != 0;
     const uint32_t interval = (uint32_t)script.Pop();
-    int32_t id = (int32_t) script.Pop();
+    int32_t id = (int32_t)script.Pop();
     if (id == -1) {
       id = TimerManager::instance.FindFreeTimerId();
     } else {
@@ -1144,12 +1144,12 @@ public:
         script.formatStringWriter[script.formatStringWriterIndex];
     script.formatStringWriterIndex = (script.formatStringWriterIndex + 1) & 1;
 
+    writer.SetPrintfPointerOffset(byteCode);
     writer.Reset();
     writer.Printf(text, value);
     writer.AddTrailingNull();
 
-    const uint8_t *result = byteCode->FindStringOrReturnOriginal(writer.buffer);
-    script.Push(byteCode->GetDataOffset(result));
+    script.Push(byteCode->GetStringOffset((char *)writer.buffer));
   }
 
   static void GetAsset(ButtonScript &script, const ScriptByteCode *byteCode) {
@@ -1347,6 +1347,11 @@ public:
     const AssetEntry *asset = AssetManager::GetAsset(assetName);
     script.Push(asset == nullptr ? 0 : asset->size);
   }
+
+  static void GetRelyingPartyId(ButtonScript &script,
+                                const ScriptByteCode *byteCode) {
+    script.Push(byteCode->GetStringOffset(script.GetRelyingPartyId()));
+  }
 };
 
 constexpr void (*ButtonScript::FUNCTION_TABLE[])(ButtonScript &,
@@ -1474,6 +1479,7 @@ constexpr void (*ButtonScript::FUNCTION_TABLE[])(ButtonScript &,
     &Function::CreateBuffer,
     &Function::SendMidi,
     &Function::GetAssetSize,
+    &Function::GetRelyingPartyId,
 };
 
 void ButtonScript::PrintEventHistory() {
@@ -1491,21 +1497,22 @@ void ButtonScript::RunConsoleCommand(const char *command,
                                      const ScriptByteCode *byteCode) {
   consoleWriter.Reset();
 
-  const uint8_t *result;
+  const char *result;
   if (Console::RunCommand(command, consoleWriter)) {
     consoleWriter.AddTrailingNull();
-    result = byteCode->FindStringOrReturnOriginal(consoleWriter.buffer);
+    result = (char *)consoleWriter.buffer;
   } else {
-    result = (const uint8_t *)"Invalid console command";
+    result = "Invalid console command";
   }
 
-  Push(byteCode->GetDataOffset(result));
+  Push(byteCode->GetStringOffset(result));
 }
 
 //---------------------------------------------------------------------------
 
 [[gnu::weak]] bool ButtonScript::IsWaitingForUserPresence() { return false; }
 [[gnu::weak]] void ButtonScript::ReplyUserPresence(bool present) {}
+[[gnu::weak]] const char *ButtonScript::GetRelyingPartyId() { return ""; }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

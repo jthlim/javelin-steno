@@ -27,8 +27,14 @@ public:
   void Printf(const char *p, ...);
   void Vprintf(const char *p, va_list args);
 
+  void SetPrintfPointerOffset(const void *p) {
+    printfPointerOffset = intptr_t(p);
+  }
+
 private:
-  void WriteSegment(int flags, char *start, char *end, int width);
+  intptr_t printfPointerOffset = 0;
+
+  void WriteSegment(int flags, const char *start, const char *end, int width);
 
   static uint32_t ZigZagEncode(int32_t value) {
     return (value << 1) ^ (value >> 31);

@@ -119,7 +119,6 @@ struct ScriptByteCode {
   uint16_t scriptOffsets[0];
 
   bool IsValid() const { return magic4 == SCRIPT_MAGIC; }
-  const uint8_t *FindStringOrReturnOriginal(const uint8_t *string) const;
   const StenoScriptHashTable *GetHashTable() const {
     const uint8_t *base = (const uint8_t *)this;
     return (const StenoScriptHashTable *)(base + stringHashTableOffset);
@@ -133,6 +132,10 @@ struct ScriptByteCode {
     return intptr_t(p) - intptr_t(this);
   }
 
+  intptr_t GetStringOffset(const char *s) const {
+    return GetDataOffset(FindStringOrReturnOriginal(s));
+  }
+
   size_t GetLength() const {
     const StenoScriptHashTable *hashTable = GetHashTable();
     const void *byteCodeEnd = &hashTable->offsets[hashTable->size];
@@ -140,6 +143,9 @@ struct ScriptByteCode {
   }
 
   uint32_t Crc() const { return Crc32::Hash(this, GetLength()); }
+
+private:
+  const char *FindStringOrReturnOriginal(const char *string) const;
 };
 
 //---------------------------------------------------------------------------

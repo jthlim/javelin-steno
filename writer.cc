@@ -314,7 +314,7 @@ void IWriter::Vprintf(const char *p, va_list args) {
     } break;
 
     case 's':
-      start = va_arg(args, char *);
+      start = va_arg(args, char *) + printfPointerOffset;
       end = start + Str::Length(start);
       break;
 
@@ -337,6 +337,7 @@ void IWriter::Vprintf(const char *p, va_list args) {
     case 't': {
       // Write single stroke.
       const StenoStroke *stroke = va_arg(args, const StenoStroke *);
+      stroke = (const StenoStroke *)(intptr_t(stroke) + printfPointerOffset);
       char *p = stroke->ToString(scratch);
       Write(scratch, p - scratch);
       goto NextSegment;
@@ -345,6 +346,7 @@ void IWriter::Vprintf(const char *p, va_list args) {
     case 'T': {
       // Write multiple strokes.
       const StenoStroke *strokes = va_arg(args, const StenoStroke *);
+      strokes = (const StenoStroke *)(intptr_t(strokes) + printfPointerOffset);
       const size_t strokeCount = va_arg(args, size_t);
       for (size_t j = 0; j < strokeCount; ++j) {
         char *p = scratch;
@@ -359,13 +361,14 @@ void IWriter::Vprintf(const char *p, va_list args) {
     case 'D': {
       // Write Data (void*, length) as Base64
       const void *data = va_arg(args, const void *);
+      data = (const StenoStroke *)(intptr_t(data) + printfPointerOffset);
       const size_t length = va_arg(args, size_t);
       WriteBase64(data, length);
       goto NextSegment;
     }
     case 'J': {
       // Write as JSON
-      const char *p = va_arg(args, char *);
+      const char *p = va_arg(args, char *) + printfPointerOffset;
       const size_t length = Str::Length(p);
       char *jsonBuffer =
           length <= sizeof(scratch) / 2 ? scratch : (char *)malloc(2 * length);
@@ -396,7 +399,8 @@ void IWriter::Vprintf(const char *p, va_list args) {
 static constexpr char SPACES[] = "                ";
 static constexpr char ZEROS[] = "0000000000000000";
 
-void IWriter::WriteSegment(int flags, char *start, char *end, int width) {
+void IWriter::WriteSegment(int flags, const char *start, const char *end,
+                           int width) {
   const size_t length = end - start;
   if (length < width) {
     size_t fillCount = width - length;

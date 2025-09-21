@@ -81,6 +81,7 @@ public:
 
   static bool IsWaitingForUserPresence();
   static void ReplyUserPresence(bool present);
+  static const char *GetRelyingPartyId();
 
   void PrintEventHistory();
 
