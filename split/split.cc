@@ -1,6 +1,7 @@
 //---------------------------------------------------------------------------
 
 #include "split.h"
+#include "../console.h"
 #include "../crc32.h"
 #include "../hash.h"
 #include <string.h>
@@ -190,6 +191,22 @@ void RxBuffer::OnConnectionReset() {
     }
   }
 }
+
+#if JAVELIN_SPLIT
+void Split::PrintPacketTypeInfo() {
+  Console::Printf("  Packet types\n");
+  Console::Printf("    Transmit:");
+  for (const uint32_t count : TxBuffer::txPacketTypeCounts) {
+    Console::Printf(" %u", count);
+  }
+  Console::Printf("\n");
+  Console::Printf("    Receive:");
+  for (const uint32_t count : RxBuffer::rxPacketTypeCounts) {
+    Console::Printf(" %u", count);
+  }
+  Console::Printf("\n");
+}
+#endif
 
 //---------------------------------------------------------------------------
 

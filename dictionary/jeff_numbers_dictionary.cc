@@ -107,10 +107,6 @@ StenoJeffNumbersDictionary::LookupInternal(
     if (const StenoStroke KWR =
             StrokeMask::KL | StrokeMask::WL | StrokeMask::RL;
         (control & KWR) == KWR) {
-      if (i + 1 != length) {
-        free(result);
-        return StenoDictionaryLookupResult::CreateInvalid();
-      }
       control &= ~KWR;
       result = ProcessYear(result, 1900);
       if (!result) {
@@ -119,10 +115,6 @@ StenoJeffNumbersDictionary::LookupInternal(
     } else if (const StenoStroke RBG =
                    StrokeMask::RR | StrokeMask::BR | StrokeMask::GR;
                (control & RBG) == RBG) {
-      if (i + 1 != length) {
-        free(result);
-        return StenoDictionaryLookupResult::CreateInvalid();
-      }
       control &= ~RBG;
       result = ProcessYear(result, 2000);
       if (!result) {

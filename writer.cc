@@ -78,7 +78,7 @@ static char *WriteReversedHex(char *p, T v, const char *alphabet) {
       if (i != 0) {
         Write(line, 80);
       }
-      Str::Sprintf(line, "%08x:", p + i);
+      Str::Sprintf(line, "%08x:", i);
       memset(line + 9, ' ', 78 - 9);
       line[61] = '|';
     }

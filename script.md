@@ -898,10 +898,10 @@ are suppressed until it is confirmed that no combo is involved.
   - noteIndex is:
     - 00: End of sequence
     - 01: Pause
-    - 02+: Note, with middle-C at 50 (decimal), concert A at 59 (decimal),
+    - 02+: Note, with middle-C (C4) at 50 (decimal), concert A at 59 (decimal),
            each increment is one semitone.
   - Example:
-    - C7 for 100ms, E7 for 100ms repeated 3 times is:
+    - C8 for 100ms, E8 for 100ms repeated 3 times is:
     - `playSequence([[62 05 66 05 62 05 66 05 62 05 66 05 00 00]])`
 
 - `func playWaveform(<data>)`

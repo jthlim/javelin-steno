@@ -157,12 +157,17 @@ public:
   static void RegisterRxHandler(SplitHandlerId id, SplitRxHandler *handler) {
     RxBuffer::handlers[(size_t)id] = handler;
   }
+
+  static void PrintPacketTypeInfo();
+
 #else
   static bool IsMaster() { return true; }
   static bool IsPairConnected() { return false; }
 
   static void RegisterTxHandler(void *handler) {}
   static void RegisterRxHandler(SplitHandlerId id, void *handler) {}
+
+  static void PrintPacketTypeInfo() {}
 #endif
 
   static bool IsSlave() { return !IsMaster(); }

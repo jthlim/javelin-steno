@@ -13,10 +13,10 @@ TimerManager TimerManager::instance;
 void TimerManager::PrintInfo() const {
   Console::Printf("Timers\n");
   Console::Printf("  Last updated: %u ms\n", lastUpdateTime);
-  Console::Printf("  Tick: %d ms\n", tickDelay);
+  Console::Printf("  Tick: %u ms\n", tickDelay);
   for (size_t i = 0; i < timerCount; ++i) {
     const Timer &timer = timers[i];
-    Console::Printf("    id %d: %ums%s, updated: %u ms\n", (int)timer.id,
+    Console::Printf("    id %d: %u ms%s, updated: %u ms\n", (int)timer.id,
                     timer.interval, timer.isRepeating ? " (repeating)" : "",
                     timer.lastUpdateTime);
   }

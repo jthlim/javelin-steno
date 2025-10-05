@@ -137,13 +137,13 @@ static constexpr const char *EVENT_NAMES[] = {
     "dictionary_status", //
     "paper_tape",        //
     "script",            //
-#if JAVELIN_BLE
-    "serial", //
-#endif
-    "suggestion",     //
-    "template_value", //
-    "text",           //
-    "analog_data",    //
+#if JAVELIN_BLE          //
+    "serial",            //
+#endif                   //
+    "suggestion",        //
+    "template_value",    //
+    "text",              //
+    "analog_data",       //
 };
 
 static_assert(sizeof(EVENT_NAMES) / sizeof(*EVENT_NAMES) ==
