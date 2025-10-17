@@ -4,6 +4,7 @@
 #include "../container/list.h"
 #include "../orthography.h"
 #include "../pattern.h"
+#include "../xip_pointer.h"
 #include "dictionary.h"
 #include "map_data_lookup.h"
 #include <assert.h>
@@ -14,11 +15,11 @@ struct StenoReverseSuffixDictionary::Suffix {
   // suffix points to the last letter of the suffix.
   //
   // Suffixes have form "{^suffix}\0<MapData>"
-  const uint8_t *suffix;
+  XipPointer<uint8_t> suffix;
 
   const uint8_t *GetText(size_t suffixLength) const {
     // -1 is for the preceding "{"
-    return suffix - suffixLength - 1;
+    return (const uint8_t *)suffix - suffixLength - 1;
   }
 
   char *CreateOrthographySuffix(size_t suffixLength) const {
@@ -108,12 +109,11 @@ StenoReverseSuffixDictionary::StenoReverseSuffixDictionary(
     const SizedList<StenoOrthographyRule> &reverseSuffixes,
     const StenoCompiledOrthography &orthography,
     const StenoDictionary *prefixDictionary,
-    const SizedList<const uint8_t *> suffixes,
-    const List<const uint8_t *> &ignoreSuffixes)
+    const SizedList<const uint8_t *> suffixes)
     : StenoWrappedDictionary(dictionary), baseAddress(baseAddress),
       reversePatterns(CreateReversePatterns(reverseSuffixes)),
-      suffixes(CreateSuffixList(suffixes, ignoreSuffixes)),
-      orthography(orthography), prefixDictionary(prefixDictionary) {
+      suffixes(suffixes.Cast<Suffix>()), orthography(orthography),
+      prefixDictionary(prefixDictionary) {
   for (const ReverseSuffix &suffix : reversePatterns) {
     mergedQuickReject.Merge(suffix.testPattern.GetQuickReject());
   }
@@ -132,32 +132,6 @@ StenoReverseSuffixDictionary::CreateReversePatterns(
       .count = patterns.GetCount(),
       .data = result,
   };
-}
-
-SizedList<StenoReverseSuffixDictionary::Suffix>
-StenoReverseSuffixDictionary::CreateSuffixList(
-    const SizedList<const uint8_t *> suffixes,
-    const List<const uint8_t *> &ignoreSuffixes) {
-  SizedList<Suffix> filteredSuffixes =
-      SizedList<Suffix>::CreateWithCapacity(suffixes.GetCount());
-
-  const uint8_t *ignoreSuffix = nullptr;
-  size_t ignoreSuffixIndex = 0;
-  if (ignoreSuffixes.IsNotEmpty()) {
-    ignoreSuffix = ignoreSuffixes[ignoreSuffixIndex++];
-  }
-
-  for (const uint8_t *suffix : suffixes) {
-    if (suffix != ignoreSuffix) [[likely]] {
-      filteredSuffixes.Add(Suffix{.suffix = suffix});
-    } else if (ignoreSuffixIndex < ignoreSuffixes.GetCount()) {
-      ignoreSuffix = ignoreSuffixes[ignoreSuffixIndex++];
-    } else {
-      ignoreSuffix = nullptr;
-    }
-  }
-
-  return filteredSuffixes;
 }
 
 void StenoReverseSuffixDictionary::ReverseLookup(

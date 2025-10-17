@@ -24,8 +24,7 @@ public:
       const SizedList<StenoOrthographyRule> &reverseSuffixes,
       const StenoCompiledOrthography &orthography,
       const StenoDictionary *prefixDictionary,
-      const SizedList<const uint8_t *> suffixes,
-      const List<const uint8_t *> &ignoreSuffixes);
+      const SizedList<const uint8_t *> suffixes);
 
   virtual void ReverseLookup(StenoReverseDictionaryLookup &lookup) const;
   virtual const char *GetName() const;
@@ -41,10 +40,6 @@ private:
   const SizedList<Suffix> suffixes;
   const StenoCompiledOrthography &orthography;
   const StenoDictionary *const prefixDictionary;
-
-  static SizedList<Suffix>
-  CreateSuffixList(const SizedList<const uint8_t *> suffixes,
-                   const List<const uint8_t *> &ignoreSuffixes);
 
   void AddSuffixReverseLookup(ReverseLookupContext &context,
                               StenoReverseDictionaryLookup &lookup) const;

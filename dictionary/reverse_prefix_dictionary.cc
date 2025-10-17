@@ -2,6 +2,7 @@
 
 #include "reverse_prefix_dictionary.h"
 #include "../container/list.h"
+#include "../xip_pointer.h"
 #include "dictionary.h"
 #include "map_data_lookup.h"
 #include <assert.h>
@@ -10,9 +11,9 @@
 
 struct StenoReversePrefixDictionary::Prefix {
   // Prefixes have form "{prefix^}\0<MapData>"
-  const uint8_t *text;
+  XipPointer<uint8_t> text;
 
-  const char *GetText() const { return (const char *)text; }
+  const char *GetText() const { return (const char *)(const uint8_t *)text; }
 
   const uint8_t *GetMapLookupData(size_t prefixLength) const {
     return text + prefixLength + 4;
@@ -93,7 +94,7 @@ StenoReversePrefixDictionary::StenoReversePrefixDictionary(
     StenoDictionary *dictionary, const uint8_t *baseAddress,
     const SizedList<const uint8_t *> prefixes)
     : StenoWrappedDictionary(dictionary), baseAddress(baseAddress),
-      prefixes(prefixes.Copy().Cast<Prefix>()) {}
+      prefixes(prefixes.Cast<Prefix>()) {}
 
 void StenoReversePrefixDictionary::ReverseLookup(
     StenoReverseDictionaryLookup &lookup) const {
