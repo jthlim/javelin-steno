@@ -65,7 +65,7 @@ public:
   char *ToString(size_t startingOffset = 0) const;
   char *ToUnresolvedString() const;
 
-  static bool IsGlue(const char *p);
+  static bool IsGlue(const char *p, size_t length);
 
   bool ProcessKeyPresses(const char *p, const char *end);
   void ReleaseKeyStack(List<KeyCode> &keyPressStack);

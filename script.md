@@ -921,10 +921,45 @@ These methods are only available on chips with secure storage.
   - Responds whether a user is present or not.
   - `replyUserPresence(1);` is the equivalent of touching other security keys.
 
-- `func getRelyingPartyId()`
+- `func getRelyingPartyId() var`
 
   - Returns the rpId from FIDO spec during make credential and authenticate
     operations.
+
+- `func getSignatureAlgorithm() var`
+
+  - Returns the algorithm id during make credential and authenticate
+    operations.
+
+
+- `func setSignatureAlgorithms(algs)`
+
+  - Sets the signature algorithms used by the security key.
+    algs is a byte list of signature algorithms, terminated with 0xff.
+
+    Example: `setSignatureAlgorithms([[0b 0a 0o ff]]); // Only enable ML_DSA_*`
+
+  - This list is used when new registrations are requested, and should list
+    top priority items first. By default, Javelin does not enable ML_DSA_65 and
+    ML_DSA_87 due to processing requirements and signature sizes leading to
+    a slower experience.
+
+```
+    const SIGNATURE_ALG_UNKNOWN = -1;
+    const SIGNATURE_ALG_ES256 = 0;
+    const SIGNATURE_ALG_EDDSA = 1;
+    const SIGNATURE_ALG_ES256K = 2;
+    const SIGNATURE_ALG_ESP256 = 3;
+    const SIGNATURE_ALG_ED25519 = 4;
+    const SIGNATURE_ALG_ES384 = 5;
+    const SIGNATURE_ALG_ESP384 = 6;
+    const SIGNATURE_ALG_ES512 = 7;
+    const SIGNATURE_ALG_ESP512 = 8;
+    const SIGNATURE_ALG_ML_DSA_44 = 9;
+    const SIGNATURE_ALG_ML_DSA_65 = 10;
+    const SIGNATURE_ALG_ML_DSA_87 = 11;
+```
+
 
 ## Security Functions
 

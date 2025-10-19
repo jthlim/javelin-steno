@@ -82,6 +82,8 @@ public:
   static bool IsWaitingForUserPresence();
   static void ReplyUserPresence(bool present);
   static const char *GetRelyingPartyId();
+  static int GetSignatureAlgorithm();
+  static void SetSignatureAlgorithms(const uint8_t *algorithms);
 
   void PrintEventHistory();
 

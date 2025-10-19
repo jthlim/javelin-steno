@@ -73,6 +73,23 @@ public:
           (int (*)(const void *, const void *))comparator);
   }
 
+  bool Contains(T v) const {
+    for (const T &x : *this) {
+      if (x == v)
+        return true;
+    }
+    return false;
+  }
+
+  size_t FindIndexOf(T v) const {
+    for (size_t i = 0; i < GetCount(); ++i) {
+      if ((*this)[i] == v) {
+        return i;
+      }
+    }
+    return (size_t)-1;
+  }
+
   friend const T *begin(const StaticList &list) { return list.data; }
   friend const T *end(const StaticList &list) { return list.data + list.count; }
 

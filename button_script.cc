@@ -1352,6 +1352,18 @@ public:
                                 const ScriptByteCode *byteCode) {
     script.Push(byteCode->GetStringOffset(script.GetRelyingPartyId()));
   }
+
+  static void GetSignatureAlgorithm(ButtonScript &script,
+                                    const ScriptByteCode *byteCode) {
+    script.Push(script.GetSignatureAlgorithm());
+  }
+
+  static void SetSignatureAlgorithms(ButtonScript &script,
+                                     const ScriptByteCode *byteCode) {
+    const intptr_t offset = script.Pop();
+    const uint8_t *algs = byteCode->GetScriptData<uint8_t>(offset);
+    script.SetSignatureAlgorithms(algs);
+  }
 };
 
 constexpr void (*ButtonScript::FUNCTION_TABLE[])(ButtonScript &,
@@ -1480,6 +1492,8 @@ constexpr void (*ButtonScript::FUNCTION_TABLE[])(ButtonScript &,
     &Function::SendMidi,
     &Function::GetAssetSize,
     &Function::GetRelyingPartyId,
+    &Function::GetSignatureAlgorithm,
+    &Function::SetSignatureAlgorithms,
 };
 
 void ButtonScript::PrintEventHistory() {
@@ -1513,6 +1527,8 @@ void ButtonScript::RunConsoleCommand(const char *command,
 [[gnu::weak]] bool ButtonScript::IsWaitingForUserPresence() { return false; }
 [[gnu::weak]] void ButtonScript::ReplyUserPresence(bool present) {}
 [[gnu::weak]] const char *ButtonScript::GetRelyingPartyId() { return ""; }
+[[gnu::weak]] int ButtonScript::GetSignatureAlgorithm() { return -1; }
+[[gnu::weak]] void ButtonScript::SetSignatureAlgorithms(const uint8_t *) {}
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

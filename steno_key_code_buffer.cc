@@ -46,7 +46,7 @@ void StenoKeyCodeBuffer::Append(StenoTokenizer &tokenizer,
 //---------------------------------------------------------------------------
 
 void StenoKeyCodeBuffer::ProcessText(const char *text, size_t length) {
-  const bool isAutoGlue = IsGlue(text);
+  const bool isAutoGlue = IsGlue(text, length);
   if (!state.joinNext && !(isAutoGlue && state.isGlue)) {
     AppendText(state.GetSpace(), state.spaceLength, StenoCaseMode::NORMAL);
   }
@@ -129,13 +129,13 @@ void StenoKeyCodeBuffer::AppendTextNoCaseModeOverride(const char *p, size_t n,
   wasLastActionAStitch = false;
 }
 
-bool StenoKeyCodeBuffer::IsGlue(const char *p) {
+bool StenoKeyCodeBuffer::IsGlue(const char *p, size_t length) {
   // Pure digits are considered glue.
-  while (*p) {
-    if (!Unicode::IsAsciiDigit(*p)) {
+  while (length) {
+    if (!Unicode::IsAsciiDigit(*p++)) {
       return false;
     }
-    ++p;
+    --length;
   }
   return true;
 }
