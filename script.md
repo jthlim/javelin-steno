@@ -937,7 +937,7 @@ These methods are only available on chips with secure storage.
   - Sets the signature algorithms used by the security key.
     algs is a byte list of signature algorithms, terminated with 0xff.
 
-    Example: `setSignatureAlgorithms([[0b 0a 0o ff]]); // Only enable ML_DSA_*`
+    Example: `setSignatureAlgorithms([[0b 0a 09 ff]]); // Only enable ML_DSA_*`
 
   - This list is used when new registrations are requested, and should list
     top priority items first. By default, Javelin does not enable ML_DSA_65 and
