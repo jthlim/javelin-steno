@@ -19,6 +19,9 @@ public:
   FastIterable(T *p, T *pEnd) : super(p, pEnd) {}
   template <size_t N> FastIterable(T (&t)[N]) : super(t, (T *)t + N) {}
   template <typename S> FastIterable(S &s) : super(begin(s), end(s)) {}
+  template <typename S> FastIterable(S &&s) : super(begin(s), end(s)) {
+    s.HasMoved();
+  }
 
   bool IsEmpty() const { return super::min == super::max; }
   bool IsNotEmpty() const { return super::min != super::max; }

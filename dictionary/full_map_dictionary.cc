@@ -249,9 +249,16 @@ StenoFullMapDictionary::StenoFullMapDictionary(
     const StenoFullMapDictionaryDefinition &definition)
     : StenoDictionary(definition.maximumOutlineLength),
       textBlock(definition.textBlock), definition(definition),
-      strokes(CreateStrokeCache(definition)) {
+      strokes(CreateStrokeCache(this, definition)) {
   dataRange.min = strokes[1].data;
   dataRange.max = strokes[maximumOutlineLength].offsets;
+}
+
+void *StenoFullMapDictionary::operator new(
+    size_t size, const StenoFullMapDictionaryDefinition &definition) noexcept {
+  const size_t cacheSize = sizeof(StenoFullMapDictionaryStrokesDefinition) *
+                           definition.maximumOutlineLength;
+  return JavelinMallocAllocate::operator new(size + cacheSize);
 }
 
 const FullStenoMapDictionaryDataEntry *
@@ -491,11 +498,12 @@ void StenoFullMapDictionary::PrintDictionary(
 
 const StenoFullMapDictionaryStrokesDefinition *
 StenoFullMapDictionary::CreateStrokeCache(
+    StenoFullMapDictionary *object,
     const StenoFullMapDictionaryDefinition &definition) {
   const size_t byteSize = sizeof(StenoFullMapDictionaryStrokesDefinition) *
                           definition.maximumOutlineLength;
   StenoFullMapDictionaryStrokesDefinition *strokes =
-      (StenoFullMapDictionaryStrokesDefinition *)malloc(byteSize);
+      (StenoFullMapDictionaryStrokesDefinition *)(object + 1);
   Mem::Copy(strokes, definition.strokes, byteSize);
   return strokes - 1;
 }

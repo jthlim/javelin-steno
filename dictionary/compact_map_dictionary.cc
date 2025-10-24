@@ -160,9 +160,17 @@ StenoCompactMapDictionary::StenoCompactMapDictionary(
     const StenoCompactMapDictionaryDefinition &definition)
     : StenoDictionary(definition.maximumOutlineLength),
       textBlock(definition.textBlock), definition(definition),
-      strokes(CreateStrokeCache(definition)) {
+      strokes(CreateStrokeCache(this, definition)) {
   dataRange.min = strokes[1].data;
   dataRange.max = strokes[maximumOutlineLength].offsets;
+}
+
+void *StenoCompactMapDictionary::operator new(
+    size_t size,
+    const StenoCompactMapDictionaryDefinition &definition) noexcept {
+  const size_t cacheSize = sizeof(StenoCompactMapDictionaryStrokesDefinition) *
+                           definition.maximumOutlineLength;
+  return JavelinMallocAllocate::operator new(size + cacheSize);
 }
 
 const CompactStenoMapDictionaryDataEntry *StenoCompactMapDictionary::FindEntry(
@@ -375,11 +383,12 @@ void StenoCompactMapDictionary::PrintDictionary(
 
 const StenoCompactMapDictionaryStrokesDefinition *
 StenoCompactMapDictionary::CreateStrokeCache(
+    StenoCompactMapDictionary *object,
     const StenoCompactMapDictionaryDefinition &definition) {
   const size_t byteSize = sizeof(StenoCompactMapDictionaryStrokesDefinition) *
                           definition.maximumOutlineLength;
   StenoCompactMapDictionaryStrokesDefinition *strokes =
-      (StenoCompactMapDictionaryStrokesDefinition *)malloc(byteSize);
+      (StenoCompactMapDictionaryStrokesDefinition *)(object + 1);
   Mem::Copy(strokes, definition.strokes, byteSize);
   return strokes - 1;
 }

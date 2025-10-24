@@ -40,6 +40,10 @@ public:
   virtual void PrintInfo(int depth) const;
   virtual void PrintDictionary(PrintDictionaryContext &context) const;
 
+  static void *
+  operator new(size_t size,
+               const StenoCompactMapDictionaryDefinition &definition) noexcept;
+
 private:
   const uint8_t *const textBlock;
   const StenoCompactMapDictionaryDefinition &definition;
@@ -52,7 +56,8 @@ private:
   FindEntry(const StenoDictionaryLookup &lookup) const;
 
   static const StenoCompactMapDictionaryStrokesDefinition *
-  CreateStrokeCache(const StenoCompactMapDictionaryDefinition &definition);
+  CreateStrokeCache(StenoCompactMapDictionary *object,
+                    const StenoCompactMapDictionaryDefinition &definition);
 };
 
 //---------------------------------------------------------------------------

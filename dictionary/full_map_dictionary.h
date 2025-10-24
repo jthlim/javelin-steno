@@ -39,6 +39,10 @@ public:
   virtual void PrintInfo(int depth) const;
   virtual void PrintDictionary(PrintDictionaryContext &context) const;
 
+  static void *
+  operator new(size_t size,
+               const StenoFullMapDictionaryDefinition &definition) noexcept;
+
 private:
   struct HashStats {
     size_t entries = 0;
@@ -60,7 +64,8 @@ private:
   FindEntry(const StenoDictionaryLookup &lookup) const;
 
   static const StenoFullMapDictionaryStrokesDefinition *
-  CreateStrokeCache(const StenoFullMapDictionaryDefinition &definition);
+  CreateStrokeCache(StenoFullMapDictionary *object,
+                    const StenoFullMapDictionaryDefinition &definition);
 };
 
 //---------------------------------------------------------------------------

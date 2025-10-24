@@ -15,8 +15,12 @@ public:
   _ListBase(_ListBase &&other) {
     buffer = other.buffer;
     count = other.count;
-    other.buffer = nullptr;
-    other.count = 0;
+    other.HasMoved();
+  }
+
+  void HasMoved() {
+    buffer = nullptr;
+    count = 0;
   }
 
   bool IsEmpty() const { return count == 0; }

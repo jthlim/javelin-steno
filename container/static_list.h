@@ -81,9 +81,9 @@ public:
     return false;
   }
 
-  size_t FindIndexOf(T v) const {
+  template <typename V> size_t FindIndexOf(const V v) const {
     for (size_t i = 0; i < GetCount(); ++i) {
-      if ((*this)[i] == v) {
+      if (v == (*this)[i]) {
         return i;
       }
     }
@@ -96,9 +96,9 @@ public:
   friend T *begin(StaticList &list) { return list.data; }
   friend T *end(StaticList &list) { return list.data + list.count; }
 
-  void Remove(T v) {
+  template <typename V> void Remove(const V v) {
     for (size_t i = 0; i < count; ++i) {
-      if (data[i] == v) {
+      if (v == data[i]) {
         RemoveIndex(i);
         return;
       }

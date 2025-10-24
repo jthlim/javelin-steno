@@ -16,12 +16,12 @@
 StenoDictionary *StenoDictionaryDefinition::Create() const {
   switch (type) {
   case StenoDictionaryType::COMPACT_MAP:
-    return new StenoCompactMapDictionary(
-        *(StenoCompactMapDictionaryDefinition *)this);
+    return new (*(StenoCompactMapDictionaryDefinition *)this)
+        StenoCompactMapDictionary(*(StenoCompactMapDictionaryDefinition *)this);
 
   case StenoDictionaryType::FULL_MAP:
-    return new StenoFullMapDictionary(
-        *(StenoFullMapDictionaryDefinition *)this);
+    return new (*(StenoFullMapDictionaryDefinition *)this)
+        StenoFullMapDictionary(*(StenoFullMapDictionaryDefinition *)this);
 
   case StenoDictionaryType::JEFF_SHOW_STROKE:
     return &StenoJeffShowStrokeDictionary::instance;

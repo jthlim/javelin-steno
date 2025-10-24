@@ -58,7 +58,7 @@ private:
   using super = StenoDictionary;
 
 public:
-  StenoDictionaryList(List<StenoDictionaryListEntry> &dictionaries);
+  StenoDictionaryList(List<StenoDictionaryListEntry> &&dictionaries);
   StenoDictionaryList(StenoDictionary *const *dictionaries, size_t count);
 
   virtual StenoDictionaryLookupResult

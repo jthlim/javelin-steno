@@ -7,19 +7,20 @@
 //---------------------------------------------------------------------------
 
 StenoDictionaryList::StenoDictionaryList(
-    List<StenoDictionaryListEntry> &dictionaries)
-    : super(GetMaximumOutlineLength(dictionaries)), dictionaries(dictionaries) {
+    List<StenoDictionaryListEntry> &&dictionaries)
+    : super(GetMaximumOutlineLength(dictionaries)),
+      dictionaries((List<StenoDictionaryListEntry> &&)dictionaries) {
   SetParentRecursively(nullptr);
 }
 
-List<StenoDictionaryListEntry> &CreateList(StenoDictionary *const *dictionaries,
-                                           size_t count) {
-  List<StenoDictionaryListEntry> *result = new List<StenoDictionaryListEntry>();
+List<StenoDictionaryListEntry> CreateList(StenoDictionary *const *dictionaries,
+                                          size_t count) {
+  List<StenoDictionaryListEntry> result;
   for (size_t i = 0; i < count; ++i) {
-    result->Add(StenoDictionaryListEntry(dictionaries[i], true));
+    result.Add(StenoDictionaryListEntry(dictionaries[i], true));
   }
 
-  return *result;
+  return result;
 }
 
 StenoDictionaryList::StenoDictionaryList(StenoDictionary *const *dictionaries,
