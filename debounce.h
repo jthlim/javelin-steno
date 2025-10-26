@@ -76,3 +76,33 @@ Debounced<T> GlobalDeferredDebounce<T, MS>::Update(T input) {
 }
 
 //---------------------------------------------------------------------------
+
+template <typename T> class NoDebounce {
+public:
+  NoDebounce() {}
+  NoDebounce(T initialState) : lastState(initialState) {}
+
+  Debounced<T> Update(T input) {
+    if (input == lastState) {
+      return Debounced<T>(false, input);
+    }
+    Set(input);
+    return Debounced<T>(true, input);
+  }
+
+  void Set(T input) {
+    lastState = input;
+    lastStateTime = Clock::GetMilliseconds();
+  }
+
+  const T &GetCurrentState() const { return lastState; }
+  const T &GetDebouncedState() const { return lastState; }
+
+  static constexpr uint32_t DEBOUNCE_DELAY_MS = 0;
+
+private:
+  T lastState;
+  uint32_t lastStateTime = 0;
+};
+
+//---------------------------------------------------------------------------
