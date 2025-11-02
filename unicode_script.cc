@@ -31,7 +31,7 @@ void UnicodeScript::SetScript(const ScriptByteCode *byteCode) {
 
 void UnicodeScript::ExecuteEmitScript(uint32_t unicode) {
   const uintptr_t v = unicode;
-  Script::ExecuteScriptIndex(2, (intptr_t *)&v, 1);
+  Script::ExecuteScriptIndex(ScriptIndex::EMIT, (intptr_t *)&v, 1);
 }
 
 //---------------------------------------------------------------------------
@@ -76,7 +76,7 @@ public:
   }
 
   static void Sleep(UnicodeScript &script, const ScriptByteCode *byteCode) {
-    const uint32_t duration = (uint32_t) script.Pop();
+    const uint32_t duration = (uint32_t)script.Pop();
     Clock::Sleep(duration);
   }
 };

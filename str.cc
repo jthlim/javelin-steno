@@ -253,14 +253,40 @@ const char *Str::ParseInteger(int *result, const char *p, bool allowNegative) {
     ++p;
   }
 
-  if (*p < '0' || *p > '9') {
+  int value = 0;
+  if (p[0] == '0' && p[1] == 'x' && Unicode::GetHexValue(p[2]) != -1) {
+    p += 2;
+    for (;;) {
+      const int c = Unicode::GetHexValue(*p);
+      if (c == -1) {
+        break;
+      }
+      value = 16 * value + c;
+      ++p;
+    }
+  } else if (p[0] == '0' && p[1] == 'b' && Unicode::IsBinaryDigit(p[2])) {
+    p += 2;
+    for (;;) {
+      const int c = Unicode::GetBinaryValue(*p);
+      if (c == -1) {
+        break;
+      }
+      value = 2 * value + c;
+      ++p;
+    }
+  } else if (Unicode::IsAsciiDigit(*p)) {
+    for (;;) {
+      const int c = Unicode::GetDecimalValue(*p);
+      if (c == -1) {
+        break;
+      }
+      value = 10 * value + c;
+      ++p;
+    }
+  } else {
     return nullptr;
   }
 
-  int value = 0;
-  do {
-    value = 10 * value + (*p++ - '0');
-  } while ('0' <= *p && *p <= '9');
   *result = sign * value;
 
   return p;

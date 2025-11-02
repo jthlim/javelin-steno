@@ -84,7 +84,7 @@ private:
   void OnTimersUpdated(uint32_t currentTime);
 
   // Interception point for controlling update frequency.
-  // 0 = interrupt only
+  // ms == 0: No timers.
   void UpdateTickDelay(int ms);
 };
 

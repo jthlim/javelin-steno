@@ -62,6 +62,17 @@ uint32_t Unicode::ToLower(uint32_t c) {
   return Lookup(c, LOWER_DATA, sizeof(LOWER_DATA) / sizeof(*LOWER_DATA));
 }
 
+int Unicode::GetHexValue(uint32_t c) {
+  if ('0' <= c && c <= '9') {
+    return c - '0';
+  }
+  c |= 0x20;
+  if ('a' <= c && c <= 'f') {
+    return c - 'a' + 10;
+  }
+  return -1;
+}
+
 bool Unicode::IsLetter(uint32_t c) {
   if (c < 128) [[likely]] {
     c |= 0x20;

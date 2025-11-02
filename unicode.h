@@ -11,18 +11,22 @@ public:
   static uint32_t ToLower(uint32_t c);
 
   static bool IsAsciiDigit(uint32_t c) { return '0' <= c && c <= '9'; }
+  static bool IsBinaryDigit(uint32_t c) { return '0' <= c && c <= '1'; }
   static bool IsLetter(uint32_t c);
   static bool IsUpper(uint32_t c) { return ToLower(c) != c; }
 
-  static int GetHexValue(uint32_t c) {
-    if ('0' <= c && c <= '9') {
-      return c - '0';
+  static int GetHexValue(uint32_t c);
+  static int GetBinaryValue(uint32_t c) {
+    if (!IsBinaryDigit(c)) {
+      return -1;
     }
-    c |= 0x20;
-    if ('a' <= c && c <= 'f') {
-      return c - 'a' + 10;
+    return c - '0';
+  }
+  static int GetDecimalValue(uint32_t c) {
+    if (!IsAsciiDigit(c)) {
+      return -1;
     }
-    return -1;
+    return c - '0';
   }
 
 #if JAVELIN_CPU_CORTEX_M0 || JAVELIN_CPU_CORTEX_M4

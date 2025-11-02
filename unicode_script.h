@@ -14,15 +14,22 @@ private:
 public:
   UnicodeScript();
 
+  enum ScriptIndex {
+    INIT,
+    BEGIN,
+    EMIT,
+    END,
+  };
+
   void SetScript(const ScriptByteCode *byteCode);
   void ExecuteInitScript() {
     if (IsValid()) {
-      ExecuteScriptIndex(0);
+      ExecuteScriptIndex(ScriptIndex::INIT);
     }
   }
-  void ExecuteBeginScript() { ExecuteScriptIndex(1); }
+  void ExecuteBeginScript() { ExecuteScriptIndex(ScriptIndex::BEGIN); }
   void ExecuteEmitScript(uint32_t unicode);
-  void ExecuteEndScript() { ExecuteScriptIndex(3); }
+  void ExecuteEndScript() { ExecuteScriptIndex(ScriptIndex::END); }
 
   void SetContext(StenoKeyCodeEmitter::EmitterContext *c) { context = c; }
 
