@@ -253,17 +253,10 @@ extern StenoOrthography testOrthography;
 
 #if DO_PROFILE_TEST
 extern StenoCompactMapDictionaryDefinition testDictionaryDefinition;
-static StenoCompactMapDictionary mainDictionary(testDictionaryDefinition);
+#define DICTIONARY testDictionaryDefinition
 #else
-static StenoCompactMapDictionary mainDictionary(TestDictionary::definition);
+#define DICTIONARY TestDictionary::definition
 #endif
-
-static StenoCompactMapDictionary testDictionary(TestDictionary::definition);
-
-StenoDictionary *const DICTIONARIES[] = {
-    &StenoEmilySymbolsDictionary::specifySpacesInstance,
-    &mainDictionary,
-};
 
 class StenoEngineTester {
 public:
@@ -306,12 +299,22 @@ void StenoEngineTester::TestSymbols(StenoEngine &engine) {
 }
 
 TEST_BEGIN("Engine: Test symbols") {
+  StenoCompactMapDictionary *testDictionary = new (TestDictionary::definition)
+      StenoCompactMapDictionary(TestDictionary::definition);
+
+  StenoDictionary *const DICTIONARIES[] = {
+      &StenoEmilySymbolsDictionary::specifySpacesInstance,
+      testDictionary,
+  };
+
   StenoDictionaryList dictionary(DICTIONARIES, 2);
 
   const StenoCompiledOrthography orthography(
       StenoOrthography::emptyOrthography);
   StenoEngine engine(dictionary, orthography);
   StenoEngineTester::TestSymbols(engine);
+
+  delete testDictionary;
 }
 TEST_END
 
@@ -446,13 +449,18 @@ void StenoEngineTester::TestScancodeAddTranslation(StenoEngine &engine) {
 }
 
 TEST_BEGIN("Engine: Random spam") {
+  StenoCompactMapDictionary *mainDictionary =
+      new (DICTIONARY) StenoCompactMapDictionary(DICTIONARY);
+  StenoCompactMapDictionary *testDictionary = new (TestDictionary::definition)
+      StenoCompactMapDictionary(TestDictionary::definition);
+
   static StenoDictionary *DICTIONARIES[] = {
       &StenoJeffShowStrokeDictionary::instance,
       &StenoJeffPhrasingDictionary::instance,
       &StenoJeffNumbersDictionary::instance,
       &StenoEmilySymbolsDictionary::specifySpacesInstance,
-      &mainDictionary,
-      &testDictionary,
+      mainDictionary,
+      testDictionary,
   };
 
   StenoDictionaryList dictionaryList(
@@ -483,10 +491,16 @@ TEST_BEGIN("Engine: Random spam") {
   Console::DisableEvent(ConsoleEvent::PAPER_TAPE);
   Console::DisableEvent(ConsoleEvent::TEXT);
   Console::DisableEvent(ConsoleEvent::SUGGESTION);
+
+  delete mainDictionary;
+  delete testDictionary;
 }
 TEST_END
 
 TEST_BEGIN("Engine: Add Translation Test") {
+  StenoCompactMapDictionary *testDictionary = new (TestDictionary::definition)
+      StenoCompactMapDictionary(TestDictionary::definition);
+
   const StenoEngineTester tester;
   uint8_t *buffer = new uint8_t[512 * 1024];
   memset(buffer, 0, 512 * 1024);
@@ -495,7 +509,7 @@ TEST_BEGIN("Engine: Add Translation Test") {
 
   static StenoDictionary *dictionaries[] = {
       userDictionary,
-      &testDictionary,
+      testDictionary,
   };
 
   StenoDictionaryList dictionaryList(
@@ -508,10 +522,14 @@ TEST_BEGIN("Engine: Add Translation Test") {
 
   delete userDictionary;
   delete[] buffer;
+  delete testDictionary;
 }
 TEST_END
 
 TEST_BEGIN("Engine: Scancode Add Translation Test") {
+  StenoCompactMapDictionary *testDictionary = new (TestDictionary::definition)
+      StenoCompactMapDictionary(TestDictionary::definition);
+
   const StenoEngineTester tester;
   uint8_t *buffer = new uint8_t[512 * 1024];
   memset(buffer, 0, 512 * 1024);
@@ -520,7 +538,7 @@ TEST_BEGIN("Engine: Scancode Add Translation Test") {
 
   static StenoDictionary *dictionaries[] = {
       userDictionary,
-      &testDictionary,
+      testDictionary,
       &StenoUnicodeDictionary::instance,
   };
 
@@ -534,6 +552,7 @@ TEST_BEGIN("Engine: Scancode Add Translation Test") {
 
   delete userDictionary;
   delete[] buffer;
+  delete testDictionary;
 }
 TEST_END
 
@@ -558,6 +577,14 @@ void StenoEngineTester::TestRetroInsertSpace(StenoEngine &engine) {
 }
 
 TEST_BEGIN("Engine: Verify =retro_insert_space") {
+  StenoCompactMapDictionary *testDictionary = new (TestDictionary::definition)
+      StenoCompactMapDictionary(TestDictionary::definition);
+
+  StenoDictionary *const DICTIONARIES[] = {
+      &StenoEmilySymbolsDictionary::specifySpacesInstance,
+      testDictionary,
+  };
+
   StenoDictionaryList dictionaryList(
       DICTIONARIES, sizeof(DICTIONARIES) / sizeof(*DICTIONARIES)); // NOLINT
   const StenoCompiledOrthography orthography(
@@ -566,6 +593,8 @@ TEST_BEGIN("Engine: Verify =retro_insert_space") {
 
   const StenoEngineTester tester;
   tester.TestRetroInsertSpace(engine);
+
+  delete testDictionary;
 }
 TEST_END
 
@@ -590,6 +619,14 @@ void StenoEngineTester::TestRetroInsertSpaceAutoSuffix(StenoEngine &engine) {
 }
 
 TEST_BEGIN("Engine: Verify =retro_insert_space with auto-suffix") {
+  StenoCompactMapDictionary *testDictionary = new (TestDictionary::definition)
+      StenoCompactMapDictionary(TestDictionary::definition);
+
+  StenoDictionary *const DICTIONARIES[] = {
+      &StenoEmilySymbolsDictionary::specifySpacesInstance,
+      testDictionary,
+  };
+
   StenoDictionaryList dictionaryList(
       DICTIONARIES, sizeof(DICTIONARIES) / sizeof(*DICTIONARIES)); // NOLINT
   const StenoCompiledOrthography orthography(testOrthography);
@@ -597,6 +634,8 @@ TEST_BEGIN("Engine: Verify =retro_insert_space with auto-suffix") {
 
   const StenoEngineTester tester;
   tester.TestRetroInsertSpaceAutoSuffix(engine);
+
+  delete testDictionary;
 }
 TEST_END
 

@@ -407,12 +407,14 @@ TEST_BEGIN("MapDictionary: Single stroke lookup test") {
   };
   // spellchecker: enable
 
-  const StenoCompactMapDictionary mainDictionary(TestDictionary::definition);
+  StenoCompactMapDictionary *mainDictionary = new (TestDictionary::definition)
+      StenoCompactMapDictionary(TestDictionary::definition);
 
-  auto lookup = mainDictionary.Lookup(strokes, 1);
+  auto lookup = mainDictionary->Lookup(strokes, 1);
   assert(lookup.IsValid());
   assert(Str::Eq(lookup.GetText(), "test"));
   lookup.Destroy();
+  delete mainDictionary;
 }
 TEST_END
 
@@ -424,12 +426,14 @@ TEST_BEGIN("MapDictionary: Double stroke lookup test") {
   };
   // spellchecker: enable
 
-  const StenoCompactMapDictionary mainDictionary(TestDictionary::definition);
+  StenoCompactMapDictionary *mainDictionary = new (TestDictionary::definition)
+      StenoCompactMapDictionary(TestDictionary::definition);
 
-  auto lookup = mainDictionary.Lookup(strokes, 2);
+  auto lookup = mainDictionary->Lookup(strokes, 2);
   assert(lookup.IsValid());
   assert(Str::Eq(lookup.GetText(), "tested"));
   lookup.Destroy();
+  delete mainDictionary;
 }
 TEST_END
 

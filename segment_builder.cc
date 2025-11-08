@@ -498,12 +498,9 @@ void StenoSegmentBuilder::HandleRetroTransform(BuildSegmentContext &context,
 
   const char *format = command + Str::ConstLength("=retro_transform:");
 
-  size_t count = 0;
+  int count = 0;
   if (Unicode::IsAsciiDigit(*format)) {
-    count = *format++ - '0';
-    while (Unicode::IsAsciiDigit(*format)) {
-      count = 10 * count + *format++ - '0';
-    }
+    format = Str::ParseInteger(&count, format, false);
     if (*format == ':') {
       ++format;
     }
@@ -850,10 +847,11 @@ void StenoSegmentBuilder::HandleRepeatLastStroke(BuildSegmentContext &context,
 #include "unit_test.h"
 
 TEST_BEGIN("StrokeHistory: Test single segment") {
-  StenoCompactMapDictionary mainDictionary(TestDictionary::definition);
+  StenoCompactMapDictionary *mainDictionary = new (TestDictionary::definition)
+      StenoCompactMapDictionary(TestDictionary::definition);
   StenoDictionary *const DICTIONARIES[] = {
       &StenoEmilySymbolsDictionary::specifySpacesInstance,
-      &mainDictionary,
+      mainDictionary,
   };
   StenoDictionaryList dictionary(DICTIONARIES, 2);
 
@@ -872,14 +870,17 @@ TEST_BEGIN("StrokeHistory: Test single segment") {
 
   assert(segments.GetCount() == 1);
   assert(Str::Eq(segments[0].lookup.GetText(), "test"));
+
+  delete mainDictionary;
 }
 TEST_END
 
 TEST_BEGIN("StrokeHistory: Test two segments, with multi-stroke") {
-  StenoCompactMapDictionary mainDictionary(TestDictionary::definition);
+  StenoCompactMapDictionary *mainDictionary = new (TestDictionary::definition)
+      StenoCompactMapDictionary(TestDictionary::definition);
   StenoDictionary *const DICTIONARIES[] = {
       &StenoEmilySymbolsDictionary::specifySpacesInstance,
-      &mainDictionary,
+      mainDictionary,
   };
   StenoDictionaryList dictionary(DICTIONARIES, 2);
 
@@ -901,14 +902,17 @@ TEST_BEGIN("StrokeHistory: Test two segments, with multi-stroke") {
   assert(segments.GetCount() == 2);
   assert(Str::Eq(segments[0].lookup.GetText(), "test"));
   assert(Str::Eq(segments[1].lookup.GetText(), "tested"));
+
+  delete mainDictionary;
 }
 TEST_END
 
 TEST_BEGIN("StrokeHistory: Test *? splits strokes") {
-  StenoCompactMapDictionary mainDictionary(TestDictionary::definition);
+  StenoCompactMapDictionary *mainDictionary = new (TestDictionary::definition)
+      StenoCompactMapDictionary(TestDictionary::definition);
   StenoDictionary *const DICTIONARIES[] = {
       &StenoEmilySymbolsDictionary::specifySpacesInstance,
-      &mainDictionary,
+      mainDictionary,
   };
   StenoDictionaryList dictionary(DICTIONARIES, 2);
 
@@ -931,6 +935,8 @@ TEST_BEGIN("StrokeHistory: Test *? splits strokes") {
   assert(Str::Eq(segments[0].lookup.GetText(), "test"));
   assert(Str::Eq(segments[1].lookup.GetText(), "{:=}"));
   assert(Str::Eq(segments[2].lookup.GetText(), "{:=\\{*?\\}}-D"));
+
+  delete mainDictionary;
 }
 TEST_END
 
@@ -977,10 +983,11 @@ TEST_BEGIN("StrokeHistory: Test {*?} behaves properly") {
   const StenoCompiledOrthography orthography(
       StenoOrthography::emptyOrthography);
 
-  StenoCompactMapDictionary mainDictionary(TestDictionary::definition);
+  StenoCompactMapDictionary *mainDictionary = new (TestDictionary::definition)
+      StenoCompactMapDictionary(TestDictionary::definition);
   StenoDictionary *const DICTIONARIES[] = {
       &StenoEmilySymbolsDictionary::specifySpacesInstance,
-      &mainDictionary,
+      mainDictionary,
   };
   StenoDictionaryList dictionary(DICTIONARIES, 2);
   StenoEngine engine(dictionary, orthography);
@@ -998,6 +1005,8 @@ TEST_BEGIN("StrokeHistory: Test {*?} behaves properly") {
   assert(Str::Eq(segments[7].lookup.GetText(), "test"));
   assert(Str::Eq(segments[8].lookup.GetText(), "test"));
   assert(Str::Eq(segments[9].lookup.GetText(), "test"));
+
+  delete mainDictionary;
 }
 TEST_END
 
