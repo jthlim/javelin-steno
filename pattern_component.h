@@ -350,11 +350,7 @@ private:
   using super = PatternComponent;
 
 public:
-  LiteralPatternComponent(const char *text, size_t length) {
-    char *mutableText = (char *)this->text;
-    mutableText[length] = '\0';
-    memcpy(mutableText, text, length);
-  }
+  LiteralPatternComponent(const char *text, size_t length);
 
   virtual void UpdateQuickReject(PatternQuickReject &quickReject) const;
 

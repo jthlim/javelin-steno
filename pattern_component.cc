@@ -315,6 +315,20 @@ bool BytePatternComponent::Match(const char *p, PatternContext &context) const {
 
 //---------------------------------------------------------------------------
 
+LiteralPatternComponent::LiteralPatternComponent(const char *text,
+                                                 size_t length) {
+  char *p = (char *)this->text;
+  const char *textEnd = text + length;
+  while (text < textEnd) {
+    char c = *text++;
+    if (c == '\\') {
+      c = *text++;
+    }
+    *p++ = c;
+  }
+  *p = '\0';
+}
+
 void LiteralPatternComponent::UpdateQuickReject(
     PatternQuickReject &quickReject) const {
   quickReject.Update(text);

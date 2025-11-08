@@ -194,22 +194,17 @@ Pattern::BuildResult Pattern::ParseAtom(BuildContext &c) {
     component.tail->next = captureEnd;
     return BuildResult(captureStart, captureEnd);
   }
-  case '\\': {
-    c.p++;
-    switch (*c.p) {
-    case '^':
-    case '\\':
-      return BuildResult(new BytePatternComponent(*c.p++));
-
+  case '\\':
+    switch (const int x = c.p[1]; x) {
     case '1':
     case '2':
     case '3':
-      return BuildResult(new BackReferencePatternComponent(*c.p++ - '0'));
+      c.p += 2;
+      return BuildResult(new BackReferencePatternComponent(x - '0'));
 
     default:
-      assert(!"Unhandled symbol");
+      goto HandleLiteral;
     }
-  }
   case '[': {
     CharacterSetPatternComponent *component =
         new CharacterSetPatternComponent();
@@ -238,6 +233,7 @@ Pattern::BuildResult Pattern::ParseAtom(BuildContext &c) {
     return BuildResult(new AnyPatternComponent);
 
   default:
+  HandleLiteral:
     const char *pStart = c.p;
     c.p = FindLiteralEnd(pStart);
     const size_t length = c.p - pStart;
@@ -253,8 +249,8 @@ Pattern::BuildResult Pattern::ParseAtom(BuildContext &c) {
 
 const char *Pattern::FindLiteralEnd(const char *p) {
   const char *pStart = p;
+  const char *previous = p;
 
-  p++;
   for (;;) {
     switch (*p) {
     case '\0':
@@ -263,17 +259,25 @@ const char *Pattern::FindLiteralEnd(const char *p) {
     case '^':
     case '$':
     case '(':
-    case '\\':
     case '[':
     case '.':
       return p;
 
+    case '\\':
+      if (p[1] == '\0') {
+        return p + 1;
+      }
+      previous = p;
+      p += 2;
+      break;
+
     case '*':
     case '+':
     case '?':
-      return (p - 1 == pStart) ? p : p - 1;
+      return previous == pStart ? p : previous;
 
     default:
+      previous = p;
       ++p;
     }
   }
@@ -528,6 +532,19 @@ TEST_BEGIN("Pattern: Orthography example3 test") {
 
   char *t1 = pattern.Match("wish ^s").Replace(R"(\1es)");
   assert(Str::Eq(t1, "wishes"));
+  free(t1);
+}
+TEST_END
+
+TEST_BEGIN("Pattern: Orthography example4 test") {
+  const Pattern pattern = Pattern::Compile(R"(^(.+)y \^ial(ly)?$)");
+
+  assert(pattern.HasEndAnchor() == true);
+  assert(pattern.GetMinimumLength() == 7);
+  assert(pattern.GetMaximumLength() == size_t(-1));
+
+  char *t1 = pattern.Match("industry ^ial").Replace(R"(\1ial\2)");
+  assert(Str::Eq(t1, "industrial"));
   free(t1);
 }
 TEST_END
