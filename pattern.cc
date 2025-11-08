@@ -333,13 +333,23 @@ PatternMatch Pattern::MatchBypassingQuickReject(const char *text,
     result.match = false;
   } else {
     result.end = text + length;
+
+    // This code is in the hot path.
+    // Expand this to avoid calls to __wrap_memset on rp2040.
+    result.captures[2] = nullptr;
+    result.captures[3] = nullptr;
+    result.captures[4] = nullptr;
+    result.captures[5] = nullptr;
+    result.captures[6] = nullptr;
+    result.captures[7] = nullptr;
+
+#if JAVELIN_USE_PATTERN_JIT
+    result.match = matchMethod(text, result.captures, text);
+#else
     PatternContext context = {
         .start = text,
         .captures = result.captures,
     };
-#if JAVELIN_USE_PATTERN_JIT
-    result.match = matchMethod(text, result.captures, text);
-#else
     result.match = root->Match(text, context);
 #endif
   }
