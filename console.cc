@@ -96,28 +96,28 @@ Console::Console() {
 
 static constexpr ConsoleCommand HELP_COMMAND = {
     .command = "help",
-    .description = "Provides a list of commands",
+    .description = "Lists available commands",
     .handler = &Console::HelpCommand,
     .context = nullptr,
 };
 
 static constexpr ConsoleCommand HELLO_COMMAND = {
     .command = "hello",
-    .description = "Used to initiate a stable communication channel",
+    .description = "Initiates a stable communication channel",
     .handler = &Console::HelloCommand,
     .context = nullptr,
 };
 
 static constexpr ConsoleCommand ENABLE_EVENTS_COMMAND = {
     .command = "enable_events",
-    .description = "Enable specified console events",
+    .description = "Enables specified console events",
     .handler = &Console::EnableEvents,
     .context = nullptr,
 };
 
 static constexpr ConsoleCommand DISABLE_EVENTS_COMMAND = {
     .command = "disable_events",
-    .description = "Disable specified console events",
+    .description = "Disables specified console events",
     .handler = &Console::DisableEvents,
     .context = nullptr,
 };

@@ -2,6 +2,7 @@
 
 #include "console_input_buffer.h"
 #include "console.h"
+#include "str.h"
 #include <string.h>
 
 //---------------------------------------------------------------------------
@@ -37,7 +38,7 @@ void ConsoleInputBuffer::ConsoleInputBufferData::Process() {
   }
 
 #if JAVELIN_SPLIT
-  if (Split::IsSlave() && isConnected) {
+  if (Split::IsSlave() && isConnected && passthroughConsoleToMaster) {
     // This will be dealt with using UpdateBuffer() instead.
     return;
   }
@@ -68,6 +69,11 @@ void ConsoleInputBuffer::ConsoleInputBufferData::UpdateBuffer(
     return;
   }
 
+  if (!passthroughConsoleToMaster) {
+    // This will be dealt with using Process() instead.
+    return;
+  }
+
   while (head) {
     if (!buffer.Add(SplitHandlerId::CONSOLE, head->data.data,
                     head->data.length)) {
@@ -78,6 +84,41 @@ void ConsoleInputBuffer::ConsoleInputBufferData::UpdateBuffer(
   }
 }
 #endif
+#endif
+
+#if JAVELIN_SPLIT
+void ConsoleInputBuffer::SetConsoleModeBinding(void *context,
+                                               const char *commandLine) {
+  const char *mode = strchr(commandLine, ' ');
+  if (!mode) {
+    Console::Printf("ERR No console mode specified\n\n");
+    return;
+  }
+
+  ++mode;
+  if (Str::Eq(mode, "passthrough")) {
+    instance.passthroughConsoleToMaster = true;
+  } else if (Str::Eq(mode, "local")) {
+    instance.passthroughConsoleToMaster = false;
+  } else {
+    Console::Printf("ERR Unable to set console mode: \"%s\"\n\n", mode);
+    return;
+  }
+
+  Console::SendOk();
+  Console::Flush();
+  OnConsoleModeChanged();
+}
+
+void ConsoleInputBuffer::AddConsoleCommands(Console &console) {
+  console.RegisterCommand(
+      "set_console_mode",
+      "Controls where console commands are run [\"passthrough\", \"local\"]",
+      &ConsoleInputBuffer::SetConsoleModeBinding, nullptr);
+}
+
+[[gnu::weak]] void ConsoleInputBuffer::OnConsoleModeChanged() {}
+
 #endif
 
 //---------------------------------------------------------------------------

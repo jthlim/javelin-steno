@@ -481,13 +481,12 @@ void ButtonScriptManager::RunScript_Binding(void *context,
 
 void ButtonScriptManager::AddConsoleCommands(Console &console) {
   console.RegisterCommand("call_script",
-                          "Call scripts registered with setScript",
+                          "Calls scripts registered with setScript",
                           CallScript_Binding, this);
-  console.RegisterCommand("print_script_globals",
-                          "Prints non-zero script globals",
+  console.RegisterCommand("print_script_globals", "Prints script global values",
                           PrintScriptGlobals_Binding, this);
-  console.RegisterCommand("run_script", "Runs a script", RunScript_Binding,
-                          this);
+  console.RegisterCommand("run_script", "Runs script bytecode",
+                          RunScript_Binding, this);
 }
 
 //---------------------------------------------------------------------------

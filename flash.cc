@@ -359,11 +359,9 @@ void Flash::EndWriteBinding(void *context, const char *commandLine) {
 
 void Flash::AddConsoleCommands(Console &console) {
   console.RegisterCommand("begin_write",
-                          "Begin a flash write to the specified address",
+                          "Begins writing to the specified flash address",
                           &Flash::BeginWriteBinding, nullptr);
-  console.RegisterCommand("write",
-                          "Writes base64 data to the address specified in "
-                          "begin_write",
+  console.RegisterCommand("write", "Writes base64 data to the address to flash",
                           &Flash::WriteBinding, nullptr);
   console.RegisterCommand("end_write", "Completes writing to flash",
                           &Flash::EndWriteBinding, nullptr);

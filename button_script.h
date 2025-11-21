@@ -153,6 +153,11 @@ private:
     }
   };
 
+  struct Buffer {
+    Buffer *next;
+    uint8_t data[0];
+  };
+
   bool isInInit;
   bool isInReinit;
   bool isScriptRgbEnabled = true;
@@ -170,7 +175,7 @@ private:
   BitField<32> mouseButtonState;
   LimitedBufferWriter formatStringWriter[2];
   LimitedBufferWriter consoleWriter;
-  List<void *> buffers;
+  Buffer *bufferHead = nullptr;
 
   void ExecuteScript(size_t offset, uint32_t scriptTime);
 

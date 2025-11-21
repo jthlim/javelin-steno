@@ -7,6 +7,10 @@
 
 //---------------------------------------------------------------------------
 
+class Console;
+
+//---------------------------------------------------------------------------
+
 class ConsoleInputBuffer {
 public:
   static void Add(const uint8_t *data, size_t length, ConnectionId connectionId,
@@ -27,6 +31,12 @@ public:
     Split::RegisterRxHandler(SplitHandlerId::CONSOLE, &instance);
 #endif
   }
+
+#if JAVELIN_SPLIT
+  static void SetConsoleModeBinding(void *context, const char *commandLine);
+  static void AddConsoleCommands(Console &console);
+  static void OnConsoleModeChanged();
+#endif
 
 private:
   struct EntryData {
@@ -59,6 +69,7 @@ private:
     // Start off connected so that any messages coming in immediately after
     // boot up are queued to send to the master.
     bool isConnected = true;
+    bool passthroughConsoleToMaster = true;
 
 #if JAVELIN_SPLIT_IS_MASTER
     void OnDataReceived(const void *data, size_t length) final;

@@ -395,14 +395,14 @@ void StenoEngine::AddConsoleCommands(Console &console) {
                           StenoEngine::ListDictionaries_Binding, this);
   console.RegisterCommand("enable_dictionary", "Enables a dictionary",
                           StenoEngine::EnableDictionary_Binding, this);
-  console.RegisterCommand("disable_dictionary", "Disable a dictionary",
+  console.RegisterCommand("disable_dictionary", "Disables a dictionary",
                           StenoEngine::DisableDictionary_Binding, this);
-  console.RegisterCommand("toggle_dictionary", "Toggle a dictionary",
+  console.RegisterCommand("toggle_dictionary", "Toggles a dictionary",
                           StenoEngine::ToggleDictionary_Binding, this);
   console.RegisterCommand("print_dictionary",
                           "Prints all dictionaries in JSON format",
                           StenoEngine::PrintDictionary_Binding, this);
-  console.RegisterCommand("lookup", "Looks up a word",
+  console.RegisterCommand("lookup", "Looks up a definition",
                           StenoEngine::Lookup_Binding, this);
   console.RegisterCommand("lookup_prefix",
                           "Looks up entries with the given prefix",

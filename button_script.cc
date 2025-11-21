@@ -108,10 +108,13 @@ void ButtonScript::Reset() {
   eventHistory[2] = nullptr;
   eventHistory[3] = nullptr;
   Mem::Clear(scriptCallbacks);
-  for (void *buffer : buffers) {
+  Buffer *buffer = bufferHead;
+  while (buffer) {
+    Buffer *next = buffer->next;
     free(buffer);
+    buffer = next;
   }
-  buffers.Reset();
+  bufferHead = nullptr;
   Script::Reset();
 }
 
@@ -1274,20 +1277,21 @@ public:
                            const ScriptByteCode *byteCode) {
     const size_t bufferSize = script.Pop();
 
-    if (!script.isInInit) {
+    if (!script.isInInit || bufferSize == 0) {
       script.Push(0);
       return;
     }
 
-    void *buffer = malloc(bufferSize);
+    Buffer *buffer = (Buffer *)malloc(bufferSize + sizeof(Buffer *));
     if (buffer == nullptr) {
       script.Push(0);
       return;
     }
+    memset(buffer->data, 0, bufferSize);
 
-    memset(buffer, 0, bufferSize);
-    script.buffers.Add(buffer);
-    script.Push(byteCode->GetDataOffset(buffer));
+    buffer->next = script.bufferHead;
+    script.bufferHead = buffer;
+    script.Push(byteCode->GetDataOffset(buffer->data));
   }
 
   static void SendMidi(ButtonScript &script, const ScriptByteCode *byteCode) {
