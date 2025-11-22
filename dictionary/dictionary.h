@@ -48,6 +48,8 @@ private:
 public:
   bool IsValid() const { return text != nullptr; }
 
+  bool IsStatic() const { return IsStatic(text); }
+
   const char *GetText() const { return text; }
   void Destroy() { DestroyInternal(text); }
 
@@ -104,6 +106,8 @@ private:
 
 public:
   bool IsValid() const { return text != nullptr; }
+
+  bool IsStatic() const { return destroyMethod == &Nop; }
 
   const char *GetText() const { return text; }
   void Destroy() { (*destroyMethod)(this); }

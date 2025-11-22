@@ -8,9 +8,10 @@
 
 //---------------------------------------------------------------------------
 
-const StenoDictionary *const NO_RESULT_DICTIONARY = (StenoDictionary *)1;
-
-//---------------------------------------------------------------------------
+void StenoCacheDictionary::CacheEntry::Clear() {
+  hash = 0;
+  strokeLength = 0;
+}
 
 bool StenoCacheDictionary::CacheEntry::IsMatch(
     const StenoDictionaryLookup &lookup) const {
@@ -19,31 +20,21 @@ bool StenoCacheDictionary::CacheEntry::IsMatch(
 }
 
 void StenoCacheDictionary::CacheEntry::AddResult(
-    const StenoDictionaryLookup &lookup, const StenoDictionary *dictionary) {
+    const StenoDictionaryLookup &lookup,
+    const StenoDictionaryLookupResult result,
+    const StenoDictionary *dictionary) {
+  provider = dictionary;
+  if (result.IsStatic()) {
+    staticDefinition = result.GetText();
+  } else {
+    staticDefinition = nullptr;
+  }
   hash = lookup.hash;
   strokeLength = lookup.length;
-  provider = dictionary;
   lookup.strokes->CopyTo(strokes, lookup.length);
 }
 
-const StenoDictionary *
-StenoCacheDictionary::CacheBlock::GetDictionaryForOutline(
-    const StenoDictionaryLookup &lookup) const {
-  for (const CacheEntry &entry : entries) {
-    if (entry.IsMatch(lookup)) {
-      return entry.provider;
-    }
-  }
-
-  return nullptr;
-}
-
-void StenoCacheDictionary::CacheBlock::AddResult(
-    const StenoDictionaryLookup &lookup, const StenoDictionary *dictionary) {
-  CacheEntry &entry =
-      entries[entries[0].nextCacheEntryIndex++ % CACHE_ASSOCIATIVITY];
-  entry.AddResult(lookup, dictionary);
-}
+//---------------------------------------------------------------------------
 
 void StenoCacheDictionary::CacheBlock::Clear() {
   for (CacheEntry &entry : entries) {
@@ -51,25 +42,51 @@ void StenoCacheDictionary::CacheBlock::Clear() {
   }
 }
 
-const StenoDictionary *StenoCacheDictionary::Cache::GetDictionaryForOutline(
+const StenoCacheDictionary::CacheEntry *
+StenoCacheDictionary::CacheBlock::GetCacheEntry(
     const StenoDictionaryLookup &lookup) const {
-  const CacheBlock &block = blocks[lookup.hash % CACHE_BLOCKS];
-  return block.GetDictionaryForOutline(lookup);
+  for (const CacheEntry &entry : entries) {
+    if (entry.IsMatch(lookup)) {
+      return &entry;
+    }
+  }
+
+  return nullptr;
 }
 
-void StenoCacheDictionary::Cache::AddResult(const StenoDictionaryLookup &lookup,
-                                            const StenoDictionary *dictionary) {
-  if (lookup.length > MAXIMUM_STROKE_SIZE_TO_CACHE) {
-    return;
-  }
-  CacheBlock &block = blocks[lookup.hash % CACHE_BLOCKS];
-  block.AddResult(lookup, dictionary);
+void StenoCacheDictionary::CacheBlock::AddResult(
+    const StenoDictionaryLookup &lookup,
+    const StenoDictionaryLookupResult result,
+    const StenoDictionary *dictionary) {
+  CacheEntry &entry =
+      entries[entries[0].nextCacheEntryIndex++ % CACHE_ASSOCIATIVITY];
+  entry.AddResult(lookup, result, dictionary);
 }
+
+//---------------------------------------------------------------------------
 
 void StenoCacheDictionary::Cache::Clear() {
   for (CacheBlock &block : blocks) {
     block.Clear();
   }
+}
+
+const StenoCacheDictionary::CacheEntry *
+StenoCacheDictionary::Cache::GetCacheEntry(
+    const StenoDictionaryLookup &lookup) const {
+  const CacheBlock &block = blocks[lookup.hash % CACHE_BLOCKS];
+  return block.GetCacheEntry(lookup);
+}
+
+void StenoCacheDictionary::Cache::AddResult(
+    const StenoDictionaryLookup &lookup,
+    const StenoDictionaryLookupResult result,
+    const StenoDictionary *dictionary) {
+  if (lookup.length > MAXIMUM_STROKE_SIZE_TO_CACHE) {
+    return;
+  }
+  CacheBlock &block = blocks[lookup.hash % CACHE_BLOCKS];
+  block.AddResult(lookup, result, dictionary);
 }
 
 //---------------------------------------------------------------------------
@@ -80,16 +97,27 @@ StenoCacheDictionary::Lookup(const StenoDictionaryLookup &lookup) const {
     return super::Lookup(lookup);
   }
 
-  const StenoDictionary *cachedResult = cache.GetDictionaryForOutline(lookup);
-  if (cachedResult != nullptr) {
-    if (cachedResult == NO_RESULT_DICTIONARY) {
-      return StenoDictionaryLookupResult::CreateInvalid();
-    }
-    return cachedResult->Lookup(lookup);
+  const CacheEntry *entry = cache.GetCacheEntry(lookup);
+  if (entry == nullptr) {
+    lookup.updateCache = true;
+    return super::Lookup(lookup);
   }
 
-  lookup.updateCache = true;
-  return super::Lookup(lookup);
+  const StenoDictionary *provider = entry->provider;
+  if (provider == nullptr) {
+    return StenoDictionaryLookupResult::CreateInvalid();
+  }
+
+  const char *definition = entry->staticDefinition;
+  if (definition) {
+    return StenoDictionaryLookupResult::CreateStaticString(definition);
+  }
+
+  StenoDictionaryLookupResult result = provider->Lookup(lookup);
+  if (result.IsStatic()) {
+    entry->staticDefinition = result.GetText();
+  }
+  return result;
 }
 
 const StenoDictionary *StenoCacheDictionary::GetDictionaryForOutline(
@@ -98,9 +126,9 @@ const StenoDictionary *StenoCacheDictionary::GetDictionaryForOutline(
     return super::GetDictionaryForOutline(lookup);
   }
 
-  const StenoDictionary *cachedResult = cache.GetDictionaryForOutline(lookup);
-  if (cachedResult != nullptr) {
-    return cachedResult == NO_RESULT_DICTIONARY ? nullptr : cachedResult;
+  const CacheEntry *entry = cache.GetCacheEntry(lookup);
+  if (entry != nullptr) {
+    return entry->provider;
   }
 
   lookup.updateCache = true;
@@ -108,12 +136,14 @@ const StenoDictionary *StenoCacheDictionary::GetDictionaryForOutline(
 }
 
 void StenoCacheDictionary::AddResult(const StenoDictionaryLookup &lookup,
+                                     const StenoDictionaryLookupResult result,
                                      const StenoDictionary *provider) {
-  cache.AddResult(lookup, provider);
+  cache.AddResult(lookup, result, provider);
 }
 
 void StenoCacheDictionary::AddNoResult(const StenoDictionaryLookup &lookup) {
-  cache.AddResult(lookup, NO_RESULT_DICTIONARY);
+  cache.AddResult(lookup, StenoDictionaryLookupResult::CreateInvalid(),
+                  nullptr);
 }
 
 void StenoCacheDictionary::OnLookupDataChanged() {

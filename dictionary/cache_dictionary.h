@@ -22,6 +22,7 @@ public:
   using super::GetDictionaryForOutline;
 
   void AddResult(const StenoDictionaryLookup &lookup,
+                 const StenoDictionaryLookupResult result,
                  const StenoDictionary *provider);
   void AddNoResult(const StenoDictionaryLookup &lookup);
   void OnLookupDataChanged() final;
@@ -31,7 +32,7 @@ public:
 private:
   static const size_t CACHE_ASSOCIATIVITY = 4;
   static const size_t CACHE_BLOCKS = 64;
-  static const size_t MAXIMUM_STROKE_SIZE_TO_CACHE = 5;
+  static const size_t MAXIMUM_STROKE_SIZE_TO_CACHE = 4;
 
   struct CacheEntry {
     uint32_t hash;
@@ -39,39 +40,39 @@ private:
     uint8_t nextCacheEntryIndex; // Conceptually part of CacheBlock, here for
                                  // better packing.
     StenoStroke strokes[MAXIMUM_STROKE_SIZE_TO_CACHE];
+
+    // The definition of the lookup if it is static.
+    //
+    // Only static definitions are cached, to ensure that memory allocations
+    // are not extended beyond the lifecycle of processing steno input.
+    mutable const char *staticDefinition;
+
     const StenoDictionary *provider;
 
-    void Clear() {
-      hash = 0;
-      strokeLength = 0;
-      provider = nullptr;
-    }
-
+    void Clear();
     bool IsMatch(const StenoDictionaryLookup &lookup) const;
-
     void AddResult(const StenoDictionaryLookup &lookup,
+                   const StenoDictionaryLookupResult result,
                    const StenoDictionary *provider);
   };
 
   struct CacheBlock {
     CacheEntry entries[CACHE_ASSOCIATIVITY];
+
     void Clear();
-
-    const StenoDictionary *
-    GetDictionaryForOutline(const StenoDictionaryLookup &lookup) const;
-
+    const CacheEntry *GetCacheEntry(const StenoDictionaryLookup &lookup) const;
     void AddResult(const StenoDictionaryLookup &lookup,
+                   const StenoDictionaryLookupResult result,
                    const StenoDictionary *provider);
   };
 
   struct Cache {
     CacheBlock blocks[CACHE_BLOCKS];
+
     void Clear();
-
-    const StenoDictionary *
-    GetDictionaryForOutline(const StenoDictionaryLookup &lookup) const;
-
+    const CacheEntry *GetCacheEntry(const StenoDictionaryLookup &lookup) const;
     void AddResult(const StenoDictionaryLookup &lookup,
+                   const StenoDictionaryLookupResult result,
                    const StenoDictionary *provider);
   };
 

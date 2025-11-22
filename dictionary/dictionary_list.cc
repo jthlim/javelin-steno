@@ -52,7 +52,7 @@ StenoDictionaryList::Lookup(const StenoDictionaryLookup &lookup) const {
     if (result.IsValid()) {
 #if ENABLE_DICTIONARY_LOOKUP_CACHE
       if (lookup.updateCache) {
-        cacheDictionaryContainer->AddResult(lookup, entry.dictionary);
+        cacheDictionaryContainer->AddResult(lookup, result, entry.dictionary);
       }
 #endif
       return result;
@@ -84,7 +84,9 @@ const StenoDictionary *StenoDictionaryList::GetDictionaryForOutline(
     if (result) {
 #if ENABLE_DICTIONARY_LOOKUP_CACHE
       if (lookup.updateCache) {
-        cacheDictionaryContainer->AddResult(lookup, entry.dictionary);
+        cacheDictionaryContainer->AddResult(
+            lookup, StenoDictionaryLookupResult::CreateInvalid(),
+            entry.dictionary);
       }
 #endif
       return result;
