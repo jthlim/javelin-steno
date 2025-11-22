@@ -39,6 +39,7 @@ StenoEngine::StenoEngine(StenoDictionary &dictionary,
     : undoStroke(undoStroke), activeDictionary(&dictionary),
       storedDictionaries(&dictionary), orthography(orthography),
       userDictionary(userDictionary) {
+  dictionary.SetParentRecursively(nullptr);
   previousConversionBuffer.Prepare(&this->orthography, &GetDictionary());
   nextConversionBuffer.Prepare(&this->orthography, &GetDictionary());
   ResetState();

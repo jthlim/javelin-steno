@@ -84,8 +84,7 @@ public:
                       size_t length);
 
   virtual void SetParentRecursively(StenoDictionary *parent);
-
-  virtual void UpdateMaximumOutlineLength();
+  virtual void OnLookupDataChanged();
 
   virtual const char *GetName() const;
   virtual void PrintInfo(int depth) const;
@@ -103,12 +102,6 @@ private:
 
 #if ENABLE_DICTIONARY_LOOKUP_CACHE
   mutable JavelinStaticAllocate<StenoCacheDictionary> cacheDictionaryContainer;
-#endif
-
-#if ENABLE_DICTIONARY_LOOKUP_CACHE
-  void ClearCache() { cacheDictionaryContainer->ClearCache(); }
-#else
-  void ClearCache() {}
 #endif
 
   void SendDictionaryStatus(const char *name, bool enabled) const;

@@ -163,13 +163,13 @@ void StenoDictionaryList::SetParentRecursively(StenoDictionary *parent) {
   }
 }
 
-void StenoDictionaryList::UpdateMaximumOutlineLength() {
+void StenoDictionaryList::OnLookupDataChanged() {
   for (StenoDictionaryListEntry &entry : dictionaries) {
     entry.UpdateMaximumOutlineLength();
   }
 
   maximumOutlineLength = GetMaximumOutlineLength(dictionaries);
-  super::UpdateMaximumOutlineLength();
+  super::OnLookupDataChanged();
 }
 
 size_t StenoDictionaryList::GetMaximumOutlineLength(
@@ -224,8 +224,7 @@ bool StenoDictionaryList::EnableDictionary(const char *name) {
     if (Str::Eq(name, entry->GetName())) {
       entry.Enable();
       SendDictionaryStatus(name, true);
-      ClearCache();
-      UpdateMaximumOutlineLength();
+      OnLookupDataChanged();
       return true;
     }
   }
@@ -237,8 +236,7 @@ bool StenoDictionaryList::DisableDictionary(const char *name) {
     if (Str::Eq(name, entry->GetName())) {
       entry.Disable();
       SendDictionaryStatus(name, false);
-      ClearCache();
-      UpdateMaximumOutlineLength();
+      OnLookupDataChanged();
       return true;
     }
   }
@@ -250,8 +248,7 @@ bool StenoDictionaryList::ToggleDictionary(const char *name) {
     if (Str::Eq(name, entry->GetName())) {
       entry.ToggleEnable();
       SendDictionaryStatus(name, entry.IsEnabled());
-      ClearCache();
-      UpdateMaximumOutlineLength();
+      OnLookupDataChanged();
       return true;
     }
   }

@@ -314,7 +314,7 @@ bool StenoUserDictionary::Add(const StenoStroke *strokes, size_t length,
   AddToReverseHashTable(word, data.offset);
 
   maximumOutlineLength = activeDescriptorCopy.data.maximumOutlineLength;
-  UpdateMaximumOutlineLength();
+  OnLookupDataChanged();
 
   return true;
 }
@@ -458,6 +458,7 @@ bool StenoUserDictionary::Remove(const StenoStroke *strokes, size_t length) {
   }
 
   RemoveFromReverseHashTable(deletedEntry);
+  OnLookupDataChanged();
   return true;
 }
 
@@ -604,6 +605,7 @@ void StenoUserDictionary::Reset_Binding(void *context,
   const ExternalFlashSentry sentry;
   StenoUserDictionary *userDictionary = (StenoUserDictionary *)context;
   userDictionary->Reset();
+  userDictionary->OnLookupDataChanged();
   Console::SendOk();
 }
 

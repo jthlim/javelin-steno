@@ -24,7 +24,7 @@ public:
   void AddResult(const StenoDictionaryLookup &lookup,
                  const StenoDictionary *provider);
   void AddNoResult(const StenoDictionaryLookup &lookup);
-  void ClearCache();
+  void OnLookupDataChanged() final;
 
   virtual const char *GetName() const;
 

@@ -116,7 +116,10 @@ void StenoCacheDictionary::AddNoResult(const StenoDictionaryLookup &lookup) {
   cache.AddResult(lookup, NO_RESULT_DICTIONARY);
 }
 
-void StenoCacheDictionary::ClearCache() { cache.Clear(); }
+void StenoCacheDictionary::OnLookupDataChanged() {
+  cache.Clear();
+  super::OnLookupDataChanged();
+}
 
 const char *StenoCacheDictionary::GetName() const { return "#cache"; }
 

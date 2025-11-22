@@ -394,14 +394,15 @@ public:
   virtual void ReverseLookup(StenoReverseDictionaryLookup &lookup) const;
 
   size_t GetMaximumOutlineLength() const { return maximumOutlineLength; }
-  virtual void UpdateMaximumOutlineLength() {
-    if (parent) {
-      parent->UpdateMaximumOutlineLength();
-    }
-  }
 
   virtual void SetParentRecursively(StenoDictionary *parent) {
     this->parent = parent;
+  }
+
+  virtual void OnLookupDataChanged() {
+    if (parent) {
+      parent->OnLookupDataChanged();
+    }
   }
 
   virtual const char *GetName() const = 0;
