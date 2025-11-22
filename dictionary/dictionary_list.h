@@ -3,6 +3,8 @@
 #pragma once
 #include "../container/fast_iterable.h"
 #include "../container/list.h"
+#include "../static_allocate.h"
+#include "cache_dictionary.h"
 #include "dictionary.h"
 
 //---------------------------------------------------------------------------
@@ -94,8 +96,20 @@ public:
   virtual bool DisableDictionary(const char *name);
   virtual bool ToggleDictionary(const char *name);
 
+  StenoDictionary *CreateCacheDictionary(StenoDictionary *dictionary);
+
 private:
   FastIterable<StenoDictionaryListEntry> dictionaries;
+
+#if ENABLE_DICTIONARY_LOOKUP_CACHE
+  mutable JavelinStaticAllocate<StenoCacheDictionary> cacheDictionaryContainer;
+#endif
+
+#if ENABLE_DICTIONARY_LOOKUP_CACHE
+  void ClearCache() { cacheDictionaryContainer->ClearCache(); }
+#else
+  void ClearCache() {}
+#endif
 
   void SendDictionaryStatus(const char *name, bool enabled) const;
 

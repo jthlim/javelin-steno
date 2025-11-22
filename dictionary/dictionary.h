@@ -12,6 +12,7 @@
 //---------------------------------------------------------------------------
 
 #define ENABLE_DICTIONARY_STATS 0
+#define ENABLE_DICTIONARY_LOOKUP_CACHE 1
 
 //---------------------------------------------------------------------------
 
@@ -173,6 +174,9 @@ struct StenoDictionaryLookup {
   size_t length;
   uint32_t hash;
   const StenoDictionary *dictionaryHint;
+#if ENABLE_DICTIONARY_LOOKUP_CACHE
+  mutable bool updateCache = false;
+#endif
 };
 
 //---------------------------------------------------------------------------

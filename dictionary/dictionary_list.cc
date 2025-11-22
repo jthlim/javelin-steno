@@ -6,6 +6,17 @@
 
 //---------------------------------------------------------------------------
 
+StenoDictionary *
+StenoDictionaryList::CreateCacheDictionary(StenoDictionary *dictionary) {
+#if ENABLE_DICTIONARY_LOOKUP_CACHE
+  return new (cacheDictionaryContainer) StenoCacheDictionary(dictionary);
+#else
+  return dictionary;
+#endif
+}
+
+//---------------------------------------------------------------------------
+
 StenoDictionaryList::StenoDictionaryList(
     List<StenoDictionaryListEntry> &&dictionaries)
     : super(GetMaximumOutlineLength(dictionaries)),
@@ -39,9 +50,19 @@ StenoDictionaryList::Lookup(const StenoDictionaryLookup &lookup) const {
 
     StenoDictionaryLookupResult result = entry->Lookup(lookup);
     if (result.IsValid()) {
+#if ENABLE_DICTIONARY_LOOKUP_CACHE
+      if (lookup.updateCache) {
+        cacheDictionaryContainer->AddResult(lookup, entry.dictionary);
+      }
+#endif
       return result;
     }
   }
+#if ENABLE_DICTIONARY_LOOKUP_CACHE
+  if (lookup.updateCache) {
+    cacheDictionaryContainer->AddNoResult(lookup);
+  }
+#endif
   return StenoDictionaryLookupResult::CreateInvalid();
 }
 
@@ -61,9 +82,19 @@ const StenoDictionary *StenoDictionaryList::GetDictionaryForOutline(
 
     const StenoDictionary *result = entry->GetDictionaryForOutline(lookup);
     if (result) {
+#if ENABLE_DICTIONARY_LOOKUP_CACHE
+      if (lookup.updateCache) {
+        cacheDictionaryContainer->AddResult(lookup, entry.dictionary);
+      }
+#endif
       return result;
     }
   }
+#if ENABLE_DICTIONARY_LOOKUP_CACHE
+  if (lookup.updateCache) {
+    cacheDictionaryContainer->AddNoResult(lookup);
+  }
+#endif
   return nullptr;
 }
 
@@ -193,6 +224,7 @@ bool StenoDictionaryList::EnableDictionary(const char *name) {
     if (Str::Eq(name, entry->GetName())) {
       entry.Enable();
       SendDictionaryStatus(name, true);
+      ClearCache();
       UpdateMaximumOutlineLength();
       return true;
     }
@@ -205,6 +237,7 @@ bool StenoDictionaryList::DisableDictionary(const char *name) {
     if (Str::Eq(name, entry->GetName())) {
       entry.Disable();
       SendDictionaryStatus(name, false);
+      ClearCache();
       UpdateMaximumOutlineLength();
       return true;
     }
@@ -217,6 +250,7 @@ bool StenoDictionaryList::ToggleDictionary(const char *name) {
     if (Str::Eq(name, entry->GetName())) {
       entry.ToggleEnable();
       SendDictionaryStatus(name, entry.IsEnabled());
+      ClearCache();
       UpdateMaximumOutlineLength();
       return true;
     }

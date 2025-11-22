@@ -469,7 +469,8 @@ TEST_BEGIN("Engine: Random spam") {
   const StenoCompiledOrthography orthography(
       StenoOrthography::emptyOrthography);
   // StenoCompiledOrthography orthography(testOrthography);
-  StenoEngine engine(dictionaryList, orthography);
+  StenoEngine engine(*dictionaryList.CreateCacheDictionary(&dictionaryList),
+                     orthography);
   Console::EnableEvent(ConsoleEvent::PAPER_TAPE);
   Console::EnableEvent(ConsoleEvent::TEXT);
   Console::EnableEvent(ConsoleEvent::SUGGESTION);

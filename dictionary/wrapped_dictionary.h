@@ -13,11 +13,11 @@ public:
   StenoWrappedDictionary(StenoDictionary *dictionary);
 
   virtual StenoDictionaryLookupResult
-  Lookup(const StenoDictionaryLookup &lookup) const final;
+  Lookup(const StenoDictionaryLookup &lookup) const;
   using super::Lookup;
 
   virtual const StenoDictionary *
-  GetDictionaryForOutline(const StenoDictionaryLookup &lookup) const final;
+  GetDictionaryForOutline(const StenoDictionaryLookup &lookup) const;
   using super::GetDictionaryForOutline;
 
   virtual void
