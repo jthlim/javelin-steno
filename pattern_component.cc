@@ -53,6 +53,12 @@ PatternComponent::GetMaximumLength(const PatternRecurseContext &context) const {
   return next->GetMaximumLength(context);
 }
 
+#if JAVELIN_USE_PATTERN_JIT
+void PatternComponent::MarkRequiredCaptures(const void *loopbackObject) {
+  return next->MarkRequiredCaptures(loopbackObject);
+}
+#endif
+
 //---------------------------------------------------------------------------
 
 size_t SingleBytePatternComponent::GetMinimumLength(
@@ -193,9 +199,7 @@ bool CharacterSetPatternComponent::Match(const char *p,
   if (c >= 128) {
     return false;
   }
-  const unsigned int index = c / 8;
-  const unsigned int bit = 1 << (c & 7);
-  if ((mask[index] & bit) == 0) {
+  if (mask.IsClear(c)) {
     return false;
   }
 
@@ -214,6 +218,17 @@ bool CapturePatternComponent::Match(const char *p,
   }
   return result;
 }
+
+#if JAVELIN_USE_PATTERN_JIT
+void CapturePatternComponent::MarkRequiredCaptures(const void *loopbackObject) {
+  if (loopbackObject != nullptr) {
+    hasLoopback = true;
+  } else {
+    isRequired = true;
+  }
+  super::MarkRequiredCaptures(loopbackObject);
+}
+#endif
 
 bool BranchPatternComponent::Match(const char *p,
                                    PatternContext &context) const {
@@ -287,6 +302,30 @@ size_t BranchPatternComponent::GetMaximumLength(
     __builtin_unreachable();
   }
 }
+
+#if JAVELIN_USE_PATTERN_JIT
+void BranchPatternComponent::MarkRequiredCaptures(const void *loopbackObject) {
+  if (loopbackObject == this) {
+    return;
+  }
+  switch (type) {
+  case BranchType::BRANCH_BACK:
+    branch->MarkRequiredCaptures(this);
+    next->MarkRequiredCaptures(loopbackObject);
+    return;
+  case BranchType::NEXT_BACK:
+    branch->MarkRequiredCaptures(loopbackObject);
+    next->MarkRequiredCaptures(this);
+    return;
+  case BranchType::BRANCH_FORWARD:
+    return branch->MarkRequiredCaptures(loopbackObject);
+  case BranchType::NEXT_FORWARD:
+    return next->MarkRequiredCaptures(loopbackObject);
+  default:
+    __builtin_unreachable();
+  }
+}
+#endif
 
 bool StartOfLinePatternComponent::Match(const char *p,
                                         PatternContext &context) const {

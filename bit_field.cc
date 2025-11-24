@@ -27,6 +27,9 @@ TEST_BEGIN("BitField: Set bits iterate properly") {
   assert(setBits.GetCount() == 2);
   assert(setBits[0] == 1);
   assert(setBits[1] == 252);
+
+  assert(bitfield.GetFirstBitIndex() == 1);
+  assert(bitfield.GetLastBitIndex() == 252);
 }
 TEST_END
 

@@ -45,7 +45,9 @@ Pattern Pattern::Compile(const char *p) {
   const size_t minimumLength =
       captureStart->GetMinimumLength(minimumLengthContext);
 
-#if !JAVELIN_USE_PATTERN_JIT
+#if JAVELIN_USE_PATTERN_JIT
+  captureStart->MarkRequiredCaptures(nullptr);
+#else
   captureStart->RemoveEpsilon();
 #endif
 
@@ -99,6 +101,7 @@ Pattern::BuildResult Pattern::ParseAlternate(BuildContext &c) {
       new AlternatePatternComponent(result.head);
   EpsilonPatternComponent *epsilon = new EpsilonPatternComponent;
 
+  alternate->next = epsilon;
   result.tail->next = epsilon;
 
   while (*c.p == '|') {
@@ -107,11 +110,10 @@ Pattern::BuildResult Pattern::ParseAlternate(BuildContext &c) {
     assert(result.head != nullptr);
     assert(result.tail != nullptr);
     alternate->Add(result.head);
-    result.tail->next = epsilon;
+    result.tail->next = alternate->next;
   }
-  alternate->next = epsilon;
 
-  return BuildResult(alternate, epsilon);
+  return BuildResult(alternate, alternate->next);
 }
 
 Pattern::BuildResult Pattern::ParseSequence(BuildContext &c) {
@@ -209,6 +211,15 @@ Pattern::BuildResult Pattern::ParseAtom(BuildContext &c) {
     CharacterSetPatternComponent *component =
         new CharacterSetPatternComponent();
     const char *p = c.p + 1;
+    bool flipBits = false;
+    if (*p == '^') {
+      flipBits = true;
+      ++p;
+    }
+    if (*p == '-') {
+      component->SetBit('-');
+      ++p;
+    }
     while (*p != ']') {
       assert(*p);
 
@@ -225,6 +236,9 @@ Pattern::BuildResult Pattern::ParseAtom(BuildContext &c) {
       ++p;
     }
     c.p = p + 1;
+    if (flipBits) {
+      component->FlipBits();
+    }
 
     return BuildResult(component);
   }
@@ -545,6 +559,20 @@ TEST_BEGIN("Pattern: Orthography example4 test") {
 
   char *t1 = pattern.Match("industry ^ial").Replace(R"(\1ial\2)");
   assert(Str::Eq(t1, "industrial"));
+  free(t1);
+}
+TEST_END
+
+TEST_BEGIN("Pattern: Orthography example5 test") {
+  const Pattern pattern =
+      Pattern::Compile(R"(^(.+[^aoeui])y \^if(y(?:ing)?|ie[sd]|ications?)$)");
+
+  assert(pattern.HasEndAnchor() == true);
+  assert(pattern.GetMinimumLength() == 8);
+  assert(pattern.GetMaximumLength() == size_t(-1));
+
+  char *t1 = pattern.Match("glory ^ification").Replace(R"(\1if\2)");
+  assert(Str::Eq(t1, "glorification"));
   free(t1);
 }
 TEST_END

@@ -1,6 +1,7 @@
 //---------------------------------------------------------------------------
 
 #pragma once
+#include "bit_field.h"
 #include "pool_allocate.h"
 #include <assert.h>
 #include <string.h>
@@ -91,6 +92,9 @@ public:
   virtual bool HasEndAnchor(const PatternRecurseContext &context) const;
   virtual size_t GetMinimumLength(const PatternRecurseContext &context) const;
   virtual size_t GetMaximumLength(const PatternRecurseContext &context) const;
+#if JAVELIN_USE_PATTERN_JIT
+  virtual void MarkRequiredCaptures(const void *loopbackObject);
+#endif
 
 #if JAVELIN_USE_PATTERN_JIT
   virtual void Compile(PatternJitContext &context) const = 0;
@@ -142,6 +146,9 @@ public:
   size_t GetMaximumLength(const PatternRecurseContext &context) const {
     return 0;
   }
+#if JAVELIN_USE_PATTERN_JIT
+  virtual void MarkRequiredCaptures(const void *loopbackObject) final {}
+#endif
 
   JIT_COMPONENT_METHOD
 
@@ -226,41 +233,17 @@ public:
   JIT_COMPONENT_METHOD
 
 private:
-  uint8_t mask[16] = {};
+  BitField<128> mask;
 
-  void SetBit(size_t index) {
-    assert(index < 128);
-    const size_t offset = index / 8;
-    const size_t bit = 1 << (index & 7);
-    mask[offset] |= bit;
+  void SetBit(size_t index) { mask.Set(index); }
+  bool IsBitSet(size_t index) const { return mask.IsSet(index); }
+  void FlipBits() {
+    mask = ~mask;
+    mask.Clear(0);
   }
 
-  bool IsBitSet(size_t index) const {
-    const size_t offset = index / 8;
-    const size_t bit = 1 << (index & 7);
-    return (mask[offset] & bit) != 0;
-  }
-
-  size_t GetMinimumBitIndex() const {
-    const uint8_t *p = mask;
-    size_t index = 0;
-    while (*p == 0) {
-      ++p;
-      index += 8;
-    }
-    return index + __builtin_ctz(*p);
-  }
-
-  // Returns the index above the top bit set.
-  size_t GetMaximumBitIndex() const {
-    const uint8_t *p = mask + 15;
-    size_t index = 128 + 24; // 24 zero bits in a 32 bit word
-    while (*p == 0) {
-      --p;
-      index -= 8;
-    }
-    return index - __builtin_clz(*p);
-  }
+  size_t GetMinimumBitIndex() const { return mask.GetFirstBitIndex(); }
+  size_t GetMaximumBitIndex() const { return mask.GetLastBitIndex(); }
 
   friend class Pattern;
 };
@@ -288,6 +271,9 @@ public:
   virtual bool HasEndAnchor(const PatternRecurseContext &context) const;
   virtual size_t GetMinimumLength(const PatternRecurseContext &context) const;
   virtual size_t GetMaximumLength(const PatternRecurseContext &context) const;
+#if JAVELIN_USE_PATTERN_JIT
+  virtual void MarkRequiredCaptures(const void *loopbackObject) final;
+#endif
 
   JIT_COMPONENT_METHOD
 
@@ -316,6 +302,9 @@ public:
 };
 
 class CapturePatternComponent : public PatternComponent {
+private:
+  using super = PatternComponent;
+
 public:
   CapturePatternComponent(size_t index) : index(index) {}
 
@@ -325,6 +314,12 @@ public:
 
 private:
   size_t index;
+
+#if JAVELIN_USE_PATTERN_JIT
+  mutable bool isRequired = false;
+  mutable bool hasLoopback = false;
+  virtual void MarkRequiredCaptures(const void *loopbackObject) final;
+#endif
 };
 
 class BytePatternComponent : public SingleBytePatternComponent {

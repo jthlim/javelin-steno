@@ -27,12 +27,30 @@ public:
   void AddNoResult(const StenoDictionaryLookup &lookup);
   void OnLookupDataChanged() final;
 
+  static void PrintInfo();
+
   virtual const char *GetName() const;
 
 private:
   static const size_t CACHE_ASSOCIATIVITY = 4;
   static const size_t CACHE_BLOCKS = 64;
   static const size_t MAXIMUM_STROKE_SIZE_TO_CACHE = 4;
+
+#if ENABLE_DICTIONARY_LOOKUP_CACHE_STATS
+  struct OperationStats {
+    size_t lengthLimitExceeded;
+    size_t hitEmpty;
+    size_t hitDefinition;
+    size_t hitDictionary;
+    size_t miss;
+  };
+  struct Stats {
+    OperationStats lookup;
+    OperationStats getDictionaryForOutline;
+  };
+
+  static Stats stats;
+#endif
 
   struct CacheEntry {
     uint32_t hash;
@@ -77,6 +95,9 @@ private:
   };
 
   Cache cache;
+
+  StenoDictionaryLookupResult
+  LookupInternal(const StenoDictionaryLookup &lookup) const;
 };
 
 //---------------------------------------------------------------------------

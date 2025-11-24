@@ -13,6 +13,7 @@
 
 #define ENABLE_DICTIONARY_STATS 0
 #define ENABLE_DICTIONARY_LOOKUP_CACHE 1
+#define ENABLE_DICTIONARY_LOOKUP_CACHE_STATS 0
 
 //---------------------------------------------------------------------------
 

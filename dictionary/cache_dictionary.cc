@@ -6,6 +6,20 @@
 
 #if ENABLE_DICTIONARY_LOOKUP_CACHE
 
+// Controls whether invalid lookups should be cached.
+//
+// Caching invalid lookups results in under 1% improved hit rate.
+// Turning this off avoids extra processing / memory used that could be
+// caching useful lookups instead.
+#define CACHE_INVALID_LOOKUPS 0
+
+//---------------------------------------------------------------------------
+
+#if ENABLE_DICTIONARY_LOOKUP_CACHE_STATS
+#include "../console.h"
+StenoCacheDictionary::Stats StenoCacheDictionary::stats;
+#endif
+
 //---------------------------------------------------------------------------
 
 void StenoCacheDictionary::CacheEntry::Clear() {
@@ -94,25 +108,49 @@ void StenoCacheDictionary::Cache::AddResult(
 StenoDictionaryLookupResult
 StenoCacheDictionary::Lookup(const StenoDictionaryLookup &lookup) const {
   if (lookup.length > MAXIMUM_STROKE_SIZE_TO_CACHE) {
+#if ENABLE_DICTIONARY_LOOKUP_CACHE_STATS
+    stats.lookup.lengthLimitExceeded++;
+#endif
     return super::Lookup(lookup);
   }
+  // Call Internal method tagged as no-inline to avoid stack manipulations on
+  // lookup lengths that are too long.
+  return LookupInternal(lookup);
+}
 
+[[gnu::noinline]]
+StenoDictionaryLookupResult StenoCacheDictionary::LookupInternal(
+    const StenoDictionaryLookup &lookup) const {
   const CacheEntry *entry = cache.GetCacheEntry(lookup);
   if (entry == nullptr) {
+#if ENABLE_DICTIONARY_LOOKUP_CACHE_STATS
+    stats.lookup.miss++;
+#endif
     lookup.updateCache = true;
     return super::Lookup(lookup);
   }
 
-  const StenoDictionary *provider = entry->provider;
-  if (provider == nullptr) {
-    return StenoDictionaryLookupResult::CreateInvalid();
-  }
-
   const char *definition = entry->staticDefinition;
-  if (definition) {
+  if (definition) [[likely]] {
+#if ENABLE_DICTIONARY_LOOKUP_CACHE_STATS
+    stats.lookup.hitDefinition++;
+#endif
     return StenoDictionaryLookupResult::CreateStaticString(definition);
   }
 
+  const StenoDictionary *provider = entry->provider;
+#if CACHE_INVALID_LOOKUPS
+  if (provider == nullptr) {
+#if ENABLE_DICTIONARY_LOOKUP_CACHE_STATS
+    stats.lookup.hitEmpty++;
+#endif
+    return StenoDictionaryLookupResult::CreateInvalid();
+  }
+#endif
+
+#if ENABLE_DICTIONARY_LOOKUP_CACHE_STATS
+  stats.lookup.hitDictionary++;
+#endif
   StenoDictionaryLookupResult result = provider->Lookup(lookup);
   if (result.IsStatic()) {
     entry->staticDefinition = result.GetText();
@@ -123,16 +161,25 @@ StenoCacheDictionary::Lookup(const StenoDictionaryLookup &lookup) const {
 const StenoDictionary *StenoCacheDictionary::GetDictionaryForOutline(
     const StenoDictionaryLookup &lookup) const {
   if (lookup.length > MAXIMUM_STROKE_SIZE_TO_CACHE) {
+#if ENABLE_DICTIONARY_LOOKUP_CACHE_STATS
+    stats.getDictionaryForOutline.lengthLimitExceeded++;
+#endif
     return super::GetDictionaryForOutline(lookup);
   }
 
   const CacheEntry *entry = cache.GetCacheEntry(lookup);
-  if (entry != nullptr) {
-    return entry->provider;
+  if (entry == nullptr) {
+#if ENABLE_DICTIONARY_LOOKUP_CACHE_STATS
+    stats.getDictionaryForOutline.miss++;
+#endif
+    lookup.updateCache = true;
+    return super::GetDictionaryForOutline(lookup);
   }
 
-  lookup.updateCache = true;
-  return super::GetDictionaryForOutline(lookup);
+#if ENABLE_DICTIONARY_LOOKUP_CACHE_STATS
+  stats.getDictionaryForOutline.hitDictionary++;
+#endif
+  return entry->provider;
 }
 
 void StenoCacheDictionary::AddResult(const StenoDictionaryLookup &lookup,
@@ -142,8 +189,10 @@ void StenoCacheDictionary::AddResult(const StenoDictionaryLookup &lookup,
 }
 
 void StenoCacheDictionary::AddNoResult(const StenoDictionaryLookup &lookup) {
+#if CACHE_INVALID_LOOKUPS
   cache.AddResult(lookup, StenoDictionaryLookupResult::CreateInvalid(),
                   nullptr);
+#endif
 }
 
 void StenoCacheDictionary::OnLookupDataChanged() {
@@ -152,6 +201,22 @@ void StenoCacheDictionary::OnLookupDataChanged() {
 }
 
 const char *StenoCacheDictionary::GetName() const { return "#cache"; }
+
+//---------------------------------------------------------------------------
+
+void StenoCacheDictionary::PrintInfo() {
+#if ENABLE_DICTIONARY_LOOKUP_CACHE_STATS
+  Console::Printf("Dictionary Cache Stats\n");
+  Console::Printf("  lookup: %zu, %zu, %zu, %zu, %zu\n",
+                  stats.lookup.lengthLimitExceeded, stats.lookup.miss,
+                  stats.lookup.hitDefinition, stats.lookup.hitEmpty,
+                  stats.lookup.hitDictionary);
+  Console::Printf("  getDictionaryForOutline: %zu, %zu, %zu\n",
+                  stats.getDictionaryForOutline.lengthLimitExceeded,
+                  stats.getDictionaryForOutline.miss,
+                  stats.getDictionaryForOutline.hitDictionary);
+#endif
+}
 
 //---------------------------------------------------------------------------
 

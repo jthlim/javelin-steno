@@ -143,6 +143,31 @@ public:
     return BitFieldIterator(b.data, b.data + WORD_COUNT);
   }
 
+  // Returns the index of the first bit that is set.
+  //
+  // Undefined behavior if no bits are set.
+  size_t GetFirstBitIndex() const {
+    const size_t *p = data;
+    size_t bitOffset = 0;
+    while (*p == 0) {
+      p++;
+      bitOffset += BITS_PER_WORD;
+    }
+    return Bit<sizeof(size_t)>::CountTrailingZeros(*p) + bitOffset;
+  }
+
+  // Returns the index of the highest bit that is set.
+  //
+  // Undefined behavior if no bits are set.
+  size_t GetLastBitIndex() const {
+    const size_t *p = data + WORD_COUNT - 1;
+    size_t bitOffset = BITS_PER_WORD * WORD_COUNT - 1;
+    while (*p == 0) {
+      p--;
+      bitOffset -= BITS_PER_WORD;
+    }
+    return bitOffset - Bit<sizeof(size_t)>::CountLeadingZeros(*p);
+  }
   // Dummy response, as BitFieldIterator does not use this.
   friend const size_t end(const BitField &b) { return 0; }
 
