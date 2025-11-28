@@ -424,6 +424,8 @@ public:
   virtual bool EnableDictionary(const char *name) { return false; }
   virtual bool DisableDictionary(const char *name) { return false; }
   virtual bool ToggleDictionary(const char *name) { return false; }
+  virtual void EnableAllDictionaries() {}
+  virtual void DisableAllDictionaries() {}
 
 #if ENABLE_DICTIONARY_STATS
   struct Stats {

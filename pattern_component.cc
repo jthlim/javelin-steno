@@ -314,8 +314,8 @@ void BranchPatternComponent::MarkRequiredCaptures(const void *loopbackObject) {
     next->MarkRequiredCaptures(loopbackObject);
     return;
   case BranchType::NEXT_BACK:
-    branch->MarkRequiredCaptures(loopbackObject);
     next->MarkRequiredCaptures(this);
+    branch->MarkRequiredCaptures(loopbackObject);
     return;
   case BranchType::BRANCH_FORWARD:
     return branch->MarkRequiredCaptures(loopbackObject);

@@ -173,6 +173,16 @@ bool StenoEngine::ToggleDictionary(const char *name) {
   return GetDictionary().ToggleDictionary(name);
 }
 
+void StenoEngine::EnableAllDictionaries() {
+  const ExternalFlashSentry externalFlashSentry;
+  GetDictionary().EnableAllDictionaries();
+}
+
+void StenoEngine::DisableAllDictionaries() {
+  const ExternalFlashSentry externalFlashSentry;
+  GetDictionary().DisableAllDictionaries();
+}
+
 void StenoEngine::ReverseLookup(StenoReverseDictionaryLookup &lookup) const {
   const ExternalFlashSentry externalFlashSentry;
 

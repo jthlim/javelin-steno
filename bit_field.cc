@@ -33,4 +33,16 @@ TEST_BEGIN("BitField: Set bits iterate properly") {
 }
 TEST_END
 
+TEST_BEGIN("BitField: Test GetFirstBitIndex and GetLastBitIndex") {
+  BitField<128> bitfield = {};
+  for (char c : "aeiou") {
+    if (c) {
+      bitfield.Set(c);
+    }
+  }
+  assert(bitfield.GetFirstBitIndex() == 'a');
+  assert(bitfield.GetLastBitIndex() == 'u');
+}
+TEST_END
+
 //---------------------------------------------------------------------------

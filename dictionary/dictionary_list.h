@@ -94,6 +94,8 @@ public:
   virtual bool EnableDictionary(const char *name);
   virtual bool DisableDictionary(const char *name);
   virtual bool ToggleDictionary(const char *name);
+  virtual void EnableAllDictionaries();
+  virtual void DisableAllDictionaries();
 
   StenoDictionary *CreateCacheDictionary(StenoDictionary *dictionary);
 

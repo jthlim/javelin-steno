@@ -1012,7 +1012,6 @@ These methods are only available on chips with secure storage.
   - Returns an angle from -32767 to 32768.
 
 ## Infrared functions
-_This section is preliminary. These functions may change without notice._
 
 Javelin provides 3 ways of sending infrared data:
 - Sending high level messages using `sendInfraredMessage`

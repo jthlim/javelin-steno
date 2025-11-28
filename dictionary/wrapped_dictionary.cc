@@ -78,4 +78,12 @@ bool StenoWrappedDictionary::ToggleDictionary(const char *name) {
   return dictionary->ToggleDictionary(name);
 }
 
+void StenoWrappedDictionary::EnableAllDictionaries() {
+  dictionary->EnableAllDictionaries();
+}
+
+void StenoWrappedDictionary::DisableAllDictionaries() {
+  dictionary->DisableAllDictionaries();
+}
+
 //---------------------------------------------------------------------------

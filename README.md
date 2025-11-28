@@ -157,6 +157,16 @@ Example usage:
   {:console:set_space_position after}
 ```
 
+## `{:disable_all_dictionaries}`
+
+Disables all dictionaries. This is a quick way to show raw steno.
+
+Example usage:
+
+```
+  {:disable_all_dictionaries}{:enable_dictionary:dictionary_with_enable_all.json}
+```
+
 ## `{:disable_dictionary:<dictionary_name>}`
 
 Disables a dictionary.
@@ -165,6 +175,16 @@ Example usage:
 
 ```
   {:disable_dictionary:main.json}
+```
+
+## `{:enable_all_dictionaries}`
+
+Enables all dictionaries.
+
+Example usage:
+
+```
+  {:enable_all_dictionaries}
 ```
 
 ## `{:enable_dictionary:<dictionary_name>}`

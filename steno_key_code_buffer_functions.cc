@@ -20,7 +20,11 @@ struct KeyCodeFunctionEntry {
 constexpr KeyCodeFunctionEntry HANDLERS[] = {
     {"add_translation", &StenoKeyCodeBuffer::AddTranslationFunction},
     {"console", &StenoKeyCodeBuffer::ConsoleFunction},
+    {"disable_all_dictionaries",
+     &StenoKeyCodeBuffer::DisableAllDictionariesFunction},
     {"disable_dictionary", &StenoKeyCodeBuffer::DisableDictionaryFunction},
+    {"enable_all_dictionaries",
+     &StenoKeyCodeBuffer::EnableAllDictionariesFunction},
     {"enable_dictionary", &StenoKeyCodeBuffer::EnableDictionaryFunction},
     {"host_layout", &StenoKeyCodeBuffer::HostLayoutFunction},
     {"repeat_last_character", &StenoKeyCodeBuffer::RepeatLastCharacter},
@@ -593,6 +597,36 @@ bool StenoKeyCodeBuffer::DisableDictionaryFunction(
 
   doResetState = true;
   return rootDictionary->DisableDictionary(parameters[1]);
+}
+
+bool StenoKeyCodeBuffer::EnableAllDictionariesFunction(
+    const List<char *> &parameters) {
+  if (parameters.GetCount() != 1) {
+    return false;
+  }
+
+  if (!executeSideEffects) {
+    return true;
+  }
+
+  doResetState = true;
+  rootDictionary->EnableAllDictionaries();
+  return true;
+}
+
+bool StenoKeyCodeBuffer::DisableAllDictionariesFunction(
+    const List<char *> &parameters) {
+  if (parameters.GetCount() != 1) {
+    return false;
+  }
+
+  if (!executeSideEffects) {
+    return true;
+  }
+
+  doResetState = true;
+  rootDictionary->DisableAllDictionaries();
+  return true;
 }
 
 bool StenoKeyCodeBuffer::ToggleDictionaryFunction(

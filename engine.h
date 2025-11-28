@@ -47,6 +47,9 @@ public:
   bool EnableDictionary(const char *name);
   bool DisableDictionary(const char *name);
   bool ToggleDictionary(const char *name);
+  void EnableAllDictionaries();
+  void DisableAllDictionaries();
+
   void ReverseLookup(StenoReverseDictionaryLookup &lookup) const;
 
   StenoDictionary &GetDictionary() const { return *activeDictionary; }

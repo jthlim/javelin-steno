@@ -257,6 +257,26 @@ bool StenoDictionaryList::ToggleDictionary(const char *name) {
   return false;
 }
 
+void StenoDictionaryList::EnableAllDictionaries() {
+  for (StenoDictionaryListEntry &entry : dictionaries) {
+    if (entry->GetName()[0] != '#') {
+      entry.Enable();
+      SendDictionaryStatus(entry->GetName(), true);
+    }
+  }
+  OnLookupDataChanged();
+}
+
+void StenoDictionaryList::DisableAllDictionaries() {
+  for (StenoDictionaryListEntry &entry : dictionaries) {
+    if (entry->GetName()[0] != '#') {
+      entry.Disable();
+      SendDictionaryStatus(entry->GetName(), false);
+    }
+  }
+  OnLookupDataChanged();
+}
+
 void StenoDictionaryList::SendDictionaryStatus(const char *name,
                                                bool enabled) const {
   if (!Console::IsEventEnabled(ConsoleEvent::DICTIONARY_STATUS)) {

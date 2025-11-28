@@ -95,7 +95,9 @@ public:
   // parameters[0] == function name.
   bool AddTranslationFunction(const List<char *> &parameters);
   bool ConsoleFunction(const List<char *> &parameters);
+  bool DisableAllDictionariesFunction(const List<char *> &parameters);
   bool DisableDictionaryFunction(const List<char *> &parameters);
+  bool EnableAllDictionariesFunction(const List<char *> &parameters);
   bool EnableDictionaryFunction(const List<char *> &parameters);
   bool HostLayoutFunction(const List<char *> &parameters);
   bool RepeatLastCharacter(const List<char *> &parameters);
