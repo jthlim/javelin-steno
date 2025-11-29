@@ -148,6 +148,10 @@ const char *AssetManager::AddAsset(const char *id, size_t size) {
   }
 
   const size_t idLength = Str::Length(id);
+  if (idLength > 248) {
+    return "Asset name too long";
+  }
+
   const size_t paddedAssetEntryLength = (idLength + sizeof(AssetEntry)) & -4;
   const size_t paddedDataSize = (size + 3) & -4;
   const size_t totalSize = paddedAssetEntryLength + paddedDataSize;

@@ -410,6 +410,7 @@ public:
     }
   }
 
+  virtual bool IsInternal() const { return false; }
   virtual const char *GetName() const = 0;
 
   // Returns the lookup dictionary within a WrappedDictionary.

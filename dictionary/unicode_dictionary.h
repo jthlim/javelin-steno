@@ -15,6 +15,7 @@ public:
   virtual const StenoDictionary *
   GetDictionaryForOutline(const StenoDictionaryLookup &lookup) const;
 
+  virtual bool IsInternal() const { return true; }
   virtual const char *GetName() const;
 
   static StenoStroke CreateUnicodeStroke(uint32_t unicode) {

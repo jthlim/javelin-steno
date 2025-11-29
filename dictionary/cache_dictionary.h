@@ -29,6 +29,7 @@ public:
 
   static void PrintInfo();
 
+  virtual bool IsInternal() const { return true; }
   virtual const char *GetName() const;
 
 private:

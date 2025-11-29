@@ -235,12 +235,11 @@ void LookupDictionaryContext::Add(const StenoStroke *strokes, size_t length,
 
   PrintDefinition(definition);
 
-  const char *dictionaryName = dictionary->GetName();
-  if (*dictionaryName != '#') {
+  if (!dictionary->IsInternal()) {
     const size_t index = dictionaries.FindIndex(dictionary);
     if (index == -1) {
       dictionaries.Add(dictionary);
-      Console::Printf(",\"d\":\"%J\"", dictionaryName);
+      Console::Printf(",\"d\":\"%J\"", dictionary->GetName());
       if (dictionary->CanRemove()) {
         Console::Printf(",\"r\":1");
       }

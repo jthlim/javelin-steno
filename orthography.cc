@@ -203,56 +203,56 @@ void StenoOrthography::Print() const {
   if (rules.IsEmpty()) {
     Console::Printf(" []");
   } else {
-    for (size_t i = 0; i < rules.GetCount(); ++i) {
+    for (const StenoOrthographyRule &rule : rules) {
       Console::Printf("\n\t\t- pattern: \"%J\""
                       "\n\t\t  replacement: \"%J\"",
-                      rules[i].testPattern, rules[i].replacement);
+                      rule.testPattern, rule.replacement);
     }
   }
   Console::Printf("\n\taliases:");
   if (aliases.IsEmpty()) {
     Console::Printf(" []");
   } else {
-    for (size_t i = 0; i < aliases.GetCount(); ++i) {
+    for (const StenoOrthographyAlias &alias : aliases) {
       Console::Printf("\n\t\t- suffix: \"%J\""
                       "\n\t\t  alias: \"%J\"",
-                      aliases[i].text, aliases[i].alias);
+                      alias.text, alias.alias);
     }
   }
   Console::Printf("\n\tauto-suffix:");
   if (autoSuffixes.IsEmpty()) {
     Console::Printf(" []");
   } else {
-    for (size_t i = 0; i < autoSuffixes.GetCount(); ++i) {
+    for (const StenoOrthographyAutoSuffix &autoSuffix : autoSuffixes) {
       Console::Printf("\n\t\t- key: \"%t\""
                       "\n\t\t  suffix: \"%J\"",
-                      &autoSuffixes[i].stroke, autoSuffixes[i].text + 1);
+                      &autoSuffix.stroke, autoSuffix.text + 1);
     }
   }
   Console::Printf("\n\treverse-suffix:");
   if (reverseSuffixes.IsEmpty()) {
     Console::Printf(" []");
   } else {
-    for (size_t i = 0; i < reverseSuffixes.GetCount(); ++i) {
+    for (const StenoOrthographyRule &reverseSuffix : reverseSuffixes) {
       Console::Printf("\n\t\t- pattern: \"%J\""
                       "\n\t\t  replacement: \"%J\"",
-                      reverseSuffixes[i].testPattern,
-                      reverseSuffixes[i].replacement);
+                      reverseSuffix.testPattern, reverseSuffix.replacement);
     }
   }
   Console::Printf("\n\treverse-auto-suffix:");
   if (reverseAutoSuffixes.IsEmpty()) {
     Console::Printf(" []");
   } else {
-    for (size_t i = 0; i < reverseAutoSuffixes.GetCount(); ++i) {
+    for (const StenoOrthographyReverseAutoSuffix &reverseAutoSuffix :
+         reverseAutoSuffixes) {
       Console::Printf("\n\t\t- key: \"%t\""
                       "\n\t\t  suppressMask: \"%t\""
                       "\n\t\t  pattern: \"%J\""
                       "\n\t\t  replacement: \"%J\"",
-                      &reverseAutoSuffixes[i].autoSuffix->stroke,
-                      &reverseAutoSuffixes[i].suppressMask,
-                      reverseAutoSuffixes[i].testPattern,
-                      reverseAutoSuffixes[i].replacement);
+                      &reverseAutoSuffix.autoSuffix->stroke,
+                      &reverseAutoSuffix.suppressMask,
+                      reverseAutoSuffix.testPattern,
+                      reverseAutoSuffix.replacement);
     }
   }
   Console::Printf("\n\n");
@@ -272,8 +272,9 @@ const Pattern *
 StenoCompiledOrthography::CreatePatterns(const StenoOrthography &orthography) {
   Pattern *patterns =
       (Pattern *)malloc(sizeof(Pattern) * orthography.rules.GetCount());
-  for (size_t i = 0; i < orthography.rules.GetCount(); ++i) {
-    patterns[i] = Pattern::Compile(orthography.rules[i].testPattern);
+  Pattern *p = patterns;
+  for (const StenoOrthographyRule &rule : orthography.rules) {
+    *p++ = Pattern::Compile(rule.testPattern);
   }
   return patterns;
 }
@@ -394,7 +395,8 @@ void StenoCompiledOrthography::AddCandidates(BestCandidate &bestCandidate,
       continue;
     }
 
-    char *candidate = match.Replace(data.rules[i].replacement);
+    XipPointer<StenoOrthographyRule> rules = begin(data.rules);
+    char *candidate = match.Replace(rules[i].replacement);
     const int score = WordList::GetWordRank(candidate, defaultScore);
     bestCandidate.Add(candidate, score);
   }

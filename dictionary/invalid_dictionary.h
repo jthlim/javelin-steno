@@ -14,6 +14,7 @@ public:
   Lookup(const StenoDictionaryLookup &lookup) const;
   using StenoDictionary::Lookup;
 
+  virtual bool IsInternal() const { return true; }
   virtual const char *GetName() const { return "#bad"; }
 
   static StenoInvalidDictionary corruptedInstance;

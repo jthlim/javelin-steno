@@ -47,9 +47,9 @@ void ConsoleInputBuffer::ConsoleInputBufferData::Process() {
   while (head) {
     ConsoleWriter::SetConnection(head->data.connectionId,
                                  head->data.connectionHandle);
-    Console::instance.HandleInput(head->data.data, head->data.length);
+    Console::instance.HandleInput(head->data.data, head->data.length,
+                                  head->data.connectionId);
     RemoveHead();
-    Console::Flush();
   }
   ConsoleWriter::SetConnection(ConnectionId::ACTIVE, 0);
 }

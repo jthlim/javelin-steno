@@ -210,12 +210,12 @@ void StenoDictionaryList::ListDictionaries() const {
   bool isFirst = true;
   Console::Printf("[");
   for (const StenoDictionaryListEntry &entry : dictionaries) {
-    const char *name = entry->GetName();
-    if (name[0] == '#') {
+    if (entry->IsInternal()) {
       continue;
     }
+
     const char *format = ",\n{\"d\":\"%J\",\"v\":%d}";
-    Console::Printf(format + isFirst, name, entry.IsEnabled());
+    Console::Printf(format + isFirst, entry->GetName(), entry.IsEnabled());
     isFirst = false;
   }
   Console::Printf("\n]\n\n");
@@ -259,20 +259,24 @@ bool StenoDictionaryList::ToggleDictionary(const char *name) {
 
 void StenoDictionaryList::EnableAllDictionaries() {
   for (StenoDictionaryListEntry &entry : dictionaries) {
-    if (entry->GetName()[0] != '#') {
-      entry.Enable();
-      SendDictionaryStatus(entry->GetName(), true);
+    if (entry->IsInternal()) {
+      continue;
     }
+
+    entry.Enable();
+    SendDictionaryStatus(entry->GetName(), true);
   }
   OnLookupDataChanged();
 }
 
 void StenoDictionaryList::DisableAllDictionaries() {
   for (StenoDictionaryListEntry &entry : dictionaries) {
-    if (entry->GetName()[0] != '#') {
-      entry.Disable();
-      SendDictionaryStatus(entry->GetName(), false);
+    if (entry->IsInternal()) {
+      continue;
     }
+
+    entry.Disable();
+    SendDictionaryStatus(entry->GetName(), false);
   }
   OnLookupDataChanged();
 }

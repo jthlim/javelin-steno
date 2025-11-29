@@ -193,7 +193,8 @@ void Console::WriteAsJson(const char *data) {
 
 //---------------------------------------------------------------------------
 
-Console::Channel *Console::GetChannel(int channelId) {
+Console::Channel *Console::GetChannel(int channelId,
+                                      ConnectionId connectionId) {
   if (channelId >= 0) {
     for (Channel *c : activeBuffers) {
       if (c->id == channelId) {
@@ -204,7 +205,7 @@ Console::Channel *Console::GetChannel(int channelId) {
   // No channel ID? Return the last active buffer if there is one with -1 id.
   if (channelId < 0) {
     for (Channel *channel : activeBuffers) {
-      if (channel->id == channelId) {
+      if (channel->id == channelId && channel->connectionId == connectionId) {
         return channel;
       }
     }
@@ -222,25 +223,43 @@ Console::Channel *Console::GetChannel(int channelId) {
     result = freeBuffers.PopBack();
   }
   activeBuffers.Add(result);
-  result->Reset(channelId);
+  result->Reset(channelId, connectionId);
   return result;
 }
 
 int Console::AllocateChannelId() { return channelHistory.AllocateId(); }
 
-void Console::HandleInput(const char *data, size_t length) {
+bool Console::HasPerPacketChannelId(ConnectionId connectionId) {
+  switch (connectionId) {
+  case ConnectionId::NONE:
+  case ConnectionId::BLE:
+  case ConnectionId::USB:
+  case ConnectionId::USB_PAIR:
+    return true;
+  case ConnectionId::BLE_CONSOLE:
+  case ConnectionId::SERIAL_CONSOLE:
+    return false;
+  }
+  return true;
+}
+
+void Console::HandleInput(const char *data, size_t length,
+                          ConnectionId connectionId) {
   int channelId = -1;
   const char *end = data + length;
 
   // If the input starts with 'c##<space>', then treat it as channel input.
-  if (length > 4 && data[0] == 'c' && Unicode::IsAsciiDigit(data[1]) &&
-      Unicode::IsAsciiDigit(data[2]) && data[3] == ' ') {
-    channelId = 10 * (data[1] - '0') + data[2] - '0';
-    channelHistory.Touch(channelId);
-    data += 4;
+  bool hasPerPacketChannelId = HasPerPacketChannelId(connectionId);
+  if (hasPerPacketChannelId) {
+    if (length > 4 && data[0] == 'c' && Unicode::IsAsciiDigit(data[1]) &&
+        Unicode::IsAsciiDigit(data[2]) && data[3] == ' ') {
+      channelId = 10 * (data[1] - '0') + data[2] - '0';
+      channelHistory.Touch(channelId);
+      data += 4;
+    }
   }
 
-  Channel *channel = GetChannel(channelId);
+  Channel *channel = GetChannel(channelId, connectionId);
   for (const char *p = data; p < end; ++p) {
     const uint8_t c = *p;
     if (c == '\0') {
@@ -249,8 +268,19 @@ void Console::HandleInput(const char *data, size_t length) {
 
     if (c == '\n') {
       channel->AddByte('\0');
-      ProcessChannelCommand(*channel);
-      channel->Reset(channelId);
+      size_t commandOffset = 0;
+      if (!hasPerPacketChannelId) {
+        if (channel->bufferCount > 4 && channel->buffer[0] == 'c' &&
+            Unicode::IsAsciiDigit(channel->buffer[1]) &&
+            Unicode::IsAsciiDigit(channel->buffer[2]) &&
+            channel->buffer[3] == ' ') {
+          channel->id =
+              10 * (channel->buffer[1] - '0') + channel->buffer[2] - '0';
+          commandOffset = 4;
+        }
+      }
+      ProcessChannelCommand(*channel, commandOffset);
+      channel->Reset(channelId, connectionId);
       continue;
     }
 
@@ -262,7 +292,7 @@ void Console::HandleInput(const char *data, size_t length) {
   }
 }
 
-void Console::ProcessChannelCommand(Channel &channel) {
+void Console::ProcessChannelCommand(Channel &channel, size_t offset) {
   if (channel.bufferCount == 0) {
     return;
   }
@@ -283,14 +313,15 @@ void Console::ProcessChannelCommand(Channel &channel) {
     return;
   }
 
-  if (channel.buffer[0] == '\0') {
+  const char *buffer = channel.buffer + offset;
+  if (buffer[0] == '\0') {
     SendOk();
     return;
   }
 
-  const ConsoleCommand *command = GetCommand(channel.buffer);
+  const ConsoleCommand *command = GetCommand(buffer);
   if (command) {
-    (*command->handler)(command->context, channel.buffer);
+    (*command->handler)(command->context, buffer);
   } else {
     Printf("ERR Invalid command. Use \"help\" for a list of commands\n\n");
   }
@@ -389,7 +420,7 @@ void Console::UpdateEvents(const char *line, bool value) {
 
 TEST_BEGIN("Console should handle invalid commands") {
   Console console;
-  console.HandleInput("asdf\n", 5);
+  console.HandleInput("asdf\n", 5, ConnectionId::USB);
 
   Console::history.push_back(0);
   assert(
@@ -412,11 +443,13 @@ TEST_BEGIN("Console should handle enable & disable events") {
     assert(!Console::IsEventEnabled((ConsoleEvent)i));
 
     console.HandleInput(
-        buffer, Str::Sprintf(buffer, "enable_events %s\n", EVENT_NAMES[i]));
+        buffer, Str::Sprintf(buffer, "enable_events %s\n", EVENT_NAMES[i]),
+        ConnectionId::USB);
     assert(Console::IsEventEnabled((ConsoleEvent)i));
 
     console.HandleInput(
-        buffer, Str::Sprintf(buffer, "disable_events %s\n", EVENT_NAMES[i]));
+        buffer, Str::Sprintf(buffer, "disable_events %s\n", EVENT_NAMES[i]),
+        ConnectionId::USB);
     assert(!Console::IsEventEnabled((ConsoleEvent)i));
   }
 

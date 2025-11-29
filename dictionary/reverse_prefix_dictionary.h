@@ -16,6 +16,8 @@ public:
                                const SizedList<const uint8_t *> prefixes);
 
   virtual void ReverseLookup(StenoReverseDictionaryLookup &lookup) const;
+
+  virtual bool IsInternal() const { return true; }
   virtual const char *GetName() const;
 
 private:

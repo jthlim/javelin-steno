@@ -78,7 +78,7 @@ public:
 
   int AllocateChannelId();
 
-  void HandleInput(const char *data, size_t length);
+  void HandleInput(const char *data, size_t length, ConnectionId connectionId);
   static void SendOk();
 
   // Returns true if successful.
@@ -142,12 +142,14 @@ public:
 private:
   struct Channel {
     int8_t id;
+    ConnectionId connectionId;
     bool isTooLong;
     uint16_t bufferCount;
     char buffer[BUFFER_SIZE];
 
-    void Reset(uint32_t channelId) {
+    void Reset(uint32_t channelId, ConnectionId newConnectionId) {
       id = channelId;
+      connectionId = newConnectionId;
       isTooLong = false;
       bufferCount = 0;
     }
@@ -183,13 +185,15 @@ private:
 
   Channel channels[CHANNEL_COUNT];
 
-  Channel *GetChannel(int channelId);
-  void ProcessChannelCommand(Channel &channel);
+  Channel *GetChannel(int channelId, ConnectionId connectionId);
+  void ProcessChannelCommand(Channel &channel, size_t offset);
   static void PrintfInternal(const char *format, ...);
 
   static const ConsoleCommand *GetCommand(const char *buffer);
 
   static void UpdateEvents(const char *line, bool value);
+
+  static bool HasPerPacketChannelId(ConnectionId connectionId);
 };
 
 //---------------------------------------------------------------------------
