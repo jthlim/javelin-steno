@@ -235,8 +235,8 @@ bool Console::HasPerPacketChannelId(ConnectionId connectionId) {
   case ConnectionId::BLE:
   case ConnectionId::USB:
   case ConnectionId::USB_PAIR:
-    return true;
   case ConnectionId::BLE_CONSOLE:
+    return true;
   case ConnectionId::SERIAL_CONSOLE:
     return false;
   }
