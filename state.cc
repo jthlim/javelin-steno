@@ -6,25 +6,25 @@
 //---------------------------------------------------------------------------
 
 constexpr StenoCaseMode StenoState::NEXT_WORD_CASE_MODE[] = {
-    StenoCaseMode::NORMAL,      //
-    StenoCaseMode::LOWER,       //
-    StenoCaseMode::UPPER,       //
-    StenoCaseMode::TITLE,       //
-    StenoCaseMode::NORMAL,      //
-    StenoCaseMode::NORMAL,      //
-    StenoCaseMode::NORMAL,      //
-    StenoCaseMode::UNSPECIFIED, //
+    StenoCaseMode::NORMAL, // NORMAL
+    StenoCaseMode::LOWER,  // LOWER
+    StenoCaseMode::UPPER,  // UPPER
+    StenoCaseMode::TITLE,  // TITLE
+    StenoCaseMode::TITLE,  // CAMEL
+    StenoCaseMode::NORMAL, // LOWER_ONCE
+    StenoCaseMode::NORMAL, // UPPER_ONCE
+    StenoCaseMode::NORMAL, // TITLE_ONCE
 };
 
 constexpr StenoCaseMode StenoState::NEXT_LETTER_CASE_MODE[] = {
-    StenoCaseMode::NORMAL,      //
-    StenoCaseMode::LOWER,       //
-    StenoCaseMode::UPPER,       //
-    StenoCaseMode::NORMAL,      //
-    StenoCaseMode::LOWER_ONCE,  //
-    StenoCaseMode::UPPER_ONCE,  //
-    StenoCaseMode::NORMAL,      //
-    StenoCaseMode::UNSPECIFIED, //
+    StenoCaseMode::NORMAL,     // NORMAL
+    StenoCaseMode::LOWER,      // LOWER
+    StenoCaseMode::UPPER,      // UPPER
+    StenoCaseMode::NORMAL,     // TITLE
+    StenoCaseMode::NORMAL,     // CAMEL
+    StenoCaseMode::LOWER_ONCE, // LOWER_ONCE
+    StenoCaseMode::UPPER_ONCE, // UPPER_ONCE
+    StenoCaseMode::NORMAL,     // TITLE_ONCE
 };
 
 //---------------------------------------------------------------------------
@@ -64,8 +64,8 @@ void StenoState::Reset() {
 }
 
 void StenoState::SetSpace(const char *space) {
-  spaceIndex = (uint32_t) SpaceBuffer::instance.GetOrCreateIndex(space);
-  spaceLength = (uint32_t) Str::Length(GetSpace());
+  spaceIndex = (uint32_t)SpaceBuffer::instance.GetOrCreateIndex(space);
+  spaceLength = (uint32_t)Str::Length(GetSpace());
 }
 
 //---------------------------------------------------------------------------

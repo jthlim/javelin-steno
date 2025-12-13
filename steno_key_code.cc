@@ -8,6 +8,7 @@ uint32_t StenoKeyCode::ResolveUnicodeInterrnal(uint32_t unicode,
                                                StenoCaseMode mode) {
   switch (mode) {
   case StenoCaseMode::NORMAL:
+  case StenoCaseMode::CAMEL:
     return unicode;
   case StenoCaseMode::LOWER:
   case StenoCaseMode::LOWER_ONCE:

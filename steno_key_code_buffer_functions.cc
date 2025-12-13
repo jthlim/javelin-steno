@@ -775,6 +775,11 @@ bool StenoKeyCodeBuffer::SetCaseFunction(const List<char *> &parameters) {
     return true;
   }
 
+  if (Str::Eq(parameters[1], "camel")) {
+    state.overrideCaseMode = StenoCaseMode::CAMEL;
+    return true;
+  }
+
   return false;
 }
 

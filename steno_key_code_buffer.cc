@@ -56,6 +56,7 @@ void StenoKeyCodeBuffer::ProcessText(const char *text, size_t length) {
   state.isGlue = isAutoGlue;
   state.isManualStateChange = false;
   state.caseMode = state.GetNextWordCaseMode();
+  state.overrideCaseMode = state.GetNextWordOverrideCaseMode();
 }
 
 // hasManualStateChange tags a letter as the appropriate case for the purpose
@@ -161,7 +162,7 @@ void StenoKeyCodeBuffer::ProcessCommand(const char *p, size_t length) {
     p += 2;
     // Either orthographic suffix, non-orthographic suffix, or infix.
 
-    StenoCaseMode caseMode = StenoCaseMode::UNSPECIFIED;
+    StenoCaseMode caseMode = UNSPECIFIED_CASE_MODE;
     if (p[0] == '~' && p[1] == '|') {
       p += 2;
       caseMode = state.caseMode;
@@ -169,7 +170,7 @@ void StenoKeyCodeBuffer::ProcessCommand(const char *p, size_t length) {
 
     if (p == end) {
       // {^} handling.
-      state.caseMode = caseMode != StenoCaseMode::UNSPECIFIED
+      state.caseMode = caseMode != UNSPECIFIED_CASE_MODE
                            ? caseMode
                            : state.GetNextWordCaseMode();
       state.joinNext = true;
@@ -179,7 +180,7 @@ void StenoKeyCodeBuffer::ProcessCommand(const char *p, size_t length) {
     if (end[-1] == '^') {
       // Infix.
       AppendText(p, end - 1 - p, state.caseMode);
-      state.caseMode = caseMode != StenoCaseMode::UNSPECIFIED
+      state.caseMode = caseMode != UNSPECIFIED_CASE_MODE
                            ? caseMode
                            : state.GetNextWordCaseMode();
 
@@ -189,7 +190,7 @@ void StenoKeyCodeBuffer::ProcessCommand(const char *p, size_t length) {
 
     // Orthographic suffix.
     ProcessOrthographicSuffix(p, end - p);
-    if (caseMode != StenoCaseMode::UNSPECIFIED) {
+    if (caseMode != UNSPECIFIED_CASE_MODE) {
       state.caseMode = caseMode;
     }
     state.isGlue = false;
@@ -200,7 +201,7 @@ void StenoKeyCodeBuffer::ProcessCommand(const char *p, size_t length) {
   // Prefix
   if (end[-1] == '^') {
     ++p;
-    StenoCaseMode caseMode = StenoCaseMode::UNSPECIFIED;
+    StenoCaseMode caseMode = UNSPECIFIED_CASE_MODE;
     if (p[0] == '~' && p[1] == '|') {
       p += 2;
       caseMode = state.caseMode;
@@ -210,7 +211,7 @@ void StenoKeyCodeBuffer::ProcessCommand(const char *p, size_t length) {
       AppendText(state.GetSpace(), state.spaceLength, StenoCaseMode::NORMAL);
     }
     AppendText(p, end - 1 - p, state.caseMode);
-    state.caseMode = caseMode != StenoCaseMode::UNSPECIFIED
+    state.caseMode = caseMode != UNSPECIFIED_CASE_MODE
                          ? caseMode
                          : state.GetNextWordCaseMode();
     state.isGlue = false;

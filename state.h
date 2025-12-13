@@ -11,11 +11,16 @@ enum class StenoCaseMode : uint8_t {
   LOWER,
   UPPER,
   TITLE,
+  CAMEL,
   LOWER_ONCE,
   UPPER_ONCE,
   TITLE_ONCE,
-  UNSPECIFIED,
 };
+
+// Value that can represent a null StenoCaseMode, but should never
+// be written to any fields.
+constexpr StenoCaseMode UNSPECIFIED_CASE_MODE =
+    StenoCaseMode(int(StenoCaseMode::TITLE_ONCE) + 1);
 
 enum class SegmentLookupType : uint8_t {
   UNKNOWN,
@@ -54,6 +59,10 @@ struct StenoState {
 
   StenoCaseMode GetNextWordCaseMode() const {
     return NEXT_WORD_CASE_MODE[(int)caseMode];
+  }
+
+  StenoCaseMode GetNextWordOverrideCaseMode() const {
+    return NEXT_WORD_CASE_MODE[(int)overrideCaseMode];
   }
 
   void Reset();

@@ -108,10 +108,10 @@ Example usage:
 
 Modifiers supported:
 
-- `%u`: Upper case
-- `%l`: Lower case
-- `%t`: Title case
-- `%c`: Capitalize
+- `%u`: Upper case, e.g. "FIRST SECOND"
+- `%l`: Lower case, e.g. "first second"
+- `%t`: Title case, e.g. "First Second"
+- `%c`: Capitalize, e.g. "First second"
 
 Example usage:
 
@@ -344,10 +344,11 @@ Sets the case for output.
 
 Supported values:
 
-- normal
-- lower
-- upper
-- title
+- normal -- "first second third"
+- lower -- "first second third"
+- upper -- "FIRST SECOND THIRD"
+- title -- "First Second Third"
+- camel -- "first Second Third". Generally used with `{:set_space:}` to give "firstSecondThird"
 
 Example usage:
 
