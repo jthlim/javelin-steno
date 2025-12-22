@@ -11,6 +11,8 @@ public:
   bool IsConnected() const { return isMounted; }
   bool IsSleeping() const { return IsConnected() && isSuspended; }
   bool IsPowered() const { return isPowered; }
+  bool IsSuspended() const { return isSuspended; }
+  bool IsSerialConsoleActive() const { return isSerialConsoleActive; }
 
   KeyboardLedStatus GetKeyboardLedStatus() const { return ledStatus; }
   void SetKeyboardLedStatus(KeyboardLedStatus status);
@@ -18,6 +20,7 @@ public:
   int GetBatteryPercentage() const { return batteryPercentage; }
 
   void SetPowered(bool value) { isPowered = value; }
+  void SetSerialConsoleActive(bool value) { isSerialConsoleActive = value; }
   void SetBatteryPercentage(int percentage) { batteryPercentage = percentage; }
 
   void OnMount() {
@@ -34,6 +37,7 @@ public:
   }
   void Reset() {
     flags = 0;
+    isSuspended = true;
     ledStatus.Reset();
     batteryPercentage = 0;
   }
@@ -46,6 +50,7 @@ private:
       bool isMounted : 1;
       bool isSuspended : 1;
       bool isPowered : 1;
+      bool isSerialConsoleActive : 1;
     };
     uint8_t flags;
   };

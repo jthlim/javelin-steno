@@ -13,22 +13,27 @@ SplitSerialBuffer::SplitSerialBufferData SplitSerialBuffer::instance;
 
 //---------------------------------------------------------------------------
 
-QueueEntry<SplitSerialBuffer::EntryData> *
-SplitSerialBuffer::SplitSerialBufferData::CreateEntry(const uint8_t *data,
-                                                      size_t length) {
-  QueueEntry<EntryData> *entry = new (length) QueueEntry<EntryData>;
-  entry->data.length = length;
-  entry->next = nullptr;
-  memcpy(entry->data.data, data, length);
-  return entry;
-}
+[[gnu::weak]]
+void SplitSerialBuffer::SplitSerialBufferData::ClearQueue() {}
 
 //---------------------------------------------------------------------------
 
 void SplitSerialBuffer::SplitSerialBufferData::Add(const uint8_t *data,
                                                    size_t length) {
-  QueueEntry<EntryData> *entry = CreateEntry(data, length);
-  AddEntry(entry);
+  while (length) {
+    while (queue.IsFull()) {
+      ClearQueue();
+    }
+
+    const size_t available = queue.GetAvailable();
+    const size_t transferCount = available > length ? length : available;
+
+    for (size_t i = 0; i < transferCount; ++i) {
+      queue.Add(*data++);
+    }
+
+    length -= transferCount;
+  }
 }
 
 //---------------------------------------------------------------------------
@@ -36,18 +41,19 @@ void SplitSerialBuffer::SplitSerialBufferData::Add(const uint8_t *data,
 #if JAVELIN_SPLIT_IS_MASTER
 
 void SplitSerialBuffer::SplitSerialBufferData::UpdateBuffer(TxBuffer &buffer) {
-  if (!head) [[likely]] {
+  if (queue.IsEmpty()) [[likely]] {
     return;
   }
 
-  while (head) {
-    if (!buffer.Add(SplitHandlerId::SERIAL, &head->data.data,
-                    head->data.length)) {
-      return;
-    }
-
-    RemoveHead();
+  const size_t count = queue.GetCount();
+  uint8_t *target = buffer.Add(SplitHandlerId::SERIAL, count);
+  if (target == nullptr) {
+    return;
   }
+  for (const uint8_t c : queue) {
+    *target++ = c;
+  }
+  queue.RemoveFront(count);
 }
 
 #endif

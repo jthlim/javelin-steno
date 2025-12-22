@@ -1,7 +1,6 @@
 //---------------------------------------------------------------------------
 
 #pragma once
-#include "../timer_manager.h"
 #include "split.h"
 
 //---------------------------------------------------------------------------
@@ -14,8 +13,7 @@
 
 class SplitVersion :
 #if JAVELIN_SPLIT_IS_MASTER
-    public SplitRxHandler,
-    private TimerHandler
+    public SplitRxHandler
 #else
     public SplitTxHandler
 #endif
@@ -35,13 +33,11 @@ public:
   }
 
 private:
-  static constexpr uint32_t VERSION = 4 + JAVELIN_SPLIT_VERSION_INCREMENT;
+  static constexpr uint32_t VERSION = 5 + JAVELIN_SPLIT_VERSION_INCREMENT;
 
 #if JAVELIN_SPLIT_IS_MASTER
-  void OnReceiveConnected() final;
   void OnReceiveConnectionReset() final;
   void OnDataReceived(const void *data, size_t length) final;
-  void Run(intptr_t id) final;
 
   void ShowError();
   void ClearError();

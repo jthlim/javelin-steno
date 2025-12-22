@@ -1,7 +1,7 @@
 //---------------------------------------------------------------------------
 
 #pragma once
-#include "../container/queue.h"
+#include "../container/cyclic_queue.h"
 #include "split.h"
 
 //---------------------------------------------------------------------------
@@ -27,16 +27,11 @@ public:
   }
 
 private:
-  struct EntryData {
-    size_t length;
-    uint8_t data[0];
-  };
-
-  struct SplitSerialBufferData : public Queue<EntryData>,
+  struct SplitSerialBufferData :
 #if JAVELIN_SPLIT_IS_MASTER
-                                 public SplitTxHandler
+      public SplitTxHandler
 #else
-                                 public SplitRxHandler
+      public SplitRxHandler
 #endif
   {
     void Add(const uint8_t *data, size_t length);
@@ -47,8 +42,10 @@ private:
     void OnDataReceived(const void *data, size_t length) final;
 #endif
 
-    static QueueEntry<EntryData> *CreateEntry(const uint8_t *data,
-                                              size_t length);
+    static void ClearQueue();
+
+    static const size_t MAXIMUM_SERIAL_QUEUE_SIZE = 128;
+    CyclicQueue<uint8_t, MAXIMUM_SERIAL_QUEUE_SIZE> queue;
   };
 
   static SplitSerialBufferData instance;

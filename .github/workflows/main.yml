@@ -10,4 +10,4 @@ jobs:
     steps:
     - uses: superbrothers/close-pull-request@v3
       with:
-        comment: "PRs are not accepted. This project is open source, not open contribution."
+        comment: "PR has been automatically closed. This project is not accepting contributions."

@@ -59,7 +59,8 @@ void ConsoleInputBuffer::ConsoleInputBufferData::Process() {
 
 void ConsoleInputBuffer::ConsoleInputBufferData::OnDataReceived(
     const void *data, size_t length) {
-  Add((const uint8_t *)data, length, ConnectionId::USB_PAIR);
+  Add((const uint8_t *)data + 1, length - 1,
+      (ConnectionId)((const uint8_t *)data)[0]);
 }
 
 #else
@@ -75,8 +76,19 @@ void ConsoleInputBuffer::ConsoleInputBufferData::UpdateBuffer(
   }
 
   while (head) {
-    if (!buffer.Add(SplitHandlerId::CONSOLE, head->data.data,
-                    head->data.length)) {
+    // Update connectionId
+    switch (head->data.connectionId) {
+    case ConnectionId::USB:
+      head->data.connectionId = ConnectionId::USB_PAIR;
+      break;
+
+    case ConnectionId::SERIAL_CONSOLE:
+      head->data.connectionId = ConnectionId::SERIAL_CONSOLE_PAIR;
+      break;
+    }
+
+    if (!buffer.Add(SplitHandlerId::CONSOLE, &head->data.connectionId,
+                    head->data.length + 1)) {
       return;
     }
 

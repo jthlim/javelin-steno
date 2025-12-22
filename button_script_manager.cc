@@ -475,7 +475,7 @@ void ButtonScriptManager::RunScript_Binding(void *context,
   }
 
   Console::SendOk();
-  manager->CancelAllScriptsForByteCode(byteCode, 256);
+  manager->CancelAllScriptsForByteCode(byteCode, sizeof(buffer));
   manager->ExecuteByteCode(byteCode);
 }
 

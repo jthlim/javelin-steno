@@ -40,6 +40,11 @@ void SplitUsbStatus::SetPowered(bool value) {
   GetLocalUsbStatus().SetPowered(value);
 }
 
+void SplitUsbStatus::SetSerialConsoleActive(bool value) {
+  dirty = true;
+  GetLocalUsbStatus().SetSerialConsoleActive(value);
+}
+
 void SplitUsbStatus::SetKeyboardLedStatus(KeyboardLedStatus status) {
   dirty = true;
   GetLocalUsbStatus().SetKeyboardLedStatus(status);

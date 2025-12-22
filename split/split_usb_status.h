@@ -8,11 +8,15 @@
 
 #if JAVELIN_SPLIT
 
+// SplitUsbStatus contains the status of the split side.
+// UsbStatus::instance is always the master USB status.
 class SplitUsbStatus final : public SplitTxHandler, public SplitRxHandler {
 public:
   bool IsConnected() const { return status.IsConnected(); }
   bool IsSleeping() const { return status.IsSleeping(); }
   bool IsPowered() const { return status.IsPowered(); }
+  bool IsSuspended() const { return status.IsSuspended(); }
+  bool IsSerialConsoleActive() const { return status.IsSerialConsoleActive(); }
 
   void OnMount();
   void OnUnmount();
@@ -23,6 +27,8 @@ public:
     return status.GetKeyboardLedStatus();
   }
   void SetKeyboardLedStatus(KeyboardLedStatus status);
+
+  void SetSerialConsoleActive(bool value);
 
   void SetPowered(bool value);
   void SetBatteryPercentage(int percentage);
@@ -65,6 +71,8 @@ public:
   static void RegisterHandlers() {}
 
   void OnReceivedBatteryPercentUpdated();
+
+  static UsbStatus &GetLocalUsbStatus() { return UsbStatus::instance; }
 };
 
 #endif // JAVELIN_SPLIT

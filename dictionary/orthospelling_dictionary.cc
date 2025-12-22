@@ -71,7 +71,7 @@ const char *StenoOrthospellingDictionary::GetName() const { return data.name; }
 
 void StenoOrthospellingDictionary::ReverseLookup(
     StenoReverseDictionaryLookup &lookup) const {
-  // TODO
+  // TODO: Implement if possible.
 }
 
 void StenoOrthospellingDictionary::PrintDictionary(

@@ -17,6 +17,7 @@ enum class ConnectionId : uint8_t {
   // Used by ConsoleInputBuffer.
   BLE_CONSOLE,
   SERIAL_CONSOLE,
+  SERIAL_CONSOLE_PAIR,
 };
 
 enum class PairConnectionId : uint8_t {

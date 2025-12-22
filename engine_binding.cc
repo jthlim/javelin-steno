@@ -343,17 +343,35 @@ void StenoEngine::ProcessStrokes_Binding(void *context,
   ConsoleWriter::Pop();
 }
 
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wstring-plus-int"
 void StenoEngine::ListTemplateValues_Binding(void *context,
                                              const char *commandLine) {
   StenoEngine *engine = (StenoEngine *)context;
 
   Console::Printf("[");
+  size_t emptyCount = 0;
+  bool isFirst = true;
   for (size_t i = 0; i < TEMPLATE_VALUE_COUNT; ++i) {
-    Console::Printf(i == 0 ? "\"%J\"" : ",\"%J\"",
-                    engine->templateValues[i].GetValue());
+    const char *value = engine->templateValues[i].GetValue();
+    if (*value == '\0') {
+      emptyCount++;
+      continue;
+    }
+    if (emptyCount) {
+      Console::Printf(",%d" + isFirst, emptyCount);
+      emptyCount = 0;
+      isFirst = false;
+    }
+    Console::Printf(",\"%J\"" + isFirst, value);
+    isFirst = false;
+  }
+  if (emptyCount) {
+    Console::Printf(",%d" + isFirst, emptyCount);
   }
   Console::Printf("]\n\n");
 }
+#pragma clang diagnostic pop
 
 void StenoEngine::SetTemplateValue_Binding(void *context,
                                            const char *commandLine) {

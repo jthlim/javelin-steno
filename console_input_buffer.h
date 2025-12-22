@@ -40,9 +40,11 @@ public:
 
 private:
   struct EntryData {
-    ConnectionId connectionId;
     uint16_t connectionHandle; // For ble connection handle.
     size_t length;
+
+    // Data below this is sent in the TxBuffer.
+    ConnectionId connectionId;
     char data[0];
   };
 

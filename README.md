@@ -40,6 +40,7 @@ Format has the following special keys:
 - `%s` or `%o`: Stroke list
 - `%l` or `%d`: Lookup results
 - `%t`: Text results
+- `%%`: A single `%`
 
 Example usage:
 With `SPHRA*EUPB` defined as:
