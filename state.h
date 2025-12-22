@@ -12,6 +12,7 @@ enum class StenoCaseMode : uint8_t {
   UPPER,
   TITLE,
   CAMEL,
+  PASCAL,
   LOWER_ONCE,
   UPPER_ONCE,
   TITLE_ONCE,

@@ -11,6 +11,7 @@ constexpr StenoCaseMode StenoState::NEXT_WORD_CASE_MODE[] = {
     StenoCaseMode::UPPER,  // UPPER
     StenoCaseMode::TITLE,  // TITLE
     StenoCaseMode::TITLE,  // CAMEL
+    StenoCaseMode::TITLE,  // PASCAL
     StenoCaseMode::NORMAL, // LOWER_ONCE
     StenoCaseMode::NORMAL, // UPPER_ONCE
     StenoCaseMode::NORMAL, // TITLE_ONCE
@@ -22,6 +23,7 @@ constexpr StenoCaseMode StenoState::NEXT_LETTER_CASE_MODE[] = {
     StenoCaseMode::UPPER,      // UPPER
     StenoCaseMode::NORMAL,     // TITLE
     StenoCaseMode::NORMAL,     // CAMEL
+    StenoCaseMode::UPPER,      // PASCAL
     StenoCaseMode::LOWER_ONCE, // LOWER_ONCE
     StenoCaseMode::UPPER_ONCE, // UPPER_ONCE
     StenoCaseMode::NORMAL,     // TITLE_ONCE

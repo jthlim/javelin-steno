@@ -780,6 +780,11 @@ bool StenoKeyCodeBuffer::SetCaseFunction(const List<char *> &parameters) {
     return true;
   }
 
+  if (Str::Eq(parameters[1], "pascal")) {
+    state.overrideCaseMode = StenoCaseMode::PASCAL;
+    return true;
+  }
+
   return false;
 }
 

@@ -10,6 +10,8 @@ uint32_t StenoKeyCode::ResolveUnicodeInterrnal(uint32_t unicode,
   case StenoCaseMode::NORMAL:
   case StenoCaseMode::CAMEL:
     return unicode;
+  case StenoCaseMode::PASCAL:
+    return unicode;
   case StenoCaseMode::LOWER:
   case StenoCaseMode::LOWER_ONCE:
     return Unicode::ToLower(unicode);

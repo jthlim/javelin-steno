@@ -349,6 +349,7 @@ Supported values:
 - upper -- "FIRST SECOND THIRD"
 - title -- "First Second Third"
 - camel -- "first Second Third". Generally used with `{:set_space:}` to give "firstSecondThird"
+- pascal -- "First Second Third". Generally used with `{:set_space:}` to give "FirstSecondThird"
 
 Example usage:
 
