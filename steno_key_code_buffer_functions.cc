@@ -17,14 +17,13 @@ struct KeyCodeFunctionEntry {
   bool (StenoKeyCodeBuffer::*handler)(const List<char *> &parameters);
 };
 
+// clang-format off
 constexpr KeyCodeFunctionEntry HANDLERS[] = {
     {"add_translation", &StenoKeyCodeBuffer::AddTranslationFunction},
     {"console", &StenoKeyCodeBuffer::ConsoleFunction},
-    {"disable_all_dictionaries",
-     &StenoKeyCodeBuffer::DisableAllDictionariesFunction},
+    {"disable_all_dictionaries", &StenoKeyCodeBuffer::DisableAllDictionariesFunction},
     {"disable_dictionary", &StenoKeyCodeBuffer::DisableDictionaryFunction},
-    {"enable_all_dictionaries",
-     &StenoKeyCodeBuffer::EnableAllDictionariesFunction},
+    {"enable_all_dictionaries", &StenoKeyCodeBuffer::EnableAllDictionariesFunction},
     {"enable_dictionary", &StenoKeyCodeBuffer::EnableDictionaryFunction},
     {"host_layout", &StenoKeyCodeBuffer::HostLayoutFunction},
     {"repeat_last_character", &StenoKeyCodeBuffer::RepeatLastCharacter},
@@ -45,6 +44,7 @@ constexpr KeyCodeFunctionEntry HANDLERS[] = {
     {"stitch_last_word", &StenoKeyCodeBuffer::StitchLastWordFunction},
     {"toggle_dictionary", &StenoKeyCodeBuffer::ToggleDictionaryFunction},
 };
+// clang-format on
 
 //---------------------------------------------------------------------------
 
@@ -760,24 +760,22 @@ bool StenoKeyCodeBuffer::SetCaseFunction(const List<char *> &parameters) {
     return true;
   }
 
-  if (Str::Eq(parameters[1], "lower")) {
-    state.overrideCaseMode = StenoCaseMode::LOWER;
-    return true;
-  }
+  struct StenoCaseModeName {
+    const char *key;
+    StenoCaseMode value;
+  };
+  static constexpr StenoCaseModeName names[] = {
+      {.key = "lower", .value = StenoCaseMode::LOWER},
+      {.key = "upper", .value = StenoCaseMode::UPPER},
+      {.key = "title", .value = StenoCaseMode::TITLE},
+      {.key = "camel", .value = StenoCaseMode::CAMEL},
+  };
 
-  if (Str::Eq(parameters[1], "upper")) {
-    state.overrideCaseMode = StenoCaseMode::UPPER;
-    return true;
-  }
-
-  if (Str::Eq(parameters[1], "title")) {
-    state.overrideCaseMode = StenoCaseMode::TITLE;
-    return true;
-  }
-
-  if (Str::Eq(parameters[1], "camel")) {
-    state.overrideCaseMode = StenoCaseMode::CAMEL;
-    return true;
+  for (const StenoCaseModeName &name : names) {
+    if (Str::Eq(parameters[1], name.key)) {
+      state.overrideCaseMode = name.value;
+      return true;
+    }
   }
 
   return false;

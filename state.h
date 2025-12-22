@@ -19,8 +19,7 @@ enum class StenoCaseMode : uint8_t {
 
 // Value that can represent a null StenoCaseMode, but should never
 // be written to any fields.
-constexpr StenoCaseMode UNSPECIFIED_CASE_MODE =
-    StenoCaseMode(int(StenoCaseMode::TITLE_ONCE) + 1);
+constexpr StenoCaseMode UNSPECIFIED_CASE_MODE = StenoCaseMode(-1);
 
 enum class SegmentLookupType : uint8_t {
   UNKNOWN,

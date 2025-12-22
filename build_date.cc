@@ -46,18 +46,20 @@ consteval static int GetMonth(char a, char b, char c) {
 
 //---------------------------------------------------------------------------
 
+// This is used to get around Bazel defining __DATE__ as "redacted"
+#define LONG_DATE (__DATE__ __DATE__)
 const char *GetBuildDate() {
   static constexpr char BUILD_DATE[] = {
-      __DATE__[7],                                                //
-      __DATE__[8],                                                //
-      __DATE__[9],                                                //
-      __DATE__[10],                                               //
-      '-',                                                        //
-      GetMonth(__DATE__[0], __DATE__[1], __DATE__[2]) / 10 + '0', //
-      GetMonth(__DATE__[0], __DATE__[1], __DATE__[2]) % 10 + '0', //
-      '-',                                                        //
-      __DATE__[4] == ' ' ? '0' : __DATE__[4],                     //
-      __DATE__[5],                                                //
+      LONG_DATE[7],                                                  //
+      LONG_DATE[8],                                                  //
+      LONG_DATE[9],                                                  //
+      LONG_DATE[10],                                                 //
+      '-',                                                           //
+      GetMonth(LONG_DATE[0], LONG_DATE[1], LONG_DATE[2]) / 10 + '0', //
+      GetMonth(LONG_DATE[0], LONG_DATE[1], LONG_DATE[2]) % 10 + '0', //
+      '-',                                                           //
+      LONG_DATE[4] == ' ' ? '0' : LONG_DATE[4],                      //
+      LONG_DATE[5],                                                  //
       0,
   };
 

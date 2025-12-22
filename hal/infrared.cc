@@ -14,7 +14,6 @@ void SetInfraredDataBits(const void *data, size_t bitCount,
   testInfraredBitCount = bitCount;
   testInfraRedData = 0;
   const uint8_t *p = (const uint8_t *)data;
-  uint32_t mask = 0;
   for (size_t i = 0; i < bitCount; ++i) {
     const uint32_t byte = p[i / 8];
     const size_t rightShift =
@@ -23,7 +22,6 @@ void SetInfraredDataBits(const void *data, size_t bitCount,
     if (bit) {
       testInfraRedData |= 1ull << (63 - i);
     }
-    mask <<= 1;
   }
 }
 

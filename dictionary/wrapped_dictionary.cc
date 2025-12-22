@@ -5,8 +5,9 @@
 //---------------------------------------------------------------------------
 
 StenoWrappedDictionary::StenoWrappedDictionary(StenoDictionary *dictionary)
-    : super(dictionary->GetMaximumOutlineLength()), dictionary(dictionary),
-      lookupDictionary(dictionary->GetLookupDictionary()) {}
+    : super(dictionary->GetMaximumOutlineLength()),
+      lookupDictionary(dictionary->GetLookupDictionary()),
+      dictionary(dictionary) {}
 
 //---------------------------------------------------------------------------
 

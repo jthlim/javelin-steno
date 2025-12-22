@@ -29,6 +29,7 @@ bool Connection::IsConnected(ConnectionId connectionId) {
     return SplitUsbStatus::instance.IsConnected();
   case ConnectionId::BLE_CONSOLE:
   case ConnectionId::SERIAL_CONSOLE:
+  case ConnectionId::SERIAL_CONSOLE_PAIR:
     return false;
   }
   return false;
@@ -56,6 +57,7 @@ ConnectionId Connection::GetActiveConnection() {
       continue;
     case ConnectionId::BLE_CONSOLE:
     case ConnectionId::SERIAL_CONSOLE:
+    case ConnectionId::SERIAL_CONSOLE_PAIR:
       continue;
     }
   }
@@ -78,6 +80,7 @@ KeyboardLedStatus Connection::GetActiveKeyboardLedStatus() {
 
   case ConnectionId::BLE_CONSOLE:
   case ConnectionId::SERIAL_CONSOLE:
+  case ConnectionId::SERIAL_CONSOLE_PAIR:
     return KeyboardLedStatus(0);
   }
   return KeyboardLedStatus(0);
@@ -127,6 +130,7 @@ bool Connection::IsHostSleeping(ConnectionId connectionId) {
     return SplitUsbStatus::instance.IsSleeping();
   case ConnectionId::BLE_CONSOLE:
   case ConnectionId::SERIAL_CONSOLE:
+  case ConnectionId::SERIAL_CONSOLE_PAIR:
     return false;
   }
   return false;
