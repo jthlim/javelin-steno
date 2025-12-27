@@ -22,6 +22,18 @@ struct Pattern::BuildResult {
   PatternComponent *tail;
 };
 
+struct Pattern::BuildAtomResult : public Pattern::BuildResult {
+  using super = Pattern::BuildResult;
+
+  BuildAtomResult(const BuildResult &b, bool isQuantified)
+      : super(b), isQuantified(isQuantified) {}
+  BuildAtomResult(PatternComponent *pHead, PatternComponent *pTail,
+                  bool isQuantified)
+      : super(pHead, pTail), isQuantified(isQuantified) {}
+
+  const bool isQuantified;
+};
+
 //---------------------------------------------------------------------------
 
 Pattern Pattern::Compile(const char *p) {
@@ -45,9 +57,8 @@ Pattern Pattern::Compile(const char *p) {
   const size_t minimumLength =
       captureStart->GetMinimumLength(minimumLengthContext);
 
-#if JAVELIN_USE_PATTERN_JIT
   captureStart->MarkRequiredCaptures(nullptr);
-#else
+#if !JAVELIN_USE_PATTERN_JIT
   captureStart->RemoveEpsilon();
 #endif
 
@@ -136,40 +147,27 @@ Pattern::BuildResult Pattern::ParseSequence(BuildContext &c) {
 }
 
 Pattern::BuildResult Pattern::ParseQuantifiedAtom(BuildContext &c) {
-  if (c.p[0] == '.') {
-    if (c.p[1] == '*') {
-      c.p += 2;
-      return BuildResult(new AnyStarPatternComponent);
-    } else if (c.p[1] == '+') {
-      c.p += 2;
-      PatternComponent *any = new AnyPatternComponent;
-      PatternComponent *anyStar = new AnyStarPatternComponent;
-      any->next = anyStar;
-      return BuildResult(any, anyStar);
-    }
-  }
-
-  const BuildResult atom = ParseAtom(c);
-  if (atom.head == nullptr) {
+  const BuildAtomResult atom = ParseAtom(c);
+  if (atom.head == nullptr || atom.isQuantified) {
     return atom;
   }
 
   return ParseQuantifier(c, atom);
 }
 
-Pattern::BuildResult Pattern::ParseAtom(BuildContext &c) {
+Pattern::BuildAtomResult Pattern::ParseAtom(BuildContext &c) {
   switch (*c.p) {
   case '\0':
   case ')':
   case '|':
-    return BuildResult(nullptr);
+    return BuildAtomResult(nullptr, false);
   case '^':
     c.p++;
-    return BuildResult(new StartOfLinePatternComponent);
+    return BuildAtomResult(new StartOfLinePatternComponent, false);
 
   case '$':
     c.p++;
-    return BuildResult(new EndOfLinePatternComponent);
+    return BuildAtomResult(new EndOfLinePatternComponent, false);
 
   case '(': {
     c.p++;
@@ -179,7 +177,7 @@ Pattern::BuildResult Pattern::ParseAtom(BuildContext &c) {
       BuildResult component = ParseAlternate(c);
       assert(*c.p == ')');
       c.p++;
-      return component;
+      return BuildAtomResult(component, false);
     }
 
     assert(c.captureIndex < 8);
@@ -190,11 +188,29 @@ Pattern::BuildResult Pattern::ParseAtom(BuildContext &c) {
     const BuildResult component = ParseAlternate(c);
     assert(*c.p == ')');
     c.p++;
-    captureStart->next = component.head;
+
     PatternComponent *captureEnd =
         new CapturePatternComponent(captureIndex + 1);
-    component.tail->next = captureEnd;
-    return BuildResult(captureStart, captureEnd);
+
+    if (*c.p == '?') {
+      c.p++;
+      // Special case (x)? to become ((?:x)?) to enable the more performant
+      // AlwaysCapture more often. This is not appropriate for a general regex
+      // engine, where it may be necessary to test if an empty group has been
+      // matched, but for a steno regex engine, this is not a concern.
+      PatternComponent *epsilon = new EpsilonPatternComponent;
+      BranchPatternComponent *alternate =
+          new BranchPatternComponent(component.head, BranchType::NEXT_FORWARD);
+      alternate->next = epsilon;
+      component.tail->next = epsilon;
+      captureStart->next = alternate;
+      epsilon->next = captureEnd;
+      return BuildAtomResult(captureStart, captureEnd, true);
+    } else {
+      captureStart->next = component.head;
+      component.tail->next = captureEnd;
+      return BuildAtomResult(captureStart, captureEnd, false);
+    }
   }
   case '\\':
     switch (const int x = c.p[1]; x) {
@@ -202,7 +218,7 @@ Pattern::BuildResult Pattern::ParseAtom(BuildContext &c) {
     case '2':
     case '3':
       c.p += 2;
-      return BuildResult(new BackReferencePatternComponent(x - '0'));
+      return BuildAtomResult(new BackReferencePatternComponent(x - '0'), false);
 
     default:
       goto HandleLiteral;
@@ -240,11 +256,21 @@ Pattern::BuildResult Pattern::ParseAtom(BuildContext &c) {
       component->FlipBits();
     }
 
-    return BuildResult(component);
+    return BuildAtomResult(component, false);
   }
   case '.':
     c.p++;
-    return BuildResult(new AnyPatternComponent);
+    if (*c.p == '*') {
+      c.p++;
+      return BuildAtomResult(new AnyStarPatternComponent, true);
+    } else if (*c.p == '+') {
+      c.p++;
+      PatternComponent *any = new AnyPatternComponent;
+      PatternComponent *anyStar = new AnyStarPatternComponent;
+      any->next = anyStar;
+      return BuildAtomResult(any, anyStar, true);
+    }
+    return BuildAtomResult(new AnyPatternComponent, false);
 
   default:
   HandleLiteral:
@@ -257,7 +283,7 @@ Pattern::BuildResult Pattern::ParseAtom(BuildContext &c) {
     } else {
       component = new (length) LiteralPatternComponent(pStart, length);
     }
-    return BuildResult(component);
+    return BuildAtomResult(component, false);
   }
 }
 

@@ -53,11 +53,9 @@ PatternComponent::GetMaximumLength(const PatternRecurseContext &context) const {
   return next->GetMaximumLength(context);
 }
 
-#if JAVELIN_USE_PATTERN_JIT
 void PatternComponent::MarkRequiredCaptures(const void *loopbackObject) {
   return next->MarkRequiredCaptures(loopbackObject);
 }
-#endif
 
 //---------------------------------------------------------------------------
 
@@ -208,7 +206,6 @@ bool CharacterSetPatternComponent::Match(const char *p,
 
 bool CapturePatternComponent::Match(const char *p,
                                     PatternContext &context) const {
-
   const char **const capture = &context.captures[index];
   const char *previous = *capture;
   *capture = p;
@@ -219,16 +216,28 @@ bool CapturePatternComponent::Match(const char *p,
   return result;
 }
 
-#if JAVELIN_USE_PATTERN_JIT
+bool AlwaysCapturePatternComponent::Match(const char *p,
+                                          PatternContext &context) const {
+
+  context.captures[index] = p;
+  return CallNext(p, context);
+}
+
 void CapturePatternComponent::MarkRequiredCaptures(const void *loopbackObject) {
   if (loopbackObject != nullptr) {
     hasLoopback = true;
+    alwaysStoreCapture = false;
   } else {
     isRequired = true;
+    alwaysStoreCapture = !hasLoopback;
+  }
+  if (alwaysStoreCapture) {
+    new (this) AlwaysCapturePatternComponent(*this);
+  } else {
+    new (this) CapturePatternComponent(*this);
   }
   super::MarkRequiredCaptures(loopbackObject);
 }
-#endif
 
 bool BranchPatternComponent::Match(const char *p,
                                    PatternContext &context) const {
@@ -303,7 +312,6 @@ size_t BranchPatternComponent::GetMaximumLength(
   }
 }
 
-#if JAVELIN_USE_PATTERN_JIT
 void BranchPatternComponent::MarkRequiredCaptures(const void *loopbackObject) {
   if (loopbackObject == this) {
     return;
@@ -325,7 +333,6 @@ void BranchPatternComponent::MarkRequiredCaptures(const void *loopbackObject) {
     __builtin_unreachable();
   }
 }
-#endif
 
 bool StartOfLinePatternComponent::Match(const char *p,
                                         PatternContext &context) const {

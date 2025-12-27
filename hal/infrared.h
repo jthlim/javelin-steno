@@ -25,8 +25,9 @@ enum class InfraredEndianness : uint16_t {
 };
 
 using InfraredTime = FixedPoint<uint16_t, 1>;
+using LongInfraredTime = FixedPoint<uint32_t, 1>;
 
-struct InfraredRawDataConfiguration {
+struct InfraredSignalConfiguration {
   // Number of times to send the message.
   // Use 0 for infinite.
   uint16_t playbackCount = 1;
@@ -42,17 +43,21 @@ struct InfraredRawDataConfiguration {
 
   FixedPoint<Uint32, 1> repeatDelay;
 };
-static_assert(sizeof(InfraredRawDataConfiguration) == 12);
+static_assert(sizeof(InfraredSignalConfiguration) == 12);
 
 struct InfraredDataConfiguration {
-  InfraredRawDataConfiguration rawConfiguration;
+  InfraredSignalConfiguration signalConfiguration;
+
   // Time in microseconds.
   struct PulseTime {
+    // If onTime top bit is clear, then the pulse is emitted on-off.
+    // If onTime top bit is set, then the pulse is emitted off-on.
     InfraredTime onTime;
     InfraredTime offTime;
 
-    uint32_t GetTotalTimeValue() const { return onTime.value + offTime.value; }
+    uint32_t GetTime() const { return (onTime.value & 0x7fff) + offTime.value; }
   };
+
   PulseTime header;
   PulseTime zeroBit;
   PulseTime oneBit;
@@ -70,7 +75,7 @@ public:
 
   // playCount = 0 -> infinite playback.
   static void SendRawData(const InfraredTime *data, size_t dataCount,
-                          const InfraredRawDataConfiguration &rawData);
+                          const InfraredSignalConfiguration &rawData);
 
   static void SendMessage(const char *protocolName, uint32_t address,
                           uint32_t command, uint32_t extraData);

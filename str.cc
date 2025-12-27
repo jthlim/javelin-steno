@@ -140,12 +140,14 @@ bool Str::ContainsKeyCode(const char *p) {
   return result;
 }
 
+[[gnu::noinline]]
 char *Str::DupN(const char *p, size_t length) {
   char *buffer = (char *)malloc(length + 1);
   buffer[length] = '\0';
   return (char *)memcpy(buffer, p, length);
 }
 
+[[gnu::noinline]]
 char *Str::Dup(const char *p) {
   const size_t length = Length(p);
   char *buffer = (char *)malloc(length + 1);

@@ -46,8 +46,7 @@ private:
   size_t capacity;
 };
 
-#define JIT_COMPONENT_METHOD                                                   \
-  void Compile(PatternJitContext &context) const final;
+#define JIT_COMPONENT_METHOD void Compile(PatternJitContext &context) const;
 #else
 #define JIT_COMPONENT_METHOD
 #endif
@@ -83,6 +82,7 @@ public:
 
   virtual bool Match(const char *p, PatternContext &context) const = 0;
   virtual bool IsEpsilon() const { return false; }
+  virtual bool IsCapture() const { return false; }
 
   virtual void GenerateMetrics(const PatternRecurseContext &context);
 
@@ -92,9 +92,7 @@ public:
   virtual bool HasEndAnchor(const PatternRecurseContext &context) const;
   virtual size_t GetMinimumLength(const PatternRecurseContext &context) const;
   virtual size_t GetMaximumLength(const PatternRecurseContext &context) const;
-#if JAVELIN_USE_PATTERN_JIT
   virtual void MarkRequiredCaptures(const void *loopbackObject);
-#endif
 
 #if JAVELIN_USE_PATTERN_JIT
   virtual void Compile(PatternJitContext &context) const = 0;
@@ -106,8 +104,14 @@ public:
   static const size_t INFINITE_LENGTH = size_t(-1);
 
 protected:
-  bool CallNext(const char *p, PatternContext &context) const;
   const PatternComponent *GetNext() const { return next; }
+  bool CallNext(const char *p, PatternContext &context) const;
+#if JAVELIN_USE_PATTERN_JIT
+  void CompileNext(PatternJitContext &context) const { next->Compile(context); }
+#endif
+
+  static void *operator new(size_t, void *p) { return p; }
+  static void operator delete(void *, void *p) {}
 
 private:
   PatternComponent *next; // Initialized to SuccessComponent::instance
@@ -146,9 +150,7 @@ public:
   size_t GetMaximumLength(const PatternRecurseContext &context) const {
     return 0;
   }
-#if JAVELIN_USE_PATTERN_JIT
-  virtual void MarkRequiredCaptures(const void *loopbackObject) final {}
-#endif
+  void MarkRequiredCaptures(const void *loopbackObject) {}
 
   JIT_COMPONENT_METHOD
 
@@ -271,9 +273,7 @@ public:
   virtual bool HasEndAnchor(const PatternRecurseContext &context) const;
   virtual size_t GetMinimumLength(const PatternRecurseContext &context) const;
   virtual size_t GetMaximumLength(const PatternRecurseContext &context) const;
-#if JAVELIN_USE_PATTERN_JIT
   virtual void MarkRequiredCaptures(const void *loopbackObject) final;
-#endif
 
   JIT_COMPONENT_METHOD
 
@@ -308,19 +308,36 @@ private:
 public:
   CapturePatternComponent(size_t index) : index(index) {}
 
-  virtual bool Match(const char *p, PatternContext &context) const final;
+  virtual bool IsCapture() const { return true; }
+
+  virtual bool Match(const char *p, PatternContext &context) const;
 
   JIT_COMPONENT_METHOD
 
-private:
+protected:
   size_t index;
 
-#if JAVELIN_USE_PATTERN_JIT
-  mutable bool isRequired = false;
-  mutable bool hasLoopback = false;
-  virtual void MarkRequiredCaptures(const void *loopbackObject) final;
-#endif
+private:
+  bool isRequired = false;
+  bool hasLoopback = false;
+  bool alwaysStoreCapture = false;
+  void MarkRequiredCaptures(const void *loopbackObject) final;
 };
+
+class AlwaysCapturePatternComponent : public CapturePatternComponent {
+private:
+  using super = CapturePatternComponent;
+
+public:
+  AlwaysCapturePatternComponent(const CapturePatternComponent &other)
+      : super(other) {}
+
+  virtual bool Match(const char *p, PatternContext &context) const final;
+
+  JIT_COMPONENT_METHOD
+};
+static_assert(sizeof(CapturePatternComponent) ==
+              sizeof(AlwaysCapturePatternComponent));
 
 class BytePatternComponent : public SingleBytePatternComponent {
 public:

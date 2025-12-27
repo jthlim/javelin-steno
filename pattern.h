@@ -91,11 +91,12 @@ private:
 
   struct BuildContext;
   struct BuildResult;
+  struct BuildAtomResult;
 
   static BuildResult ParseAlternate(BuildContext &c);
   static BuildResult ParseSequence(BuildContext &c);
   static BuildResult ParseQuantifiedAtom(BuildContext &c);
-  static BuildResult ParseAtom(BuildContext &c);
+  static BuildAtomResult ParseAtom(BuildContext &c);
   static BuildResult ParseQuantifier(BuildContext &c, const BuildResult &atom);
 
   static const char *FindLiteralEnd(const char *p);

@@ -1264,8 +1264,8 @@ public:
       return;
     }
 
-    const InfraredRawDataConfiguration *configuration =
-        byteCode->GetScriptData<InfraredRawDataConfiguration>(
+    const InfraredSignalConfiguration *configuration =
+        byteCode->GetScriptData<InfraredSignalConfiguration>(
             configurationOffset);
     const InfraredTime *data =
         byteCode->GetScriptData<InfraredTime>(dataOffset);
