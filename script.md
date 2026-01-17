@@ -1264,8 +1264,9 @@ needs to be enabled in Web Tools to be able to see this information.
     const SCRIPT_ID_USER6 = 17;
     const SCRIPT_ID_USER7 = 18;
 
-    const CONSOLE_ACCESS_REQUESTED = 19;
-    const FLASH_WRITE_ACCESS_REQUESTED = 20;
+    const SCRIPT_ID_CONSOLE_ACCESS_REQUESTED = 19;
+    const SCRIPT_ID_FLASH_WRITE_ACCESS_REQUESTED = 20;
+    const SCRIPT_ID_BEACON_MODE_STARTED = 21;
     ```
 
 - `func formatString(<format>, <value>) var`

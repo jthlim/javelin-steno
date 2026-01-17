@@ -38,6 +38,8 @@ public:
 
   // Sets all bits in the region to 1.
   static void EraseBlock(const void *target, size_t size);
+
+  // Sets all bits in the region to 1 if the incoming data requires an erase.
   static void EraseBlock(const void *target, const void *data, size_t size);
 
   static bool IsErased(const void *target, size_t size) {

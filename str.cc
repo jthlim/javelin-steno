@@ -193,6 +193,18 @@ bool Str::HasSuffix(const char *p, const char *suffix) {
   return Eq(p + length - suffixLength, suffix, suffixLength);
 }
 
+bool Str::IgnoreCaseEq(const char *a, const char *b, size_t bLength) {
+  while (bLength) {
+    const uint32_t ca = *(uint8_t *)a++;
+    const uint32_t cb = *(uint8_t *)b++;
+    if (Unicode::ToLower(ca) != cb) {
+      return false;
+    }
+    --bLength;
+  }
+  return *a == '\0';
+}
+
 char *Str::Trim(const char *data) {
   const char *start = data;
   while (*start && Unicode::IsWhitespace(*start)) {

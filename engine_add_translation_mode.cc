@@ -284,7 +284,7 @@ bool StenoEngine::IsNewline(StenoStroke stroke) const {
   }
 
   static constexpr const char *VALID_NEWLINES[] = {
-      "{#Return}", "{#Return}{^}",                         //
+      "{#return}", "{#return}{^}",                         //
       "\n",        "{^}\n{^}",     "{^\n^}",  "{^~|\n^}",  //
       "\\n",       "{^}\\n{^}",    "{^\\n^}", "{^~|\\n^}", //
   };
@@ -292,7 +292,7 @@ bool StenoEngine::IsNewline(StenoStroke stroke) const {
   const char *text = lookup.GetText();
   bool result = false;
   for (const char *validNewline : VALID_NEWLINES) {
-    if (Str::Eq(text, validNewline)) {
+    if (Str::IgnoreCaseEq(text, validNewline)) {
       result = true;
       break;
     }

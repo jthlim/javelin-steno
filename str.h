@@ -42,6 +42,12 @@ public:
   }
   static bool Eq(const char *a, const char *b, size_t bLength);
 
+  // b must be lowercase.
+  static bool IgnoreCaseEq(const char *a, const char *b, size_t bLength);
+  static inline bool IgnoreCaseEq(const char *a, const char *b) {
+    return IgnoreCaseEq(a, b, Length(b));
+  }
+
   // Compares Trim(a) == b without allocations.
   static bool TrimEq(const char *a, const char *b);
 

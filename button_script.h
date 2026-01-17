@@ -37,6 +37,9 @@ enum class ButtonScriptId : int {
   CONSOLE_ACCESS_REQUESTED,
   FLASH_WRITE_ACCESS_REQUESTED,
 
+  BEACON_MODE_STARTED,
+  LOCATION_ADVERTISING_UPDATE,
+
   COUNT,
 };
 
@@ -84,6 +87,8 @@ public:
   static const char *GetRelyingPartyId();
   static int GetSignatureAlgorithm();
   static void SetSignatureAlgorithms(const uint8_t *algorithms);
+
+  static bool IsLocationAdvertising();
 
   void PrintEventHistory();
 

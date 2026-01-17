@@ -1368,6 +1368,11 @@ public:
     const uint8_t *algs = byteCode->GetScriptData<uint8_t>(offset);
     script.SetSignatureAlgorithms(algs);
   }
+
+  static void IsLocationAdvertising(ButtonScript &script,
+                                    const ScriptByteCode *byteCode) {
+    script.Push(script.IsLocationAdvertising());
+  }
 };
 
 constexpr void (*ButtonScript::FUNCTION_TABLE[])(ButtonScript &,
@@ -1498,6 +1503,7 @@ constexpr void (*ButtonScript::FUNCTION_TABLE[])(ButtonScript &,
     &Function::GetRelyingPartyId,
     &Function::GetSignatureAlgorithm,
     &Function::SetSignatureAlgorithms,
+    &Function::IsLocationAdvertising,
 };
 
 void ButtonScript::PrintEventHistory() {
@@ -1533,6 +1539,7 @@ void ButtonScript::RunConsoleCommand(const char *command,
 [[gnu::weak]] const char *ButtonScript::GetRelyingPartyId() { return ""; }
 [[gnu::weak]] int ButtonScript::GetSignatureAlgorithm() { return -1; }
 [[gnu::weak]] void ButtonScript::SetSignatureAlgorithms(const uint8_t *) {}
+[[gnu::weak]] bool ButtonScript::IsLocationAdvertising() { return false; }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
