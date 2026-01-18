@@ -14,6 +14,7 @@
 // * %u     - uint32_t
 // * %x     - Hex
 // * %X     - Upper case hex
+// * %Y     - YAML string
 // * %Z     - Writes a zero (nul) byte. This takes no parameters.
 //
 //---------------------------------------------------------------------------
@@ -22,6 +23,7 @@
 #include "clamp.h"
 #include "str.h"
 #include "stroke.h"
+#include "unicode.h"
 #include "utf8_pointer.h"
 #include <string.h>
 
@@ -179,6 +181,55 @@ void IWriter::Printf(const char *p, ...) {
   va_start(args, p);
   Vprintf(p, args);
   va_end(args);
+}
+
+bool IWriter::IsYamlSafe(const char *p) {
+  switch (*p) {
+  case '\0':
+  case '\n':
+  case '\r':
+  case '\t':
+  case '\f':
+  case '\v':
+  case ' ':
+  case '-':
+  case '|':
+  case '\'':
+  case '\"':
+    return false;
+  }
+  for (;;) {
+    const int c = *p++;
+    switch (c) {
+    case '\0':
+      switch (p[-2]) {
+      case '\n':
+      case '\r':
+      case '\t':
+      case '\f':
+      case '\v':
+      case ' ':
+      case ':':
+        return false;
+      default:
+        return true;
+      }
+
+    case ':':
+    case '#':
+    case '?':
+    case '&':
+    case '*':
+    case '>':
+    case '[':
+    case ']':
+    case '{':
+    case '}':
+    case '\"':
+    case '\'':
+      return false;
+    }
+  }
 }
 
 void IWriter::Vprintf(const char *p, va_list args) {
@@ -366,6 +417,29 @@ void IWriter::Vprintf(const char *p, va_list args) {
       WriteBase64(data, length);
       goto NextSegment;
     }
+    case 'Y': {
+      // Write as YAML
+      char *p = va_arg(args, char *) + printfPointerOffset;
+      const size_t length = Str::Length(p);
+      if (IsYamlSafe(p)) {
+        start = p;
+        end = p + length;
+        break;
+      }
+
+      size_t maxBufferSizeRequired = 2 * length + 2;
+      char *jsonBuffer = sizeof(scratch) >= maxBufferSizeRequired
+                             ? scratch
+                             : (char *)malloc(maxBufferSizeRequired);
+      jsonBuffer[0] = '\"';
+      char *end = Str::WriteJson(jsonBuffer + 1, p);
+      *end++ = '\"';
+      WriteSegment(flags, jsonBuffer, end, width);
+      if (jsonBuffer != scratch) {
+        free(jsonBuffer);
+      }
+      goto NextSegment;
+    }
     case 'J': {
       // Write as JSON
       const char *p = va_arg(args, char *) + printfPointerOffset;
@@ -379,6 +453,7 @@ void IWriter::Vprintf(const char *p, va_list args) {
       }
       goto NextSegment;
     }
+
     case 'Z':
       WriteByte('\0');
       goto NextSegment;

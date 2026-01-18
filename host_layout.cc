@@ -178,10 +178,11 @@ void HostLayouts::ListHostLayouts() {
   const ExternalFlashSentry sentry;
 
   Console::Printf("[");
-  const char *format = "\"%J\"";
+  const char *format = ",%Y";
+  ++format;
   for (const HostLayout *layout : instance->layouts) {
     Console::Printf(format, layout->GetName());
-    format = ",\"%J\"";
+    format = ",%Y";
   }
   Console::Printf("]\n\n");
 }

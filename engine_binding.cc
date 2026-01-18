@@ -227,10 +227,10 @@ void StenoEngine::LookupStroke_Binding(void *context, const char *commandLine) {
       const StenoDictionaryLookupResult result =
           dictionary->Lookup(parser.strokes, parser.length);
 
-      const char *format = ",{\"t\":\"%J\",\"d\":\"%J\"%s}";
+      const char *format = ",{t: %Y,d: %Y%s}";
       Console::Printf(format + isFirstTime, result.GetText(),
                       dictionary->GetName(),
-                      dictionary->CanRemove() ? ",\"r\":1" : "");
+                      dictionary->CanRemove() ? ",r: 1" : "");
 
       isFirstTime = false;
     }
@@ -242,7 +242,7 @@ void StenoEngine::LookupStroke_Binding(void *context, const char *commandLine) {
                            parser.length);
 
     if (!buffer.segmentBuilder.HasRawStroke()) {
-      Console::Printf("{\"t\":\"");
+      Console::Printf("{t: \"");
 
       const char *format = " %J";
       format++;
@@ -363,7 +363,7 @@ void StenoEngine::ListTemplateValues_Binding(void *context,
       emptyCount = 0;
       isFirst = false;
     }
-    Console::Printf(",\"%J\"" + isFirst, value);
+    Console::Printf(",%Y" + isFirst, value);
     isFirst = false;
   }
   if (emptyCount) {

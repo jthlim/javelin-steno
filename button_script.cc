@@ -710,7 +710,7 @@ public:
     }
     script.eventHistory[EVENT_HISTORY_COUNT - 1] = text;
     if (Console::IsEventEnabled(ConsoleEvent::SCRIPT)) {
-      Console::Printf("EV {\"e\":\"c\",\"t\":\"%J\"}\n\n", text);
+      Console::Printf("EV {e: c,t: %Y}\n\n", text);
     }
   }
 
@@ -1510,7 +1510,7 @@ void ButtonScript::PrintEventHistory() {
   Console::Printf("[");
   bool isFirst = true;
   for (const char *event : eventHistory) {
-    const char *format = event ? ",\"%J\"" : ",null";
+    const char *format = event ? ",%Y" : ",null";
     Console::Printf(format + isFirst, event);
     isFirst = false;
   }

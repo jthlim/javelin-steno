@@ -8,7 +8,7 @@
 //---------------------------------------------------------------------------
 
 void StenoSystem::Print() const {
-  Console::Printf("name: \"%J\"\n", name);
+  Console::Printf("name: %Y\n", name);
   Console::Printf("keys:\n");
   for (size_t i = 0; i < keys.count; ++i) {
     const StrokeKey *key = &keys[i];

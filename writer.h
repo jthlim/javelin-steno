@@ -39,6 +39,8 @@ private:
   static uint32_t ZigZagEncode(int32_t value) {
     return (value << 1) ^ (value >> 31);
   }
+
+  static bool IsYamlSafe(const char *p);
 };
 
 class NullWriter final : public IWriter {

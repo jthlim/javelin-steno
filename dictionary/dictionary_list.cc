@@ -214,8 +214,13 @@ void StenoDictionaryList::ListDictionaries() const {
       continue;
     }
 
-    const char *format = ",\n{\"d\":\"%J\",\"v\":%d}";
-    Console::Printf(format + isFirst, entry->GetName(), entry.IsEnabled());
+    const char *format;
+    if (entry.IsEnabled()) {
+      format = ",\n{d: %Y}";
+    } else {
+      format = ",\n{d: %Y,v: 0}";
+    }
+    Console::Printf(format + isFirst, entry->GetName());
     isFirst = false;
   }
   Console::Printf("\n]\n\n");
@@ -287,7 +292,12 @@ void StenoDictionaryList::SendDictionaryStatus(const char *name,
     return;
   }
 
-  Console::Printf("EV {\"e\":\"d\",\"d\":\"%J\",\"v\":%d}\n\n", name, enabled);
+  if (enabled) {
+    Console::Printf("EV {e: d,d: %Y}\n\n", name);
+
+  } else {
+    Console::Printf("EV {e: d,d: %Y,v: 0}\n\n", name);
+  }
 }
 
 //---------------------------------------------------------------------------

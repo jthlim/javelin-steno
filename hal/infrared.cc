@@ -529,7 +529,8 @@ void Infrared::SendSamsungMessage(uint32_t address, uint32_t command,
 void Infrared::SendSircMessage(uint32_t address, uint32_t command,
                                uint32_t bits) {
   if (command >= 0x80) {
-    return Console::Printf("sirc protocol requires command between 0-127\n\n");
+    Console::Printf("sirc protocol requires command between 0-127\n\n");
+    return;
   }
 
   constexpr float TICK = 600;
@@ -559,15 +560,20 @@ void Infrared::SendSircMessage(uint32_t address, uint32_t command,
     } else if (address < 0x2000) {
       return SendSircMessageBits(address, command, 20, configuration);
     }
-    return Console::Printf("sirc address must be between 0-8191\n\n");
+    Console::Printf("sirc address must be between 0-8191\n\n");
+    return;
+
   case 12:
-    return SendSircMessageBits(address, command, 12, configuration);
+    SendSircMessageBits(address, command, 12, configuration);
+    return;
 
   case 15:
-    return SendSircMessageBits(address, command, 15, configuration);
+    SendSircMessageBits(address, command, 15, configuration);
+    return;
 
   case 20:
-    return SendSircMessageBits(address, command, 20, configuration);
+    SendSircMessageBits(address, command, 20, configuration);
+    return;
 
   default:
     Console::Printf("sirc protocol requires 0(infer)/12/15/20 bits as "

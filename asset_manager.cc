@@ -71,7 +71,7 @@ void AssetDirectory::ListAssets() const {
     }
 
     const AssetEntry *entry = (const AssetEntry *)value;
-    const char *formatString = ",{\"id\":\"%J\",\"size\":%u}";
+    const char *formatString = ",{id: %Y,size: %u}";
     Console::Printf(formatString + isFirst, entry->id, entry->size);
     isFirst = false;
   }

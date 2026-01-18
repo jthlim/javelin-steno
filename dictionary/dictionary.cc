@@ -226,7 +226,7 @@ void LookupDictionaryContext::Add(const StenoStroke *strokes, size_t length,
     return;
   }
 
-  const char *format = ",{\"o\":\"%T\"";
+  const char *format = ",{o: \"%T\"";
   if (!count) {
     ++format;
   }
@@ -239,13 +239,13 @@ void LookupDictionaryContext::Add(const StenoStroke *strokes, size_t length,
     const size_t index = dictionaries.FindIndex(dictionary);
     if (index == -1) {
       dictionaries.Add(dictionary);
-      Console::Printf(",\"d\":\"%J\"", dictionary->GetName());
+      Console::Printf(",d: %Y", dictionary->GetName());
       if (dictionary->CanRemove()) {
-        Console::Printf(",\"r\":1");
+        Console::Printf(",r: 1");
       }
     } else {
       // If the dictionary has already been used before, emit an index.
-      Console::Printf(",\"d\":%zu", index);
+      Console::Printf(",d: %zu", index);
     }
   }
   Console::Printf("}");
@@ -254,7 +254,7 @@ void LookupDictionaryContext::Add(const StenoStroke *strokes, size_t length,
 void LookupDictionaryContext::PrintDefinition(const char *definition) {
   if (!Str::Eq(definition, lastDefinition)) {
     lastDefinition = definition;
-    Console::Printf(",\"t\":\"%J\"", definition);
+    Console::Printf(",t: %Y", definition);
   }
 }
 
@@ -265,10 +265,10 @@ void ConsoleLookupDictionaryContext::PrintDefinition(const char *definition) {
 
   const size_t index = FindIndex(definition);
   if (index == size_t(-1)) {
-    Console::Printf(",\"t\":\"%J\"", definition);
+    Console::Printf(",t: %Y", definition);
     definitions.Add(Str::Dup(definition));
   } else {
-    Console::Printf(",\"t\":%zu", index);
+    Console::Printf(",t: %zu", index);
   }
 }
 
