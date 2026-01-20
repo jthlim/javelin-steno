@@ -27,9 +27,9 @@ constexpr StenoStroke VARIANT_2(StrokeMask::U);
 constexpr StenoStroke REPEAT_EXTRA_1(StrokeMask::SR);
 constexpr StenoStroke REPEAT_EXTRA_2(StrokeMask::TR);
 
-//constexpr StenoStroke DATA_MASK(StrokeMask::FR | StrokeMask::RR |
-//                                StrokeMask::PR | StrokeMask::BR |
-//                                StrokeMask::LR | StrokeMask::GR);
+// constexpr StenoStroke DATA_MASK(StrokeMask::FR | StrokeMask::RR |
+//                                 StrokeMask::PR | StrokeMask::BR |
+//                                 StrokeMask::LR | StrokeMask::GR);
 
 //---------------------------------------------------------------------------
 
@@ -297,15 +297,22 @@ StenoEmilySymbolsDictionary::Lookup(const StenoDictionaryLookup &lookup) const {
   }
   const char *text = data->text[variant];
 
+  constexpr const char *SPACE = "{}";
+  constexpr const char *JOIN = "{^}";
   const char *capitalize = (s & CAPITALIZE_MASK).IsNotEmpty() ? "{-|}" : "";
   const char *leftSpace =
-      (s & LEFT_SPACE_MASK).IsNotEmpty() == isSpecifySpacesMode ? "{}" : "{^}";
+      (s & LEFT_SPACE_MASK).IsNotEmpty() == isSpecifySpacesMode ? SPACE : JOIN;
   const char *rightSpace =
-      (s & RIGHT_SPACE_MASK).IsNotEmpty() == isSpecifySpacesMode ? "{}" : "{^}";
+      (s & RIGHT_SPACE_MASK).IsNotEmpty() == isSpecifySpacesMode ? SPACE : JOIN;
 
-  if (text[0] == '{' && (Str::Eq(text, "{*!}") || Str::Eq(text, "{*?}"))) {
-    leftSpace = "";
-    rightSpace = "";
+  if (text[0] == '{') {
+    if (Str::Eq(text, "{*!}") || Str::Eq(text, "{*?}")) {
+      leftSpace = "";
+      rightSpace = "";
+    } else if (Str::Eq(text, "{<}")) {
+      leftSpace = (leftSpace == SPACE || rightSpace == SPACE) ? SPACE : JOIN;
+      rightSpace = "";
+    }
   }
 
   const char *r1 = (s & REPEAT_EXTRA_1).IsNotEmpty() ? text : "";
