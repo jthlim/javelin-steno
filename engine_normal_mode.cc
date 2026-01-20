@@ -635,7 +635,7 @@ void StenoEngine::PrintPaperTapeUndo(size_t undoCount) const {
     return;
   }
 
-  Console::Printf("EV {e: p,o: \"%t\",u: %zu}\n\n", &undoStroke, undoCount);
+  Console::Printf("EV {e: p,o: %t,u: %zu}\n\n", &undoStroke, undoCount);
 }
 
 void StenoEngine::PrintPaperTape(StenoStroke stroke,
@@ -645,7 +645,7 @@ void StenoEngine::PrintPaperTape(StenoStroke stroke,
     return;
   }
 
-  Console::Printf("EV {e: p,o: \"%t\"", &stroke);
+  Console::Printf("EV {e: p,o: %t", &stroke);
 
   size_t undoCount = 0;
   const StenoSegment &segment = nextSegments.Back();

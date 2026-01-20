@@ -224,7 +224,7 @@ void StenoOrthography::Print() const {
     Console::Printf(" []");
   } else {
     for (const StenoOrthographyAutoSuffix &autoSuffix : autoSuffixes) {
-      Console::Printf("\n\t\t- key: \"%t\""
+      Console::Printf("\n\t\t- key: %t"
                       "\n\t\t  suffix: \"%J\"",
                       &autoSuffix.stroke, autoSuffix.text + 1);
     }
@@ -245,8 +245,8 @@ void StenoOrthography::Print() const {
   } else {
     for (const StenoOrthographyReverseAutoSuffix &reverseAutoSuffix :
          reverseAutoSuffixes) {
-      Console::Printf("\n\t\t- key: \"%t\""
-                      "\n\t\t  suppressMask: \"%t\""
+      Console::Printf("\n\t\t- key: %t"
+                      "\n\t\t  suppressMask: %t"
                       "\n\t\t  pattern: \"%J\""
                       "\n\t\t  replacement: \"%J\"",
                       &reverseAutoSuffix.autoSuffix->stroke,

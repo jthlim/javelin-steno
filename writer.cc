@@ -23,7 +23,6 @@
 #include "clamp.h"
 #include "str.h"
 #include "stroke.h"
-#include "unicode.h"
 #include "utf8_pointer.h"
 #include <string.h>
 
@@ -192,10 +191,9 @@ bool IWriter::IsYamlSafe(const char *p) {
   case '\f':
   case '\v':
   case ' ':
+  case '*':
   case '-':
   case '|':
-  case '\'':
-  case '\"':
     return false;
   }
   for (;;) {
@@ -209,7 +207,7 @@ bool IWriter::IsYamlSafe(const char *p) {
       case '\f':
       case '\v':
       case ' ':
-      case ':':
+      case '*':
         return false;
       default:
         return true;
@@ -219,7 +217,6 @@ bool IWriter::IsYamlSafe(const char *p) {
     case '#':
     case '?':
     case '&':
-    case '*':
     case '>':
     case '[':
     case ']':
@@ -389,8 +386,15 @@ void IWriter::Vprintf(const char *p, va_list args) {
       // Write single stroke.
       const StenoStroke *stroke = va_arg(args, const StenoStroke *);
       stroke = (const StenoStroke *)(intptr_t(stroke) + printfPointerOffset);
-      char *p = stroke->ToString(scratch);
-      Write(scratch, p - scratch);
+      char *p = stroke->ToString(scratch + 1);
+      *p = '\0';
+      if (IsYamlSafe(scratch + 1)) {
+        Write(scratch + 1, p - (scratch + 1));
+      } else {
+        scratch[0] = '\"';
+        *p++ = '\"';
+        Write(scratch, p - scratch);
+      }
       goto NextSegment;
     }
 
