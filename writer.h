@@ -35,6 +35,9 @@ public:
     printfPointerOffset = intptr_t(p);
   }
 
+  static bool IsNumber(const char *p);
+  static bool IsYamlSafe(const char *p);
+
 private:
   intptr_t printfPointerOffset = 0;
 
@@ -44,7 +47,6 @@ private:
     return (value << 1) ^ (value >> 31);
   }
 
-  static bool IsYamlSafe(const char *p);
   void AddStroke(StenoStroke stroke);
 };
 

@@ -24,6 +24,7 @@
 #include "clamp.h"
 #include "str.h"
 #include "stroke.h"
+#include "unicode.h"
 #include "utf8_pointer.h"
 #include <string.h>
 
@@ -183,6 +184,49 @@ void IWriter::Printf(const char *p, ...) {
   va_end(args);
 }
 
+bool IWriter::IsNumber(const char *p) {
+  // ^[+-]\d*(.\d*)?(e[+-]?\d+)$
+  if (*p == '-' || *p == '+') {
+    ++p;
+  }
+
+  bool hasDigit = false;
+  while (Unicode::IsAsciiDigit(*p)) {
+    ++p;
+    hasDigit = true;
+  }
+
+  if (*p == '.') {
+    ++p;
+    while (Unicode::IsAsciiDigit(*p)) {
+      ++p;
+      hasDigit = true;
+    }
+  }
+
+  if (!hasDigit) {
+    return false;
+  }
+
+  if (*p == 'e' || *p == 'E') {
+    ++p;
+
+    if (*p == '-' || *p == '+') {
+      ++p;
+    }
+
+    if (!Unicode::IsAsciiDigit(*p++)) {
+      return false;
+    }
+
+    while (Unicode::IsAsciiDigit(*p)) {
+      ++p;
+    }
+  }
+
+  return *p == '\0';
+}
+
 bool IWriter::IsYamlSafe(const char *p) {
   switch (*p) {
   case 0 ... ' ':
@@ -194,12 +238,12 @@ bool IWriter::IsYamlSafe(const char *p) {
   case '>':
   case '\'':
   case '\"':
+  case '`':
   case '|':
     return false;
 
   case '~':
   case '?':
-  case '-':
     if (p[1] <= ' ') {
       return false;
     }
@@ -219,6 +263,20 @@ bool IWriter::IsYamlSafe(const char *p) {
 
   case 't':
     if (Str::Eq(p, "true")) {
+      return false;
+    }
+    break;
+
+  case '-':
+    if (p[1] <= ' ') {
+      return false;
+    }
+    [[fallthrough]];
+
+  case '.':
+  case '+':
+  case '0' ... '9':
+    if (IsNumber(p)) {
       return false;
     }
     break;
@@ -674,5 +732,44 @@ void LimitedBufferWriter::AddTrailingNull() {
   }
   buffer[bufferUsedCount] = '\0';
 }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+#include "unit_test.h"
+
+TEST_BEGIN("IWriter::IsNumber returns expected results") {
+  assert(IWriter::IsNumber("1"));
+  assert(IWriter::IsNumber("+1"));
+  assert(IWriter::IsNumber("-1"));
+  assert(IWriter::IsNumber("1."));
+  assert(IWriter::IsNumber("1.2"));
+  assert(IWriter::IsNumber("1.23"));
+  assert(IWriter::IsNumber(".23"));
+  assert(IWriter::IsNumber("1e1"));
+  assert(IWriter::IsNumber("1e+1"));
+  assert(IWriter::IsNumber("1e-12"));
+  assert(IWriter::IsNumber("1e-123"));
+
+  assert(!IWriter::IsNumber(""));
+  assert(!IWriter::IsNumber("+"));
+  assert(!IWriter::IsNumber("-"));
+  assert(!IWriter::IsNumber("."));
+  assert(!IWriter::IsNumber("1e"));
+  assert(!IWriter::IsNumber("1.23e"));
+  assert(!IWriter::IsNumber("1e-123.0"));
+}
+TEST_END
+
+TEST_BEGIN("IWriter::IsYamlSafe returns expected results") {
+  assert(IWriter::IsYamlSafe("34f"));
+  assert(IWriter::IsYamlSafe("-to"));
+
+  assert(!IWriter::IsYamlSafe("34"));
+  assert(!IWriter::IsYamlSafe("true"));
+  assert(!IWriter::IsYamlSafe("false"));
+  assert(!IWriter::IsYamlSafe("null"));
+}
+TEST_END
 
 //---------------------------------------------------------------------------
