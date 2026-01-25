@@ -203,6 +203,24 @@ bool IWriter::IsYamlSafe(const char *p) {
   case '\"':
   case '|':
     return false;
+
+  case 'f':
+    if (Str::Eq(p, "false")) {
+      return false;
+    }
+    break;
+
+  case 'n':
+    if (Str::Eq(p, "null")) {
+      return false;
+    }
+    break;
+
+  case 't':
+    if (Str::Eq(p, "true")) {
+      return false;
+    }
+    break;
   }
 
   for (;;) {
