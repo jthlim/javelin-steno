@@ -193,6 +193,7 @@ bool IWriter::IsYamlSafe(const char *p) {
   case ' ':
   case '*':
   case '-':
+  case ',':
   case '|':
     return false;
   }
@@ -208,6 +209,7 @@ bool IWriter::IsYamlSafe(const char *p) {
       case '\v':
       case ' ':
       case '*':
+      case ',':
         return false;
       default:
         return true;
