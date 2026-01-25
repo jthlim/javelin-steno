@@ -10,7 +10,8 @@
 // * %p     - void*
 // * %s     - const char*
 // * %t     - StenoStroke*
-// * %T     - StenoStroke*, size_t count
+// * %T     - StenoStroke*, size_t count -- always quoted
+// * %O     - StenoStroke*, size_t count -- yaml
 // * %u     - uint32_t
 // * %x     - Hex
 // * %X     - Upper case hex
@@ -23,6 +24,7 @@
 #include "clamp.h"
 #include "str.h"
 #include "stroke.h"
+#include "unicode.h"
 #include "utf8_pointer.h"
 #include <string.h>
 
@@ -192,11 +194,17 @@ bool IWriter::IsYamlSafe(const char *p) {
   case '\v':
   case ' ':
   case '*':
-  case '-':
-  case ',':
+  case '!':
+  case '@':
+  case '%':
+  case '&':
+  case '>':
+  case '\'':
+  case '\"':
   case '|':
     return false;
   }
+
   for (;;) {
     const int c = *p++;
     switch (c) {
@@ -209,26 +217,34 @@ bool IWriter::IsYamlSafe(const char *p) {
       case '\v':
       case ' ':
       case '*':
-      case ',':
         return false;
       default:
         return true;
       }
 
     case ':':
+      if (Unicode::IsWhitespace(*p)) {
+        return false;
+      }
+      break;
+
     case '#':
-    case '?':
-    case '&':
-    case '>':
+    case ',':
     case '[':
     case ']':
     case '{':
     case '}':
-    case '\"':
-    case '\'':
       return false;
     }
   }
+}
+
+// This is forced not-inline to avoid stack depth on recursive calls.
+[[gnu::noinline]]
+void IWriter::AddStroke(StenoStroke stroke) {
+  char strokeBuffer[StenoStroke::MAX_STRING_LENGTH];
+  char *p = stroke.ToString(strokeBuffer);
+  Write(strokeBuffer, p - strokeBuffer);
 }
 
 void IWriter::Vprintf(const char *p, va_list args) {
@@ -400,6 +416,34 @@ void IWriter::Vprintf(const char *p, va_list args) {
       goto NextSegment;
     }
 
+    case 'O': {
+      // Write multiple strokes.
+      const StenoStroke *strokes = va_arg(args, const StenoStroke *);
+      strokes = (const StenoStroke *)(intptr_t(strokes) + printfPointerOffset);
+      const size_t strokeCount = va_arg(args, size_t);
+
+      BufferWriter buffer(scratch, sizeof(scratch));
+      buffer.WriteByte('\"');
+      for (size_t j = 0; j < strokeCount; ++j) {
+        if (j != 0) {
+          buffer.WriteByte('/');
+        }
+        buffer.AddStroke(strokes[j]);
+      }
+      buffer.WriteByte('\0');
+      const size_t length = buffer.GetCount();
+      const char *outline = buffer.GetBuffer();
+
+      if (IsYamlSafe(outline + 1)) {
+        Write(outline + 1, length - 1);
+      } else {
+        buffer.RemoveByte();
+        buffer.WriteByte('\"');
+        Write(outline, length);
+      }
+      goto NextSegment;
+    }
+
     case 'T': {
       // Write multiple strokes.
       const StenoStroke *strokes = va_arg(args, const StenoStroke *);
@@ -519,7 +563,8 @@ void MemoryWriter::Write(const char *data, size_t length) {
 //---------------------------------------------------------------------------
 
 BufferWriter::BufferWriter()
-    : bufferUsedCount(0), bufferSize(128), buffer((char *)malloc(128)) {}
+    : bufferUsedCount(0), bufferSize(128), buffer((char *)malloc(128)),
+      inlineBuffer(nullptr) {}
 
 void BufferWriter::Write(const char *data, size_t length) {
   const size_t newUsedCount = bufferUsedCount + length;
@@ -528,7 +573,7 @@ void BufferWriter::Write(const char *data, size_t length) {
       bufferSize *= 2;
     } while (bufferSize < newUsedCount);
 
-    buffer = (char *)realloc(buffer, bufferSize);
+    Reallocate();
   }
   memcpy(buffer + bufferUsedCount, data, length);
   bufferUsedCount += length;
@@ -537,9 +582,18 @@ void BufferWriter::Write(const char *data, size_t length) {
 void BufferWriter::WriteByte(char c) {
   if (bufferUsedCount >= bufferSize) {
     bufferSize *= 2;
-    buffer = (char *)realloc(buffer, bufferSize);
+    Reallocate();
   }
   buffer[bufferUsedCount++] = c;
+}
+
+void BufferWriter::Reallocate() {
+  if (buffer == inlineBuffer) {
+    buffer = (char *)malloc(bufferSize);
+    memcpy(buffer, inlineBuffer, bufferUsedCount);
+  } else {
+    buffer = (char *)realloc(buffer, bufferSize);
+  }
 }
 
 //---------------------------------------------------------------------------

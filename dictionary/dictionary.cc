@@ -226,7 +226,7 @@ void LookupDictionaryContext::Add(const StenoStroke *strokes, size_t length,
     return;
   }
 
-  const char *format = ",{o: \"%T\"";
+  const char *format = ",{o: %O";
   if (!count) {
     ++format;
   }

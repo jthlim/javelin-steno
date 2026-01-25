@@ -10,6 +10,10 @@
 
 //---------------------------------------------------------------------------
 
+class StenoStroke;
+
+//---------------------------------------------------------------------------
+
 class IWriter {
 public:
   virtual void WriteByte(char c) { Write(&c, 1); }
@@ -41,6 +45,7 @@ private:
   }
 
   static bool IsYamlSafe(const char *p);
+  void AddStroke(StenoStroke stroke);
 };
 
 class NullWriter final : public IWriter {
@@ -78,10 +83,19 @@ private:
 class BufferWriter final : public IWriter {
 public:
   BufferWriter();
-  ~BufferWriter() { free(buffer); }
+  BufferWriter(char *scratch, size_t scratchLength)
+      : bufferUsedCount(0), bufferSize(scratchLength), buffer(scratch),
+        inlineBuffer(scratch) {}
+
+  ~BufferWriter() {
+    if (buffer != inlineBuffer) {
+      free(buffer);
+    }
+  }
 
   void Write(const char *data, size_t length) final;
   void WriteByte(char c) final;
+  void RemoveByte() { --bufferUsedCount; }
 
   void WriteBufferTo(IWriter *writer) const {
     writer->Write(buffer, bufferUsedCount);
@@ -109,6 +123,9 @@ private:
   size_t bufferUsedCount;
   size_t bufferSize;
   char *buffer;
+  char *inlineBuffer;
+
+  void Reallocate();
 };
 
 class BlockWriterBase : public IWriter {

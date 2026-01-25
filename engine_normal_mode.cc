@@ -847,12 +847,13 @@ void StenoEngine::PrintSuggestion(const char *p, size_t arrowPrefixCount,
     return;
   }
 
-  Console::Printf("EV {e: s,c: %zu,t: %Y,o: [", arrowPrefixCount, p);
+  Console::Printf("EV {e: s,c: %zu,t: %Y,o:[", arrowPrefixCount, p);
   for (size_t i = 0; i < lookup.results.GetCount(); ++i) {
     const StenoReverseDictionaryResult &entry = lookup.results[i];
-    Console::Printf(i == 0 ? "\"%T\"" : ",\"%T\"", entry.strokes, entry.length);
+    Console::Printf(i == 0 ? "%O" : ",%O", entry.strokes, entry.length);
   }
   Console::Printf("]");
+
   if (lookup.AreAllResultsFromSameDictionary()) {
     const StenoDictionary *dictionary = lookup.results.Front().dictionary;
     if (!dictionary->IsInternal()) {
