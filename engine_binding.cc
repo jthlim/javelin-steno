@@ -242,17 +242,18 @@ void StenoEngine::LookupStroke_Binding(void *context, const char *commandLine) {
                            parser.length);
 
     if (!buffer.segmentBuilder.HasRawStroke()) {
-      Console::Printf("{t: \"");
+      char scratchBuffer[256];
+      BufferWriter buffer(scratchBuffer, sizeof(scratchBuffer));
 
-      const char *format = " %J";
-      format++;
-      for (const StenoSegment &segment : segments) {
-        Console::Printf(format, segment.lookup.GetText());
-        format = " %J";
+      buffer.WriteString(segments[0].lookup.GetText());
+      for (const StenoSegment &segment : segments.Skip(1)) {
+        buffer.WriteByte(' ');
+        buffer.WriteString(segment.lookup.GetText());
       }
-      Console::Printf("\"}\n\n");
+      buffer.WriteByte('\0');
+      Console::Printf("t: %Y\n\n", buffer.GetBuffer());
     } else {
-      Console::Printf("null\n\n");
+      Console::Printf("[]\n\n");
     }
   }
 }

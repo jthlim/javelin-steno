@@ -710,7 +710,7 @@ public:
     }
     script.eventHistory[EVENT_HISTORY_COUNT - 1] = text;
     if (Console::IsEventEnabled(ConsoleEvent::SCRIPT)) {
-      Console::Printf("EV {e: c,t: %Y}\n\n", text);
+      Console::Printf("EV e: c\nt: %Y\n\n", text);
     }
   }
 

@@ -635,7 +635,7 @@ void StenoEngine::PrintPaperTapeUndo(size_t undoCount) const {
     return;
   }
 
-  Console::Printf("EV {e: p,o: %t,u: %zu}\n\n", &undoStroke, undoCount);
+  Console::Printf("EV e: p\no: %t\nu: %zu\n\n", &undoStroke, undoCount);
 }
 
 void StenoEngine::PrintPaperTape(StenoStroke stroke,
@@ -645,7 +645,7 @@ void StenoEngine::PrintPaperTape(StenoStroke stroke,
     return;
   }
 
-  Console::Printf("EV {e: p,o: %t", &stroke);
+  Console::Printf("EV e: p\no: %t", &stroke);
 
   size_t undoCount = 0;
   const StenoSegment &segment = nextSegments.Back();
@@ -660,7 +660,7 @@ void StenoEngine::PrintPaperTape(StenoStroke stroke,
   }
 
   if (undoCount > 0) {
-    Console::Printf(",u: %zu", undoCount);
+    Console::Printf("\nu: %zu", undoCount);
   }
 
   const StenoStroke *strokes =
@@ -669,7 +669,7 @@ void StenoEngine::PrintPaperTape(StenoStroke stroke,
   const StenoDictionary *provider =
       GetDictionary().GetDictionaryForOutline(strokes, length);
   if (provider != nullptr) {
-    Console::Printf(",d: %Y", provider->GetName());
+    Console::Printf("\nd: %Y", provider->GetName());
   }
 
   // Unescape buffer commands.
@@ -685,9 +685,9 @@ void StenoEngine::PrintPaperTape(StenoStroke stroke,
       writer.WriteByte(c);
     }
     writer.WriteByte('\0');
-    Console::Printf(",t: %Y}\n\n", writer.GetBuffer());
+    Console::Printf("\nt: %Y\n\n", writer.GetBuffer());
   } else {
-    Console::Printf(",t: %Y}\n\n", lookup);
+    Console::Printf("\nt: %Y\n\n", lookup);
   }
 }
 
@@ -847,7 +847,7 @@ void StenoEngine::PrintSuggestion(const char *p, size_t arrowPrefixCount,
     return;
   }
 
-  Console::Printf("EV {e: s,c: %zu,t: %Y,o:[", arrowPrefixCount, p);
+  Console::Printf("EV e: s\nc: %zu\nt: %Y\no: [", arrowPrefixCount, p);
   for (size_t i = 0; i < lookup.results.GetCount(); ++i) {
     const StenoReverseDictionaryResult &entry = lookup.results[i];
     Console::Printf(i == 0 ? "%O" : ",%O", entry.strokes, entry.length);
@@ -857,10 +857,10 @@ void StenoEngine::PrintSuggestion(const char *p, size_t arrowPrefixCount,
   if (lookup.AreAllResultsFromSameDictionary()) {
     const StenoDictionary *dictionary = lookup.results.Front().dictionary;
     if (!dictionary->IsInternal()) {
-      Console::Printf(",d: %Y", dictionary->GetName());
+      Console::Printf("\nd: %Y", dictionary->GetName());
     }
   }
-  Console::Printf("}\n\n");
+  Console::Printf("\n\n");
 }
 
 static bool ShouldShowSuggestions(const StenoSegmentList &segments,
@@ -998,10 +998,10 @@ void StenoEngine::PrintTextLog(
 
   if (backspaceCount == 0 && i < nextLength) {
     char *text = nextKeyCodeBuffer.ToString(i);
-    Console::Printf("EV {e: t,t: %Y}\n\n", text);
+    Console::Printf("EV e: t\nt: %Y\n\n", text);
     free(text);
   } else {
-    Console::Printf("EV {e: t,t: \"");
+    Console::Printf("EV e: t\nt: \"");
     static constexpr char BACKSPACES[] =
         "\\b\\b\\b\\b\\b\\b\\b\\b\\b\\b\\b\\b\\b\\b\\b\\b";
 
@@ -1016,7 +1016,7 @@ void StenoEngine::PrintTextLog(
       Console::WriteAsJson(text);
       free(text);
     }
-    Console::Printf("\"}\n\n");
+    Console::Printf("\"\n\n");
   }
 }
 

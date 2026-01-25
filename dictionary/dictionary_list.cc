@@ -293,10 +293,10 @@ void StenoDictionaryList::SendDictionaryStatus(const char *name,
   }
 
   if (enabled) {
-    Console::Printf("EV {e: d,d: %Y}\n\n", name);
+    Console::Printf("EV e: d\nd: %Y\n\n", name);
 
   } else {
-    Console::Printf("EV {e: d,d: %Y,v: 0}\n\n", name);
+    Console::Printf("EV e: d\nd: %Y\nv: 0\n\n", name);
   }
 }
 

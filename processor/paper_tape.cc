@@ -13,7 +13,7 @@ void PaperTape::Process(const StenoKeyState &value, StenoAction action) {
     return;
   }
   const StenoStroke stroke = value.ToStroke();
-  Console::Printf("EV {e: p,o: %t}\n\n", &stroke);
+  Console::Printf("EV e: p\no: %t\n\n", &stroke);
 }
 
 void PaperTape::PrintInfo() const {}

@@ -213,7 +213,7 @@ void StenoEngine::SetTemplateValue(size_t index, char *data) {
   }
   templateValues[index].Set(data);
   if (Console::IsEventEnabled(ConsoleEvent::TEMPLATE_VALUE)) {
-    Console::Printf("EV {e: v,i: %zu,v: %Y}\n\n", index, data);
+    Console::Printf("EV e: v\ni: %zu\nv: %Y\n\n", index, data);
   }
 }
 
