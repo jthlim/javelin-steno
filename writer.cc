@@ -24,7 +24,6 @@
 #include "clamp.h"
 #include "str.h"
 #include "stroke.h"
-#include "unicode.h"
 #include "utf8_pointer.h"
 #include <string.h>
 
@@ -189,7 +188,6 @@ bool IWriter::IsYamlSafe(const char *p) {
   case 0 ... ' ':
   case '*':
   case '!':
-  case '?':
   case '@':
   case '%':
   case '&':
@@ -200,11 +198,7 @@ bool IWriter::IsYamlSafe(const char *p) {
     return false;
 
   case '~':
-    if (p[1] == '\0') {
-      return false;
-    }
-    break;
-
+  case '?':
   case '-':
     if (p[1] <= ' ') {
       return false;
