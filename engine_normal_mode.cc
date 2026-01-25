@@ -996,22 +996,28 @@ void StenoEngine::PrintTextLog(
     }
   }
 
-  Console::Printf("EV {e: t,t: \"");
-  static constexpr char BACKSPACES[] =
-      "\\b\\b\\b\\b\\b\\b\\b\\b\\b\\b\\b\\b\\b\\b\\b\\b";
-
-  while (backspaceCount > 0) {
-    const size_t writeCount = ClampMax(backspaceCount, 16);
-    Console::Write(BACKSPACES, 2 * writeCount);
-    backspaceCount -= writeCount;
-  }
-
-  if (i < nextLength) {
+  if (backspaceCount == 0 && i < nextLength) {
     char *text = nextKeyCodeBuffer.ToString(i);
-    Console::WriteAsJson(text);
+    Console::Printf("EV {e: t,t: %Y}\n\n", text);
     free(text);
+  } else {
+    Console::Printf("EV {e: t,t: \"");
+    static constexpr char BACKSPACES[] =
+        "\\b\\b\\b\\b\\b\\b\\b\\b\\b\\b\\b\\b\\b\\b\\b\\b";
+
+    while (backspaceCount > 0) {
+      const size_t writeCount = ClampMax(backspaceCount, 16);
+      Console::Write(BACKSPACES, 2 * writeCount);
+      backspaceCount -= writeCount;
+    }
+
+    if (i < nextLength) {
+      char *text = nextKeyCodeBuffer.ToString(i);
+      Console::WriteAsJson(text);
+      free(text);
+    }
+    Console::Printf("\"}\n\n");
   }
-  Console::Printf("\"}\n\n");
 }
 
 //---------------------------------------------------------------------------

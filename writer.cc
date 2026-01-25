@@ -186,15 +186,10 @@ void IWriter::Printf(const char *p, ...) {
 
 bool IWriter::IsYamlSafe(const char *p) {
   switch (*p) {
-  case '\0':
-  case '\n':
-  case '\r':
-  case '\t':
-  case '\f':
-  case '\v':
-  case ' ':
+  case 0 ... ' ':
   case '*':
   case '!':
+  case '?':
   case '@':
   case '%':
   case '&':
@@ -203,6 +198,18 @@ bool IWriter::IsYamlSafe(const char *p) {
   case '\"':
   case '|':
     return false;
+
+  case '~':
+    if (p[1] == '\0') {
+      return false;
+    }
+    break;
+
+  case '-':
+    if (p[1] <= ' ') {
+      return false;
+    }
+    break;
 
   case 'f':
     if (Str::Eq(p, "false")) {
@@ -228,12 +235,7 @@ bool IWriter::IsYamlSafe(const char *p) {
     switch (c) {
     case '\0':
       switch (p[-2]) {
-      case '\n':
-      case '\r':
-      case '\t':
-      case '\f':
-      case '\v':
-      case ' ':
+      case 0 ... ' ':
       case '*':
         return false;
       default:
@@ -241,11 +243,12 @@ bool IWriter::IsYamlSafe(const char *p) {
       }
 
     case ':':
-      if (Unicode::IsWhitespace(*p)) {
+      if (*p <= ' ') {
         return false;
       }
       break;
 
+    case 1 ... 0x1f:
     case '#':
     case ',':
     case '[':
