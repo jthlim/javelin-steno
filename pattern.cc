@@ -11,6 +11,7 @@
 struct Pattern::BuildContext {
   const char *p;
   int captureIndex;
+  CapturePatternComponent *captures[8];
 };
 
 struct Pattern::BuildResult {
@@ -41,10 +42,13 @@ Pattern Pattern::Compile(const char *p) {
   context.p = p;
   context.captureIndex = 2;
 
-  PatternComponent *captureStart = new CapturePatternComponent(0);
+  CapturePatternComponent *captureStart = new CapturePatternComponent(0);
+  context.captures[0] = captureStart;
   const BuildResult result = ParseAlternate(context);
   captureStart->next = result.head;
-  result.tail->next = new CapturePatternComponent(1);
+  CapturePatternComponent *captureEnd = new CapturePatternComponent(1);
+  result.tail->next = captureEnd;
+  context.captures[1] = captureEnd;
 
   // If this assert is hit, then the entire pattern hasn't been processed.
   assert(*context.p == '\0');
@@ -184,13 +188,16 @@ Pattern::BuildAtomResult Pattern::ParseAtom(BuildContext &c) {
 
     const int captureIndex = c.captureIndex;
     c.captureIndex += 2;
-    PatternComponent *captureStart = new CapturePatternComponent(captureIndex);
+    CapturePatternComponent *captureStart =
+        new CapturePatternComponent(captureIndex);
+    c.captures[captureIndex] = captureStart;
     const BuildResult component = ParseAlternate(c);
     assert(*c.p == ')');
     c.p++;
 
-    PatternComponent *captureEnd =
+    CapturePatternComponent *captureEnd =
         new CapturePatternComponent(captureIndex + 1);
+    c.captures[captureIndex + 1] = captureEnd;
 
     if (*c.p == '?') {
       c.p++;
@@ -216,9 +223,14 @@ Pattern::BuildAtomResult Pattern::ParseAtom(BuildContext &c) {
     switch (const int x = c.p[1]; x) {
     case '1':
     case '2':
-    case '3':
+    case '3': {
+      const size_t index = x - '0';
       c.p += 2;
-      return BuildAtomResult(new BackReferencePatternComponent(x - '0'), false);
+      return BuildAtomResult(
+          new BackReferencePatternComponent(index, c.captures[index * 2],
+                                            c.captures[index * 2 + 1]),
+          false);
+    }
 
     default:
       goto HandleLiteral;
@@ -599,6 +611,19 @@ TEST_BEGIN("Pattern: Orthography example5 test") {
 
   char *t1 = pattern.Match("glory ^ification").Replace(R"(\1if\2)");
   assert(Str::Eq(t1, "glorification"));
+  free(t1);
+}
+TEST_END
+
+TEST_BEGIN("Pattern: Reverse orthography example test") {
+  const Pattern pattern = Pattern::Compile(R"(^(.+(.))\2ed$)");
+
+  assert(pattern.HasEndAnchor() == true);
+  assert(pattern.GetMinimumLength() == 5);
+  assert(pattern.GetMaximumLength() == size_t(-1));
+
+  char *t1 = pattern.Match("occurred").Replace(R"(\1)");
+  assert(Str::Eq(t1, "occur"));
   free(t1);
 }
 TEST_END

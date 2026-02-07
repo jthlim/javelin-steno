@@ -15,6 +15,7 @@
 #include "steno_key_code_buffer.h"
 #include "str.h"
 #include "stroke.h"
+#include "system.h"
 #include "word_list.h"
 
 //---------------------------------------------------------------------------
@@ -32,12 +33,12 @@ void StenoEngine::TemplateValue::Set(char *newValue) {
 
 //---------------------------------------------------------------------------
 
-StenoEngine::StenoEngine(StenoDictionary &dictionary,
+StenoEngine::StenoEngine(StenoDictionary &dictionary, const StenoSystem *system,
                          const StenoCompiledOrthography &orthography,
                          StenoStroke undoStroke,
                          StenoUserDictionary *userDictionary)
     : undoStroke(undoStroke), activeDictionary(&dictionary),
-      storedDictionaries(&dictionary), orthography(orthography),
+      storedDictionaries(&dictionary), system(system), orthography(orthography),
       userDictionary(userDictionary) {
   dictionary.SetParentRecursively(nullptr);
   previousConversionBuffer.Prepare(&this->orthography, &GetDictionary());
@@ -133,12 +134,11 @@ void StenoEngine::ResetState() {
 void StenoEngine::PrintInfo() const {
   Console::Printf("  Javelin Steno Engine\n");
   Console::Printf("    Strokes: %zu\n", strokeCount);
-  Console::Printf("    Host layout: %s\n",
+  Console::Printf("    System: %J\n", system->name);
+  Console::Printf("    Host layout: %J\n",
                   HostLayouts::GetActiveLayout().GetName());
   Console::Printf("    Space position: %s\n",
                   placeSpaceAfter ? "after" : "before");
-
-  orthography.PrintInfo();
 
   Console::Printf("    Dictionaries\n");
   GetDictionary().PrintInfo(4);
@@ -322,7 +322,8 @@ TEST_BEGIN("Engine: Test symbols") {
 
   const StenoCompiledOrthography orthography(
       StenoOrthography::emptyOrthography);
-  StenoEngine engine(dictionary, orthography);
+  StenoSystem system;
+  StenoEngine engine(dictionary, &system, orthography);
   StenoEngineTester::TestSymbols(engine);
 
   delete testDictionary;
@@ -355,7 +356,8 @@ TEST_BEGIN("Engine: Test transform") {
 
   const StenoCompiledOrthography orthography(
       StenoOrthography::emptyOrthography);
-  StenoEngine engine(userDictionary, orthography);
+  StenoSystem system;
+  StenoEngine engine(userDictionary, &system, orthography);
   StenoEngineTester::TestTransform(engine);
 
   delete[] buffer;
@@ -392,7 +394,8 @@ TEST_BEGIN("Engine: Test set_value and transform") {
 
   const StenoCompiledOrthography orthography(
       StenoOrthography::emptyOrthography);
-  StenoEngine engine(userDictionary, orthography);
+  StenoSystem system;
+  StenoEngine engine(userDictionary, &system, orthography);
   StenoEngineTester::TestSetTransform(engine);
 
   delete[] buffer;
@@ -480,8 +483,9 @@ TEST_BEGIN("Engine: Random spam") {
   const StenoCompiledOrthography orthography(
       StenoOrthography::emptyOrthography);
   // StenoCompiledOrthography orthography(testOrthography);
+  StenoSystem system;
   StenoEngine engine(*dictionaryList.CreateCacheDictionary(&dictionaryList),
-                     orthography);
+                     &system, orthography);
   Console::EnableEvent(ConsoleEvent::PAPER_TAPE);
   Console::EnableEvent(ConsoleEvent::TEXT);
   Console::EnableEvent(ConsoleEvent::SUGGESTION);
@@ -528,8 +532,9 @@ TEST_BEGIN("Engine: Add Translation Test") {
       dictionaries, sizeof(dictionaries) / sizeof(*dictionaries)); // NOLINT
   const StenoCompiledOrthography orthography(
       StenoOrthography::emptyOrthography);
-  StenoEngine engine(dictionaryList, orthography, StenoStroke(StrokeMask::STAR),
-                     userDictionary);
+  StenoSystem system;
+  StenoEngine engine(dictionaryList, &system, orthography,
+                     StenoStroke(StrokeMask::STAR), userDictionary);
   tester.TestAddTranslation(engine);
 
   delete userDictionary;
@@ -558,8 +563,9 @@ TEST_BEGIN("Engine: Scancode Add Translation Test") {
       dictionaries, sizeof(dictionaries) / sizeof(*dictionaries)); // NOLINT
   const StenoCompiledOrthography orthography(
       StenoOrthography::emptyOrthography);
-  StenoEngine engine(dictionaryList, orthography, StenoStroke(StrokeMask::STAR),
-                     userDictionary);
+  StenoSystem system;
+  StenoEngine engine(dictionaryList, &system, orthography,
+                     StenoStroke(StrokeMask::STAR), userDictionary);
   tester.TestScancodeAddTranslation(engine);
 
   delete userDictionary;
@@ -601,7 +607,8 @@ TEST_BEGIN("Engine: Verify =retro_insert_space") {
       DICTIONARIES, sizeof(DICTIONARIES) / sizeof(*DICTIONARIES)); // NOLINT
   const StenoCompiledOrthography orthography(
       StenoOrthography::emptyOrthography);
-  StenoEngine engine(dictionaryList, orthography);
+  StenoSystem system;
+  StenoEngine engine(dictionaryList, &system, orthography);
 
   const StenoEngineTester tester;
   tester.TestRetroInsertSpace(engine);
@@ -642,7 +649,8 @@ TEST_BEGIN("Engine: Verify =retro_insert_space with auto-suffix") {
   StenoDictionaryList dictionaryList(
       DICTIONARIES, sizeof(DICTIONARIES) / sizeof(*DICTIONARIES)); // NOLINT
   const StenoCompiledOrthography orthography(testOrthography);
-  StenoEngine engine(dictionaryList, orthography);
+  StenoSystem system;
+  StenoEngine engine(dictionaryList, &system, orthography);
 
   const StenoEngineTester tester;
   tester.TestRetroInsertSpaceAutoSuffix(engine);

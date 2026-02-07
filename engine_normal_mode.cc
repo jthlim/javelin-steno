@@ -843,24 +843,39 @@ void StenoEngine::PrintSuggestion(const char *p, size_t arrowPrefixCount,
                                   size_t strokeThreshold) const {
   StenoReverseDictionaryLookup lookup(p, strokeThreshold);
   ReverseLookup(lookup);
-  if (lookup.results.IsEmpty()) {
+  switch (lookup.results.GetCount()) {
+  case 0:
     return;
-  }
 
-  Console::Printf("EV e: s\nc: %zu\nt: %Y\no: [", arrowPrefixCount, p);
-  for (size_t i = 0; i < lookup.results.GetCount(); ++i) {
-    const StenoReverseDictionaryResult &entry = lookup.results[i];
-    Console::Printf(i == 0 ? "%O" : ",%O", entry.strokes, entry.length);
-  }
-  Console::Printf("]");
+  case 1: {
+    const StenoReverseDictionaryResult &entry = lookup.results.Front();
+    Console::Printf("EV e: s\nc: %zu\nt: %Y\no: %O", arrowPrefixCount, p,
+                    entry.strokes, entry.length);
 
-  if (lookup.AreAllResultsFromSameDictionary()) {
-    const StenoDictionary *dictionary = lookup.results.Front().dictionary;
+    const StenoDictionary *dictionary = entry.dictionary;
     if (!dictionary->IsInternal()) {
       Console::Printf("\nd: %Y", dictionary->GetName());
     }
+    Console::Printf("\n\n");
+  } break;
+
+  default:
+    Console::Printf("EV e: s\nc: %zu\nt: %Y\no: [", arrowPrefixCount, p);
+    for (size_t i = 0; i < lookup.results.GetCount(); ++i) {
+      const StenoReverseDictionaryResult &entry = lookup.results[i];
+      Console::Printf(i == 0 ? "%O" : ",%O", entry.strokes, entry.length);
+    }
+    Console::Printf("]");
+
+    if (lookup.AreAllResultsFromSameDictionary()) {
+      const StenoDictionary *dictionary = lookup.results.Front().dictionary;
+      if (!dictionary->IsInternal()) {
+        Console::Printf("\nd: %Y", dictionary->GetName());
+      }
+    }
+    Console::Printf("\n\n");
+    break;
   }
-  Console::Printf("\n\n");
 }
 
 static bool ShouldShowSuggestions(const StenoSegmentList &segments,

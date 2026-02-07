@@ -360,6 +360,7 @@ void StenoTokenizer::PrepareNextP() {
 #include "orthography.h"
 #include "segment_builder.h"
 #include "str.h"
+#include "system.h"
 #include "unit_test.h"
 
 TEST_BEGIN("Segment tests") {
@@ -370,10 +371,11 @@ TEST_BEGIN("Segment tests") {
   // spellchecker: enable
 
   StenoSegmentList segments(16);
+  StenoSystem system;
   const StenoCompiledOrthography compiledOrthography(
       StenoOrthography::emptyOrthography);
   StenoCompactMapDictionary dictionary(TestDictionary::definition);
-  StenoEngine engine(dictionary, compiledOrthography);
+  StenoEngine engine(dictionary, &system, compiledOrthography);
   BuildSegmentContext context(segments, engine);
 
   history.CreateSegments(context);

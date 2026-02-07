@@ -191,6 +191,34 @@ bool BackReferencePatternComponent::Match(const char *p,
   return CallNext(p, context);
 }
 
+size_t BackReferencePatternComponent::GetMinimumLength(
+    const PatternRecurseContext &context) const {
+  PatternRecurseContext backReferenceContext;
+  backReferenceContext.stop = captureEnd;
+  const size_t captureMin =
+      captureStart->GetMinimumLength(backReferenceContext);
+
+  return captureMin + PatternComponent::GetMinimumLength(context);
+}
+
+size_t BackReferencePatternComponent::GetMaximumLength(
+    const PatternRecurseContext &context) const {
+  PatternRecurseContext backReferenceContext;
+  backReferenceContext.stop = captureEnd;
+  const size_t captureMax =
+      captureStart->GetMaximumLength(backReferenceContext);
+  if (captureMax == INFINITE_LENGTH) {
+    return INFINITE_LENGTH;
+  }
+
+  const size_t max = PatternComponent::GetMaximumLength(context);
+  if (max == INFINITE_LENGTH) {
+    return INFINITE_LENGTH;
+  }
+
+  return captureMax + max;
+}
+
 bool CharacterSetPatternComponent::Match(const char *p,
                                          PatternContext &context) const {
   const uint8_t c = *(uint8_t *)p;
@@ -214,6 +242,22 @@ bool CapturePatternComponent::Match(const char *p,
     *capture = previous;
   }
   return result;
+}
+
+size_t CapturePatternComponent::GetMinimumLength(
+    const PatternRecurseContext &context) const {
+  if (this == context.stop) {
+    return 0;
+  }
+  return PatternComponent::GetMinimumLength(context);
+}
+
+size_t CapturePatternComponent::GetMaximumLength(
+    const PatternRecurseContext &context) const {
+  if (this == context.stop) {
+    return 0;
+  }
+  return PatternComponent::GetMaximumLength(context);
 }
 
 bool AlwaysCapturePatternComponent::Match(const char *p,

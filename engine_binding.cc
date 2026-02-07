@@ -218,14 +218,14 @@ void StenoEngine::LookupStroke_Binding(void *context, const char *commandLine) {
   StenoEngine *engine = (StenoEngine *)context;
   List<const StenoDictionary *> dictionaries;
   engine->GetDictionary().GetDictionariesForOutline(
-      dictionaries, parser.strokes, parser.length);
+      dictionaries, parser.GetData(), parser.GetCount());
 
   if (dictionaries.IsNotEmpty()) {
     Console::Printf("[");
     bool isFirstTime = true;
     for (const StenoDictionary *dictionary : dictionaries) {
       const StenoDictionaryLookupResult result =
-          dictionary->Lookup(parser.strokes, parser.length);
+          dictionary->Lookup(parser.GetData(), parser.GetCount());
 
       const char *format = ",{t: %Y,d: %Y%s}";
       Console::Printf(format + isFirstTime, result.GetText(),
@@ -236,10 +236,10 @@ void StenoEngine::LookupStroke_Binding(void *context, const char *commandLine) {
     }
     Console::Printf("]\n\n");
   } else {
-    StenoSegmentList segments(parser.length);
+    StenoSegmentList segments(parser.GetCount());
     ConversionBuffer &buffer = engine->previousConversionBuffer;
-    engine->CreateSegments(segments, buffer.segmentBuilder, parser.strokes,
-                           parser.length);
+    engine->CreateSegments(segments, buffer.segmentBuilder, parser.GetData(),
+                           parser.GetCount());
 
     if (!buffer.segmentBuilder.HasRawStroke()) {
       char scratchBuffer[256];
@@ -281,7 +281,7 @@ void StenoEngine::LookupPartialOutline_Binding(void *context,
   const ExternalFlashSentry externalFlashSentry;
 
   Console::Printf("[");
-  PrintPartialOutlineContext lookupContext(parser.strokes, parser.length,
+  PrintPartialOutlineContext lookupContext(parser.GetData(), parser.GetCount(),
                                            size_t(count));
   StenoEngine *engine = (StenoEngine *)context;
   engine->GetDictionary().PrintEntriesWithPartialOutline(lookupContext);
@@ -309,7 +309,7 @@ void StenoEngine::RemoveOutline_Binding(void *context,
   const ExternalFlashSentry externalFlashSentry;
   StenoEngine *engine = (StenoEngine *)context;
   const bool result = engine->GetDictionary().Remove(
-      dictionaryName, parser.strokes, parser.length);
+      dictionaryName, parser.GetData(), parser.GetCount());
 
   if (!result) {
     Console::Printf("ERR Unable to delete stroke %s from dictionary %s\n\n",
@@ -338,8 +338,8 @@ void StenoEngine::ProcessStrokes_Binding(void *context,
 
   ConsoleWriter::Push(&ConsoleWriter::instance);
   StenoEngine *engine = (StenoEngine *)context;
-  for (size_t i = 0; i < parser.length; ++i) {
-    engine->Process(parser.strokes[i]);
+  for (const StenoStroke &stroke : parser) {
+    engine->Process(stroke);
   }
   ConsoleWriter::Pop();
 }

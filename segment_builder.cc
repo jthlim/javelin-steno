@@ -844,6 +844,7 @@ void StenoSegmentBuilder::HandleRepeatLastStroke(BuildSegmentContext &context,
 #include "engine.h"
 #include "orthography.h"
 #include "str.h"
+#include "system.h"
 #include "unit_test.h"
 
 TEST_BEGIN("StrokeHistory: Test single segment") {
@@ -861,10 +862,11 @@ TEST_BEGIN("StrokeHistory: Test single segment") {
   // spellchecker: enable
 
   StenoSegmentList segments(16);
+  StenoSystem system;
   const StenoCompiledOrthography orthography(
       StenoOrthography::emptyOrthography);
 
-  StenoEngine engine(dictionary, orthography);
+  StenoEngine engine(dictionary, &system, orthography);
   BuildSegmentContext context(segments, engine);
   history.CreateSegments(context);
 
@@ -892,10 +894,11 @@ TEST_BEGIN("StrokeHistory: Test two segments, with multi-stroke") {
   // spellchecker: enable
 
   StenoSegmentList segments(16);
+  StenoSystem system;
   const StenoCompiledOrthography orthography(
       StenoOrthography::emptyOrthography);
 
-  StenoEngine engine(dictionary, orthography);
+  StenoEngine engine(dictionary, &system, orthography);
   BuildSegmentContext context(segments, engine);
   history.CreateSegments(context);
 
@@ -924,10 +927,11 @@ TEST_BEGIN("StrokeHistory: Test *? splits strokes") {
   // spellchecker: enable
 
   StenoSegmentList segments(16);
+  StenoSystem system;
   const StenoCompiledOrthography orthography(
       StenoOrthography::emptyOrthography);
 
-  StenoEngine engine(dictionary, orthography);
+  StenoEngine engine(dictionary, &system, orthography);
   BuildSegmentContext context(segments, engine);
   history.CreateSegments(context);
 
@@ -951,10 +955,11 @@ TEST_BEGIN("StrokeHistory: Test * toggles lookup") {
   // spellchecker: enable
 
   StenoSegmentList segments(16);
+  StenoSystem system;
   const StenoCompiledOrthography orthography(
       StenoOrthography::emptyOrthography);
 
-  StenoEngine engine(dictionary, orthography);
+  StenoEngine engine(dictionary, &system, orthography);
   BuildSegmentContext context(segments, engine);
   history.CreateSegments(context);
 
@@ -980,6 +985,7 @@ TEST_BEGIN("StrokeHistory: Test {*?} behaves properly") {
   // spellchecker: enable
 
   StenoSegmentList segments(16);
+  StenoSystem system;
   const StenoCompiledOrthography orthography(
       StenoOrthography::emptyOrthography);
 
@@ -990,7 +996,7 @@ TEST_BEGIN("StrokeHistory: Test {*?} behaves properly") {
       mainDictionary,
   };
   StenoDictionaryList dictionary(DICTIONARIES, 2);
-  StenoEngine engine(dictionary, orthography);
+  StenoEngine engine(dictionary, &system, orthography);
   BuildSegmentContext context(segments, engine);
   history.CreateSegments(context);
 

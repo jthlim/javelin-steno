@@ -90,6 +90,8 @@ public:
     return (size_t)-1;
   }
 
+  const T *GetData() const { return data; }
+
   friend const T *begin(const StaticList &list) { return list.data; }
   friend const T *end(const StaticList &list) { return list.data + list.count; }
 

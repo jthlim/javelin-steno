@@ -5,6 +5,7 @@
 // * %c     - char
 // * %C     - Unicode (uint32_t)
 // * %d, %i - int
+// * %b     - const void*, size_t count - Yaml Data in in base64
 // * %D     - const void*, size_t count - Data in in base64
 // * %J     - char* in escaped JSON
 // * %p     - void*
@@ -312,6 +313,88 @@ bool IWriter::IsYamlSafe(const char *p) {
   }
 }
 
+bool IsInRange(uint32_t c, uint32_t lower, uint32_t upper) {
+  return lower <= c && c < upper;
+}
+
+bool IWriter::IsYamlSafeData(const uint8_t *p, size_t length) {
+  if (length == 0) {
+    return false;
+  }
+
+  if (length % 3 == 0) {
+    return true;
+  }
+
+  if (length == 3) {
+    // Encodes to 'true'
+    if (p[0] == 0xb6 && p[1] == 0xbb && p[2] == 0x9e) {
+      return false;
+    }
+
+    // Encodes to 'null'
+    if (p[0] == 0x9e && p[1] == 0xe9 && p[2] == 0x65) {
+      return false;
+    }
+  }
+
+  const uint32_t lowerDigitValue = 52;
+  const uint32_t upperDigitValue = 62;
+  const uint32_t upperDigitAndPlusValue = 63; // Start of with digits and plus.
+
+#if JAVELIN_CPU_CORTEX_M4 || JAVELIN_CPU_CORTEX_M33
+  // There's some XIP reading bug that this sequence avoids.
+  // Using the default code causes the bzip2 header to be corrupted.
+  const uint32_t value = __builtin_bswap32(*(uint32_t *)p << 8);
+  p += 3;
+#else
+  const uint32_t value = (p[0] << 16) + (p[1] << 8) + p[2];
+  p += 3;
+#endif
+
+  if (!IsInRange(value >> 18, lowerDigitValue, upperDigitAndPlusValue)) {
+    return true;
+  }
+  if (!IsInRange((value >> 12) & 0x3f, lowerDigitValue, upperDigitValue)) {
+    return true;
+  }
+  if (!IsInRange((value >> 6) & 0x3f, lowerDigitValue, upperDigitValue)) {
+    return true;
+  }
+  if (!IsInRange(value & 0x3f, lowerDigitValue, upperDigitValue)) {
+    return true;
+  }
+  length -= 3;
+
+  while (length >= 3) {
+#if JAVELIN_CPU_CORTEX_M4 || JAVELIN_CPU_CORTEX_M33
+    // There's some XIP reading bug that this sequence avoids.
+    // Using the default code causes the bzip2 header to be corrupted.
+    const uint32_t value = __builtin_bswap32(*(uint32_t *)p << 8);
+    p += 3;
+#else
+    const uint32_t value = (p[0] << 16) + (p[1] << 8) + p[2];
+    p += 3;
+#endif
+
+    if (!IsInRange(value >> 18, lowerDigitValue, upperDigitValue)) {
+      return true;
+    }
+    if (!IsInRange((value >> 12) & 0x3f, lowerDigitValue, upperDigitValue)) {
+      return true;
+    }
+    if (!IsInRange((value >> 6) & 0x3f, lowerDigitValue, upperDigitValue)) {
+      return true;
+    }
+    if (!IsInRange(value & 0x3f, lowerDigitValue, upperDigitValue)) {
+      return true;
+    }
+    length -= 3;
+  }
+
+  return false;
+}
+
 // This is forced not-inline to avoid stack depth on recursive calls.
 [[gnu::noinline]]
 void IWriter::AddStroke(StenoStroke stroke) {
@@ -532,10 +615,24 @@ void IWriter::Vprintf(const char *p, va_list args) {
       }
       goto NextSegment;
     }
+    case 'b': {
+      // Write Data (void*, length) as Base64
+      const uint8_t *data = va_arg(args, const uint8_t *);
+      data += printfPointerOffset;
+      const size_t length = va_arg(args, size_t);
+      if (IsYamlSafeData(data, length)) {
+        WriteBase64(data, length);
+      } else {
+        WriteByte('\"');
+        WriteBase64(data, length);
+        WriteByte('\"');
+      }
+      goto NextSegment;
+    }
     case 'D': {
       // Write Data (void*, length) as Base64
-      const void *data = va_arg(args, const void *);
-      data = (const StenoStroke *)(intptr_t(data) + printfPointerOffset);
+      const uint8_t *data = va_arg(args, const uint8_t *);
+      data += printfPointerOffset;
       const size_t length = va_arg(args, size_t);
       WriteBase64(data, length);
       goto NextSegment;

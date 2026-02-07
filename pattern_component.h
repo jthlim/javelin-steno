@@ -13,6 +13,7 @@ constexpr size_t PATTERN_COMPONENT_BLOCK_SIZE = 1024;
 //---------------------------------------------------------------------------
 
 class PatternQuickReject;
+class CapturePatternComponent;
 
 //---------------------------------------------------------------------------
 
@@ -54,10 +55,12 @@ private:
 //---------------------------------------------------------------------------
 
 struct PatternRecurseContext {
-  PatternRecurseContext() : reference(++currentReference) {}
-  PatternRecurseContext(size_t reference) : reference(reference) {}
+  PatternRecurseContext() : reference(++currentReference), stop(nullptr) {}
+  PatternRecurseContext(size_t reference)
+      : reference(reference), stop(nullptr) {}
 
   size_t reference;
+  const CapturePatternComponent *stop;
 
   void Reset() { reference = ++currentReference; }
 
@@ -215,14 +218,23 @@ private:
 
 class BackReferencePatternComponent : public PatternComponent {
 public:
-  BackReferencePatternComponent(int index) : index(index) {}
+  BackReferencePatternComponent(size_t index,
+                                CapturePatternComponent *captureStart,
+                                CapturePatternComponent *captureEnd)
+      : index(index), captureStart(captureStart), captureEnd(captureEnd) {}
 
   virtual bool Match(const char *p, PatternContext &context) const;
+  virtual size_t GetMinimumLength(const PatternRecurseContext &context) const;
+  virtual size_t GetMaximumLength(const PatternRecurseContext &context) const;
 
   JIT_COMPONENT_METHOD
 
 private:
-  int index;
+  using super = PatternComponent;
+
+  size_t index;
+  CapturePatternComponent *captureStart;
+  CapturePatternComponent *captureEnd;
 };
 
 class CharacterSetPatternComponent : public SingleBytePatternComponent {
@@ -311,6 +323,10 @@ public:
   virtual bool IsCapture() const { return true; }
 
   virtual bool Match(const char *p, PatternContext &context) const;
+  virtual size_t GetMinimumLength(const PatternRecurseContext &context) const;
+  virtual size_t GetMaximumLength(const PatternRecurseContext &context) const;
+
+  void MarkRequiredCaptures(const void *loopbackObject) final;
 
   JIT_COMPONENT_METHOD
 
@@ -321,7 +337,6 @@ private:
   bool isRequired = false;
   bool hasLoopback = false;
   bool alwaysStoreCapture = false;
-  void MarkRequiredCaptures(const void *loopbackObject) final;
 };
 
 class AlwaysCapturePatternComponent : public CapturePatternComponent {

@@ -37,6 +37,7 @@ public:
 
   static bool IsNumber(const char *p);
   static bool IsYamlSafe(const char *p);
+  static bool IsYamlSafeData(const uint8_t *p, size_t length);
 
 private:
   intptr_t printfPointerOffset = 0;

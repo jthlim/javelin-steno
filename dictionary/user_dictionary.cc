@@ -631,7 +631,8 @@ void StenoUserDictionary::AddEntry_Binding(void *context,
 
   const ExternalFlashSentry sentry;
   StenoUserDictionary *userDictionary = (StenoUserDictionary *)context;
-  if (!userDictionary->Add(parser.strokes, parser.length, translationStart)) {
+  if (!userDictionary->Add(parser.GetData(), parser.GetCount(),
+                           translationStart)) {
     Console::Printf("ERR Unable to write to user dictionary\n\n");
     return;
   }
@@ -655,7 +656,7 @@ void StenoUserDictionary::RemoveEntry_Binding(void *context,
 
   const ExternalFlashSentry sentry;
   StenoUserDictionary *userDictionary = (StenoUserDictionary *)context;
-  userDictionary->Remove(parser.strokes, parser.length);
+  userDictionary->Remove(parser.GetData(), parser.GetCount());
   Console::SendOk();
 }
 

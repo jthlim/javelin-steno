@@ -7,10 +7,8 @@
 
 // Returns true if successfully parsed, false otherwise.
 bool StrokeListParser::Parse(const char *p) {
-  length = 0;
-
   for (;;) {
-    if (length >= StenoUserDictionary::MAX_STROKE_COUNT) {
+    if (IsFull()) {
       failureOrEnd = p;
       return false;
     }
@@ -20,14 +18,14 @@ bool StrokeListParser::Parse(const char *p) {
     }
 
     char *text = Str::DupN(start, p - start);
-    strokes[length].Set(text);
+    StenoStroke &stroke = Add();
+    stroke.Set(text);
     free(text);
 
-    if (strokes[length].IsEmpty()) {
+    if (stroke.IsEmpty()) {
       failureOrEnd = start;
       return false;
     }
-    ++length;
     const int last = *p;
     if (last != '\0') {
       ++p;

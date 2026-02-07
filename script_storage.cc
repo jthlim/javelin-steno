@@ -18,7 +18,7 @@ void ScriptStorageData::HandleGetScriptStorageParameter() {
     return;
   }
 
-  Console::Printf("\"%D\"\n\n", SCRIPT_STORAGE_ADDRESS->data,
+  Console::Printf("%D\n\n", SCRIPT_STORAGE_ADDRESS->data,
                   SCRIPT_STORAGE_ADDRESS->length);
 #else
   Console::Printf("ERR No script storage\n\n");

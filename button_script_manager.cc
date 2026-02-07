@@ -9,6 +9,8 @@
 #include "timer_manager.h"
 #include "unicode.h"
 
+#include JAVELIN_BOARD_CONFIG
+
 //---------------------------------------------------------------------------
 
 #define CONSOLE_LOG_BUTTON_PRESSES 0
@@ -289,10 +291,15 @@ ComboMatches ButtonScriptManager::Match(size_t buttonCount) {
   return matches;
 }
 
+#if !defined(BUTTON_COUNT)
+#define BUTTON_COUNT 64
+#endif
+
 void ButtonScriptManager::SendButtonStateUpdate(
     const ButtonState &state) const {
   if (Console::IsEventEnabled(ConsoleEvent::BUTTON_STATE)) {
-    Console::Printf("EV e: b\nd: \"%D\"\n\n", &state, sizeof(state));
+    constexpr size_t BUTTON_BYTES = (BUTTON_COUNT + 7) / 8;
+    Console::Printf("EV e: b\nd: %b\n\n", &state, BUTTON_BYTES);
   }
 }
 

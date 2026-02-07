@@ -18,6 +18,8 @@ class StenoReverseDictionaryLookup;
 class StenoSegmentList;
 class StenoUserDictionary;
 
+struct StenoSystem;
+
 //---------------------------------------------------------------------------
 
 enum StenoEngineMode { NORMAL, ADD_TRANSLATION, CONSOLE };
@@ -26,7 +28,7 @@ enum StenoEngineMode { NORMAL, ADD_TRANSLATION, CONSOLE };
 
 class StenoEngine final : public StenoProcessorElement {
 public:
-  StenoEngine(StenoDictionary &dictionary,
+  StenoEngine(StenoDictionary &dictionary, const StenoSystem *system,
               const StenoCompiledOrthography &orthography,
               StenoStroke undoStroke = StenoStroke(StrokeMask::STAR),
               StenoUserDictionary *userDictionary = nullptr);
@@ -98,6 +100,7 @@ private:
   StenoDictionary *activeDictionary;
   StenoDictionary *storedDictionaries;
 
+  const StenoSystem *system;
   const StenoCompiledOrthography &orthography;
   StenoUserDictionary *const userDictionary;
 
