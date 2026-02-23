@@ -10,29 +10,40 @@
 
 //---------------------------------------------------------------------------
 
-enum class VerbForm : uint16_t {
+// Bits:
+//  1 = First Person
+//  2 = Second Person
+//  4 = Third Person
+//  8 = Singular
+//  0x10 = Plural
+//  0x20 = Infinitive
+//  0x40 = Participle
+//  0x80 = Past
+//  0x100 = Present
+//  0x200 = Blank pronoun
+enum class WordForm : uint16_t {
   UNSPECIFIED = 0,
-  FIRST_PERSON_SINGULAR,
-  SECOND_PERSON,
-  THIRD_PERSON_SINGULAR,
-  FIRST_PERSON_PLURAL,
-  THIRD_PERSON_PLURAL,
-  ROOT,
-  PRESENT_PARTICIPLE,
-  PAST_PARTICIPLE,
-};
+  ROOT = 0x20,
+  PAST = 0x80,
+  PRESENT = 0x100,
+  BLANK_PRONOUN = 0x200,
 
-enum class Tense : uint16_t {
-  // These values should have no overlap with VerbForm
-  PRESENT = 0x8000,
-  PAST,
+  FIRST_PERSON_SINGULAR = 9,
+  SECOND_PERSON = 0xa,
+  THIRD_PERSON_SINGULAR = 0xc,
+  FIRST_PERSON_PLURAL = 0x11,
+  THIRD_PERSON_PLURAL = 0x14,
+  PAST_PARTICIPLE = 0xc0,
+  PRESENT_PARTICIPLE = 0x140,
+  THIRD_PERSON_SINGULAR_BLANK_PRONOUN = 0x20c,
+  THIRD_PERSON_PLURAL_BLANK_PRONOUN = 0x214,
 };
 
 struct JeffPhrasingValidEnders : public StaticList<StenoStroke> {};
 
 struct JeffPhrasingPronoun {
   const char *word;
-  VerbForm verbForm;
+  WordForm wordForm;
   bool canUseAllEnders;
 };
 
@@ -45,24 +56,26 @@ struct JeffPhrasingMap;
 template <size_t N> struct JeffPhrasingMapData;
 
 struct JeffPhrasingVariant {
-  enum class Type {
+  enum class Type : uint8_t {
     UNKNOWN,
     TEXT,
     MAP,
   };
 
   consteval JeffPhrasingVariant() : type(Type::UNKNOWN), text(nullptr) {}
-  consteval JeffPhrasingVariant(const char *text)
-      : type(Type::TEXT), text(text) {}
-  consteval JeffPhrasingVariant(const JeffPhrasingMap *map)
-      : type(Type::MAP), map(map) {}
+  consteval JeffPhrasingVariant(const char *text,
+                                WordForm wordForm = WordForm::UNSPECIFIED)
+      : type(Type::TEXT), wordForm(wordForm), text(text) {}
+  consteval JeffPhrasingVariant(const JeffPhrasingMap *map,
+                                WordForm wordForm = WordForm::UNSPECIFIED)
+      : type(Type::MAP), wordForm(wordForm), map(map) {}
 
   template <size_t N>
-  consteval JeffPhrasingVariant(const JeffPhrasingMapData<N> *mapData)
-      : type(Type::MAP), mapData(mapData) {}
+  consteval JeffPhrasingVariant(const JeffPhrasingMapData<N> *mapData,
+                                WordForm wordForm = WordForm::UNSPECIFIED)
+      : type(Type::MAP), wordForm(wordForm), mapData(mapData) {}
 
   const JeffPhrasingVariant *Lookup(uint32_t key) const;
-
   const JeffPhrasingVariant *LookupWithDefaultOrSelf(uint32_t key) const;
 
   const char *ToString() const {
@@ -72,6 +85,9 @@ struct JeffPhrasingVariant {
 
   Type type;
 
+  // Used by middles to override wordForm
+  WordForm wordForm;
+
   union {
     const char *text;
     const JeffPhrasingMap *map;
@@ -80,6 +96,12 @@ struct JeffPhrasingVariant {
 };
 
 struct JeffPhrasingMapEntry {
+  consteval JeffPhrasingMapEntry(WordForm wordForm,
+                                 const JeffPhrasingVariant value)
+      : key(uint32_t(wordForm)), value(value) {}
+  consteval JeffPhrasingMapEntry(uint32_t key, const JeffPhrasingVariant value)
+      : key(key), value(value) {}
+
   uint32_t key;
   const JeffPhrasingVariant value;
 };
@@ -96,7 +118,6 @@ template <size_t N> struct JeffPhrasingMapData {
 };
 
 struct JeffPhrasingMiddle {
-  VerbForm verbForm;
   JeffPhrasingVariant word;
 };
 
@@ -107,13 +128,13 @@ struct JeffPhrasingSimpleStarter {
 
 struct JeffPhrasingStructure {
   JeffPhrasingVariant format;
-  bool useMiddleVerbForm;
-  VerbForm updatedVerbForm;
+  bool useMiddleWordForm;
+  WordForm updatedWordForm;
 };
 
 struct JeffPhrasingEnder {
   StenoStroke stroke;
-  Tense tense;
+  WordForm tense;
   bool canUseAllStarters;
   JeffPhrasingVariant ender;
   const char *suffix;

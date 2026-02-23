@@ -289,7 +289,6 @@ bool IWriter::IsYamlSafe(const char *p) {
     case '\0':
       switch (p[-2]) {
       case 0 ... ' ':
-      case '*':
         return false;
       default:
         return true;

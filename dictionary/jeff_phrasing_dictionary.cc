@@ -15,7 +15,7 @@
 
 // spellchecker: disable
 const StenoStroke SIMPLE_STARTER_MASK(0x3fe);  // `STKPWHRAO`
-const StenoStroke SIMPLE_PRONOUN_MASK(0x1C00); // `*EU`
+const StenoStroke SIMPLE_PRONOUN_MASK(0x1c00); // `*EU`
 const StenoStroke FULL_STARTER_MASK(0xfe);     // 'STKPWHR'
 const StenoStroke ENDER_MASK(0x7fc000);        // '-RPBLGTSDZ'
 
@@ -84,7 +84,7 @@ struct PhrasingParts {
 
 const JeffPhrasingVariant *JeffPhrasingMap::Lookup(uint32_t key) const {
   for (const JeffPhrasingMapEntry &entry : entries) {
-    if (entry.key == key) {
+    if ((entry.key & key) == entry.key) {
       return &entry.value;
     }
   }
@@ -101,10 +101,6 @@ const JeffPhrasingVariant *JeffPhrasingVariant::Lookup(uint32_t key) const {
 const JeffPhrasingVariant *
 JeffPhrasingVariant::LookupWithDefaultOrSelf(uint32_t key) const {
   const JeffPhrasingVariant *result = Lookup(key);
-  if (result) {
-    return result;
-  }
-  result = Lookup(0);
   return result ? result : this;
 }
 
@@ -299,34 +295,32 @@ const StenoDictionary *StenoJeffPhrasingDictionary::GetDictionaryForOutline(
 }
 
 char *PhrasingParts::CreatePhrase() const {
-  VerbForm verbForm = pronoun->verbForm;
-  const char *middleText =
+  uint32_t wordForm = uint32_t(pronoun->wordForm);
+  const JeffPhrasingVariant *middleLookup =
       middle->word.LookupWithDefaultOrSelf((uint32_t)ender->tense)
-          ->LookupWithDefaultOrSelf((uint32_t)verbForm)
-          ->ToString();
+          ->LookupWithDefaultOrSelf(wordForm);
 
-  if (structure->useMiddleVerbForm &&
-      middle->verbForm != VerbForm::UNSPECIFIED) {
-    verbForm = middle->verbForm;
+  if (structure->useMiddleWordForm) {
+    wordForm |= uint32_t(middleLookup->wordForm);
   }
 
   const char *structureText =
       structure->format.LookupWithDefaultOrSelf((uint32_t)ender->tense)
-          ->LookupWithDefaultOrSelf((uint32_t)verbForm)
+          ->LookupWithDefaultOrSelf(wordForm)
           ->ToString();
 
-  if (structure->updatedVerbForm != VerbForm::UNSPECIFIED) {
-    verbForm = structure->updatedVerbForm;
+  if (structure->updatedWordForm != WordForm::UNSPECIFIED) {
+    wordForm = uint32_t(structure->updatedWordForm);
   }
 
   const char *verbText =
-      ender->ender.LookupWithDefaultOrSelf((uint32_t)verbForm)->ToString();
+      ender->ender.LookupWithDefaultOrSelf(wordForm)->ToString();
 
   // Abuse pattern replace code to substitute text.
   PatternMatch match;
   match.match = true;
   match.SetCapture(0, pronoun->word);
-  match.SetCapture(1, middleText);
+  match.SetCapture(1, middleLookup->ToString());
   match.SetCapture(2, verbText);
   match.SetCapture(3, ender->suffix);
   return match.Replace(structureText);
@@ -621,6 +615,19 @@ static void VerifyStroke(const char *stroke, const char *result) {
   lookup.Destroy();
 }
 
+static void VerifyReverseLookup(const char *text, StenoStroke expected) {
+  StenoReverseDictionaryLookup lookup(text);
+  StenoJeffPhrasingDictionary::instance.ReverseLookup(lookup);
+  assert(lookup.results.IsNotEmpty());
+  for (size_t i = 0; i < lookup.results.GetCount(); ++i) {
+    assert(lookup.results[i].length == 1);
+    if (lookup.strokes[i] == expected) {
+      return;
+    }
+  }
+  assert(false);
+}
+
 TEST_BEGIN("JeffPhrasing: Starter tests") {
   // spellchecker: disable
   VerifyStroke("SWR", "I");
@@ -673,6 +680,23 @@ TEST_BEGIN("JeffPhrasing: Unique starters tests") {
   VerifyStroke("STWR*EUF", " don't even");
   VerifyStroke("STKPWHREUF", " never");
   VerifyStroke("STKPWHR*EUF", " doesn't even");
+
+  VerifyReverseLookup("to", "STWRU");
+  VerifyReverseLookup("not to", "STWR*U");
+  VerifyReverseLookup("to", "STKPWHRU");
+  VerifyReverseLookup("not to", "STKPWHR*U");
+  VerifyReverseLookup("just", "STWRUF");
+  VerifyReverseLookup("just don't", "STWR*UF");
+  VerifyReverseLookup("just", "STKPWHRUF");
+  VerifyReverseLookup("just doesn't", "STKPWHR*UF");
+  VerifyReverseLookup("still", "STWREU");
+  VerifyReverseLookup("still don't", "STWR*EU");
+  VerifyReverseLookup("still", "STKPWHREU");
+  VerifyReverseLookup("still doesn't", "STKPWHR*EU");
+  VerifyReverseLookup("never", "STWREUF");
+  VerifyReverseLookup("don't even", "STWR*EUF");
+  VerifyReverseLookup("never", "STKPWHREUF");
+  VerifyReverseLookup("doesn't even", "STKPWHR*EUF");
   // spellchecker: enable
 }
 TEST_END
@@ -756,6 +780,9 @@ TEST_BEGIN("JeffPhrasing: Basic structures tests") {
   VerifyStroke("SWREURB", "I still ask");
   VerifyStroke("SWRAEURB", "I can still ask");
   VerifyStroke("SWRA*EURB", "I still can't ask");
+  VerifyReverseLookup("I still ask", "SWREURB");
+  VerifyReverseLookup("I can still ask", "SWRAEURB");
+  VerifyReverseLookup("I still can't ask", "SWRA*EURB");
 
   VerifyStroke("SWRUFRB", "I just ask");
   VerifyStroke("SWRAUFRB", "I can just ask");
@@ -818,6 +845,37 @@ TEST_BEGIN("JeffPhrasing: Basic structures tests") {
   VerifyStroke("SWR*UFG", "I just don't go");
   VerifyStroke("SWR-EUFG", "I never go");
   VerifyStroke("SWR*EUFG", "I don't even go");
+  // spellchecker: enable
+}
+TEST_END
+
+TEST_BEGIN("JeffPhrasing: Always tests") {
+  // spellchecker: disable
+  VerifyStroke("STWRAURB", " can always ask");
+  VerifyStroke("STWRA*URB", " can't always ask");
+  VerifyStroke("STWRAURBD", " could always ask");
+  VerifyStroke("STWRA*URBD", " couldn't always ask");
+  VerifyStroke("STWROURB", " shall always ask");
+  VerifyStroke("STWRO*URB", " shall not always ask");
+  VerifyStroke("STWROURBD", " should always ask");
+  VerifyStroke("STWRO*URBD", " shouldn't always ask");
+  VerifyStroke("STWRAOURB", " will always ask");
+  VerifyStroke("STWRAO*URB", " won't always ask");
+  VerifyStroke("STWRAOURBD", " would always ask");
+  VerifyStroke("STWRAO*URBD", " wouldn't always ask");
+
+  VerifyReverseLookup("can always ask", "STWRAURB");
+  VerifyReverseLookup("can't always ask", "STWRA*URB");
+  VerifyReverseLookup("could always ask", "STWRAURBD");
+  VerifyReverseLookup("couldn't always ask", "STWRA*URBD");
+  VerifyReverseLookup("shall always ask", "STWROURB");
+  VerifyReverseLookup("shall not always ask", "STWRO*URB");
+  VerifyReverseLookup("should always ask", "STWROURBD");
+  VerifyReverseLookup("shouldn't always ask", "STWRO*URBD");
+  VerifyReverseLookup("will always ask", "STWRAOURB");
+  VerifyReverseLookup("won't always ask", "STWRAO*URB");
+  VerifyReverseLookup("would always ask", "STWRAOURBD");
+  VerifyReverseLookup("wouldn't always ask", "STWRAO*URBD");
   // spellchecker: enable
 }
 TEST_END
@@ -1674,19 +1732,6 @@ TEST_BEGIN("JeffPhrasing: Include all past tense results when there's no "
   assert(lookup.results.GetCount() == 2);
 }
 TEST_END
-
-static void VerifyReverseLookup(const char *text, StenoStroke expected) {
-  StenoReverseDictionaryLookup lookup(text);
-  StenoJeffPhrasingDictionary::instance.ReverseLookup(lookup);
-  assert(lookup.results.IsNotEmpty());
-  for (size_t i = 0; i < lookup.results.GetCount(); ++i) {
-    assert(lookup.results[i].length == 1);
-    if (lookup.strokes[i] == expected) {
-      return;
-    }
-  }
-  assert(false);
-}
 
 TEST_BEGIN("JeffPhrasing: Reverse lookups") {
   // spellchecker: disable

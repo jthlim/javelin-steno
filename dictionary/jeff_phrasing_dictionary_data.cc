@@ -9,235 +9,249 @@
 
 // clang-format off
 constexpr JeffPhrasingSimpleStarter SIMPLE_STARTERS[] = {
-    {StenoStroke(0x146 /*STHA*/), {VerbForm::UNSPECIFIED, "that"}},
-    {StenoStroke(0x116 /*STPA*/), {VerbForm::UNSPECIFIED, "if"}},
-    {StenoStroke(0x62 /*SWH*/), {VerbForm::UNSPECIFIED, "when"}},
-    {StenoStroke(0x162 /*SWHA*/), {VerbForm::UNSPECIFIED, "what"}},
-    {StenoStroke(0xe2 /*SWHR*/), {VerbForm::UNSPECIFIED, "where"}},
-    {StenoStroke(0x262 /*SWHO*/), {VerbForm::UNSPECIFIED, "who"}},
-    {StenoStroke(0x362 /*SWHAO*/), {VerbForm::UNSPECIFIED, "why"}},
-    {StenoStroke(0x72 /*SPWH*/), {VerbForm::UNSPECIFIED, "but"}},
-    {StenoStroke(0x96 /*STPR*/), {VerbForm::UNSPECIFIED, "for"}},
+    {StenoStroke(0x146 /*STHA*/), "that"},
+    {StenoStroke(0x116 /*STPA*/), "if"},
+    {StenoStroke(0x62 /*SWH*/), "when"},
+    {StenoStroke(0x162 /*SWHA*/), "what"},
+    {StenoStroke(0xe2 /*SWHR*/), "where"},
+    {StenoStroke(0x262 /*SWHO*/), "who"},
+    {StenoStroke(0x362 /*SWHAO*/), "why"},
+    {StenoStroke(0x72 /*SPWH*/), "but"},
+    {StenoStroke(0x96 /*STPR*/), "for"},
 
     // # Remove the entry below if you don't want "and" phrases.
-    {StenoStroke(0x1a /*SKP*/), {VerbForm::UNSPECIFIED, "and"}},
+    {StenoStroke(0x1a /*SKP*/), "and"},
 };
 
 constexpr JeffPhrasingFullStarter FULL_STARTERS[] = {
-  {StenoStroke(0xa2 /*SWR*/), {"I", VerbForm::FIRST_PERSON_SINGULAR, true}},
-  {StenoStroke(0xb8 /*KPWR*/), {"you", VerbForm::SECOND_PERSON, true}},
-  {StenoStroke(0xe8 /*KWHR*/), {"he", VerbForm::THIRD_PERSON_SINGULAR, true}},
-  {StenoStroke(0xea /*SKWHR*/), {"she", VerbForm::THIRD_PERSON_SINGULAR, true}},
-  {StenoStroke(0x78 /*KPWH*/), {"it", VerbForm::THIRD_PERSON_SINGULAR, true}},
-  {StenoStroke(0xa4 /*TWR*/), {"we", VerbForm::FIRST_PERSON_PLURAL, true}},
-  {StenoStroke(0x64 /*TWH*/), {"they", VerbForm::THIRD_PERSON_PLURAL, true}},
-  {StenoStroke(0x4e /*STKH*/), {"this", VerbForm::THIRD_PERSON_SINGULAR, true}},
-  {StenoStroke(0x66 /*STWH*/), {"that", VerbForm::THIRD_PERSON_SINGULAR, true}},
-  {StenoStroke(0xc6 /*STHR*/), {"there", VerbForm::THIRD_PERSON_SINGULAR, false}},
-  {StenoStroke(0xd6 /*STPHR*/), {"there", VerbForm::THIRD_PERSON_PLURAL, false}},
-  {StenoStroke(0xfe /*STKPWHR*/), {"", VerbForm::THIRD_PERSON_SINGULAR, true}},
-  {StenoStroke(0xa6 /*STWR*/), {"", VerbForm::THIRD_PERSON_PLURAL, true}},
+  {StenoStroke(0xa2 /*SWR*/), {"I", WordForm::FIRST_PERSON_SINGULAR, true}},
+  {StenoStroke(0xb8 /*KPWR*/), {"you", WordForm::SECOND_PERSON, true}},
+  {StenoStroke(0xe8 /*KWHR*/), {"he", WordForm::THIRD_PERSON_SINGULAR, true}},
+  {StenoStroke(0xea /*SKWHR*/), {"she", WordForm::THIRD_PERSON_SINGULAR, true}},
+  {StenoStroke(0x78 /*KPWH*/), {"it", WordForm::THIRD_PERSON_SINGULAR, true}},
+  {StenoStroke(0xa4 /*TWR*/), {"we", WordForm::FIRST_PERSON_PLURAL, true}},
+  {StenoStroke(0x64 /*TWH*/), {"they", WordForm::THIRD_PERSON_PLURAL, true}},
+  {StenoStroke(0x4e /*STKH*/), {"this", WordForm::THIRD_PERSON_SINGULAR, true}},
+  {StenoStroke(0x66 /*STWH*/), {"that", WordForm::THIRD_PERSON_SINGULAR, true}},
+  {StenoStroke(0xc6 /*STHR*/), {"there", WordForm::THIRD_PERSON_SINGULAR, false}},
+  {StenoStroke(0xd6 /*STPHR*/), {"there", WordForm::THIRD_PERSON_PLURAL, false}},
+  {StenoStroke(0xfe /*STKPWHR*/), {"", WordForm::THIRD_PERSON_SINGULAR_BLANK_PRONOUN, true}},
+  {StenoStroke(0xa6 /*STWR*/), {"", WordForm::THIRD_PERSON_PLURAL_BLANK_PRONOUN, true}},
 };
 // clang-format on
 
 constexpr JeffPhrasingPronoun SIMPLE_PRONOUNS[] = {
     {}, // Unused
-    {"it", VerbForm::THIRD_PERSON_SINGULAR, true},
-    {"he", VerbForm::THIRD_PERSON_SINGULAR, true},
-    {"she", VerbForm::THIRD_PERSON_SINGULAR, true},
-    {"you", VerbForm::SECOND_PERSON, true},
-    {"they", VerbForm::THIRD_PERSON_PLURAL, true},
-    {"I", VerbForm::FIRST_PERSON_SINGULAR, true},
-    {"we", VerbForm::FIRST_PERSON_PLURAL, true},
+    {"it", WordForm::THIRD_PERSON_SINGULAR, true},
+    {"he", WordForm::THIRD_PERSON_SINGULAR, true},
+    {"she", WordForm::THIRD_PERSON_SINGULAR, true},
+    {"you", WordForm::SECOND_PERSON, true},
+    {"they", WordForm::THIRD_PERSON_PLURAL, true},
+    {"I", WordForm::FIRST_PERSON_SINGULAR, true},
+    {"we", WordForm::FIRST_PERSON_PLURAL, true},
 };
 
 constexpr JeffPhrasingMapData<2> SIMPLE_STRUCTURE_HAVE_PRESENT = {
     .entries =
         {
-            {0, "\\1 \\0 have\\2\\3"},
-            {(uint32_t)VerbForm::THIRD_PERSON_SINGULAR, "\\1 \\0 has\\2\\3"},
+            {WordForm::THIRD_PERSON_SINGULAR, "\\1 \\0 has\\2\\3"},
+            {WordForm::UNSPECIFIED, "\\1 \\0 have\\2\\3"},
         },
 };
 
 constexpr JeffPhrasingMapData<2> SIMPLE_STRUCTURE_HAVE = {
     .entries =
         {
-            {(uint32_t)Tense::PRESENT, &SIMPLE_STRUCTURE_HAVE_PRESENT},
-            {(uint32_t)Tense::PAST, "\\1 \\0 had\\2\\3"},
+            {WordForm::PAST, "\\1 \\0 had\\2\\3"},
+            {WordForm::PRESENT, &SIMPLE_STRUCTURE_HAVE_PRESENT},
         },
 };
 
 constexpr JeffPhrasingStructure SIMPLE_STRUCTURES[] = {
-    {"\\1 \\0\\2\\3", true, VerbForm::UNSPECIFIED},
-    {&SIMPLE_STRUCTURE_HAVE, true, VerbForm::PAST_PARTICIPLE},
+    {"\\1 \\0\\2\\3", true, WordForm::UNSPECIFIED},
+    {&SIMPLE_STRUCTURE_HAVE, true, WordForm::PAST_PARTICIPLE},
 };
 
 constexpr JeffPhrasingMapData<2> MIDDLES_DO_PRESENT = {
     .entries =
         {
-            {(uint32_t)VerbForm::UNSPECIFIED, " do"},
-            {(uint32_t)VerbForm::THIRD_PERSON_SINGULAR, " does"},
+            {WordForm::THIRD_PERSON_SINGULAR, {" does", WordForm::ROOT}},
+            {WordForm::UNSPECIFIED, {" do", WordForm::ROOT}},
         },
 };
 
 constexpr JeffPhrasingMapData<2> MIDDLES_DO = {
     .entries =
         {
-            {(uint32_t)Tense::PRESENT, &MIDDLES_DO_PRESENT},
-            {(uint32_t)Tense::PAST, " did"},
+            {WordForm::PAST, {" did", WordForm::ROOT}},
+            {WordForm::PRESENT, &MIDDLES_DO_PRESENT},
         },
 };
 
 constexpr JeffPhrasingMapData<2> MIDDLES_SHALL = {
     .entries =
         {
-            {(uint32_t)Tense::PRESENT, " shall"},
-            {(uint32_t)Tense::PAST, " should"},
+            {WordForm::PAST, {" should", WordForm::ROOT}},
+            {WordForm::PRESENT, {" shall", WordForm::ROOT}},
         },
 };
 
 constexpr JeffPhrasingMapData<2> MIDDLES_CAN = {
     .entries =
         {
-            {(uint32_t)Tense::PRESENT, " can"},
-            {(uint32_t)Tense::PAST, " could"},
+            {WordForm::PAST, {" could", WordForm::ROOT}},
+            {WordForm::PRESENT, {" can", WordForm::ROOT}},
         },
 };
 
 constexpr JeffPhrasingMapData<2> MIDDLES_WILL = {
     .entries =
         {
-            {(uint32_t)Tense::PRESENT, " will"},
-            {(uint32_t)Tense::PAST, " would"},
+            {WordForm::PAST, {" would", WordForm::ROOT}},
+            {WordForm::PRESENT, {" will", WordForm::ROOT}},
         },
 };
 
 constexpr JeffPhrasingMapData<2> MIDDLES_DO_NOT_PRESENT = {
     .entries =
         {
-            {(uint32_t)VerbForm::UNSPECIFIED, " don't"},
-            {(uint32_t)VerbForm::THIRD_PERSON_SINGULAR, " doesn't"},
+            {WordForm::THIRD_PERSON_SINGULAR, {" doesn't", WordForm::ROOT}},
+            {WordForm::UNSPECIFIED, {" don't", WordForm::ROOT}},
         },
 };
 
 constexpr JeffPhrasingMapData<2> MIDDLES_DO_NOT = {
     .entries =
         {
-            {(uint32_t)Tense::PRESENT, &MIDDLES_DO_NOT_PRESENT},
-            {(uint32_t)Tense::PAST, " didn't"},
+            {WordForm::PAST, {" didn't", WordForm::ROOT}},
+            {WordForm::PRESENT, &MIDDLES_DO_NOT_PRESENT},
         },
 };
 
 constexpr JeffPhrasingMapData<2> MIDDLES_SHALL_NOT = {
     .entries =
         {
-            {(uint32_t)Tense::PRESENT, " shall not"},
-            {(uint32_t)Tense::PAST, " shouldn't"},
+            {WordForm::PAST, {" shouldn't", WordForm::ROOT}},
+            {WordForm::PRESENT, {" shall not", WordForm::ROOT}},
         },
 };
 
 constexpr JeffPhrasingMapData<2> MIDDLES_CAN_NOT = {
     .entries =
         {
-            {(uint32_t)Tense::PRESENT, " can't"},
-            {(uint32_t)Tense::PAST, " couldn't"},
+            {WordForm::PAST, {" couldn't", WordForm::ROOT}},
+            {WordForm::PRESENT, {" can't", WordForm::ROOT}},
         },
 };
 
 constexpr JeffPhrasingMapData<2> MIDDLES_WILL_NOT = {
     .entries =
         {
-            {(uint32_t)Tense::PRESENT, " won't"},
-            {(uint32_t)Tense::PAST, " wouldn't"},
+            {WordForm::PAST, {" wouldn't", WordForm::ROOT}},
+            {WordForm::PRESENT, {" won't", WordForm::ROOT}},
         },
 };
 
 // Indexes are into `AO*`
 constexpr JeffPhrasingMiddle MIDDLES[8] = {
-    {VerbForm::ROOT, JeffPhrasingVariant(&MIDDLES_DO)},
-    {VerbForm::ROOT, JeffPhrasingVariant(&MIDDLES_CAN)},
-    {VerbForm::ROOT, JeffPhrasingVariant(&MIDDLES_SHALL)},
-    {VerbForm::ROOT, JeffPhrasingVariant(&MIDDLES_WILL)},
-    {VerbForm::ROOT, JeffPhrasingVariant(&MIDDLES_DO_NOT)},
-    {VerbForm::ROOT, JeffPhrasingVariant(&MIDDLES_CAN_NOT)},
-    {VerbForm::ROOT, JeffPhrasingVariant(&MIDDLES_SHALL_NOT)},
-    {VerbForm::ROOT, JeffPhrasingVariant(&MIDDLES_WILL_NOT)},
+    {.word = &MIDDLES_DO},        //
+    {.word = &MIDDLES_CAN},       //
+    {.word = &MIDDLES_SHALL},     //
+    {.word = &MIDDLES_WILL},      //
+    {.word = &MIDDLES_DO_NOT},    //
+    {.word = &MIDDLES_CAN_NOT},   //
+    {.word = &MIDDLES_SHALL_NOT}, //
+    {.word = &MIDDLES_WILL_NOT},  //
 };
 
 constexpr JeffPhrasingMapData<4> FULL_STRUCTURE_BE_PRESENT = {
     .entries =
         {
-            {0, "\\0\\1 are\\2\\3"},
-            {(uint32_t)VerbForm::ROOT, "\\0\\1 be\\2\\3"},
-            {(uint32_t)VerbForm::FIRST_PERSON_SINGULAR, "\\0\\1 am\\2\\3"},
-            {(uint32_t)VerbForm::THIRD_PERSON_SINGULAR, "\\0\\1 is\\2\\3"},
+            {WordForm::ROOT, "\\0\\1 be\\2\\3"},
+            {WordForm::FIRST_PERSON_SINGULAR, "\\0\\1 am\\2\\3"},
+            {WordForm::THIRD_PERSON_SINGULAR, "\\0\\1 is\\2\\3"},
+            {WordForm::UNSPECIFIED, "\\0\\1 are\\2\\3"},
         },
 };
 
 constexpr JeffPhrasingMapData<4> FULL_STRUCTURE_BE_PAST = {
     .entries =
         {
-            {0, "\\0\\1 were\\2\\3"},
-            {(uint32_t)VerbForm::ROOT, "\\0\\1 be\\2\\3"},
-            {(uint32_t)VerbForm::FIRST_PERSON_SINGULAR, "\\0\\1 was\\2\\3"},
-            {(uint32_t)VerbForm::THIRD_PERSON_SINGULAR, "\\0\\1 was\\2\\3"},
+            {WordForm::ROOT, "\\0\\1 be\\2\\3"},
+            {WordForm::FIRST_PERSON_SINGULAR, "\\0\\1 was\\2\\3"},
+            {WordForm::THIRD_PERSON_SINGULAR, "\\0\\1 was\\2\\3"},
+            {WordForm::UNSPECIFIED, "\\0\\1 were\\2\\3"},
         },
 };
 
 constexpr JeffPhrasingMapData<2> FULL_STRUCTURE_BE = {
     .entries =
         {
-            {(uint32_t)Tense::PRESENT, &FULL_STRUCTURE_BE_PRESENT},
-            {(uint32_t)Tense::PAST, &FULL_STRUCTURE_BE_PAST},
+            {WordForm::PAST, &FULL_STRUCTURE_BE_PAST},
+            {WordForm::PRESENT, &FULL_STRUCTURE_BE_PRESENT},
         },
 };
 
 constexpr JeffPhrasingMapData<2> FULL_STRUCTURE_HAVE_PRESENT = {
     .entries =
         {
-            {0, "\\0\\1 have\\2\\3"},
-            {(uint32_t)VerbForm::THIRD_PERSON_SINGULAR, "\\0\\1 has\\2\\3"},
+            {WordForm::THIRD_PERSON_SINGULAR, "\\0\\1 has\\2\\3"},
+            {WordForm::UNSPECIFIED, "\\0\\1 have\\2\\3"},
         },
 };
 
 constexpr JeffPhrasingMapData<2> FULL_STRUCTURE_HAVE_PAST = {
     .entries =
         {
-            {0, "\\0\\1 had\\2\\3"},
-            {(uint32_t)VerbForm::ROOT, "\\0\\1 have\\2\\3"},
+            {WordForm::PAST, "\\0\\1 had\\2\\3"},
+            {WordForm::UNSPECIFIED, "\\0\\1 have\\2\\3"},
         },
 };
 
 constexpr JeffPhrasingMapData<2> FULL_STRUCTURE_HAVE = {
     .entries =
         {
-            {(uint32_t)Tense::PRESENT, &FULL_STRUCTURE_HAVE_PRESENT},
-            {(uint32_t)Tense::PAST, &FULL_STRUCTURE_HAVE_PAST},
+            {WordForm::PAST, &FULL_STRUCTURE_HAVE_PAST},
+            {WordForm::PRESENT, &FULL_STRUCTURE_HAVE_PRESENT},
         },
 };
 
 constexpr JeffPhrasingMapData<2> FULL_STRUCTURE_HAVE_BEEN_PRESENT = {
     .entries =
         {
-            {0, "\\0\\1 have been\\2\\3"},
-            {(uint32_t)VerbForm::THIRD_PERSON_SINGULAR,
-             "\\0\\1 has been\\2\\3"},
+            {WordForm::THIRD_PERSON_SINGULAR, "\\0\\1 has been\\2\\3"},
+            {WordForm::UNSPECIFIED, "\\0\\1 have been\\2\\3"},
         },
 };
 
 constexpr JeffPhrasingMapData<2> FULL_STRUCTURE_HAVE_BEEN_PAST = {
     .entries =
         {
-            {0, "\\0\\1 had been\\2\\3"},
-            {(uint32_t)VerbForm::ROOT, "\\0\\1 have been\\2\\3"},
+            {WordForm::PAST, "\\0\\1 had been\\2\\3"},
+            {WordForm::UNSPECIFIED, "\\0\\1 have been\\2\\3"},
         },
 };
 
 constexpr JeffPhrasingMapData<2> FULL_STRUCTURE_HAVE_BEEN = {
     .entries =
         {
-            {(uint32_t)Tense::PRESENT, &FULL_STRUCTURE_HAVE_BEEN_PRESENT},
-            {(uint32_t)Tense::PAST, &FULL_STRUCTURE_HAVE_BEEN_PAST},
+            {WordForm::PAST, &FULL_STRUCTURE_HAVE_BEEN_PAST},
+            {WordForm::PRESENT, &FULL_STRUCTURE_HAVE_BEEN_PRESENT},
+        },
+};
+
+constexpr JeffPhrasingMapData<2> FULL_STRUCTURE_INVERT_PRONOUN = {
+    .entries =
+        {
+            {WordForm::BLANK_PRONOUN, "\\1 always\\0\\2\\3"},
+            {WordForm::UNSPECIFIED, "\\1 \\0\\2\\3"},
+        },
+};
+
+constexpr JeffPhrasingMapData<1> FULL_STRUCTURE_INVERT = {
+    .entries =
+        {
+            {WordForm::UNSPECIFIED, &FULL_STRUCTURE_INVERT_PRONOUN},
         },
 };
 
@@ -247,163 +261,161 @@ constexpr JeffPhrasingMapData<2> FULL_STRUCTURE_HAVE_BEEN = {
 // \\2 is verb
 // \\3 is suffix word
 constexpr JeffPhrasingStructure STRUCTURES[16] = {
-    {"\\0\\1\\2\\3", true, VerbForm::UNSPECIFIED},
-    {"\\0\\1\\2\\3", true, VerbForm::UNSPECIFIED},
-    {&FULL_STRUCTURE_BE, true, VerbForm::PRESENT_PARTICIPLE},
-    {&FULL_STRUCTURE_BE, true, VerbForm::PRESENT_PARTICIPLE},
-    {"\\1 \\0\\2\\3", true, VerbForm::UNSPECIFIED},
-    {"\\1 \\0\\2\\3", true, VerbForm::UNSPECIFIED},
-    {"\\0\\1 still\\2\\3", true, VerbForm::UNSPECIFIED},
-    {"\\0 still\\1\\2\\3", true, VerbForm::UNSPECIFIED},
-    {&FULL_STRUCTURE_HAVE, true, VerbForm::PAST_PARTICIPLE},
-    {&FULL_STRUCTURE_HAVE, true, VerbForm::PAST_PARTICIPLE},
-    {&FULL_STRUCTURE_HAVE_BEEN, true, VerbForm::PRESENT_PARTICIPLE},
-    {&FULL_STRUCTURE_HAVE_BEEN, true, VerbForm::PRESENT_PARTICIPLE},
-    {"\\0\\1 just\\2\\3", true, VerbForm::UNSPECIFIED},
-    {"\\0 just\\1\\2\\3", true, VerbForm::UNSPECIFIED},
-    {"\\0\\1 never\\2\\3", true, VerbForm::UNSPECIFIED},
-    {"\\0\\1 even\\2\\3", true, VerbForm::UNSPECIFIED},
+    {"\\0\\1\\2\\3", true, WordForm::UNSPECIFIED},
+    {"\\0\\1\\2\\3", true, WordForm::UNSPECIFIED},
+    {&FULL_STRUCTURE_BE, true, WordForm::PRESENT_PARTICIPLE},
+    {&FULL_STRUCTURE_BE, true, WordForm::PRESENT_PARTICIPLE},
+    {&FULL_STRUCTURE_INVERT, true, WordForm::UNSPECIFIED},
+    {&FULL_STRUCTURE_INVERT, true, WordForm::UNSPECIFIED},
+    {"\\0\\1 still\\2\\3", true, WordForm::UNSPECIFIED},
+    {"\\0 still\\1\\2\\3", true, WordForm::UNSPECIFIED},
+    {&FULL_STRUCTURE_HAVE, true, WordForm::PAST_PARTICIPLE},
+    {&FULL_STRUCTURE_HAVE, true, WordForm::PAST_PARTICIPLE},
+    {&FULL_STRUCTURE_HAVE_BEEN, true, WordForm::PRESENT_PARTICIPLE},
+    {&FULL_STRUCTURE_HAVE_BEEN, true, WordForm::PRESENT_PARTICIPLE},
+    {"\\0\\1 just\\2\\3", true, WordForm::UNSPECIFIED},
+    {"\\0 just\\1\\2\\3", true, WordForm::UNSPECIFIED},
+    {"\\0\\1 never\\2\\3", true, WordForm::UNSPECIFIED},
+    {"\\0\\1 even\\2\\3", true, WordForm::UNSPECIFIED},
 };
 
 constexpr JeffPhrasingMapData<3> STRUCTURE_EXCEPTION_BE_PRESENT = {
     .entries =
         {
-            {0, "\\0 are\\2\\3"},
-            {(uint32_t)VerbForm::FIRST_PERSON_SINGULAR, "\\0 am\\2\\3"},
-            {(uint32_t)VerbForm::THIRD_PERSON_SINGULAR, "\\0 is\\2\\3"},
+            {WordForm::FIRST_PERSON_SINGULAR, "\\0 am\\2\\3"},
+            {WordForm::THIRD_PERSON_SINGULAR, "\\0 is\\2\\3"},
+            {WordForm::UNSPECIFIED, "\\0 are\\2\\3"},
         },
 };
 
 constexpr JeffPhrasingMapData<3> STRUCTURE_EXCEPTION_BE_PAST = {
     .entries =
         {
-            {0, "\\0 were\\2\\3"},
-            {(uint32_t)VerbForm::FIRST_PERSON_SINGULAR, "\\0 was\\2\\3"},
-            {(uint32_t)VerbForm::THIRD_PERSON_SINGULAR, "\\0 was\\2\\3"},
+            {WordForm::FIRST_PERSON_SINGULAR, "\\0 was\\2\\3"},
+            {WordForm::THIRD_PERSON_SINGULAR, "\\0 was\\2\\3"},
+            {WordForm::UNSPECIFIED, "\\0 were\\2\\3"},
         },
 };
 
 constexpr JeffPhrasingMapData<2> STRUCTURE_EXCEPTION_BE = {
     .entries =
         {
-            {(uint32_t)Tense::PRESENT, &STRUCTURE_EXCEPTION_BE_PRESENT},
-            {(uint32_t)Tense::PAST, &STRUCTURE_EXCEPTION_BE_PAST},
+            {WordForm::PAST, &STRUCTURE_EXCEPTION_BE_PAST},
+            {WordForm::PRESENT, &STRUCTURE_EXCEPTION_BE_PRESENT},
         },
 };
 
 constexpr JeffPhrasingMapData<3> STRUCTURE_EXCEPTION_BE_NOT_PRESENT = {
     .entries =
         {
-            {0, "\\0 aren't\\2\\3"},
-            {(uint32_t)VerbForm::FIRST_PERSON_SINGULAR, "\\0 am not\\2\\3"},
-            {(uint32_t)VerbForm::THIRD_PERSON_SINGULAR, "\\0 isn't\\2\\3"},
+            {WordForm::FIRST_PERSON_SINGULAR, "\\0 am not\\2\\3"},
+            {WordForm::THIRD_PERSON_SINGULAR, "\\0 isn't\\2\\3"},
+            {WordForm::UNSPECIFIED, "\\0 aren't\\2\\3"},
         },
 };
 
 constexpr JeffPhrasingMapData<3> STRUCTURE_EXCEPTION_BE_NOT_PAST = {
     .entries =
         {
-            {0, "\\0 weren't\\2\\3"},
-            {(uint32_t)VerbForm::FIRST_PERSON_SINGULAR, "\\0 wasn't\\2\\3"},
-            {(uint32_t)VerbForm::THIRD_PERSON_SINGULAR, "\\0 wasn't\\2\\3"},
+            {WordForm::FIRST_PERSON_SINGULAR, "\\0 wasn't\\2\\3"},
+            {WordForm::THIRD_PERSON_SINGULAR, "\\0 wasn't\\2\\3"},
+            {WordForm::UNSPECIFIED, "\\0 weren't\\2\\3"},
         },
 };
 
 constexpr JeffPhrasingMapData<2> STRUCTURE_EXCEPTION_BE_NOT = {
     .entries =
         {
-            {(uint32_t)Tense::PRESENT, &STRUCTURE_EXCEPTION_BE_NOT_PRESENT},
-            {(uint32_t)Tense::PAST, &STRUCTURE_EXCEPTION_BE_NOT_PAST},
+            {WordForm::PRESENT, &STRUCTURE_EXCEPTION_BE_NOT_PRESENT},
+            {WordForm::PAST, &STRUCTURE_EXCEPTION_BE_NOT_PAST},
         },
 };
 
 constexpr JeffPhrasingMapData<2> STRUCTURE_EXCEPTION_HAVE_PRESENT = {
     .entries =
         {
-            {0, "\\0 have\\2\\3"},
-            {(uint32_t)VerbForm::THIRD_PERSON_SINGULAR, "\\0 has\\2\\3"},
+            {WordForm::THIRD_PERSON_SINGULAR, "\\0 has\\2\\3"},
+            {WordForm::UNSPECIFIED, "\\0 have\\2\\3"},
         },
 };
 
 constexpr JeffPhrasingMapData<2> STRUCTURE_EXCEPTION_HAVE = {
     .entries =
         {
-            {(uint32_t)Tense::PRESENT, &STRUCTURE_EXCEPTION_HAVE_PRESENT},
-            {(uint32_t)Tense::PAST, "\\0 had\\2\\3"},
+            {WordForm::PAST, "\\0 had\\2\\3"},
+            {WordForm::PRESENT, &STRUCTURE_EXCEPTION_HAVE_PRESENT},
         },
 };
 
 constexpr JeffPhrasingMapData<2> STRUCTURE_EXCEPTION_HAVE_NOT_PRESENT = {
     .entries =
         {
-            {0, "\\0 haven't\\2\\3"},
-            {(uint32_t)VerbForm::THIRD_PERSON_SINGULAR, "\\0 hasn't\\2\\3"},
+            {WordForm::THIRD_PERSON_SINGULAR, "\\0 hasn't\\2\\3"},
+            {WordForm::UNSPECIFIED, "\\0 haven't\\2\\3"},
         },
 };
 
 constexpr JeffPhrasingMapData<2> STRUCTURE_EXCEPTION_HAVE_NOT = {
     .entries =
         {
-            {(uint32_t)Tense::PRESENT, &STRUCTURE_EXCEPTION_HAVE_NOT_PRESENT},
-            {(uint32_t)Tense::PAST, "\\0 hadn't\\2\\3"},
+            {WordForm::PAST, "\\0 hadn't\\2\\3"},
+            {WordForm::PRESENT, &STRUCTURE_EXCEPTION_HAVE_NOT_PRESENT},
         },
 };
 
 constexpr JeffPhrasingMapData<2> STRUCTURE_EXCEPTION_HAVE_BEEN_PRESENT = {
     .entries =
         {
-            {0, "\\0 have been\\2\\3"},
-            {(uint32_t)VerbForm::THIRD_PERSON_SINGULAR, "\\0 has been\\2\\3"},
+            {WordForm::THIRD_PERSON_SINGULAR, "\\0 has been\\2\\3"},
+            {WordForm::UNSPECIFIED, "\\0 have been\\2\\3"},
         },
 };
 
 constexpr JeffPhrasingMapData<2> STRUCTURE_EXCEPTION_HAVE_BEEN = {
     .entries =
         {
-            {(uint32_t)Tense::PRESENT, &STRUCTURE_EXCEPTION_HAVE_BEEN_PRESENT},
-            {(uint32_t)Tense::PAST, "\\0 had been\\2\\3"},
+            {WordForm::PAST, "\\0 had been\\2\\3"},
+            {WordForm::PRESENT, &STRUCTURE_EXCEPTION_HAVE_BEEN_PRESENT},
         },
 };
 
 constexpr JeffPhrasingMapData<2> STRUCTURE_EXCEPTION_HAVE_NOT_BEEN_PRESENT = {
     .entries =
         {
-            {0, "\\0 haven't been\\2\\3"},
-            {(uint32_t)VerbForm::THIRD_PERSON_SINGULAR,
-             "\\0 hasn't been\\2\\3"},
+            {WordForm::THIRD_PERSON_SINGULAR, "\\0 hasn't been\\2\\3"},
+            {WordForm::UNSPECIFIED, "\\0 haven't been\\2\\3"},
         },
 };
 
 constexpr JeffPhrasingMapData<2> STRUCTURE_EXCEPTION_HAVE_NOT_BEEN = {
     .entries =
         {
-            {(uint32_t)Tense::PRESENT,
-             &STRUCTURE_EXCEPTION_HAVE_NOT_BEEN_PRESENT},
-            {(uint32_t)Tense::PAST, "\\0 hadn't been\\2\\3"},
+            {WordForm::PAST, "\\0 hadn't been\\2\\3"},
+            {WordForm::PRESENT, &STRUCTURE_EXCEPTION_HAVE_NOT_BEEN_PRESENT},
         },
 };
 
 // clang-format off
 constexpr JeffPhrasingStructureException STRUCTURE_EXCEPTIONS[] = {
-    {StenoStroke(), {"\\0\\2\\3", false, VerbForm::UNSPECIFIED}},
+    {StenoStroke(), {"\\0\\2\\3", false, WordForm::UNSPECIFIED}},
 
-    {StenoStroke(0x800 /*E*/), {&STRUCTURE_EXCEPTION_BE, false, VerbForm::PRESENT_PARTICIPLE}},
-    {StenoStroke(0xC00 /**E*/), {&STRUCTURE_EXCEPTION_BE_NOT, false, VerbForm::PRESENT_PARTICIPLE}},
-    {StenoStroke(0x2000 /*F*/), {&STRUCTURE_EXCEPTION_HAVE, false, VerbForm::PAST_PARTICIPLE}},
-    {StenoStroke(0x2400 /**F*/), {&STRUCTURE_EXCEPTION_HAVE_NOT, false, VerbForm::PAST_PARTICIPLE}},
-    {StenoStroke(0x2800 /*EF*/), {&STRUCTURE_EXCEPTION_HAVE_BEEN, false, VerbForm::PRESENT_PARTICIPLE}},
-    {StenoStroke(0x2c00 /**EF*/), {&STRUCTURE_EXCEPTION_HAVE_NOT_BEEN, false, VerbForm::PRESENT_PARTICIPLE}},
+    {StenoStroke(0x800 /*E*/), {&STRUCTURE_EXCEPTION_BE, false, WordForm::PRESENT_PARTICIPLE}},
+    {StenoStroke(0xC00 /**E*/), {&STRUCTURE_EXCEPTION_BE_NOT, false, WordForm::PRESENT_PARTICIPLE}},
+    {StenoStroke(0x2000 /*F*/), {&STRUCTURE_EXCEPTION_HAVE, false, WordForm::PAST_PARTICIPLE}},
+    {StenoStroke(0x2400 /**F*/), {&STRUCTURE_EXCEPTION_HAVE_NOT, false, WordForm::PAST_PARTICIPLE}},
+    {StenoStroke(0x2800 /*EF*/), {&STRUCTURE_EXCEPTION_HAVE_BEEN, false, WordForm::PRESENT_PARTICIPLE}},
+    {StenoStroke(0x2c00 /**EF*/), {&STRUCTURE_EXCEPTION_HAVE_NOT_BEEN, false, WordForm::PRESENT_PARTICIPLE}},
 
-    {StenoStroke(0x1800 /*EU*/), {"\\0 still\\2\\3", false, VerbForm::UNSPECIFIED}},
-    {StenoStroke(0x3800 /*EUF*/), {"\\0 never\\2\\3", false, VerbForm::UNSPECIFIED}},
-    {StenoStroke(0x3000 /*UF*/), {"\\0 just\\2\\3", false, VerbForm::UNSPECIFIED}},
+    {StenoStroke(0x1800 /*EU*/), {"\\0 still\\2\\3", false, WordForm::UNSPECIFIED}},
+    {StenoStroke(0x3800 /*EUF*/), {"\\0 never\\2\\3", false, WordForm::UNSPECIFIED}},
+    {StenoStroke(0x3000 /*UF*/), {"\\0 just\\2\\3", false, WordForm::UNSPECIFIED}},
 };
 
 constexpr JeffPhrasingStructureException UNIQUE_STARTERS[] = {
-    {StenoStroke(0x10a6 /*STWRU*/), {"to\\2\\3", false, VerbForm::ROOT}},
-    {StenoStroke(0x14a6 /*STWR*U*/), {"not to\\2\\3", false, VerbForm::ROOT}},
-    {StenoStroke(0x10fe /*STKPWHRU*/), {"to\\2\\3", false, VerbForm::ROOT}},
-    {StenoStroke(0x14fe /*STKPWHR*U*/), {"not to\\2\\3", false, VerbForm::ROOT}},
+    {StenoStroke(0x10a6 /*STWRU*/), {"to\\2\\3", false, WordForm::ROOT}},
+    {StenoStroke(0x14a6 /*STWR*U*/), {"not to\\2\\3", false, WordForm::ROOT}},
+    {StenoStroke(0x10fe /*STKPWHRU*/), {"to\\2\\3", false, WordForm::ROOT}},
+    {StenoStroke(0x14fe /*STKPWHR*U*/), {"not to\\2\\3", false, WordForm::ROOT}},
 };
 
 // clang-format on
@@ -411,1483 +423,1483 @@ constexpr JeffPhrasingStructureException UNIQUE_STARTERS[] = {
 constexpr JeffPhrasingMapData<4> ENDER_RB = {
     .entries =
         {
-            {0, " ask"},
-            {(uint32_t)VerbForm::THIRD_PERSON_SINGULAR, " asks"},
-            {(uint32_t)VerbForm::PRESENT_PARTICIPLE, " asking"},
-            {(uint32_t)VerbForm::PAST_PARTICIPLE, " asked"},
+            {WordForm::THIRD_PERSON_SINGULAR, " asks"},
+            {WordForm::PAST_PARTICIPLE, " asked"},
+            {WordForm::PRESENT_PARTICIPLE, " asking"},
+            {WordForm::UNSPECIFIED, " ask"},
         },
 };
 
 constexpr JeffPhrasingMapData<4> ENDER_RBD = {
     .entries =
         {
-            {0, " asked"},
-            {(uint32_t)VerbForm::ROOT, " ask"},
-            {(uint32_t)VerbForm::PRESENT_PARTICIPLE, " asking"},
-            {(uint32_t)VerbForm::PAST_PARTICIPLE, " asked"},
+            {WordForm::ROOT, " ask"},
+            {WordForm::PAST_PARTICIPLE, " asked"},
+            {WordForm::PRESENT_PARTICIPLE, " asking"},
+            {WordForm::UNSPECIFIED, " asked"},
         },
 };
 
 constexpr JeffPhrasingMapData<6> ENDER_B = {
     .entries =
         {
-            {0, " are"},
-            {(uint32_t)VerbForm::ROOT, " be"},
-            {(uint32_t)VerbForm::FIRST_PERSON_SINGULAR, " am"},
-            {(uint32_t)VerbForm::THIRD_PERSON_SINGULAR, " is"},
-            {(uint32_t)VerbForm::PRESENT_PARTICIPLE, " being"},
-            {(uint32_t)VerbForm::PAST_PARTICIPLE, " been"},
+            {WordForm::ROOT, " be"},
+            {WordForm::FIRST_PERSON_SINGULAR, " am"},
+            {WordForm::THIRD_PERSON_SINGULAR, " is"},
+            {WordForm::PAST_PARTICIPLE, " been"},
+            {WordForm::PRESENT_PARTICIPLE, " being"},
+            {WordForm::UNSPECIFIED, " are"},
         },
 };
 
 constexpr JeffPhrasingMapData<6> ENDER_BD = {
     .entries =
         {
-            {0, " were"},
-            {(uint32_t)VerbForm::ROOT, " be"},
-            {(uint32_t)VerbForm::FIRST_PERSON_SINGULAR, " was"},
-            {(uint32_t)VerbForm::THIRD_PERSON_SINGULAR, " was"},
-            {(uint32_t)VerbForm::PRESENT_PARTICIPLE, " being"},
-            {(uint32_t)VerbForm::PAST_PARTICIPLE, " been"},
+            {WordForm::ROOT, " be"},
+            {WordForm::FIRST_PERSON_SINGULAR, " was"},
+            {WordForm::THIRD_PERSON_SINGULAR, " was"},
+            {WordForm::PAST_PARTICIPLE, " been"},
+            {WordForm::PRESENT_PARTICIPLE, " being"},
+            {WordForm::UNSPECIFIED, " were"},
         },
 };
 
 constexpr JeffPhrasingMapData<4> ENDER_RPBG = {
     .entries =
         {
-            {0, " become"},
-            {(uint32_t)VerbForm::THIRD_PERSON_SINGULAR, " becomes"},
-            {(uint32_t)VerbForm::PRESENT_PARTICIPLE, " becoming"},
-            {(uint32_t)VerbForm::PAST_PARTICIPLE, " become"},
+            {WordForm::THIRD_PERSON_SINGULAR, " becomes"},
+            {WordForm::PAST_PARTICIPLE, " become"},
+            {WordForm::PRESENT_PARTICIPLE, " becoming"},
+            {WordForm::UNSPECIFIED, " become"},
         },
 };
 
 constexpr JeffPhrasingMapData<4> ENDER_RPBGD = {
     .entries =
         {
-            {0, " became"},
-            {(uint32_t)VerbForm::ROOT, " become"},
-            {(uint32_t)VerbForm::PRESENT_PARTICIPLE, " becoming"},
-            {(uint32_t)VerbForm::PAST_PARTICIPLE, " become"},
+            {WordForm::ROOT, " become"},
+            {WordForm::PAST_PARTICIPLE, " become"},
+            {WordForm::PRESENT_PARTICIPLE, " becoming"},
+            {WordForm::UNSPECIFIED, " became"},
         },
 };
 
 constexpr JeffPhrasingMapData<4> ENDER_BL = {
     .entries =
         {
-            {0, " believe"},
-            {(uint32_t)VerbForm::THIRD_PERSON_SINGULAR, " believes"},
-            {(uint32_t)VerbForm::PRESENT_PARTICIPLE, " believing"},
-            {(uint32_t)VerbForm::PAST_PARTICIPLE, " believed"},
+            {WordForm::THIRD_PERSON_SINGULAR, " believes"},
+            {WordForm::PAST_PARTICIPLE, " believed"},
+            {WordForm::PRESENT_PARTICIPLE, " believing"},
+            {WordForm::UNSPECIFIED, " believe"},
         },
 };
 
 constexpr JeffPhrasingMapData<4> ENDER_BLD = {
     .entries =
         {
-            {0, " believed"},
-            {(uint32_t)VerbForm::ROOT, " believe"},
-            {(uint32_t)VerbForm::PRESENT_PARTICIPLE, " believing"},
-            {(uint32_t)VerbForm::PAST_PARTICIPLE, " believed"},
+            {WordForm::ROOT, " believe"},
+            {WordForm::PAST_PARTICIPLE, " believed"},
+            {WordForm::PRESENT_PARTICIPLE, " believing"},
+            {WordForm::UNSPECIFIED, " believed"},
         },
 };
 
 constexpr JeffPhrasingMapData<4> ENDER_RBLG = {
     .entries =
         {
-            {0, " call"},
-            {(uint32_t)VerbForm::THIRD_PERSON_SINGULAR, " calls"},
-            {(uint32_t)VerbForm::PRESENT_PARTICIPLE, " calling"},
-            {(uint32_t)VerbForm::PAST_PARTICIPLE, " called"},
+            {WordForm::THIRD_PERSON_SINGULAR, " calls"},
+            {WordForm::PAST_PARTICIPLE, " called"},
+            {WordForm::PRESENT_PARTICIPLE, " calling"},
+            {WordForm::UNSPECIFIED, " call"},
         },
 };
 
 constexpr JeffPhrasingMapData<4> ENDER_RBLGD = {
     .entries =
         {
-            {0, " called"},
-            {(uint32_t)VerbForm::ROOT, " call"},
-            {(uint32_t)VerbForm::PRESENT_PARTICIPLE, " calling"},
-            {(uint32_t)VerbForm::PAST_PARTICIPLE, " called"},
+            {WordForm::ROOT, " call"},
+            {WordForm::PAST_PARTICIPLE, " called"},
+            {WordForm::PRESENT_PARTICIPLE, " calling"},
+            {WordForm::UNSPECIFIED, " called"},
         },
 };
 
 constexpr JeffPhrasingMapData<4> ENDER_RZ = {
     .entries =
         {
-            {0, " care"},
-            {(uint32_t)VerbForm::THIRD_PERSON_SINGULAR, " cares"},
-            {(uint32_t)VerbForm::PRESENT_PARTICIPLE, " caring"},
-            {(uint32_t)VerbForm::PAST_PARTICIPLE, " cared"},
+            {WordForm::THIRD_PERSON_SINGULAR, " cares"},
+            {WordForm::PAST_PARTICIPLE, " cared"},
+            {WordForm::PRESENT_PARTICIPLE, " caring"},
+            {WordForm::UNSPECIFIED, " care"},
         },
 };
 
 constexpr JeffPhrasingMapData<4> ENDER_RDZ = {
     .entries =
         {
-            {0, " cared"},
-            {(uint32_t)VerbForm::ROOT, " care"},
-            {(uint32_t)VerbForm::PRESENT_PARTICIPLE, " caring"},
-            {(uint32_t)VerbForm::PAST_PARTICIPLE, " cared"},
+            {WordForm::ROOT, " care"},
+            {WordForm::PAST_PARTICIPLE, " cared"},
+            {WordForm::PRESENT_PARTICIPLE, " caring"},
+            {WordForm::UNSPECIFIED, " cared"},
         },
 };
 
 constexpr JeffPhrasingMapData<4> ENDER_PBGZ = {
     .entries =
         {
-            {0, " change"},
-            {(uint32_t)VerbForm::THIRD_PERSON_SINGULAR, " changes"},
-            {(uint32_t)VerbForm::PRESENT_PARTICIPLE, " changing"},
-            {(uint32_t)VerbForm::PAST_PARTICIPLE, " changed"},
+            {WordForm::THIRD_PERSON_SINGULAR, " changes"},
+            {WordForm::PAST_PARTICIPLE, " changed"},
+            {WordForm::PRESENT_PARTICIPLE, " changing"},
+            {WordForm::UNSPECIFIED, " change"},
         },
 };
 
 constexpr JeffPhrasingMapData<4> ENDER_PBGDZ = {
     .entries =
         {
-            {0, " changed"},
-            {(uint32_t)VerbForm::ROOT, " change"},
-            {(uint32_t)VerbForm::PRESENT_PARTICIPLE, " changing"},
-            {(uint32_t)VerbForm::PAST_PARTICIPLE, " changed"},
+            {WordForm::ROOT, " change"},
+            {WordForm::PAST_PARTICIPLE, " changed"},
+            {WordForm::PRESENT_PARTICIPLE, " changing"},
+            {WordForm::UNSPECIFIED, " changed"},
         },
 };
 
 constexpr JeffPhrasingMapData<4> ENDER_BG = {
     .entries =
         {
-            {0, " come"},
-            {(uint32_t)VerbForm::THIRD_PERSON_SINGULAR, " comes"},
-            {(uint32_t)VerbForm::PRESENT_PARTICIPLE, " coming"},
-            {(uint32_t)VerbForm::PAST_PARTICIPLE, " come"},
+            {WordForm::THIRD_PERSON_SINGULAR, " comes"},
+            {WordForm::PAST_PARTICIPLE, " come"},
+            {WordForm::PRESENT_PARTICIPLE, " coming"},
+            {WordForm::UNSPECIFIED, " come"},
         },
 };
 
 constexpr JeffPhrasingMapData<4> ENDER_BGD = {
     .entries =
         {
-            {0, " came"},
-            {(uint32_t)VerbForm::ROOT, " come"},
-            {(uint32_t)VerbForm::PRESENT_PARTICIPLE, " coming"},
-            {(uint32_t)VerbForm::PAST_PARTICIPLE, " come"},
+            {WordForm::ROOT, " come"},
+            {WordForm::PAST_PARTICIPLE, " come"},
+            {WordForm::PRESENT_PARTICIPLE, " coming"},
+            {WordForm::UNSPECIFIED, " came"},
         },
 };
 
 constexpr JeffPhrasingMapData<4> ENDER_RBGZ = {
     .entries =
         {
-            {0, " consider"},
-            {(uint32_t)VerbForm::THIRD_PERSON_SINGULAR, " considers"},
-            {(uint32_t)VerbForm::PRESENT_PARTICIPLE, " considering"},
-            {(uint32_t)VerbForm::PAST_PARTICIPLE, " considered"},
+            {WordForm::THIRD_PERSON_SINGULAR, " considers"},
+            {WordForm::PAST_PARTICIPLE, " considered"},
+            {WordForm::PRESENT_PARTICIPLE, " considering"},
+            {WordForm::UNSPECIFIED, " consider"},
         },
 };
 
 constexpr JeffPhrasingMapData<4> ENDER_RBGDZ = {
     .entries =
         {
-            {0, " considered"},
-            {(uint32_t)VerbForm::ROOT, " consider"},
-            {(uint32_t)VerbForm::PRESENT_PARTICIPLE, " considering"},
-            {(uint32_t)VerbForm::PAST_PARTICIPLE, " considered"},
+            {WordForm::ROOT, " consider"},
+            {WordForm::PAST_PARTICIPLE, " considered"},
+            {WordForm::PRESENT_PARTICIPLE, " considering"},
+            {WordForm::UNSPECIFIED, " considered"},
         },
 };
 
 constexpr JeffPhrasingMapData<4> ENDER_RP = {
     .entries =
         {
-            {0, " do"},
-            {(uint32_t)VerbForm::THIRD_PERSON_SINGULAR, " does"},
-            {(uint32_t)VerbForm::PRESENT_PARTICIPLE, " doing"},
-            {(uint32_t)VerbForm::PAST_PARTICIPLE, " done"},
+            {WordForm::THIRD_PERSON_SINGULAR, " does"},
+            {WordForm::PAST_PARTICIPLE, " done"},
+            {WordForm::PRESENT_PARTICIPLE, " doing"},
+            {WordForm::UNSPECIFIED, " do"},
         },
 };
 
 constexpr JeffPhrasingMapData<4> ENDER_RPD = {
     .entries =
         {
-            {0, " did"},
-            {(uint32_t)VerbForm::ROOT, " do"},
-            {(uint32_t)VerbForm::PRESENT_PARTICIPLE, " doing"},
-            {(uint32_t)VerbForm::PAST_PARTICIPLE, " done"},
+            {WordForm::ROOT, " do"},
+            {WordForm::PAST_PARTICIPLE, " done"},
+            {WordForm::PRESENT_PARTICIPLE, " doing"},
+            {WordForm::UNSPECIFIED, " did"},
         },
 };
 
 constexpr JeffPhrasingMapData<4> ENDER_PGS = {
     .entries =
         {
-            {0, " expect"},
-            {(uint32_t)VerbForm::THIRD_PERSON_SINGULAR, " expects"},
-            {(uint32_t)VerbForm::PRESENT_PARTICIPLE, " expecting"},
-            {(uint32_t)VerbForm::PAST_PARTICIPLE, " expected"},
+            {WordForm::THIRD_PERSON_SINGULAR, " expects"},
+            {WordForm::PAST_PARTICIPLE, " expected"},
+            {WordForm::PRESENT_PARTICIPLE, " expecting"},
+            {WordForm::UNSPECIFIED, " expect"},
         },
 };
 
 constexpr JeffPhrasingMapData<4> ENDER_PGSZ = {
     .entries =
         {
-            {0, " expected"},
-            {(uint32_t)VerbForm::ROOT, " expect"},
-            {(uint32_t)VerbForm::PRESENT_PARTICIPLE, " expecting"},
-            {(uint32_t)VerbForm::PAST_PARTICIPLE, " expected"},
+            {WordForm::ROOT, " expect"},
+            {WordForm::PAST_PARTICIPLE, " expected"},
+            {WordForm::PRESENT_PARTICIPLE, " expecting"},
+            {WordForm::UNSPECIFIED, " expected"},
         },
 };
 
 constexpr JeffPhrasingMapData<4> ENDER_LT = {
     .entries =
         {
-            {0, " feel"},
-            {(uint32_t)VerbForm::THIRD_PERSON_SINGULAR, " feels"},
-            {(uint32_t)VerbForm::PRESENT_PARTICIPLE, " feeling"},
-            {(uint32_t)VerbForm::PAST_PARTICIPLE, " felt"},
+            {WordForm::THIRD_PERSON_SINGULAR, " feels"},
+            {WordForm::PAST_PARTICIPLE, " felt"},
+            {WordForm::PRESENT_PARTICIPLE, " feeling"},
+            {WordForm::UNSPECIFIED, " feel"},
         },
 };
 
 constexpr JeffPhrasingMapData<4> ENDER_LTD = {
     .entries =
         {
-            {0, " felt"},
-            {(uint32_t)VerbForm::ROOT, " feel"},
-            {(uint32_t)VerbForm::PRESENT_PARTICIPLE, " feeling"},
-            {(uint32_t)VerbForm::PAST_PARTICIPLE, " felt"},
+            {WordForm::ROOT, " feel"},
+            {WordForm::PAST_PARTICIPLE, " felt"},
+            {WordForm::PRESENT_PARTICIPLE, " feeling"},
+            {WordForm::UNSPECIFIED, " felt"},
         },
 };
 
 constexpr JeffPhrasingMapData<4> ENDER_PBLG = {
     .entries =
         {
-            {0, " find"},
-            {(uint32_t)VerbForm::THIRD_PERSON_SINGULAR, " finds"},
-            {(uint32_t)VerbForm::PRESENT_PARTICIPLE, " finding"},
-            {(uint32_t)VerbForm::PAST_PARTICIPLE, " found"},
+            {WordForm::THIRD_PERSON_SINGULAR, " finds"},
+            {WordForm::PAST_PARTICIPLE, " found"},
+            {WordForm::PRESENT_PARTICIPLE, " finding"},
+            {WordForm::UNSPECIFIED, " find"},
         },
 };
 
 constexpr JeffPhrasingMapData<4> ENDER_PBLGD = {
     .entries =
         {
-            {0, " found"},
-            {(uint32_t)VerbForm::ROOT, " find"},
-            {(uint32_t)VerbForm::PRESENT_PARTICIPLE, " finding"},
-            {(uint32_t)VerbForm::PAST_PARTICIPLE, " found"},
+            {WordForm::ROOT, " find"},
+            {WordForm::PAST_PARTICIPLE, " found"},
+            {WordForm::PRESENT_PARTICIPLE, " finding"},
+            {WordForm::UNSPECIFIED, " found"},
         },
 };
 
 constexpr JeffPhrasingMapData<4> ENDER_RG = {
     .entries =
         {
-            {0, " forget"},
-            {(uint32_t)VerbForm::THIRD_PERSON_SINGULAR, " forgets"},
-            {(uint32_t)VerbForm::PRESENT_PARTICIPLE, " forgetting"},
-            {(uint32_t)VerbForm::PAST_PARTICIPLE, " forgotten"},
+            {WordForm::THIRD_PERSON_SINGULAR, " forgets"},
+            {WordForm::PAST_PARTICIPLE, " forgotten"},
+            {WordForm::PRESENT_PARTICIPLE, " forgetting"},
+            {WordForm::UNSPECIFIED, " forget"},
         },
 };
 
 constexpr JeffPhrasingMapData<4> ENDER_RGD = {
     .entries =
         {
-            {0, " forgot"},
-            {(uint32_t)VerbForm::ROOT, " forget"},
-            {(uint32_t)VerbForm::PRESENT_PARTICIPLE, " forgetting"},
-            {(uint32_t)VerbForm::PAST_PARTICIPLE, " forgotten"},
+            {WordForm::ROOT, " forget"},
+            {WordForm::PAST_PARTICIPLE, " forgotten"},
+            {WordForm::PRESENT_PARTICIPLE, " forgetting"},
+            {WordForm::UNSPECIFIED, " forgot"},
         },
 };
 
 constexpr JeffPhrasingMapData<4> ENDER_GS = {
     .entries =
         {
-            {0, " get"},
-            {(uint32_t)VerbForm::THIRD_PERSON_SINGULAR, " gets"},
-            {(uint32_t)VerbForm::PRESENT_PARTICIPLE, " getting"},
-            {(uint32_t)VerbForm::PAST_PARTICIPLE, " gotten"},
+            {WordForm::THIRD_PERSON_SINGULAR, " gets"},
+            {WordForm::PAST_PARTICIPLE, " gotten"},
+            {WordForm::PRESENT_PARTICIPLE, " getting"},
+            {WordForm::UNSPECIFIED, " get"},
         },
 };
 
 constexpr JeffPhrasingMapData<4> ENDER_GSZ = {
     .entries =
         {
-            {0, " got"},
-            {(uint32_t)VerbForm::ROOT, " get"},
-            {(uint32_t)VerbForm::PRESENT_PARTICIPLE, " getting"},
-            {(uint32_t)VerbForm::PAST_PARTICIPLE, " gotten"},
+            {WordForm::ROOT, " get"},
+            {WordForm::PAST_PARTICIPLE, " gotten"},
+            {WordForm::PRESENT_PARTICIPLE, " getting"},
+            {WordForm::UNSPECIFIED, " got"},
         },
 };
 
 constexpr JeffPhrasingMapData<4> ENDER_GZ = {
     .entries =
         {
-            {0, " give"},
-            {(uint32_t)VerbForm::THIRD_PERSON_SINGULAR, " gives"},
-            {(uint32_t)VerbForm::PRESENT_PARTICIPLE, " giving"},
-            {(uint32_t)VerbForm::PAST_PARTICIPLE, " given"},
+            {WordForm::THIRD_PERSON_SINGULAR, " gives"},
+            {WordForm::PAST_PARTICIPLE, " given"},
+            {WordForm::PRESENT_PARTICIPLE, " giving"},
+            {WordForm::UNSPECIFIED, " give"},
         },
 };
 
 constexpr JeffPhrasingMapData<4> ENDER_GDZ = {
     .entries =
         {
-            {0, " gave"},
-            {(uint32_t)VerbForm::ROOT, " give"},
-            {(uint32_t)VerbForm::PRESENT_PARTICIPLE, " giving"},
-            {(uint32_t)VerbForm::PAST_PARTICIPLE, " given"},
+            {WordForm::ROOT, " give"},
+            {WordForm::PAST_PARTICIPLE, " given"},
+            {WordForm::PRESENT_PARTICIPLE, " giving"},
+            {WordForm::UNSPECIFIED, " gave"},
         },
 };
 
 constexpr JeffPhrasingMapData<4> ENDER_G = {
     .entries =
         {
-            {0, " go"},
-            {(uint32_t)VerbForm::THIRD_PERSON_SINGULAR, " goes"},
-            {(uint32_t)VerbForm::PRESENT_PARTICIPLE, " going"},
-            {(uint32_t)VerbForm::PAST_PARTICIPLE, " gone"},
+            {WordForm::THIRD_PERSON_SINGULAR, " goes"},
+            {WordForm::PAST_PARTICIPLE, " gone"},
+            {WordForm::PRESENT_PARTICIPLE, " going"},
+            {WordForm::UNSPECIFIED, " go"},
         },
 };
 
 constexpr JeffPhrasingMapData<4> ENDER_GD = {
     .entries =
         {
-            {0, " went"},
-            {(uint32_t)VerbForm::ROOT, " go"},
-            {(uint32_t)VerbForm::PRESENT_PARTICIPLE, " going"},
-            {(uint32_t)VerbForm::PAST_PARTICIPLE, " gone"},
+            {WordForm::ROOT, " go"},
+            {WordForm::PAST_PARTICIPLE, " gone"},
+            {WordForm::PRESENT_PARTICIPLE, " going"},
+            {WordForm::UNSPECIFIED, " went"},
         },
 };
 
 constexpr JeffPhrasingMapData<4> ENDER_T = {
     .entries =
         {
-            {0, " have"},
-            {(uint32_t)VerbForm::THIRD_PERSON_SINGULAR, " has"},
-            {(uint32_t)VerbForm::PRESENT_PARTICIPLE, " having"},
-            {(uint32_t)VerbForm::PAST_PARTICIPLE, " had"},
+            {WordForm::THIRD_PERSON_SINGULAR, " has"},
+            {WordForm::PAST_PARTICIPLE, " had"},
+            {WordForm::PRESENT_PARTICIPLE, " having"},
+            {WordForm::UNSPECIFIED, " have"},
         },
 };
 
 constexpr JeffPhrasingMapData<4> ENDER_TD = {
     .entries =
         {
-            {0, " had"},
-            {(uint32_t)VerbForm::ROOT, " have"},
-            {(uint32_t)VerbForm::PRESENT_PARTICIPLE, " having"},
-            {(uint32_t)VerbForm::PAST_PARTICIPLE, " had"},
+            {WordForm::ROOT, " have"},
+            {WordForm::PAST_PARTICIPLE, " had"},
+            {WordForm::PRESENT_PARTICIPLE, " having"},
+            {WordForm::UNSPECIFIED, " had"},
         },
 };
 
 constexpr JeffPhrasingMapData<4> ENDER_PZ = {
     .entries =
         {
-            {0, " happen"},
-            {(uint32_t)VerbForm::THIRD_PERSON_SINGULAR, " happens"},
-            {(uint32_t)VerbForm::PRESENT_PARTICIPLE, " happening"},
-            {(uint32_t)VerbForm::PAST_PARTICIPLE, " happened"},
+            {WordForm::THIRD_PERSON_SINGULAR, " happens"},
+            {WordForm::PAST_PARTICIPLE, " happened"},
+            {WordForm::PRESENT_PARTICIPLE, " happening"},
+            {WordForm::UNSPECIFIED, " happen"},
         },
 };
 
 constexpr JeffPhrasingMapData<4> ENDER_PDZ = {
     .entries =
         {
-            {0, " happened"},
-            {(uint32_t)VerbForm::ROOT, " happen"},
-            {(uint32_t)VerbForm::PRESENT_PARTICIPLE, " happening"},
-            {(uint32_t)VerbForm::PAST_PARTICIPLE, " happened"},
+            {WordForm::ROOT, " happen"},
+            {WordForm::PAST_PARTICIPLE, " happened"},
+            {WordForm::PRESENT_PARTICIPLE, " happening"},
+            {WordForm::UNSPECIFIED, " happened"},
         },
 };
 
 constexpr JeffPhrasingMapData<4> ENDER_PG = {
     .entries =
         {
-            {0, " hear"},
-            {(uint32_t)VerbForm::THIRD_PERSON_SINGULAR, " hears"},
-            {(uint32_t)VerbForm::PRESENT_PARTICIPLE, " hearing"},
-            {(uint32_t)VerbForm::PAST_PARTICIPLE, " heard"},
+            {WordForm::THIRD_PERSON_SINGULAR, " hears"},
+            {WordForm::PAST_PARTICIPLE, " heard"},
+            {WordForm::PRESENT_PARTICIPLE, " hearing"},
+            {WordForm::UNSPECIFIED, " hear"},
         },
 };
 
 constexpr JeffPhrasingMapData<4> ENDER_PGD = {
     .entries =
         {
-            {0, " heard"},
-            {(uint32_t)VerbForm::ROOT, " hear"},
-            {(uint32_t)VerbForm::PRESENT_PARTICIPLE, " hearing"},
-            {(uint32_t)VerbForm::PAST_PARTICIPLE, " heard"},
+            {WordForm::ROOT, " hear"},
+            {WordForm::PAST_PARTICIPLE, " heard"},
+            {WordForm::PRESENT_PARTICIPLE, " hearing"},
+            {WordForm::UNSPECIFIED, " heard"},
         },
 };
 
 constexpr JeffPhrasingMapData<4> ENDER_RPS = {
     .entries =
         {
-            {0, " hope"},
-            {(uint32_t)VerbForm::THIRD_PERSON_SINGULAR, " hopes"},
-            {(uint32_t)VerbForm::PRESENT_PARTICIPLE, " hoping"},
-            {(uint32_t)VerbForm::PAST_PARTICIPLE, " hoped"},
+            {WordForm::THIRD_PERSON_SINGULAR, " hopes"},
+            {WordForm::PAST_PARTICIPLE, " hoped"},
+            {WordForm::PRESENT_PARTICIPLE, " hoping"},
+            {WordForm::UNSPECIFIED, " hope"},
         },
 };
 
 constexpr JeffPhrasingMapData<4> ENDER_RPSZ = {
     .entries =
         {
-            {0, " hoped"},
-            {(uint32_t)VerbForm::ROOT, " hope"},
-            {(uint32_t)VerbForm::PRESENT_PARTICIPLE, " hoping"},
-            {(uint32_t)VerbForm::PAST_PARTICIPLE, " hoped"},
+            {WordForm::ROOT, " hope"},
+            {WordForm::PAST_PARTICIPLE, " hoped"},
+            {WordForm::PRESENT_PARTICIPLE, " hoping"},
+            {WordForm::UNSPECIFIED, " hoped"},
         },
 };
 
 constexpr JeffPhrasingMapData<4> ENDER_PLG = {
     .entries =
         {
-            {0, " imagine"},
-            {(uint32_t)VerbForm::THIRD_PERSON_SINGULAR, " imagines"},
-            {(uint32_t)VerbForm::PRESENT_PARTICIPLE, " imagining"},
-            {(uint32_t)VerbForm::PAST_PARTICIPLE, " imagined"},
+            {WordForm::THIRD_PERSON_SINGULAR, " imagines"},
+            {WordForm::PAST_PARTICIPLE, " imagined"},
+            {WordForm::PRESENT_PARTICIPLE, " imagining"},
+            {WordForm::UNSPECIFIED, " imagine"},
         },
 };
 
 constexpr JeffPhrasingMapData<4> ENDER_PLGD = {
     .entries =
         {
-            {0, " imagined"},
-            {(uint32_t)VerbForm::ROOT, " imagine"},
-            {(uint32_t)VerbForm::PRESENT_PARTICIPLE, " imagining"},
-            {(uint32_t)VerbForm::PAST_PARTICIPLE, " imagined"},
+            {WordForm::ROOT, " imagine"},
+            {WordForm::PAST_PARTICIPLE, " imagined"},
+            {WordForm::PRESENT_PARTICIPLE, " imagining"},
+            {WordForm::UNSPECIFIED, " imagined"},
         },
 };
 
 constexpr JeffPhrasingMapData<4> ENDER_PBGS = {
     .entries =
         {
-            {0, " keep"},
-            {(uint32_t)VerbForm::THIRD_PERSON_SINGULAR, " keeps"},
-            {(uint32_t)VerbForm::PRESENT_PARTICIPLE, " keeping"},
-            {(uint32_t)VerbForm::PAST_PARTICIPLE, " kept"},
+            {WordForm::THIRD_PERSON_SINGULAR, " keeps"},
+            {WordForm::PAST_PARTICIPLE, " kept"},
+            {WordForm::PRESENT_PARTICIPLE, " keeping"},
+            {WordForm::UNSPECIFIED, " keep"},
         },
 };
 
 constexpr JeffPhrasingMapData<4> ENDER_PBGSZ = {
     .entries =
         {
-            {0, " kept"},
-            {(uint32_t)VerbForm::ROOT, " keep"},
-            {(uint32_t)VerbForm::PRESENT_PARTICIPLE, " keeping"},
-            {(uint32_t)VerbForm::PAST_PARTICIPLE, " kept"},
+            {WordForm::ROOT, " keep"},
+            {WordForm::PAST_PARTICIPLE, " kept"},
+            {WordForm::PRESENT_PARTICIPLE, " keeping"},
+            {WordForm::UNSPECIFIED, " kept"},
         },
 };
 
 constexpr JeffPhrasingMapData<4> ENDER_PB = {
     .entries =
         {
-            {0, " know"},
-            {(uint32_t)VerbForm::THIRD_PERSON_SINGULAR, " knows"},
-            {(uint32_t)VerbForm::PRESENT_PARTICIPLE, " knowing"},
-            {(uint32_t)VerbForm::PAST_PARTICIPLE, " known"},
+            {WordForm::THIRD_PERSON_SINGULAR, " knows"},
+            {WordForm::PAST_PARTICIPLE, " known"},
+            {WordForm::PRESENT_PARTICIPLE, " knowing"},
+            {WordForm::UNSPECIFIED, " know"},
         },
 };
 
 constexpr JeffPhrasingMapData<4> ENDER_PBD = {
     .entries =
         {
-            {0, " knew"},
-            {(uint32_t)VerbForm::ROOT, " know"},
-            {(uint32_t)VerbForm::PRESENT_PARTICIPLE, " knowing"},
-            {(uint32_t)VerbForm::PAST_PARTICIPLE, " known"},
+            {WordForm::ROOT, " know"},
+            {WordForm::PAST_PARTICIPLE, " known"},
+            {WordForm::PRESENT_PARTICIPLE, " knowing"},
+            {WordForm::UNSPECIFIED, " knew"},
         },
 };
 
 constexpr JeffPhrasingMapData<4> ENDER_RPBS = {
     .entries =
         {
-            {0, " learn"},
-            {(uint32_t)VerbForm::THIRD_PERSON_SINGULAR, " learns"},
-            {(uint32_t)VerbForm::PRESENT_PARTICIPLE, " learning"},
-            {(uint32_t)VerbForm::PAST_PARTICIPLE, " learned"},
+            {WordForm::THIRD_PERSON_SINGULAR, " learns"},
+            {WordForm::PAST_PARTICIPLE, " learned"},
+            {WordForm::PRESENT_PARTICIPLE, " learning"},
+            {WordForm::UNSPECIFIED, " learn"},
         },
 };
 
 constexpr JeffPhrasingMapData<4> ENDER_RPBSZ = {
     .entries =
         {
-            {0, " learned"},
-            {(uint32_t)VerbForm::ROOT, " learn"},
-            {(uint32_t)VerbForm::PRESENT_PARTICIPLE, " learning"},
-            {(uint32_t)VerbForm::PAST_PARTICIPLE, " learned"},
+            {WordForm::ROOT, " learn"},
+            {WordForm::PAST_PARTICIPLE, " learned"},
+            {WordForm::PRESENT_PARTICIPLE, " learning"},
+            {WordForm::UNSPECIFIED, " learned"},
         },
 };
 
 constexpr JeffPhrasingMapData<4> ENDER_LGZ = {
     .entries =
         {
-            {0, " leave"},
-            {(uint32_t)VerbForm::THIRD_PERSON_SINGULAR, " leaves"},
-            {(uint32_t)VerbForm::PRESENT_PARTICIPLE, " leaving"},
-            {(uint32_t)VerbForm::PAST_PARTICIPLE, " left"},
+            {WordForm::THIRD_PERSON_SINGULAR, " leaves"},
+            {WordForm::PAST_PARTICIPLE, " left"},
+            {WordForm::PRESENT_PARTICIPLE, " leaving"},
+            {WordForm::UNSPECIFIED, " leave"},
         },
 };
 
 constexpr JeffPhrasingMapData<4> ENDER_LGDZ = {
     .entries =
         {
-            {0, " left"},
-            {(uint32_t)VerbForm::ROOT, " leave"},
-            {(uint32_t)VerbForm::PRESENT_PARTICIPLE, " leaving"},
-            {(uint32_t)VerbForm::PAST_PARTICIPLE, " left"},
+            {WordForm::ROOT, " leave"},
+            {WordForm::PAST_PARTICIPLE, " left"},
+            {WordForm::PRESENT_PARTICIPLE, " leaving"},
+            {WordForm::UNSPECIFIED, " left"},
         },
 };
 
 constexpr JeffPhrasingMapData<4> ENDER_LS = {
     .entries =
         {
-            {0, " let"},
-            {(uint32_t)VerbForm::THIRD_PERSON_SINGULAR, " lets"},
-            {(uint32_t)VerbForm::PRESENT_PARTICIPLE, " letting"},
-            {(uint32_t)VerbForm::PAST_PARTICIPLE, " let"},
+            {WordForm::THIRD_PERSON_SINGULAR, " lets"},
+            {WordForm::PAST_PARTICIPLE, " let"},
+            {WordForm::PRESENT_PARTICIPLE, " letting"},
+            {WordForm::UNSPECIFIED, " let"},
         },
 };
 
 constexpr JeffPhrasingMapData<4> ENDER_LSZ = {
     .entries =
         {
-            {0, " let"},
-            {(uint32_t)VerbForm::ROOT, " let"},
-            {(uint32_t)VerbForm::PRESENT_PARTICIPLE, " letting"},
-            {(uint32_t)VerbForm::PAST_PARTICIPLE, " let"},
+            {WordForm::ROOT, " let"},
+            {WordForm::PAST_PARTICIPLE, " let"},
+            {WordForm::PRESENT_PARTICIPLE, " letting"},
+            {WordForm::UNSPECIFIED, " let"},
         },
 };
 
 constexpr JeffPhrasingMapData<4> ENDER_BLG = {
     .entries =
         {
-            {0, " like"},
-            {(uint32_t)VerbForm::THIRD_PERSON_SINGULAR, " likes"},
-            {(uint32_t)VerbForm::PRESENT_PARTICIPLE, " liking"},
-            {(uint32_t)VerbForm::PAST_PARTICIPLE, " liked"},
+            {WordForm::THIRD_PERSON_SINGULAR, " likes"},
+            {WordForm::PAST_PARTICIPLE, " liked"},
+            {WordForm::PRESENT_PARTICIPLE, " liking"},
+            {WordForm::UNSPECIFIED, " like"},
         },
 };
 
 constexpr JeffPhrasingMapData<4> ENDER_BLGD = {
     .entries =
         {
-            {0, " liked"},
-            {(uint32_t)VerbForm::ROOT, " like"},
-            {(uint32_t)VerbForm::PRESENT_PARTICIPLE, " liking"},
-            {(uint32_t)VerbForm::PAST_PARTICIPLE, " liked"},
+            {WordForm::ROOT, " like"},
+            {WordForm::PAST_PARTICIPLE, " liked"},
+            {WordForm::PRESENT_PARTICIPLE, " liking"},
+            {WordForm::UNSPECIFIED, " liked"},
         },
 };
 
 constexpr JeffPhrasingMapData<4> ENDER_LZ = {
     .entries =
         {
-            {0, " live"},
-            {(uint32_t)VerbForm::THIRD_PERSON_SINGULAR, " lives"},
-            {(uint32_t)VerbForm::PRESENT_PARTICIPLE, " living"},
-            {(uint32_t)VerbForm::PAST_PARTICIPLE, " lived"},
+            {WordForm::THIRD_PERSON_SINGULAR, " lives"},
+            {WordForm::PAST_PARTICIPLE, " lived"},
+            {WordForm::PRESENT_PARTICIPLE, " living"},
+            {WordForm::UNSPECIFIED, " live"},
         },
 };
 
 constexpr JeffPhrasingMapData<4> ENDER_LDZ = {
     .entries =
         {
-            {0, " lived"},
-            {(uint32_t)VerbForm::ROOT, " live"},
-            {(uint32_t)VerbForm::PRESENT_PARTICIPLE, " living"},
-            {(uint32_t)VerbForm::PAST_PARTICIPLE, " lived"},
+            {WordForm::ROOT, " live"},
+            {WordForm::PAST_PARTICIPLE, " lived"},
+            {WordForm::PRESENT_PARTICIPLE, " living"},
+            {WordForm::UNSPECIFIED, " lived"},
         },
 };
 
 constexpr JeffPhrasingMapData<4> ENDER_L = {
     .entries =
         {
-            {0, " look"},
-            {(uint32_t)VerbForm::THIRD_PERSON_SINGULAR, " looks"},
-            {(uint32_t)VerbForm::PRESENT_PARTICIPLE, " looking"},
-            {(uint32_t)VerbForm::PAST_PARTICIPLE, " looked"},
+            {WordForm::THIRD_PERSON_SINGULAR, " looks"},
+            {WordForm::PAST_PARTICIPLE, " looked"},
+            {WordForm::PRESENT_PARTICIPLE, " looking"},
+            {WordForm::UNSPECIFIED, " look"},
         },
 };
 
 constexpr JeffPhrasingMapData<4> ENDER_LD = {
     .entries =
         {
-            {0, " looked"},
-            {(uint32_t)VerbForm::ROOT, " look"},
-            {(uint32_t)VerbForm::PRESENT_PARTICIPLE, " looking"},
-            {(uint32_t)VerbForm::PAST_PARTICIPLE, " looked"},
+            {WordForm::ROOT, " look"},
+            {WordForm::PAST_PARTICIPLE, " looked"},
+            {WordForm::PRESENT_PARTICIPLE, " looking"},
+            {WordForm::UNSPECIFIED, " looked"},
         },
 };
 
 constexpr JeffPhrasingMapData<4> ENDER_LG = {
     .entries =
         {
-            {0, " love"},
-            {(uint32_t)VerbForm::THIRD_PERSON_SINGULAR, " loves"},
-            {(uint32_t)VerbForm::PRESENT_PARTICIPLE, " loving"},
-            {(uint32_t)VerbForm::PAST_PARTICIPLE, " loved"},
+            {WordForm::THIRD_PERSON_SINGULAR, " loves"},
+            {WordForm::PAST_PARTICIPLE, " loved"},
+            {WordForm::PRESENT_PARTICIPLE, " loving"},
+            {WordForm::UNSPECIFIED, " love"},
         },
 };
 
 constexpr JeffPhrasingMapData<4> ENDER_LGD = {
     .entries =
         {
-            {0, " loved"},
-            {(uint32_t)VerbForm::ROOT, " love"},
-            {(uint32_t)VerbForm::PRESENT_PARTICIPLE, " loving"},
-            {(uint32_t)VerbForm::PAST_PARTICIPLE, " loved"},
+            {WordForm::ROOT, " love"},
+            {WordForm::PAST_PARTICIPLE, " loved"},
+            {WordForm::PRESENT_PARTICIPLE, " loving"},
+            {WordForm::UNSPECIFIED, " loved"},
         },
 };
 
 constexpr JeffPhrasingMapData<4> ENDER_RPBL = {
     .entries =
         {
-            {0, " make"},
-            {(uint32_t)VerbForm::THIRD_PERSON_SINGULAR, " makes"},
-            {(uint32_t)VerbForm::PRESENT_PARTICIPLE, " making"},
-            {(uint32_t)VerbForm::PAST_PARTICIPLE, " made"},
+            {WordForm::THIRD_PERSON_SINGULAR, " makes"},
+            {WordForm::PAST_PARTICIPLE, " made"},
+            {WordForm::PRESENT_PARTICIPLE, " making"},
+            {WordForm::UNSPECIFIED, " make"},
         },
 };
 
 constexpr JeffPhrasingMapData<4> ENDER_RPBLD = {
     .entries =
         {
-            {0, " made"},
-            {(uint32_t)VerbForm::ROOT, " make"},
-            {(uint32_t)VerbForm::PRESENT_PARTICIPLE, " making"},
-            {(uint32_t)VerbForm::PAST_PARTICIPLE, " made"},
+            {WordForm::ROOT, " make"},
+            {WordForm::PAST_PARTICIPLE, " made"},
+            {WordForm::PRESENT_PARTICIPLE, " making"},
+            {WordForm::UNSPECIFIED, " made"},
         },
 };
 
 constexpr JeffPhrasingMapData<4> ENDER_PBL = {
     .entries =
         {
-            {0, " mean"},
-            {(uint32_t)VerbForm::THIRD_PERSON_SINGULAR, " means"},
-            {(uint32_t)VerbForm::PRESENT_PARTICIPLE, " meaning"},
-            {(uint32_t)VerbForm::PAST_PARTICIPLE, " meant"},
+            {WordForm::THIRD_PERSON_SINGULAR, " means"},
+            {WordForm::PAST_PARTICIPLE, " meant"},
+            {WordForm::PRESENT_PARTICIPLE, " meaning"},
+            {WordForm::UNSPECIFIED, " mean"},
         },
 };
 
 constexpr JeffPhrasingMapData<4> ENDER_PBLD = {
     .entries =
         {
-            {0, " meant"},
-            {(uint32_t)VerbForm::ROOT, " mean"},
-            {(uint32_t)VerbForm::PRESENT_PARTICIPLE, " meaning"},
-            {(uint32_t)VerbForm::PAST_PARTICIPLE, " meant"},
+            {WordForm::ROOT, " mean"},
+            {WordForm::PAST_PARTICIPLE, " meant"},
+            {WordForm::PRESENT_PARTICIPLE, " meaning"},
+            {WordForm::UNSPECIFIED, " meant"},
         },
 };
 
 constexpr JeffPhrasingMapData<4> ENDER_PBLS = {
     .entries =
         {
-            {0, " mind"},
-            {(uint32_t)VerbForm::THIRD_PERSON_SINGULAR, " minds"},
-            {(uint32_t)VerbForm::PRESENT_PARTICIPLE, " minding"},
-            {(uint32_t)VerbForm::PAST_PARTICIPLE, " minded"},
+            {WordForm::THIRD_PERSON_SINGULAR, " minds"},
+            {WordForm::PAST_PARTICIPLE, " minded"},
+            {WordForm::PRESENT_PARTICIPLE, " minding"},
+            {WordForm::UNSPECIFIED, " mind"},
         },
 };
 
 constexpr JeffPhrasingMapData<4> ENDER_PBLSZ = {
     .entries =
         {
-            {0, " minded"},
-            {(uint32_t)VerbForm::ROOT, " mind"},
-            {(uint32_t)VerbForm::PRESENT_PARTICIPLE, " minding"},
-            {(uint32_t)VerbForm::PAST_PARTICIPLE, " minded"},
+            {WordForm::ROOT, " mind"},
+            {WordForm::PAST_PARTICIPLE, " minded"},
+            {WordForm::PRESENT_PARTICIPLE, " minding"},
+            {WordForm::UNSPECIFIED, " minded"},
         },
 };
 
 constexpr JeffPhrasingMapData<4> ENDER_PLZ = {
     .entries =
         {
-            {0, " move"},
-            {(uint32_t)VerbForm::THIRD_PERSON_SINGULAR, " moves"},
-            {(uint32_t)VerbForm::PRESENT_PARTICIPLE, " moving"},
-            {(uint32_t)VerbForm::PAST_PARTICIPLE, " moved"},
+            {WordForm::THIRD_PERSON_SINGULAR, " moves"},
+            {WordForm::PAST_PARTICIPLE, " moved"},
+            {WordForm::PRESENT_PARTICIPLE, " moving"},
+            {WordForm::UNSPECIFIED, " move"},
         },
 };
 
 constexpr JeffPhrasingMapData<4> ENDER_PLDZ = {
     .entries =
         {
-            {0, " moved"},
-            {(uint32_t)VerbForm::ROOT, " move"},
-            {(uint32_t)VerbForm::PRESENT_PARTICIPLE, " moving"},
-            {(uint32_t)VerbForm::PAST_PARTICIPLE, " moved"},
+            {WordForm::ROOT, " move"},
+            {WordForm::PAST_PARTICIPLE, " moved"},
+            {WordForm::PRESENT_PARTICIPLE, " moving"},
+            {WordForm::UNSPECIFIED, " moved"},
         },
 };
 
 constexpr JeffPhrasingMapData<4> ENDER_RPG = {
     .entries =
         {
-            {0, " need"},
-            {(uint32_t)VerbForm::THIRD_PERSON_SINGULAR, " needs"},
-            {(uint32_t)VerbForm::PRESENT_PARTICIPLE, " needing"},
-            {(uint32_t)VerbForm::PAST_PARTICIPLE, " needed"},
+            {WordForm::THIRD_PERSON_SINGULAR, " needs"},
+            {WordForm::PAST_PARTICIPLE, " needed"},
+            {WordForm::PRESENT_PARTICIPLE, " needing"},
+            {WordForm::UNSPECIFIED, " need"},
         },
 };
 
 constexpr JeffPhrasingMapData<4> ENDER_RPGD = {
     .entries =
         {
-            {0, " needed"},
-            {(uint32_t)VerbForm::ROOT, " need"},
-            {(uint32_t)VerbForm::PRESENT_PARTICIPLE, " needing"},
-            {(uint32_t)VerbForm::PAST_PARTICIPLE, " needed"},
+            {WordForm::ROOT, " need"},
+            {WordForm::PAST_PARTICIPLE, " needed"},
+            {WordForm::PRESENT_PARTICIPLE, " needing"},
+            {WordForm::UNSPECIFIED, " needed"},
         },
 };
 
 constexpr JeffPhrasingMapData<4> ENDER_PS = {
     .entries =
         {
-            {0, " put"},
-            {(uint32_t)VerbForm::THIRD_PERSON_SINGULAR, " puts"},
-            {(uint32_t)VerbForm::PRESENT_PARTICIPLE, " putting"},
-            {(uint32_t)VerbForm::PAST_PARTICIPLE, " put"},
+            {WordForm::THIRD_PERSON_SINGULAR, " puts"},
+            {WordForm::PAST_PARTICIPLE, " put"},
+            {WordForm::PRESENT_PARTICIPLE, " putting"},
+            {WordForm::UNSPECIFIED, " put"},
         },
 };
 
 constexpr JeffPhrasingMapData<4> ENDER_PSZ = {
     .entries =
         {
-            {0, " put"},
-            {(uint32_t)VerbForm::ROOT, " put"},
-            {(uint32_t)VerbForm::PRESENT_PARTICIPLE, " putting"},
-            {(uint32_t)VerbForm::PAST_PARTICIPLE, " put"},
+            {WordForm::ROOT, " put"},
+            {WordForm::PAST_PARTICIPLE, " put"},
+            {WordForm::PRESENT_PARTICIPLE, " putting"},
+            {WordForm::UNSPECIFIED, " put"},
         },
 };
 
 constexpr JeffPhrasingMapData<4> ENDER_RS = {
     .entries =
         {
-            {0, " read"},
-            {(uint32_t)VerbForm::THIRD_PERSON_SINGULAR, " reads"},
-            {(uint32_t)VerbForm::PRESENT_PARTICIPLE, " reading"},
-            {(uint32_t)VerbForm::PAST_PARTICIPLE, " read"},
+            {WordForm::THIRD_PERSON_SINGULAR, " reads"},
+            {WordForm::PAST_PARTICIPLE, " read"},
+            {WordForm::PRESENT_PARTICIPLE, " reading"},
+            {WordForm::UNSPECIFIED, " read"},
         },
 };
 
 constexpr JeffPhrasingMapData<4> ENDER_RSZ = {
     .entries =
         {
-            {0, " read"},
-            {(uint32_t)VerbForm::ROOT, " read"},
-            {(uint32_t)VerbForm::PRESENT_PARTICIPLE, " reading"},
-            {(uint32_t)VerbForm::PAST_PARTICIPLE, " read"},
+            {WordForm::ROOT, " read"},
+            {WordForm::PAST_PARTICIPLE, " read"},
+            {WordForm::PRESENT_PARTICIPLE, " reading"},
+            {WordForm::UNSPECIFIED, " read"},
         },
 };
 
 constexpr JeffPhrasingMapData<4> ENDER_RL = {
     .entries =
         {
-            {0, " recall"},
-            {(uint32_t)VerbForm::THIRD_PERSON_SINGULAR, " recalls"},
-            {(uint32_t)VerbForm::PRESENT_PARTICIPLE, " recalling"},
-            {(uint32_t)VerbForm::PAST_PARTICIPLE, " recalled"},
+            {WordForm::THIRD_PERSON_SINGULAR, " recalls"},
+            {WordForm::PAST_PARTICIPLE, " recalled"},
+            {WordForm::PRESENT_PARTICIPLE, " recalling"},
+            {WordForm::UNSPECIFIED, " recall"},
         },
 };
 
 constexpr JeffPhrasingMapData<4> ENDER_RLD = {
     .entries =
         {
-            {0, " recalled"},
-            {(uint32_t)VerbForm::ROOT, " recall"},
-            {(uint32_t)VerbForm::PRESENT_PARTICIPLE, " recalling"},
-            {(uint32_t)VerbForm::PAST_PARTICIPLE, " recalled"},
+            {WordForm::ROOT, " recall"},
+            {WordForm::PAST_PARTICIPLE, " recalled"},
+            {WordForm::PRESENT_PARTICIPLE, " recalling"},
+            {WordForm::UNSPECIFIED, " recalled"},
         },
 };
 
 constexpr JeffPhrasingMapData<4> ENDER_RLS = {
     .entries =
         {
-            {0, " realize"},
-            {(uint32_t)VerbForm::THIRD_PERSON_SINGULAR, " realizes"},
-            {(uint32_t)VerbForm::PRESENT_PARTICIPLE, " realizing"},
-            {(uint32_t)VerbForm::PAST_PARTICIPLE, " realized"},
+            {WordForm::THIRD_PERSON_SINGULAR, " realizes"},
+            {WordForm::PAST_PARTICIPLE, " realized"},
+            {WordForm::PRESENT_PARTICIPLE, " realizing"},
+            {WordForm::UNSPECIFIED, " realize"},
         },
 };
 
 constexpr JeffPhrasingMapData<4> ENDER_RLSZ = {
     .entries =
         {
-            {0, " realized"},
-            {(uint32_t)VerbForm::ROOT, " realize"},
-            {(uint32_t)VerbForm::PRESENT_PARTICIPLE, " realizing"},
-            {(uint32_t)VerbForm::PAST_PARTICIPLE, " realized"},
+            {WordForm::ROOT, " realize"},
+            {WordForm::PAST_PARTICIPLE, " realized"},
+            {WordForm::PRESENT_PARTICIPLE, " realizing"},
+            {WordForm::UNSPECIFIED, " realized"},
         },
 };
 
 constexpr JeffPhrasingMapData<4> ENDER_RPL = {
     .entries =
         {
-            {0, " remember"},
-            {(uint32_t)VerbForm::THIRD_PERSON_SINGULAR, " remembers"},
-            {(uint32_t)VerbForm::PRESENT_PARTICIPLE, " remembering"},
-            {(uint32_t)VerbForm::PAST_PARTICIPLE, " remembered"},
+            {WordForm::THIRD_PERSON_SINGULAR, " remembers"},
+            {WordForm::PAST_PARTICIPLE, " remembered"},
+            {WordForm::PRESENT_PARTICIPLE, " remembering"},
+            {WordForm::UNSPECIFIED, " remember"},
         },
 };
 
 constexpr JeffPhrasingMapData<4> ENDER_RPLD = {
     .entries =
         {
-            {0, " remembered"},
-            {(uint32_t)VerbForm::ROOT, " remember"},
-            {(uint32_t)VerbForm::PRESENT_PARTICIPLE, " remembering"},
-            {(uint32_t)VerbForm::PAST_PARTICIPLE, " remembered"},
+            {WordForm::ROOT, " remember"},
+            {WordForm::PAST_PARTICIPLE, " remembered"},
+            {WordForm::PRESENT_PARTICIPLE, " remembering"},
+            {WordForm::UNSPECIFIED, " remembered"},
         },
 };
 
 constexpr JeffPhrasingMapData<4> ENDER_RPLS = {
     .entries =
         {
-            {0, " remain"},
-            {(uint32_t)VerbForm::THIRD_PERSON_SINGULAR, " remains"},
-            {(uint32_t)VerbForm::PRESENT_PARTICIPLE, " remaining"},
-            {(uint32_t)VerbForm::PAST_PARTICIPLE, " remained"},
+            {WordForm::THIRD_PERSON_SINGULAR, " remains"},
+            {WordForm::PAST_PARTICIPLE, " remained"},
+            {WordForm::PRESENT_PARTICIPLE, " remaining"},
+            {WordForm::UNSPECIFIED, " remain"},
         },
 };
 
 constexpr JeffPhrasingMapData<4> ENDER_RPLSZ = {
     .entries =
         {
-            {0, " remained"},
-            {(uint32_t)VerbForm::ROOT, " remain"},
-            {(uint32_t)VerbForm::PRESENT_PARTICIPLE, " remaining"},
-            {(uint32_t)VerbForm::PAST_PARTICIPLE, " remained"},
+            {WordForm::ROOT, " remain"},
+            {WordForm::PAST_PARTICIPLE, " remained"},
+            {WordForm::PRESENT_PARTICIPLE, " remaining"},
+            {WordForm::UNSPECIFIED, " remained"},
         },
 };
 
 constexpr JeffPhrasingMapData<4> ENDER_R = {
     .entries =
         {
-            {0, " run"},
-            {(uint32_t)VerbForm::THIRD_PERSON_SINGULAR, " runs"},
-            {(uint32_t)VerbForm::PRESENT_PARTICIPLE, " running"},
-            {(uint32_t)VerbForm::PAST_PARTICIPLE, " run"},
+            {WordForm::THIRD_PERSON_SINGULAR, " runs"},
+            {WordForm::PAST_PARTICIPLE, " run"},
+            {WordForm::PRESENT_PARTICIPLE, " running"},
+            {WordForm::UNSPECIFIED, " run"},
         },
 };
 
 constexpr JeffPhrasingMapData<4> ENDER_RD = {
     .entries =
         {
-            {0, " ran"},
-            {(uint32_t)VerbForm::ROOT, " run"},
-            {(uint32_t)VerbForm::PRESENT_PARTICIPLE, " running"},
-            {(uint32_t)VerbForm::PAST_PARTICIPLE, " run"},
+            {WordForm::ROOT, " run"},
+            {WordForm::PAST_PARTICIPLE, " run"},
+            {WordForm::PRESENT_PARTICIPLE, " running"},
+            {WordForm::UNSPECIFIED, " ran"},
         },
 };
 
 constexpr JeffPhrasingMapData<4> ENDER_BS = {
     .entries =
         {
-            {0, " say"},
-            {(uint32_t)VerbForm::THIRD_PERSON_SINGULAR, " says"},
-            {(uint32_t)VerbForm::PRESENT_PARTICIPLE, " saying"},
-            {(uint32_t)VerbForm::PAST_PARTICIPLE, " said"},
+            {WordForm::THIRD_PERSON_SINGULAR, " says"},
+            {WordForm::PAST_PARTICIPLE, " said"},
+            {WordForm::PRESENT_PARTICIPLE, " saying"},
+            {WordForm::UNSPECIFIED, " say"},
         },
 };
 
 constexpr JeffPhrasingMapData<4> ENDER_BSZ = {
     .entries =
         {
-            {0, " said"},
-            {(uint32_t)VerbForm::ROOT, " say"},
-            {(uint32_t)VerbForm::PRESENT_PARTICIPLE, " saying"},
-            {(uint32_t)VerbForm::PAST_PARTICIPLE, " said"},
+            {WordForm::ROOT, " say"},
+            {WordForm::PAST_PARTICIPLE, " said"},
+            {WordForm::PRESENT_PARTICIPLE, " saying"},
+            {WordForm::UNSPECIFIED, " said"},
         },
 };
 
 constexpr JeffPhrasingMapData<4> ENDER_S = {
     .entries =
         {
-            {0, " see"},
-            {(uint32_t)VerbForm::THIRD_PERSON_SINGULAR, " sees"},
-            {(uint32_t)VerbForm::PRESENT_PARTICIPLE, " seeing"},
-            {(uint32_t)VerbForm::PAST_PARTICIPLE, " seen"},
+            {WordForm::THIRD_PERSON_SINGULAR, " sees"},
+            {WordForm::PAST_PARTICIPLE, " seen"},
+            {WordForm::PRESENT_PARTICIPLE, " seeing"},
+            {WordForm::UNSPECIFIED, " see"},
         },
 };
 
 constexpr JeffPhrasingMapData<4> ENDER_SZ = {
     .entries =
         {
-            {0, " saw"},
-            {(uint32_t)VerbForm::ROOT, " see"},
-            {(uint32_t)VerbForm::PRESENT_PARTICIPLE, " seeing"},
-            {(uint32_t)VerbForm::PAST_PARTICIPLE, " seen"},
+            {WordForm::ROOT, " see"},
+            {WordForm::PAST_PARTICIPLE, " seen"},
+            {WordForm::PRESENT_PARTICIPLE, " seeing"},
+            {WordForm::UNSPECIFIED, " saw"},
         },
 };
 
 constexpr JeffPhrasingMapData<4> ENDER_BLS = {
     .entries =
         {
-            {0, " set"},
-            {(uint32_t)VerbForm::THIRD_PERSON_SINGULAR, " sets"},
-            {(uint32_t)VerbForm::PRESENT_PARTICIPLE, " setting"},
-            {(uint32_t)VerbForm::PAST_PARTICIPLE, " set"},
+            {WordForm::THIRD_PERSON_SINGULAR, " sets"},
+            {WordForm::PAST_PARTICIPLE, " set"},
+            {WordForm::PRESENT_PARTICIPLE, " setting"},
+            {WordForm::UNSPECIFIED, " set"},
         },
 };
 
 constexpr JeffPhrasingMapData<4> ENDER_BLSZ = {
     .entries =
         {
-            {0, " set"},
-            {(uint32_t)VerbForm::ROOT, " set"},
-            {(uint32_t)VerbForm::PRESENT_PARTICIPLE, " setting"},
-            {(uint32_t)VerbForm::PAST_PARTICIPLE, " set"},
+            {WordForm::ROOT, " set"},
+            {WordForm::PAST_PARTICIPLE, " set"},
+            {WordForm::PRESENT_PARTICIPLE, " setting"},
+            {WordForm::UNSPECIFIED, " set"},
         },
 };
 
 constexpr JeffPhrasingMapData<4> ENDER_PLS = {
     .entries =
         {
-            {0, " seem"},
-            {(uint32_t)VerbForm::THIRD_PERSON_SINGULAR, " seems"},
-            {(uint32_t)VerbForm::PRESENT_PARTICIPLE, " seeming"},
-            {(uint32_t)VerbForm::PAST_PARTICIPLE, " seemed"},
+            {WordForm::THIRD_PERSON_SINGULAR, " seems"},
+            {WordForm::PAST_PARTICIPLE, " seemed"},
+            {WordForm::PRESENT_PARTICIPLE, " seeming"},
+            {WordForm::UNSPECIFIED, " seem"},
         },
 };
 
 constexpr JeffPhrasingMapData<4> ENDER_PLSZ = {
     .entries =
         {
-            {0, " seemed"},
-            {(uint32_t)VerbForm::ROOT, " seem"},
-            {(uint32_t)VerbForm::PRESENT_PARTICIPLE, " seeming"},
-            {(uint32_t)VerbForm::PAST_PARTICIPLE, " seemed"},
+            {WordForm::ROOT, " seem"},
+            {WordForm::PAST_PARTICIPLE, " seemed"},
+            {WordForm::PRESENT_PARTICIPLE, " seeming"},
+            {WordForm::UNSPECIFIED, " seemed"},
         },
 };
 
 constexpr JeffPhrasingMapData<4> ENDER_RBZ = {
     .entries =
         {
-            {0, " show"},
-            {(uint32_t)VerbForm::THIRD_PERSON_SINGULAR, " shows"},
-            {(uint32_t)VerbForm::PRESENT_PARTICIPLE, " showing"},
-            {(uint32_t)VerbForm::PAST_PARTICIPLE, " shown"},
+            {WordForm::THIRD_PERSON_SINGULAR, " shows"},
+            {WordForm::PAST_PARTICIPLE, " shown"},
+            {WordForm::PRESENT_PARTICIPLE, " showing"},
+            {WordForm::UNSPECIFIED, " show"},
         },
 };
 
 constexpr JeffPhrasingMapData<4> ENDER_RBDZ = {
     .entries =
         {
-            {0, " showed"},
-            {(uint32_t)VerbForm::ROOT, " want"},
-            {(uint32_t)VerbForm::PRESENT_PARTICIPLE, " showing"},
-            {(uint32_t)VerbForm::PAST_PARTICIPLE, " shown"},
+            {WordForm::ROOT, " want"},
+            {WordForm::PAST_PARTICIPLE, " shown"},
+            {WordForm::PRESENT_PARTICIPLE, " showing"},
+            {WordForm::UNSPECIFIED, " showed"},
         },
 };
 
 constexpr JeffPhrasingMapData<4> ENDER_RBT = {
     .entries =
         {
-            {0, " take"},
-            {(uint32_t)VerbForm::THIRD_PERSON_SINGULAR, " takes"},
-            {(uint32_t)VerbForm::PRESENT_PARTICIPLE, " taking"},
-            {(uint32_t)VerbForm::PAST_PARTICIPLE, " taken"},
+            {WordForm::THIRD_PERSON_SINGULAR, " takes"},
+            {WordForm::PAST_PARTICIPLE, " taken"},
+            {WordForm::PRESENT_PARTICIPLE, " taking"},
+            {WordForm::UNSPECIFIED, " take"},
         },
 };
 
 constexpr JeffPhrasingMapData<4> ENDER_RBTD = {
     .entries =
         {
-            {0, " took"},
-            {(uint32_t)VerbForm::ROOT, " take"},
-            {(uint32_t)VerbForm::PRESENT_PARTICIPLE, " taking"},
-            {(uint32_t)VerbForm::PAST_PARTICIPLE, " taken"},
+            {WordForm::ROOT, " take"},
+            {WordForm::PAST_PARTICIPLE, " taken"},
+            {WordForm::PRESENT_PARTICIPLE, " taking"},
+            {WordForm::UNSPECIFIED, " took"},
         },
 };
 
 constexpr JeffPhrasingMapData<4> ENDER_RLT = {
     .entries =
         {
-            {0, " tell"},
-            {(uint32_t)VerbForm::THIRD_PERSON_SINGULAR, " tells"},
-            {(uint32_t)VerbForm::PRESENT_PARTICIPLE, " telling"},
-            {(uint32_t)VerbForm::PAST_PARTICIPLE, " told"},
+            {WordForm::THIRD_PERSON_SINGULAR, " tells"},
+            {WordForm::PAST_PARTICIPLE, " told"},
+            {WordForm::PRESENT_PARTICIPLE, " telling"},
+            {WordForm::UNSPECIFIED, " tell"},
         },
 };
 
 constexpr JeffPhrasingMapData<4> ENDER_RLTD = {
     .entries =
         {
-            {0, " told"},
-            {(uint32_t)VerbForm::ROOT, " tell"},
-            {(uint32_t)VerbForm::PRESENT_PARTICIPLE, " telling"},
-            {(uint32_t)VerbForm::PAST_PARTICIPLE, " told"},
+            {WordForm::ROOT, " tell"},
+            {WordForm::PAST_PARTICIPLE, " told"},
+            {WordForm::PRESENT_PARTICIPLE, " telling"},
+            {WordForm::UNSPECIFIED, " told"},
         },
 };
 
 constexpr JeffPhrasingMapData<4> ENDER_PBG = {
     .entries =
         {
-            {0, " think"},
-            {(uint32_t)VerbForm::THIRD_PERSON_SINGULAR, " thinks"},
-            {(uint32_t)VerbForm::PRESENT_PARTICIPLE, " thinking"},
-            {(uint32_t)VerbForm::PAST_PARTICIPLE, " thought"},
+            {WordForm::THIRD_PERSON_SINGULAR, " thinks"},
+            {WordForm::PAST_PARTICIPLE, " thought"},
+            {WordForm::PRESENT_PARTICIPLE, " thinking"},
+            {WordForm::UNSPECIFIED, " think"},
         },
 };
 
 constexpr JeffPhrasingMapData<4> ENDER_PBGD = {
     .entries =
         {
-            {0, " thought"},
-            {(uint32_t)VerbForm::ROOT, " think"},
-            {(uint32_t)VerbForm::PRESENT_PARTICIPLE, " thinking"},
-            {(uint32_t)VerbForm::PAST_PARTICIPLE, " thought"},
+            {WordForm::ROOT, " think"},
+            {WordForm::PAST_PARTICIPLE, " thought"},
+            {WordForm::PRESENT_PARTICIPLE, " thinking"},
+            {WordForm::UNSPECIFIED, " thought"},
         },
 };
 
 constexpr JeffPhrasingMapData<4> ENDER_RT = {
     .entries =
         {
-            {0, " try"},
-            {(uint32_t)VerbForm::THIRD_PERSON_SINGULAR, " tries"},
-            {(uint32_t)VerbForm::PRESENT_PARTICIPLE, " trying"},
-            {(uint32_t)VerbForm::PAST_PARTICIPLE, " tried"},
+            {WordForm::THIRD_PERSON_SINGULAR, " tries"},
+            {WordForm::PAST_PARTICIPLE, " tried"},
+            {WordForm::PRESENT_PARTICIPLE, " trying"},
+            {WordForm::UNSPECIFIED, " try"},
         },
 };
 
 constexpr JeffPhrasingMapData<4> ENDER_RTD = {
     .entries =
         {
-            {0, " tried"},
-            {(uint32_t)VerbForm::ROOT, " try"},
-            {(uint32_t)VerbForm::PRESENT_PARTICIPLE, " trying"},
-            {(uint32_t)VerbForm::PAST_PARTICIPLE, " tried"},
+            {WordForm::ROOT, " try"},
+            {WordForm::PAST_PARTICIPLE, " tried"},
+            {WordForm::PRESENT_PARTICIPLE, " trying"},
+            {WordForm::UNSPECIFIED, " tried"},
         },
 };
 
 constexpr JeffPhrasingMapData<4> ENDER_RPB = {
     .entries =
         {
-            {0, " understand"},
-            {(uint32_t)VerbForm::THIRD_PERSON_SINGULAR, " understands"},
-            {(uint32_t)VerbForm::PRESENT_PARTICIPLE, " understanding"},
-            {(uint32_t)VerbForm::PAST_PARTICIPLE, " understood"},
+            {WordForm::THIRD_PERSON_SINGULAR, " understands"},
+            {WordForm::PAST_PARTICIPLE, " understood"},
+            {WordForm::PRESENT_PARTICIPLE, " understanding"},
+            {WordForm::UNSPECIFIED, " understand"},
         },
 };
 
 constexpr JeffPhrasingMapData<4> ENDER_RPBD = {
     .entries =
         {
-            {0, " understood"},
-            {(uint32_t)VerbForm::ROOT, " understand"},
-            {(uint32_t)VerbForm::PRESENT_PARTICIPLE, " understanding"},
-            {(uint32_t)VerbForm::PAST_PARTICIPLE, " understood"},
+            {WordForm::ROOT, " understand"},
+            {WordForm::PAST_PARTICIPLE, " understood"},
+            {WordForm::PRESENT_PARTICIPLE, " understanding"},
+            {WordForm::UNSPECIFIED, " understood"},
         },
 };
 
 constexpr JeffPhrasingMapData<4> ENDER_Z = {
     .entries =
         {
-            {0, " use"},
-            {(uint32_t)VerbForm::THIRD_PERSON_SINGULAR, " uses"},
-            {(uint32_t)VerbForm::PRESENT_PARTICIPLE, " using"},
-            {(uint32_t)VerbForm::PAST_PARTICIPLE, " used"},
+            {WordForm::THIRD_PERSON_SINGULAR, " uses"},
+            {WordForm::PAST_PARTICIPLE, " used"},
+            {WordForm::PRESENT_PARTICIPLE, " using"},
+            {WordForm::UNSPECIFIED, " use"},
         },
 };
 
 constexpr JeffPhrasingMapData<4> ENDER_DZ = {
     .entries =
         {
-            {0, " used"},
-            {(uint32_t)VerbForm::ROOT, " use"},
-            {(uint32_t)VerbForm::PRESENT_PARTICIPLE, " using"},
-            {(uint32_t)VerbForm::PAST_PARTICIPLE, " used"},
+            {WordForm::ROOT, " use"},
+            {WordForm::PAST_PARTICIPLE, " used"},
+            {WordForm::PRESENT_PARTICIPLE, " using"},
+            {WordForm::UNSPECIFIED, " used"},
         },
 };
 
 constexpr JeffPhrasingMapData<4> ENDER_P = {
     .entries =
         {
-            {0, " want"},
-            {(uint32_t)VerbForm::THIRD_PERSON_SINGULAR, " wants"},
-            {(uint32_t)VerbForm::PRESENT_PARTICIPLE, " wanting"},
-            {(uint32_t)VerbForm::PAST_PARTICIPLE, " wanted"},
+            {WordForm::THIRD_PERSON_SINGULAR, " wants"},
+            {WordForm::PAST_PARTICIPLE, " wanted"},
+            {WordForm::PRESENT_PARTICIPLE, " wanting"},
+            {WordForm::UNSPECIFIED, " want"},
         },
 };
 
 constexpr JeffPhrasingMapData<4> ENDER_PD = {
     .entries =
         {
-            {0, " wanted"},
-            {(uint32_t)VerbForm::ROOT, " want"},
-            {(uint32_t)VerbForm::PRESENT_PARTICIPLE, " wanting"},
-            {(uint32_t)VerbForm::PAST_PARTICIPLE, " wanted"},
+            {WordForm::ROOT, " want"},
+            {WordForm::PAST_PARTICIPLE, " wanted"},
+            {WordForm::PRESENT_PARTICIPLE, " wanting"},
+            {WordForm::UNSPECIFIED, " wanted"},
         },
 };
 
 constexpr JeffPhrasingMapData<4> ENDER_RBS = {
     .entries =
         {
-            {0, " wish"},
-            {(uint32_t)VerbForm::THIRD_PERSON_SINGULAR, " wishes"},
-            {(uint32_t)VerbForm::PRESENT_PARTICIPLE, " wishing"},
-            {(uint32_t)VerbForm::PAST_PARTICIPLE, " wished"},
+            {WordForm::THIRD_PERSON_SINGULAR, " wishes"},
+            {WordForm::PAST_PARTICIPLE, " wished"},
+            {WordForm::PRESENT_PARTICIPLE, " wishing"},
+            {WordForm::UNSPECIFIED, " wish"},
         },
 };
 
 constexpr JeffPhrasingMapData<4> ENDER_RBSZ = {
     .entries =
         {
-            {0, " wished"},
-            {(uint32_t)VerbForm::ROOT, " wish"},
-            {(uint32_t)VerbForm::PRESENT_PARTICIPLE, " wishing"},
-            {(uint32_t)VerbForm::PAST_PARTICIPLE, " wished"},
+            {WordForm::ROOT, " wish"},
+            {WordForm::PAST_PARTICIPLE, " wished"},
+            {WordForm::PRESENT_PARTICIPLE, " wishing"},
+            {WordForm::UNSPECIFIED, " wished"},
         },
 };
 
 constexpr JeffPhrasingMapData<4> ENDER_RBG = {
     .entries =
         {
-            {0, " work"},
-            {(uint32_t)VerbForm::THIRD_PERSON_SINGULAR, " works"},
-            {(uint32_t)VerbForm::PRESENT_PARTICIPLE, " working"},
-            {(uint32_t)VerbForm::PAST_PARTICIPLE, " worked"},
+            {WordForm::THIRD_PERSON_SINGULAR, " works"},
+            {WordForm::PAST_PARTICIPLE, " worked"},
+            {WordForm::PRESENT_PARTICIPLE, " working"},
+            {WordForm::UNSPECIFIED, " work"},
         },
 };
 
 constexpr JeffPhrasingMapData<4> ENDER_RBGD = {
     .entries =
         {
-            {0, " worked"},
-            {(uint32_t)VerbForm::ROOT, " work"},
-            {(uint32_t)VerbForm::PRESENT_PARTICIPLE, " working"},
-            {(uint32_t)VerbForm::PAST_PARTICIPLE, " worked"},
+            {WordForm::ROOT, " work"},
+            {WordForm::PAST_PARTICIPLE, " worked"},
+            {WordForm::PRESENT_PARTICIPLE, " working"},
+            {WordForm::UNSPECIFIED, " worked"},
         },
 };
 
 // clang-format off
 constexpr JeffPhrasingEnder ENDERS[] = {
-    {StenoStroke(), Tense::PRESENT, true, "", ""},
-    {StenoStroke(0x200000 /*D*/), Tense::PAST, true, "", ""},
+    {StenoStroke(), WordForm::PRESENT, true, "", ""},
+    {StenoStroke(0x200000 /*D*/), WordForm::PAST, true, "", ""},
 
     // RB - To ask
-    {StenoStroke(0x14000 /*RB*/), Tense::PRESENT, false, &ENDER_RB, ""},
-    {StenoStroke(0x214000 /*-RBD*/), Tense::PAST, false, &ENDER_RBD, ""},
+    {StenoStroke(0x14000 /*RB*/), WordForm::PRESENT, false, &ENDER_RB, ""},
+    {StenoStroke(0x214000 /*-RBD*/), WordForm::PAST, false, &ENDER_RBD, ""},
 
     // B - To be (a)
-    {StenoStroke(0x10000 /*B*/), Tense::PRESENT, true, &ENDER_B, ""},
-    {StenoStroke(0x210000 /*BD*/), Tense::PAST, true, &ENDER_BD, ""},
-    {StenoStroke(0x90000 /*BT*/), Tense::PRESENT, true, &ENDER_B, " a"},
-    {StenoStroke(0x290000 /*BTD*/), Tense::PAST, true, &ENDER_BD, " a"},
+    {StenoStroke(0x10000 /*B*/), WordForm::PRESENT, true, &ENDER_B, ""},
+    {StenoStroke(0x210000 /*BD*/), WordForm::PAST, true, &ENDER_BD, ""},
+    {StenoStroke(0x90000 /*BT*/), WordForm::PRESENT, true, &ENDER_B, " a"},
+    {StenoStroke(0x290000 /*BTD*/), WordForm::PAST, true, &ENDER_BD, " a"},
 
     // RPBG - To become (a)
-    {StenoStroke(0x5c000 /*-RPBG*/), Tense::PRESENT, false, &ENDER_RPBG, ""},
-    {StenoStroke(0x25c000 /*-RPBGD*/), Tense::PAST, false, &ENDER_RPBGD, ""},
-    {StenoStroke(0xdc000 /*-RPBGT*/), Tense::PRESENT, false, &ENDER_RPBG, " a"},
-    {StenoStroke(0x2dc000 /*-RPBGTD*/), Tense::PAST, false, &ENDER_RPBGD, " a"},
+    {StenoStroke(0x5c000 /*-RPBG*/), WordForm::PRESENT, false, &ENDER_RPBG, ""},
+    {StenoStroke(0x25c000 /*-RPBGD*/), WordForm::PAST, false, &ENDER_RPBGD, ""},
+    {StenoStroke(0xdc000 /*-RPBGT*/), WordForm::PRESENT, false, &ENDER_RPBG, " a"},
+    {StenoStroke(0x2dc000 /*-RPBGTD*/), WordForm::PAST, false, &ENDER_RPBGD, " a"},
 
     // BL - To believe (that)
-    {StenoStroke(0x30000 /*-BL*/), Tense::PRESENT, false, &ENDER_BL, ""},
-    {StenoStroke(0x230000 /*-BLD*/), Tense::PAST, false, &ENDER_BLD, ""},
-    {StenoStroke(0xb0000 /*-BLT*/), Tense::PRESENT, false, &ENDER_BL, " that"},
-    {StenoStroke(0x2b0000 /*-BLTD*/), Tense::PAST, false, &ENDER_BLD, " that"},
+    {StenoStroke(0x30000 /*-BL*/), WordForm::PRESENT, false, &ENDER_BL, ""},
+    {StenoStroke(0x230000 /*-BLD*/), WordForm::PAST, false, &ENDER_BLD, ""},
+    {StenoStroke(0xb0000 /*-BLT*/), WordForm::PRESENT, false, &ENDER_BL, " that"},
+    {StenoStroke(0x2b0000 /*-BLTD*/), WordForm::PAST, false, &ENDER_BLD, " that"},
 
     // RBLG - To call
-    {StenoStroke(0x74000 /*-RBLG*/), Tense::PRESENT, false, &ENDER_RBLG, ""},
-    {StenoStroke(0x274000 /*-RBLGD*/), Tense::PAST, false, &ENDER_RBLGD, ""},
+    {StenoStroke(0x74000 /*-RBLG*/), WordForm::PRESENT, false, &ENDER_RBLG, ""},
+    {StenoStroke(0x274000 /*-RBLGD*/), WordForm::PAST, false, &ENDER_RBLGD, ""},
 
     // BGS - Can -- Auxiliary verb
     // These do not combine naturally with middle/structures.
-    {StenoStroke(0x150000 /*-BGS*/), Tense::PRESENT, false, " can", ""},
-    {StenoStroke(0x550000 /*-BGSZ*/), Tense::PAST, false, " could", ""},
+    {StenoStroke(0x150000 /*-BGS*/), WordForm::PRESENT, false, " can", ""},
+    {StenoStroke(0x550000 /*-BGSZ*/), WordForm::PAST, false, " could", ""},
 
     // RZ - To care
-    {StenoStroke(0x404000 /*-RZ*/), Tense::PRESENT, false, &ENDER_RZ, ""},
-    {StenoStroke(0x604000 /*-RDZ*/), Tense::PAST, false, &ENDER_RDZ, ""},
+    {StenoStroke(0x404000 /*-RZ*/), WordForm::PRESENT, false, &ENDER_RZ, ""},
+    {StenoStroke(0x604000 /*-RDZ*/), WordForm::PAST, false, &ENDER_RDZ, ""},
 
     // PBGZ - To change
-    {StenoStroke(0x458000 /*-PBGZ*/), Tense::PRESENT, false, &ENDER_PBGZ, ""},
-    {StenoStroke(0x658000 /*-PBGDZ*/), Tense::PAST, false, &ENDER_PBGDZ, ""},
+    {StenoStroke(0x458000 /*-PBGZ*/), WordForm::PRESENT, false, &ENDER_PBGZ, ""},
+    {StenoStroke(0x658000 /*-PBGDZ*/), WordForm::PAST, false, &ENDER_PBGDZ, ""},
 
     // BG - To come (to)
-    {StenoStroke(0x50000 /*-BG*/), Tense::PRESENT, true, &ENDER_BG, ""},
-    {StenoStroke(0x250000 /*-BGD*/), Tense::PAST, true, &ENDER_BGD, ""},
-    {StenoStroke(0xd0000 /*-BGT*/), Tense::PRESENT, true, &ENDER_BG, " to"},
-    {StenoStroke(0x2d0000 /*BGTD*/), Tense::PAST, true, &ENDER_BGD, " to"},
+    {StenoStroke(0x50000 /*-BG*/), WordForm::PRESENT, true, &ENDER_BG, ""},
+    {StenoStroke(0x250000 /*-BGD*/), WordForm::PAST, true, &ENDER_BGD, ""},
+    {StenoStroke(0xd0000 /*-BGT*/), WordForm::PRESENT, true, &ENDER_BG, " to"},
+    {StenoStroke(0x2d0000 /*BGTD*/), WordForm::PAST, true, &ENDER_BGD, " to"},
 
     // RBGZ - To consider
-    {StenoStroke(0x454000 /*-RBGZ*/), Tense::PRESENT, false, &ENDER_RBGZ, ""},
-    {StenoStroke(0x654000 /*-RBGDZ*/), Tense::PAST, false, &ENDER_RBGDZ, ""},
+    {StenoStroke(0x454000 /*-RBGZ*/), WordForm::PRESENT, false, &ENDER_RBGZ, ""},
+    {StenoStroke(0x654000 /*-RBGDZ*/), WordForm::PAST, false, &ENDER_RBGDZ, ""},
 
     // RP - To do (it)
-    {StenoStroke(0xc000 /*-RP*/), Tense::PRESENT, false, &ENDER_RP, ""},
-    {StenoStroke(0x20c000 /*-RPD*/), Tense::PAST, false, &ENDER_RPD, ""},
-    {StenoStroke(0x8c000 /*-RPT*/), Tense::PRESENT, false, &ENDER_RP, " it"},
-    {StenoStroke(0x28c000 /*-RPTD*/), Tense::PAST, false, &ENDER_RPD, " it"},
+    {StenoStroke(0xc000 /*-RP*/), WordForm::PRESENT, false, &ENDER_RP, ""},
+    {StenoStroke(0x20c000 /*-RPD*/), WordForm::PAST, false, &ENDER_RPD, ""},
+    {StenoStroke(0x8c000 /*-RPT*/), WordForm::PRESENT, false, &ENDER_RP, " it"},
+    {StenoStroke(0x28c000 /*-RPTD*/), WordForm::PAST, false, &ENDER_RPD, " it"},
 
     // RP - To expect (that)
-    {StenoStroke(0x148000 /*-PGS*/), Tense::PRESENT, false, &ENDER_PGS, ""},
-    {StenoStroke(0x548000 /*-PGSZ*/), Tense::PAST, false, &ENDER_PGSZ, ""},
-    {StenoStroke(0x1c8000 /*-PGTS*/), Tense::PRESENT, false, &ENDER_PGS, " that"},
-    {StenoStroke(0x7c8000 /*-PGTSDZ*/), Tense::PAST, false, &ENDER_PGSZ, " that"},
+    {StenoStroke(0x148000 /*-PGS*/), WordForm::PRESENT, false, &ENDER_PGS, ""},
+    {StenoStroke(0x548000 /*-PGSZ*/), WordForm::PAST, false, &ENDER_PGSZ, ""},
+    {StenoStroke(0x1c8000 /*-PGTS*/), WordForm::PRESENT, false, &ENDER_PGS, " that"},
+    {StenoStroke(0x7c8000 /*-PGTSDZ*/), WordForm::PAST, false, &ENDER_PGSZ, " that"},
 
     // LT - To feel (like)
-    {StenoStroke(0xa0000 /*-LT*/), Tense::PRESENT, false, &ENDER_LT, ""},
-    {StenoStroke(0x2a0000 /*-LTD*/), Tense::PAST, false, &ENDER_LTD, ""},
-    {StenoStroke(0x1a0000 /*-LTS*/), Tense::PRESENT, false, &ENDER_LT, " like"},
-    {StenoStroke(0x7a0000 /*-LTSDZ*/), Tense::PAST, false, &ENDER_LTD, " like"},
+    {StenoStroke(0xa0000 /*-LT*/), WordForm::PRESENT, false, &ENDER_LT, ""},
+    {StenoStroke(0x2a0000 /*-LTD*/), WordForm::PAST, false, &ENDER_LTD, ""},
+    {StenoStroke(0x1a0000 /*-LTS*/), WordForm::PRESENT, false, &ENDER_LT, " like"},
+    {StenoStroke(0x7a0000 /*-LTSDZ*/), WordForm::PAST, false, &ENDER_LTD, " like"},
 
     // PBLG - To find (that)
-    {StenoStroke(0x78000 /*-PBLG*/), Tense::PRESENT, false, &ENDER_PBLG, ""},
-    {StenoStroke(0x278000 /*-PBLGD*/), Tense::PAST, false, &ENDER_PBLGD, ""},
-    {StenoStroke(0xf8000 /*-PBLGT*/), Tense::PRESENT, false, &ENDER_PBLG, " that"},
-    {StenoStroke(0x2f8000 /*-PBLGTD*/), Tense::PAST, false, &ENDER_PBLGD, " that"},
+    {StenoStroke(0x78000 /*-PBLG*/), WordForm::PRESENT, false, &ENDER_PBLG, ""},
+    {StenoStroke(0x278000 /*-PBLGD*/), WordForm::PAST, false, &ENDER_PBLGD, ""},
+    {StenoStroke(0xf8000 /*-PBLGT*/), WordForm::PRESENT, false, &ENDER_PBLG, " that"},
+    {StenoStroke(0x2f8000 /*-PBLGTD*/), WordForm::PAST, false, &ENDER_PBLGD, " that"},
 
     // RG - To forget (to)
-    {StenoStroke(0x44000 /*-RG*/), Tense::PRESENT, false, &ENDER_RG, ""},
-    {StenoStroke(0x244000 /*-RGD*/), Tense::PAST, false, &ENDER_RGD, ""},
-    {StenoStroke(0xc4000 /*-RGT*/), Tense::PRESENT, false, &ENDER_RG, " to"},
-    {StenoStroke(0x2c4000 /*-RGTD*/), Tense::PAST, false, &ENDER_RGD, " to"},
+    {StenoStroke(0x44000 /*-RG*/), WordForm::PRESENT, false, &ENDER_RG, ""},
+    {StenoStroke(0x244000 /*-RGD*/), WordForm::PAST, false, &ENDER_RGD, ""},
+    {StenoStroke(0xc4000 /*-RGT*/), WordForm::PRESENT, false, &ENDER_RG, " to"},
+    {StenoStroke(0x2c4000 /*-RGTD*/), WordForm::PAST, false, &ENDER_RGD, " to"},
 
     // GS - To get (to)
-    {StenoStroke(0x140000 /*-GS*/), Tense::PRESENT, false, &ENDER_GS, ""},
-    {StenoStroke(0x540000 /*-GSZ*/), Tense::PAST, false, &ENDER_GSZ, ""},
-    {StenoStroke(0x1c0000 /*-GTS*/), Tense::PRESENT, false, &ENDER_GS, " to"},
-    {StenoStroke(0x7c0000 /*-GTSDZ*/), Tense::PAST, false, &ENDER_GSZ, " to"},
+    {StenoStroke(0x140000 /*-GS*/), WordForm::PRESENT, false, &ENDER_GS, ""},
+    {StenoStroke(0x540000 /*-GSZ*/), WordForm::PAST, false, &ENDER_GSZ, ""},
+    {StenoStroke(0x1c0000 /*-GTS*/), WordForm::PRESENT, false, &ENDER_GS, " to"},
+    {StenoStroke(0x7c0000 /*-GTSDZ*/), WordForm::PAST, false, &ENDER_GSZ, " to"},
 
     // GZ - To give
-    {StenoStroke(0x440000 /*-GZ*/), Tense::PRESENT, false, &ENDER_GZ, ""},
-    {StenoStroke(0x640000 /*-GDZ*/), Tense::PAST, false, &ENDER_GDZ, ""},
+    {StenoStroke(0x440000 /*-GZ*/), WordForm::PRESENT, false, &ENDER_GZ, ""},
+    {StenoStroke(0x640000 /*-GDZ*/), WordForm::PAST, false, &ENDER_GDZ, ""},
 
     // G - To go (to)
-    {StenoStroke(0x40000 /*G*/), Tense::PRESENT, true, &ENDER_G, ""},
-    {StenoStroke(0x240000 /*GD*/), Tense::PAST, true, &ENDER_GD, ""},
-    {StenoStroke(0xC0000 /*GT*/), Tense::PRESENT, true, &ENDER_G, " to"},
-    {StenoStroke(0x2C0000 /*GTD*/), Tense::PAST, true, &ENDER_GD, " to"},
+    {StenoStroke(0x40000 /*G*/), WordForm::PRESENT, true, &ENDER_G, ""},
+    {StenoStroke(0x240000 /*GD*/), WordForm::PAST, true, &ENDER_GD, ""},
+    {StenoStroke(0xC0000 /*GT*/), WordForm::PRESENT, true, &ENDER_G, " to"},
+    {StenoStroke(0x2C0000 /*GTD*/), WordForm::PAST, true, &ENDER_GD, " to"},
 
     // PZ - To happen
-    {StenoStroke(0x408000 /*-PZ*/), Tense::PRESENT, true, &ENDER_PZ, ""},
-    {StenoStroke(0x608000 /*-PDZ*/), Tense::PAST, true, &ENDER_PDZ, ""},
+    {StenoStroke(0x408000 /*-PZ*/), WordForm::PRESENT, true, &ENDER_PZ, ""},
+    {StenoStroke(0x608000 /*-PDZ*/), WordForm::PAST, true, &ENDER_PDZ, ""},
 
     // H - To have (to)
-    {StenoStroke(0x80000 /*T*/), Tense::PRESENT, true, &ENDER_T, ""},
-    {StenoStroke(0x280000 /*TD*/), Tense::PAST, true, &ENDER_TD, ""},
-    {StenoStroke(0x180000 /*TS*/), Tense::PRESENT, true, &ENDER_T, " to"},
-    {StenoStroke(0x780000 /*TSDZ*/), Tense::PAST, true, &ENDER_TD, " to"},
+    {StenoStroke(0x80000 /*T*/), WordForm::PRESENT, true, &ENDER_T, ""},
+    {StenoStroke(0x280000 /*TD*/), WordForm::PAST, true, &ENDER_TD, ""},
+    {StenoStroke(0x180000 /*TS*/), WordForm::PRESENT, true, &ENDER_T, " to"},
+    {StenoStroke(0x780000 /*TSDZ*/), WordForm::PAST, true, &ENDER_TD, " to"},
 
     // PG - To hear (that)
-    {StenoStroke(0x48000 /*-PG*/), Tense::PRESENT, false, &ENDER_PG, ""},
-    {StenoStroke(0x248000 /*-PGD*/), Tense::PAST, false, &ENDER_PGD, ""},
-    {StenoStroke(0xc8000 /*-PGT*/), Tense::PRESENT, false, &ENDER_PG, " that"},
-    {StenoStroke(0x2c8000 /*-PGTD*/), Tense::PAST, false, &ENDER_PGD, " that"},
+    {StenoStroke(0x48000 /*-PG*/), WordForm::PRESENT, false, &ENDER_PG, ""},
+    {StenoStroke(0x248000 /*-PGD*/), WordForm::PAST, false, &ENDER_PGD, ""},
+    {StenoStroke(0xc8000 /*-PGT*/), WordForm::PRESENT, false, &ENDER_PG, " that"},
+    {StenoStroke(0x2c8000 /*-PGTD*/), WordForm::PAST, false, &ENDER_PGD, " that"},
 
     // RPS - To hope (to)
-    {StenoStroke(0x10c000 /*-RPS*/), Tense::PRESENT, false, &ENDER_RPS, ""},
-    {StenoStroke(0x50c000 /*-RPSZ*/), Tense::PAST, false, &ENDER_RPSZ, ""},
-    {StenoStroke(0x18c000 /*-RPTS*/), Tense::PRESENT, false, &ENDER_RPS, " to"},
-    {StenoStroke(0x78c000 /*-RPTSDZ*/), Tense::PAST, false, &ENDER_RPSZ, " to"},
+    {StenoStroke(0x10c000 /*-RPS*/), WordForm::PRESENT, false, &ENDER_RPS, ""},
+    {StenoStroke(0x50c000 /*-RPSZ*/), WordForm::PAST, false, &ENDER_RPSZ, ""},
+    {StenoStroke(0x18c000 /*-RPTS*/), WordForm::PRESENT, false, &ENDER_RPS, " to"},
+    {StenoStroke(0x78c000 /*-RPTSDZ*/), WordForm::PAST, false, &ENDER_RPSZ, " to"},
 
     // PLG - To imagine (that)
-    {StenoStroke(0x68000 /*-PLG*/), Tense::PRESENT, false, &ENDER_PLG, ""},
-    {StenoStroke(0x268000 /*-PLGD*/), Tense::PAST, false, &ENDER_PLGD, ""},
-    {StenoStroke(0xe8000 /*-PLGT*/), Tense::PRESENT, false, &ENDER_PLG, " that"},
-    {StenoStroke(0x2e8000 /*-PLGTD*/), Tense::PAST, false, &ENDER_PLGD, " that"},
+    {StenoStroke(0x68000 /*-PLG*/), WordForm::PRESENT, false, &ENDER_PLG, ""},
+    {StenoStroke(0x268000 /*-PLGD*/), WordForm::PAST, false, &ENDER_PLGD, ""},
+    {StenoStroke(0xe8000 /*-PLGT*/), WordForm::PRESENT, false, &ENDER_PLG, " that"},
+    {StenoStroke(0x2e8000 /*-PLGTD*/), WordForm::PAST, false, &ENDER_PLGD, " that"},
 
     // PBLGSZ - just
-    {StenoStroke(0x578000 /*-PBLGSZ*/), Tense::PRESENT, true, " just", ""},
-    {StenoStroke(0x7f8000 /*-PBLGTSDZ*/), Tense::PAST, true, " just", ""},
+    {StenoStroke(0x578000 /*-PBLGSZ*/), WordForm::PRESENT, true, " just", ""},
+    {StenoStroke(0x7f8000 /*-PBLGTSDZ*/), WordForm::PAST, true, " just", ""},
 
     // PBGS - To keep
-    {StenoStroke(0x158000 /*-PBGS*/), Tense::PRESENT, false, &ENDER_PBGS, ""},
-    {StenoStroke(0x558000 /*-PBGSZ*/), Tense::PAST, false, &ENDER_PBGSZ, ""},
+    {StenoStroke(0x158000 /*-PBGS*/), WordForm::PRESENT, false, &ENDER_PBGS, ""},
+    {StenoStroke(0x558000 /*-PBGSZ*/), WordForm::PAST, false, &ENDER_PBGSZ, ""},
 
     // PB - To know (that)
-    {StenoStroke(0x18000 /*-PB*/), Tense::PRESENT, false, &ENDER_PB, ""},
-    {StenoStroke(0x218000 /*-PBD*/), Tense::PAST, false, &ENDER_PBD, ""},
-    {StenoStroke(0x98000 /*-PBT*/), Tense::PRESENT, false, &ENDER_PB, " that"},
-    {StenoStroke(0x298000 /*-PBTD*/), Tense::PAST, false, &ENDER_PBD, " that"},
+    {StenoStroke(0x18000 /*-PB*/), WordForm::PRESENT, false, &ENDER_PB, ""},
+    {StenoStroke(0x218000 /*-PBD*/), WordForm::PAST, false, &ENDER_PBD, ""},
+    {StenoStroke(0x98000 /*-PBT*/), WordForm::PRESENT, false, &ENDER_PB, " that"},
+    {StenoStroke(0x298000 /*-PBTD*/), WordForm::PAST, false, &ENDER_PBD, " that"},
 
     // RPBS - To learn (to)
-    {StenoStroke(0x11c000 /*-RPBS*/), Tense::PRESENT, false, &ENDER_RPBS, ""},
-    {StenoStroke(0x51c000 /*-RPBSZ*/), Tense::PAST, false, &ENDER_RPBSZ, ""},
-    {StenoStroke(0x19c000 /*-RPBTS*/), Tense::PRESENT, false, &ENDER_RPBS, " to"},
-    {StenoStroke(0x79c000 /*-RPBTSDZ*/), Tense::PAST, false, &ENDER_RPBSZ, " to"},
+    {StenoStroke(0x11c000 /*-RPBS*/), WordForm::PRESENT, false, &ENDER_RPBS, ""},
+    {StenoStroke(0x51c000 /*-RPBSZ*/), WordForm::PAST, false, &ENDER_RPBSZ, ""},
+    {StenoStroke(0x19c000 /*-RPBTS*/), WordForm::PRESENT, false, &ENDER_RPBS, " to"},
+    {StenoStroke(0x79c000 /*-RPBTSDZ*/), WordForm::PAST, false, &ENDER_RPBSZ, " to"},
 
     // LGZ - To leave
-    {StenoStroke(0x460000 /*-LGZ*/), Tense::PRESENT, false, &ENDER_LGZ, ""},
-    {StenoStroke(0x660000 /*-LGDZ*/), Tense::PAST, false, &ENDER_LGDZ, ""},
+    {StenoStroke(0x460000 /*-LGZ*/), WordForm::PRESENT, false, &ENDER_LGZ, ""},
+    {StenoStroke(0x660000 /*-LGDZ*/), WordForm::PAST, false, &ENDER_LGDZ, ""},
 
     // LS - To let
-    {StenoStroke(0x120000 /*-LS*/), Tense::PRESENT, false, &ENDER_LS, ""},
-    {StenoStroke(0x520000 /*-LSZ*/), Tense::PAST, false, &ENDER_LSZ, ""},
+    {StenoStroke(0x120000 /*-LS*/), WordForm::PRESENT, false, &ENDER_LS, ""},
+    {StenoStroke(0x520000 /*-LSZ*/), WordForm::PAST, false, &ENDER_LSZ, ""},
 
     // BLG - To like (to)
-    {StenoStroke(0x70000 /*-BLG*/), Tense::PRESENT, false, &ENDER_BLG, ""},
-    {StenoStroke(0x270000 /*-BLGD*/), Tense::PAST, false, &ENDER_BLGD, ""},
-    {StenoStroke(0xf0000 /*-BLGT*/), Tense::PRESENT, false, &ENDER_BLG, " to"},
-    {StenoStroke(0x2f0000 /*-BLGTD*/), Tense::PAST, false, &ENDER_BLGD, " to"},
+    {StenoStroke(0x70000 /*-BLG*/), WordForm::PRESENT, false, &ENDER_BLG, ""},
+    {StenoStroke(0x270000 /*-BLGD*/), WordForm::PAST, false, &ENDER_BLGD, ""},
+    {StenoStroke(0xf0000 /*-BLGT*/), WordForm::PRESENT, false, &ENDER_BLG, " to"},
+    {StenoStroke(0x2f0000 /*-BLGTD*/), WordForm::PAST, false, &ENDER_BLGD, " to"},
 
     // LZ - To live
-    {StenoStroke(0x420000 /*-LZ*/), Tense::PRESENT, true, &ENDER_LZ, ""},
-    {StenoStroke(0x620000 /*-LDZ*/), Tense::PAST, true, &ENDER_LDZ, ""},
+    {StenoStroke(0x420000 /*-LZ*/), WordForm::PRESENT, true, &ENDER_LZ, ""},
+    {StenoStroke(0x620000 /*-LDZ*/), WordForm::PAST, true, &ENDER_LDZ, ""},
 
     // L - To look
-    {StenoStroke(0x20000 /*-L*/), Tense::PRESENT, false, &ENDER_L, ""},
-    {StenoStroke(0x220000 /*-LD*/), Tense::PAST, false, &ENDER_LD, ""},
+    {StenoStroke(0x20000 /*-L*/), WordForm::PRESENT, false, &ENDER_L, ""},
+    {StenoStroke(0x220000 /*-LD*/), WordForm::PAST, false, &ENDER_LD, ""},
 
     // LG - To love (to)
-    {StenoStroke(0x60000 /*-LG*/), Tense::PRESENT, false, &ENDER_LG, ""},
-    {StenoStroke(0x260000 /*-LGD*/), Tense::PAST, false, &ENDER_LGD, ""},
-    {StenoStroke(0xe0000 /*-LGT*/), Tense::PRESENT, false, &ENDER_LG, " to"},
-    {StenoStroke(0x2e0000 /*-LGTD*/), Tense::PAST, false, &ENDER_LGD, " to"},
+    {StenoStroke(0x60000 /*-LG*/), WordForm::PRESENT, false, &ENDER_LG, ""},
+    {StenoStroke(0x260000 /*-LGD*/), WordForm::PAST, false, &ENDER_LGD, ""},
+    {StenoStroke(0xe0000 /*-LGT*/), WordForm::PRESENT, false, &ENDER_LG, " to"},
+    {StenoStroke(0x2e0000 /*-LGTD*/), WordForm::PAST, false, &ENDER_LGD, " to"},
 
     // RPBL - To make (a)
-    {StenoStroke(0x3c000 /*-RPBL*/), Tense::PRESENT, false, &ENDER_RPBL, ""},
-    {StenoStroke(0x23c000 /*-RPBLD*/), Tense::PAST, false, &ENDER_RPBLD, ""},
-    {StenoStroke(0xbc000 /*-RPBLT*/), Tense::PRESENT, false, &ENDER_RPBL, " a"},
-    {StenoStroke(0x2bc000 /*-RPBLTD*/), Tense::PAST, false, &ENDER_RPBLD, " a"},
+    {StenoStroke(0x3c000 /*-RPBL*/), WordForm::PRESENT, false, &ENDER_RPBL, ""},
+    {StenoStroke(0x23c000 /*-RPBLD*/), WordForm::PAST, false, &ENDER_RPBLD, ""},
+    {StenoStroke(0xbc000 /*-RPBLT*/), WordForm::PRESENT, false, &ENDER_RPBL, " a"},
+    {StenoStroke(0x2bc000 /*-RPBLTD*/), WordForm::PAST, false, &ENDER_RPBLD, " a"},
 
     // PL - may (be) - Auxiliary verb
     // These do not combine naturally with middle/structures.
-    {StenoStroke(0x28000 /*-PL*/), Tense::PRESENT, true, " may", ""},
-    {StenoStroke(0x228000 /*-PLD*/), Tense::PAST, true, " might", ""},
-    {StenoStroke(0xa8000 /*-PLT*/), Tense::PRESENT, true, " may", " be"},
-    {StenoStroke(0x2a8000 /*-PLTD*/), Tense::PAST, true, " might", " be"},
+    {StenoStroke(0x28000 /*-PL*/), WordForm::PRESENT, true, " may", ""},
+    {StenoStroke(0x228000 /*-PLD*/), WordForm::PAST, true, " might", ""},
+    {StenoStroke(0xa8000 /*-PLT*/), WordForm::PRESENT, true, " may", " be"},
+    {StenoStroke(0x2a8000 /*-PLTD*/), WordForm::PAST, true, " might", " be"},
 
     // PBL - To mean (to)
-    {StenoStroke(0x38000 /*-PBL*/), Tense::PRESENT, false, &ENDER_PBL, ""},
-    {StenoStroke(0x238000 /*-PBLD*/), Tense::PAST, false, &ENDER_PBLD, ""},
-    {StenoStroke(0xb8000 /*-PBLT*/), Tense::PRESENT, false, &ENDER_PBL, " to"},
-    {StenoStroke(0x2b8000 /*-PBLTD*/), Tense::PAST, false, &ENDER_PBLD, " to"},
+    {StenoStroke(0x38000 /*-PBL*/), WordForm::PRESENT, false, &ENDER_PBL, ""},
+    {StenoStroke(0x238000 /*-PBLD*/), WordForm::PAST, false, &ENDER_PBLD, ""},
+    {StenoStroke(0xb8000 /*-PBLT*/), WordForm::PRESENT, false, &ENDER_PBL, " to"},
+    {StenoStroke(0x2b8000 /*-PBLTD*/), WordForm::PAST, false, &ENDER_PBLD, " to"},
 
     // PBLS - To mind
-    {StenoStroke(0x138000 /*-PBLS*/), Tense::PRESENT, false, &ENDER_PBLS, ""},
-    {StenoStroke(0x538000 /*-PBLSZ*/), Tense::PAST, false, &ENDER_PBLSZ, ""},
+    {StenoStroke(0x138000 /*-PBLS*/), WordForm::PRESENT, false, &ENDER_PBLS, ""},
+    {StenoStroke(0x538000 /*-PBLSZ*/), WordForm::PAST, false, &ENDER_PBLSZ, ""},
 
     // PLZ - To move
-    {StenoStroke(0x428000 /*-PLZ*/), Tense::PRESENT, false, &ENDER_PLZ, ""},
-    {StenoStroke(0x628000 /*-PLDZ*/), Tense::PAST, false, &ENDER_PLDZ, ""},
+    {StenoStroke(0x428000 /*-PLZ*/), WordForm::PRESENT, false, &ENDER_PLZ, ""},
+    {StenoStroke(0x628000 /*-PLDZ*/), WordForm::PAST, false, &ENDER_PLDZ, ""},
 
     // PBLGS - must (be) - Auxiliary verb
     // These do not combine naturally with middle/structures.
-    {StenoStroke(0x178000 /*-PBLGS*/), Tense::PRESENT, true, " must", ""},
-    {StenoStroke(0x1f8000 /*-PBLGTS*/), Tense::PRESENT, true, " must", " be"},
+    {StenoStroke(0x178000 /*-PBLGS*/), WordForm::PRESENT, true, " must", ""},
+    {StenoStroke(0x1f8000 /*-PBLGTS*/), WordForm::PRESENT, true, " must", " be"},
 
     // RPG - To need (to)
-    {StenoStroke(0x4c000 /*-RPG*/), Tense::PRESENT, true, &ENDER_RPG, ""},
-    {StenoStroke(0x24c000 /*-RPGD*/), Tense::PAST, true, &ENDER_RPGD, ""},
-    {StenoStroke(0xcc000 /*-RPGT*/), Tense::PRESENT, true, &ENDER_RPG, " to"},
-    {StenoStroke(0x2cc000 /*-RPGTD*/), Tense::PAST, true, &ENDER_RPGD, " to"},
+    {StenoStroke(0x4c000 /*-RPG*/), WordForm::PRESENT, true, &ENDER_RPG, ""},
+    {StenoStroke(0x24c000 /*-RPGD*/), WordForm::PAST, true, &ENDER_RPGD, ""},
+    {StenoStroke(0xcc000 /*-RPGT*/), WordForm::PRESENT, true, &ENDER_RPG, " to"},
+    {StenoStroke(0x2cc000 /*-RPGTD*/), WordForm::PAST, true, &ENDER_RPGD, " to"},
 
     // PS - To put (it)
-    {StenoStroke(0x108000 /*-PS*/), Tense::PRESENT, false, &ENDER_PS, ""},
-    {StenoStroke(0x508000 /*-PSZ*/), Tense::PAST, false, &ENDER_PSZ, ""},
-    {StenoStroke(0x188000 /*-PTS*/), Tense::PRESENT, false, &ENDER_PS, " it"},
-    {StenoStroke(0x788000 /*-PTSDZ*/), Tense::PAST, false, &ENDER_PSZ, " it"},
+    {StenoStroke(0x108000 /*-PS*/), WordForm::PRESENT, false, &ENDER_PS, ""},
+    {StenoStroke(0x508000 /*-PSZ*/), WordForm::PAST, false, &ENDER_PSZ, ""},
+    {StenoStroke(0x188000 /*-PTS*/), WordForm::PRESENT, false, &ENDER_PS, " it"},
+    {StenoStroke(0x788000 /*-PTSDZ*/), WordForm::PAST, false, &ENDER_PSZ, " it"},
 
     // RS - To read
-    {StenoStroke(0x104000 /*-RS*/), Tense::PRESENT, false, &ENDER_RS, ""},
-    {StenoStroke(0x504000 /*-RSZ*/), Tense::PAST, false, &ENDER_RSZ, ""},
+    {StenoStroke(0x104000 /*-RS*/), WordForm::PRESENT, false, &ENDER_RS, ""},
+    {StenoStroke(0x504000 /*-RSZ*/), WordForm::PAST, false, &ENDER_RSZ, ""},
 
     // RLG - really
-    {StenoStroke(0x64000 /*-RLG*/), Tense::PRESENT, true, " really", ""},
-    {StenoStroke(0x264000 /*-RLG*/), Tense::PAST, true, " really", ""},
+    {StenoStroke(0x64000 /*-RLG*/), WordForm::PRESENT, true, " really", ""},
+    {StenoStroke(0x264000 /*-RLG*/), WordForm::PAST, true, " really", ""},
 
     // RL - To recall
-    {StenoStroke(0x24000 /*-RL*/), Tense::PRESENT, false, &ENDER_RL, ""},
-    {StenoStroke(0x224000 /*-RLD*/), Tense::PAST, false, &ENDER_RLD, ""},
+    {StenoStroke(0x24000 /*-RL*/), WordForm::PRESENT, false, &ENDER_RL, ""},
+    {StenoStroke(0x224000 /*-RLD*/), WordForm::PAST, false, &ENDER_RLD, ""},
 
     // RLS - To realize (that)
-    {StenoStroke(0x124000 /*-RLS*/), Tense::PRESENT, false, &ENDER_RLS, ""},
-    {StenoStroke(0x524000 /*-RLSZ*/), Tense::PAST, false, &ENDER_RLSZ, ""},
-    {StenoStroke(0x1a4000 /*-RLTS*/), Tense::PRESENT, false, &ENDER_RLS, " that"},
-    {StenoStroke(0x7a4000 /*-RLTSDZ*/), Tense::PAST, false, &ENDER_RLSZ, " that"},
+    {StenoStroke(0x124000 /*-RLS*/), WordForm::PRESENT, false, &ENDER_RLS, ""},
+    {StenoStroke(0x524000 /*-RLSZ*/), WordForm::PAST, false, &ENDER_RLSZ, ""},
+    {StenoStroke(0x1a4000 /*-RLTS*/), WordForm::PRESENT, false, &ENDER_RLS, " that"},
+    {StenoStroke(0x7a4000 /*-RLTSDZ*/), WordForm::PAST, false, &ENDER_RLSZ, " that"},
 
     // RPL - To remember (that)
-    {StenoStroke(0x2c000 /*-RPL*/), Tense::PRESENT, false, &ENDER_RPL, ""},
-    {StenoStroke(0x22c000 /*-RPLD*/), Tense::PAST, false, &ENDER_RPLD, ""},
-    {StenoStroke(0xac000 /*-RPLT*/), Tense::PRESENT, false, &ENDER_RPL, " that"},
-    {StenoStroke(0x2ac000 /*-RPLTD*/), Tense::PAST, false, &ENDER_RPLD, " that"},
+    {StenoStroke(0x2c000 /*-RPL*/), WordForm::PRESENT, false, &ENDER_RPL, ""},
+    {StenoStroke(0x22c000 /*-RPLD*/), WordForm::PAST, false, &ENDER_RPLD, ""},
+    {StenoStroke(0xac000 /*-RPLT*/), WordForm::PRESENT, false, &ENDER_RPL, " that"},
+    {StenoStroke(0x2ac000 /*-RPLTD*/), WordForm::PAST, false, &ENDER_RPLD, " that"},
 
     // RPLS - To remain
-    {StenoStroke(0x12c000 /*-RPLS*/), Tense::PRESENT, false, &ENDER_RPLS, ""},
-    {StenoStroke(0x52c000 /*-RPLSZ*/), Tense::PAST, false, &ENDER_RPLSZ, ""},
+    {StenoStroke(0x12c000 /*-RPLS*/), WordForm::PRESENT, false, &ENDER_RPLS, ""},
+    {StenoStroke(0x52c000 /*-RPLSZ*/), WordForm::PAST, false, &ENDER_RPLSZ, ""},
 
     // R - To run
-    {StenoStroke(0x4000 /*-R*/), Tense::PRESENT, false, &ENDER_R, ""},
-    {StenoStroke(0x204000 /*-RD*/), Tense::PAST, false, &ENDER_RD, ""},
+    {StenoStroke(0x4000 /*-R*/), WordForm::PRESENT, false, &ENDER_R, ""},
+    {StenoStroke(0x204000 /*-RD*/), WordForm::PAST, false, &ENDER_RD, ""},
 
     // BS - To say (that)
-    {StenoStroke(0x110000 /*-BS*/), Tense::PRESENT, false, &ENDER_BS, ""},
-    {StenoStroke(0x510000 /*-BSZ*/), Tense::PAST, false, &ENDER_BSZ, ""},
-    {StenoStroke(0x190000 /*-BTS*/), Tense::PRESENT, false, &ENDER_BS, " that"},
-    {StenoStroke(0x790000 /*-BTSDZ*/), Tense::PAST, false, &ENDER_BSZ, " that"},
+    {StenoStroke(0x110000 /*-BS*/), WordForm::PRESENT, false, &ENDER_BS, ""},
+    {StenoStroke(0x510000 /*-BSZ*/), WordForm::PAST, false, &ENDER_BSZ, ""},
+    {StenoStroke(0x190000 /*-BTS*/), WordForm::PRESENT, false, &ENDER_BS, " that"},
+    {StenoStroke(0x790000 /*-BTSDZ*/), WordForm::PAST, false, &ENDER_BSZ, " that"},
 
     // S - To see
-    {StenoStroke(0x100000 /*-S*/), Tense::PRESENT, false, &ENDER_S, ""},
-    {StenoStroke(0x500000 /*-SZ*/), Tense::PAST, false, &ENDER_SZ, ""},
+    {StenoStroke(0x100000 /*-S*/), WordForm::PRESENT, false, &ENDER_S, ""},
+    {StenoStroke(0x500000 /*-SZ*/), WordForm::PAST, false, &ENDER_SZ, ""},
 
     // BLS - To set
-    {StenoStroke(0x130000 /*-BLS*/), Tense::PRESENT, false, &ENDER_BLS, ""},
-    {StenoStroke(0x530000 /*-BLSZ*/), Tense::PAST, false, &ENDER_BLSZ, ""},
+    {StenoStroke(0x130000 /*-BLS*/), WordForm::PRESENT, false, &ENDER_BLS, ""},
+    {StenoStroke(0x530000 /*-BLSZ*/), WordForm::PAST, false, &ENDER_BLSZ, ""},
 
     // PLS - To seem (to)
-    {StenoStroke(0x128000 /*-PLS*/), Tense::PRESENT, true, &ENDER_PLS, ""},
-    {StenoStroke(0x528000 /*-PLSZ*/), Tense::PAST, true, &ENDER_PLSZ, ""},
-    {StenoStroke(0x1a8000 /*-PLTS*/), Tense::PRESENT, true, &ENDER_PLS, " to"},
-    {StenoStroke(0x7a8000 /*-PLTSDZ*/), Tense::PAST, true, &ENDER_PLSZ, " to"},
+    {StenoStroke(0x128000 /*-PLS*/), WordForm::PRESENT, true, &ENDER_PLS, ""},
+    {StenoStroke(0x528000 /*-PLSZ*/), WordForm::PAST, true, &ENDER_PLSZ, ""},
+    {StenoStroke(0x1a8000 /*-PLTS*/), WordForm::PRESENT, true, &ENDER_PLS, " to"},
+    {StenoStroke(0x7a8000 /*-PLTSDZ*/), WordForm::PAST, true, &ENDER_PLSZ, " to"},
 
     // RBL - shall - Auxiliary verb
     // These do not combine naturally with middle/structures.
-    {StenoStroke(0x34000 /*RBL*/), Tense::PRESENT, false, " shall", ""},
-    {StenoStroke(0x234000 /*RBLD*/), Tense::PAST, false, " should", ""},
+    {StenoStroke(0x34000 /*RBL*/), WordForm::PRESENT, false, " shall", ""},
+    {StenoStroke(0x234000 /*RBLD*/), WordForm::PAST, false, " should", ""},
 
     // RBZ - To show
-    {StenoStroke(0x414000 /*-RBZ*/), Tense::PRESENT, false, &ENDER_RBZ, ""},
-    {StenoStroke(0x614000 /*-RBDZ*/), Tense::PAST, false, &ENDER_RBDZ, ""},
+    {StenoStroke(0x414000 /*-RBZ*/), WordForm::PRESENT, false, &ENDER_RBZ, ""},
+    {StenoStroke(0x614000 /*-RBDZ*/), WordForm::PAST, false, &ENDER_RBDZ, ""},
 
     // RBT - To take
-    {StenoStroke(0x94000 /*-RBT*/), Tense::PRESENT, false, &ENDER_RBT, ""},
-    {StenoStroke(0x294000 /*-RBTD*/), Tense::PAST, false, &ENDER_RBTD, ""},
+    {StenoStroke(0x94000 /*-RBT*/), WordForm::PRESENT, false, &ENDER_RBT, ""},
+    {StenoStroke(0x294000 /*-RBTD*/), WordForm::PAST, false, &ENDER_RBTD, ""},
 
     // RLT - To tell
-    {StenoStroke(0xa4000 /*-RLT*/), Tense::PRESENT, false, &ENDER_RLT, ""},
-    {StenoStroke(0x2a4000 /*-RLTD*/), Tense::PAST, false, &ENDER_RLTD, ""},
+    {StenoStroke(0xa4000 /*-RLT*/), WordForm::PRESENT, false, &ENDER_RLT, ""},
+    {StenoStroke(0x2a4000 /*-RLTD*/), WordForm::PAST, false, &ENDER_RLTD, ""},
 
     // PBG - To think (that)
-    {StenoStroke(0x58000 /*-PBG*/), Tense::PRESENT, false, &ENDER_PBG, ""},
-    {StenoStroke(0x258000 /*-PBGD*/), Tense::PAST, false, &ENDER_PBGD, ""},
-    {StenoStroke(0xd8000 /*-PBGT*/), Tense::PRESENT, false, &ENDER_PBG, " that"},
-    {StenoStroke(0x2d8000 /*-PBGTD*/), Tense::PAST, false, &ENDER_PBGD, " that"},
+    {StenoStroke(0x58000 /*-PBG*/), WordForm::PRESENT, false, &ENDER_PBG, ""},
+    {StenoStroke(0x258000 /*-PBGD*/), WordForm::PAST, false, &ENDER_PBGD, ""},
+    {StenoStroke(0xd8000 /*-PBGT*/), WordForm::PRESENT, false, &ENDER_PBG, " that"},
+    {StenoStroke(0x2d8000 /*-PBGTD*/), WordForm::PAST, false, &ENDER_PBGD, " that"},
 
     // RT - To try (to)
-    {StenoStroke(0x84000 /*-RT*/), Tense::PRESENT, false, &ENDER_RT, ""},
-    {StenoStroke(0x284000 /*-RTD*/), Tense::PAST, false, &ENDER_RTD, ""},
-    {StenoStroke(0x184000 /*-RTS*/), Tense::PRESENT, false, &ENDER_RT, " to"},
-    {StenoStroke(0x784000 /*-RTSDZ*/), Tense::PAST, false, &ENDER_RTD, " to"},
+    {StenoStroke(0x84000 /*-RT*/), WordForm::PRESENT, false, &ENDER_RT, ""},
+    {StenoStroke(0x284000 /*-RTD*/), WordForm::PAST, false, &ENDER_RTD, ""},
+    {StenoStroke(0x184000 /*-RTS*/), WordForm::PRESENT, false, &ENDER_RT, " to"},
+    {StenoStroke(0x784000 /*-RTSDZ*/), WordForm::PAST, false, &ENDER_RTD, " to"},
 
     // RPB - To understand (the)
-    {StenoStroke(0x1c000 /*-RPB*/), Tense::PRESENT, false, &ENDER_RPB, ""},
-    {StenoStroke(0x21c000 /*-RPBD*/), Tense::PAST, false, &ENDER_RPBD, ""},
-    {StenoStroke(0x9c000 /*-RPBT*/), Tense::PRESENT, false, &ENDER_RPB, " the"},
-    {StenoStroke(0x29c000 /*-RPBTD*/), Tense::PAST, false, &ENDER_RPBD, " the"},
+    {StenoStroke(0x1c000 /*-RPB*/), WordForm::PRESENT, false, &ENDER_RPB, ""},
+    {StenoStroke(0x21c000 /*-RPBD*/), WordForm::PAST, false, &ENDER_RPBD, ""},
+    {StenoStroke(0x9c000 /*-RPBT*/), WordForm::PRESENT, false, &ENDER_RPB, " the"},
+    {StenoStroke(0x29c000 /*-RPBTD*/), WordForm::PAST, false, &ENDER_RPBD, " the"},
 
     // Z - To use
-    {StenoStroke(0x400000 /*-Z*/), Tense::PRESENT, true, &ENDER_Z, ""},
-    {StenoStroke(0x600000 /*-DZ*/), Tense::PAST, true, &ENDER_DZ, ""},
+    {StenoStroke(0x400000 /*-Z*/), WordForm::PRESENT, true, &ENDER_Z, ""},
+    {StenoStroke(0x600000 /*-DZ*/), WordForm::PAST, true, &ENDER_DZ, ""},
     // TZ - Special case
-    {StenoStroke(0x480000 /*-TZ*/), Tense::PRESENT, true, " used", " to"},
-    {StenoStroke(0x680000 /*-TDZ*/), Tense::PAST, true, " used", " to"},
+    {StenoStroke(0x480000 /*-TZ*/), WordForm::PRESENT, true, " used", " to"},
+    {StenoStroke(0x680000 /*-TDZ*/), WordForm::PAST, true, " used", " to"},
 
     // P - To want (to)
-    {StenoStroke(0x8000 /*P*/), Tense::PRESENT, false, &ENDER_P, ""},
-    {StenoStroke(0x208000 /*PD*/), Tense::PAST, false, &ENDER_PD, ""},
-    {StenoStroke(0x88000 /*PT*/), Tense::PRESENT, false, &ENDER_P, " to"},
-    {StenoStroke(0x288000 /*PTD*/), Tense::PAST, false, &ENDER_PD, " to"},
+    {StenoStroke(0x8000 /*P*/), WordForm::PRESENT, false, &ENDER_P, ""},
+    {StenoStroke(0x208000 /*PD*/), WordForm::PAST, false, &ENDER_PD, ""},
+    {StenoStroke(0x88000 /*PT*/), WordForm::PRESENT, false, &ENDER_P, " to"},
+    {StenoStroke(0x288000 /*PTD*/), WordForm::PAST, false, &ENDER_PD, " to"},
 
     // RBGS - will -- Auxiliary verb
     // These do not combine naturally with middle/structures.
-    {StenoStroke(0x154000 /*RBGS*/), Tense::PRESENT, false, " will", ""},
-    {StenoStroke(0x554000 /*RBGSZ*/), Tense::PAST, false, " would", ""},
+    {StenoStroke(0x154000 /*RBGS*/), WordForm::PRESENT, false, " will", ""},
+    {StenoStroke(0x554000 /*RBGSZ*/), WordForm::PAST, false, " would", ""},
 
     // RBS - To wish (to)
-    {StenoStroke(0x114000 /*-RBS*/), Tense::PRESENT, false, &ENDER_RBS, ""},
-    {StenoStroke(0x514000 /*-RBSZ*/), Tense::PAST, false, &ENDER_RBSZ, ""},
-    {StenoStroke(0x194000 /*-RBTS*/), Tense::PRESENT, false, &ENDER_RBS, " to"},
-    {StenoStroke(0x794000 /*-RBTSDZ*/), Tense::PAST, false, &ENDER_RBSZ, " to"},
+    {StenoStroke(0x114000 /*-RBS*/), WordForm::PRESENT, false, &ENDER_RBS, ""},
+    {StenoStroke(0x514000 /*-RBSZ*/), WordForm::PAST, false, &ENDER_RBSZ, ""},
+    {StenoStroke(0x194000 /*-RBTS*/), WordForm::PRESENT, false, &ENDER_RBS, " to"},
+    {StenoStroke(0x794000 /*-RBTSDZ*/), WordForm::PAST, false, &ENDER_RBSZ, " to"},
 
     // RBG - To work (on)
-    {StenoStroke(0x54000 /*-RBG*/), Tense::PRESENT, false, &ENDER_RBG, ""},
-    {StenoStroke(0x254000 /*-RBGD*/), Tense::PAST, false, &ENDER_RBGD, ""},
-    {StenoStroke(0xd4000 /*-RBGT*/), Tense::PRESENT, false, &ENDER_RBG, " on"},
-    {StenoStroke(0x2d4000 /*-RBGTD*/), Tense::PAST, false, &ENDER_RBGD, " on"},
+    {StenoStroke(0x54000 /*-RBG*/), WordForm::PRESENT, false, &ENDER_RBG, ""},
+    {StenoStroke(0x254000 /*-RBGD*/), WordForm::PAST, false, &ENDER_RBGD, ""},
+    {StenoStroke(0xd4000 /*-RBGT*/), WordForm::PRESENT, false, &ENDER_RBG, " on"},
+    {StenoStroke(0x2d4000 /*-RBGTD*/), WordForm::PAST, false, &ENDER_RBGD, " on"},
 };
 // clang-format on
 
@@ -1967,6 +1979,7 @@ constexpr JeffPhrasingDictionaryData JeffPhrasingDictionaryData::instance = {
 #if GENERATE_TABLES
 
 #define phrasingData JeffPhrasingDictionaryData::instance
+#include "../crc32.h"
 #include <stdio.h>
 #include <vector>
 
@@ -2049,7 +2062,7 @@ private:
 };
 
 void ReverseBuilder::Generate() {
-  uint32_t starterReplacement = Crc32("\\0", 2);
+  uint32_t starterReplacement = Crc32::Hash("\\0", 2);
   for (const JeffPhrasingFullStarter &fullStarter : phrasingData.fullStarters) {
     AddText(fullStarter.pronoun.word, fullStarter.stroke, starterReplacement,
             ComponentMask::STARTER,
@@ -2063,7 +2076,7 @@ void ReverseBuilder::Generate() {
             ModeMask::SIMPLE | ModeMask::PRESENT | ModeMask::PAST);
   }
 
-  uint32_t middleReplacement = Crc32("\\1", 2);
+  uint32_t middleReplacement = Crc32::Hash("\\1", 2);
   for (size_t i = 0; i < 8; ++i) {
     RecurseVariant(phrasingData.fullMiddles[i].word,
                    StenoStroke(uint32_t(i) << StrokeBitIndex::A),
@@ -2113,12 +2126,12 @@ void ReverseBuilder::Generate() {
                    nullptr);
   }
 
-  uint32_t verbReplacement = Crc32("\\2", 2);
-  uint32_t suffixReplacement = Crc32("\\3", 2);
+  uint32_t verbReplacement = Crc32::Hash("\\2", 2);
+  uint32_t suffixReplacement = Crc32::Hash("\\3", 2);
 
   for (const JeffPhrasingEnder &ender : phrasingData.enders) {
     uint8_t modeMask = ModeMask::FULL | ModeMask::SIMPLE;
-    if (ender.tense == Tense::PAST) {
+    if (uint32_t(ender.tense) & uint32_t(WordForm::PAST)) {
       modeMask |= ModeMask::PAST;
     } else {
       modeMask |= ModeMask::PRESENT;
@@ -2213,10 +2226,10 @@ void ReverseBuilder::RecurseVariant(const JeffPhrasingVariant &variant,
     const JeffPhrasingMap *map = variant.map;
     for (const JeffPhrasingMapEntry &entry : map->entries) {
       uint8_t localModeMask = modeMask;
-      if (entry.key == (uint32_t)Tense::PRESENT) {
+      if (entry.key & (uint32_t)WordForm::PRESENT) {
         localModeMask &= ~ModeMask::PAST;
       }
-      if (entry.key == (uint32_t)Tense::PAST) {
+      if (entry.key & (uint32_t)WordForm::PAST) {
         localModeMask &= ~ModeMask::PRESENT;
       }
       RecurseVariant(entry.value, stroke, replacement, componentMask,
@@ -2268,7 +2281,7 @@ void ReverseBuilder::AddText(const char *text, StenoStroke stroke,
   }
 
   Entry entry = {};
-  entry.hash = Crc32(p, pEnd - p);
+  entry.hash = Crc32::Hash(p, pEnd - p);
   RegisterCharacters(p, pEnd - p);
   entry.replacementHash = replacement == 0 ? entry.hash : replacement;
   entry.stroke = stroke;
@@ -2281,7 +2294,7 @@ void ReverseBuilder::AddText(const char *text, StenoStroke stroke,
   if (space) {
     Entry entry = {};
     entry.modeMask = modeMask;
-    entry.hash = Crc32(p, space - p);
+    entry.hash = Crc32::Hash(p, space - p);
     RegisterCharacters(p, space - p);
     entry.checkNext = true;
     entries.push_back(entry);
@@ -2405,10 +2418,10 @@ void ReverseStructureBuilder::RecurseVariant(const JeffPhrasingVariant &variant,
     const JeffPhrasingMap *map = variant.map;
     for (const JeffPhrasingMapEntry &entry : map->entries) {
       uint8_t localModeMask = modeMask;
-      if (entry.key == (uint32_t)Tense::PRESENT) {
+      if (entry.key == (uint32_t)WordForm::PRESENT) {
         localModeMask &= ~ModeMask::PAST;
       }
-      if (entry.key == (uint32_t)Tense::PAST) {
+      if (entry.key == (uint32_t)WordForm::PAST) {
         localModeMask &= ~ModeMask::PRESENT;
       }
       RecurseVariant(entry.value, stroke, localModeMask);
@@ -2431,7 +2444,7 @@ void ReverseStructureBuilder::RecurseVariant(const JeffPhrasingVariant &variant,
         break;
 
       if (p[0] == '\\' && ('0' <= p[1] && p[1] <= '3')) {
-        hash += Crc32(p, 2);
+        hash += Crc32::Hash(p, 2);
         p += 2;
         continue;
       }
@@ -2444,7 +2457,7 @@ void ReverseStructureBuilder::RecurseVariant(const JeffPhrasingVariant &variant,
       if (pEnd[-1] == ' ') {
         --pEnd;
       }
-      hash += Crc32(p, pEnd - p);
+      hash += Crc32::Hash(p, pEnd - p);
       p = pEnd;
     }
 
@@ -2467,13 +2480,13 @@ int main(int, const char **) {
 
   printf(
       "const uint32_t STARTER_REPLACEMENT_CRC = 0x%08x; // CRC for \"\\0\"\n",
-      Crc32("\\0", 2));
+      Crc32::Hash("\\0", 2));
   printf("const uint32_t MIDDLE_REPLACEMENT_CRC = 0x%08x; // CRC for \"\\1\"\n",
-         Crc32("\\1", 2));
+         Crc32::Hash("\\1", 2));
   printf("const uint32_t VERB_REPLACEMENT_CRC = 0x%08x; // CRC for \"\\2\"\n",
-         Crc32("\\2", 2));
+         Crc32::Hash("\\2", 2));
   printf("const uint32_t SUFFIX_REPLACEMENT_CRC = 0x%08x; // CRC for \"\\3\"\n",
-         Crc32("\\3", 2));
+         Crc32::Hash("\\3", 2));
 
   GenerateLookupTable();
 

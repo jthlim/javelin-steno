@@ -10,8 +10,14 @@
 
 struct Pattern::BuildContext {
   const char *p;
-  int captureIndex;
+  size_t captureIndex;
   CapturePatternComponent *captures[8];
+
+  void SetCaptureComponents(size_t index, CapturePatternComponent *start,
+                            CapturePatternComponent *end) {
+    captures[index] = start;
+    captures[index + 1] = end;
+  }
 };
 
 struct Pattern::BuildResult {
@@ -43,12 +49,11 @@ Pattern Pattern::Compile(const char *p) {
   context.captureIndex = 2;
 
   CapturePatternComponent *captureStart = new CapturePatternComponent(0);
-  context.captures[0] = captureStart;
   const BuildResult result = ParseAlternate(context);
   captureStart->next = result.head;
   CapturePatternComponent *captureEnd = new CapturePatternComponent(1);
   result.tail->next = captureEnd;
-  context.captures[1] = captureEnd;
+  context.SetCaptureComponents(0, captureStart, captureEnd);
 
   // If this assert is hit, then the entire pattern hasn't been processed.
   assert(*context.p == '\0');
@@ -186,18 +191,17 @@ Pattern::BuildAtomResult Pattern::ParseAtom(BuildContext &c) {
 
     assert(c.captureIndex < 8);
 
-    const int captureIndex = c.captureIndex;
+    const size_t captureIndex = c.captureIndex;
     c.captureIndex += 2;
     CapturePatternComponent *captureStart =
         new CapturePatternComponent(captureIndex);
-    c.captures[captureIndex] = captureStart;
     const BuildResult component = ParseAlternate(c);
     assert(*c.p == ')');
     c.p++;
 
     CapturePatternComponent *captureEnd =
         new CapturePatternComponent(captureIndex + 1);
-    c.captures[captureIndex + 1] = captureEnd;
+    c.SetCaptureComponents(captureIndex, captureStart, captureEnd);
 
     if (*c.p == '?') {
       c.p++;
