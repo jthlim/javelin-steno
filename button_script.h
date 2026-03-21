@@ -115,26 +115,18 @@ public:
     return GetPressScriptIndex(buttonCount) + analogValueIndex;
   }
 
-  static size_t GetEncoderCWScriptIndex(size_t buttonCount,
-                                        size_t analogValueCount,
-                                        size_t encoderIndex) {
+  static size_t GetEncoderScriptIndex(size_t buttonCount,
+                                      size_t analogValueCount,
+                                      size_t encoderIndex) {
     return GetAnalogInputScriptIndex(buttonCount, analogValueCount) +
-           2 * encoderIndex;
-  }
-
-  static size_t GetEncoderCCWScriptIndex(size_t buttonCount,
-                                         size_t analogValueCount,
-                                         size_t encoderIndex) {
-    return GetAnalogInputScriptIndex(buttonCount, analogValueCount) +
-           2 * encoderIndex + 1;
+           encoderIndex;
   }
 
   static size_t GetPointerScriptIndex(size_t buttonCount,
                                       size_t analogValueCount,
                                       size_t encoderCount,
                                       size_t pointerScriptIndex) {
-    return GetEncoderCWScriptIndex(buttonCount, analogValueCount,
-                                   encoderCount) +
+    return GetEncoderScriptIndex(buttonCount, analogValueCount, encoderCount) +
            pointerScriptIndex;
   }
 

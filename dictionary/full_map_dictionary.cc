@@ -423,6 +423,7 @@ bool StenoFullMapDictionary::Remove(const char *name,
       constexpr StenoStroke emptyStroke(0);
       Flash::Write(&entry.strokes, &emptyStroke, sizeof(StenoStroke),
                    FlashWriteMode::PRESERVE);
+      OnLookupDataChanged();
       return true;
     }
 
