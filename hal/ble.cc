@@ -23,4 +23,6 @@
   return KeyboardLedStatus(0);
 }
 
+[[gnu::weak]] void Ble::SetSplitRate(BleSplitRate rate) {}
+
 //---------------------------------------------------------------------------

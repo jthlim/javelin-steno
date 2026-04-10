@@ -73,7 +73,9 @@ Variables can be declared at global or local scope.
 
 - Global variables can be inspected and changed in Global Values tool,
   available from the Visual Editor menu.
-- Global values start with the initial value of 0.
+- Global variables start with the initial value of 0.
+- Globals can be defined within a function using the keyword `static`.
+  e.g., `static var lastValue`.  
 - Local variables cannot be automatically inspected, but the `printValue`
   or `printData` functions can be used to help debug if necessary. These
   will show in the Console tool only if the Show All Data setting is

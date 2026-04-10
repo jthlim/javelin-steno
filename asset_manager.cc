@@ -98,11 +98,7 @@ const AssetEntry *AssetManager::GetAsset(const char *id) {
     return nullptr;
   }
 
-  const AssetEntry *entry = instance.directory->GetAsset(id);
-  if (entry == nullptr) {
-    return nullptr;
-  }
-  return entry;
+  return instance.directory->GetAsset(id);
 }
 
 const void *AssetManager::GetAssetData(const char *id) {

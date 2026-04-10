@@ -5,6 +5,11 @@
 
 //---------------------------------------------------------------------------
 
+enum class BleSplitRate {
+  NORMAL,
+  FAST,
+};
+
 class Ble {
 public:
   static bool IsConnected();
@@ -21,6 +26,7 @@ public:
   static bool IsAdvertising();
   static bool IsScanning();
   static KeyboardLedStatus GetActiveKeyboardLedStatus();
+  static void SetSplitRate(BleSplitRate rate);
 };
 
 //---------------------------------------------------------------------------

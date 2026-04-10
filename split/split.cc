@@ -35,12 +35,14 @@ uint16_t TxRxHeader::Hash(const uint32_t *data, size_t wordCount) {
 
 //---------------------------------------------------------------------------
 
-void TxBuffer::Build() {
+void TxBuffer::Build(bool updateHash) {
   Reset();
   for (SplitTxHandler *handler : handlers) {
     handler->UpdateBuffer(*this);
   }
-  UpdateHash();
+  if (updateHash) {
+    UpdateHash();
+  }
 }
 
 void TxBuffer::BuildEmpty() {
@@ -112,17 +114,20 @@ void TxBuffer::Handlers::OnConnectionReset() const {
 //---------------------------------------------------------------------------
 
 RxBufferValidateResult RxBuffer::Validate(size_t totalWordsReceived,
-                                          size_t *metrics) const {
+                                          size_t *metrics,
+                                          bool hasFullHeader) const {
   if (totalWordsReceived < sizeof(TxRxHeader) / sizeof(uint32_t)) {
     // Header has not been received.
     metrics[SplitMetricId::WAITING_FOR_HEADER_COUNT]++;
     return RxBufferValidateResult::CONTINUE;
   }
 
-  if (header.magic != TxRxHeader::MAGIC) {
-    // Error: Magic mismatch!
-    metrics[SplitMetricId::MAGIC_MISMATCH_COUNT]++;
-    return RxBufferValidateResult::ERROR;
+  if (hasFullHeader) {
+    if (header.magic != TxRxHeader::MAGIC) {
+      // Error: Magic mismatch!
+      metrics[SplitMetricId::MAGIC_MISMATCH_COUNT]++;
+      return RxBufferValidateResult::ERROR;
+    }
   }
 
   const size_t bufferCount =
@@ -138,11 +143,13 @@ RxBufferValidateResult RxBuffer::Validate(size_t totalWordsReceived,
     metrics[SplitMetricId::EXCESS_DATA_COUNT]++;
   }
 
-  const uint16_t expectedHash = TxRxHeader::Hash(buffer, header.wordCount);
-  if (header.hash != expectedHash) {
-    // Hash failure.
-    metrics[SplitMetricId::HASH_FAILURE_COUNT]++;
-    return RxBufferValidateResult::ERROR;
+  if (hasFullHeader) {
+    const uint16_t expectedHash = TxRxHeader::Hash(buffer, header.wordCount);
+    if (header.hash != expectedHash) {
+      // Hash failure.
+      metrics[SplitMetricId::HASH_FAILURE_COUNT]++;
+      return RxBufferValidateResult::ERROR;
+    }
   }
 
   return RxBufferValidateResult::OK;

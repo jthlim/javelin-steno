@@ -76,7 +76,7 @@ public:
   bool Add(SplitHandlerId id, const void *data, size_t length);
   uint8_t *Add(SplitHandlerId id, size_t length);
   uint8_t *Reserve(size_t length);
-  void Build();
+  void Build(bool updateHash);
   void BuildEmpty();
   void UpdateHash();
   size_t GetByteCount() const { return header.GetByteCount(); }
@@ -112,8 +112,8 @@ struct RxBuffer {
   size_t GetByteCount() const { return header.GetByteCount(); }
   size_t GetWordCount() const { return header.GetWordCount(); }
 
-  RxBufferValidateResult Validate(size_t totalWordsReceived,
-                                  size_t *metrics) const;
+  RxBufferValidateResult Validate(size_t totalWordsReceived, size_t *metrics,
+                                  bool hasFullHeader) const;
 
   void Process() const;
   static void OnDataReceived();

@@ -890,6 +890,9 @@ public:
   static void PlayWaveform(ButtonScript &script,
                            const ScriptByteCode *byteCode) {
     const intptr_t offset = script.Pop();
+    if (offset == 0) {
+      return;
+    }
     const SoundWaveformData *data =
         byteCode->GetScriptData<SoundWaveformData>(offset);
     Sound::PlayWaveform(data);
@@ -1373,6 +1376,52 @@ public:
                                     const ScriptByteCode *byteCode) {
     script.Push(script.IsLocationAdvertising());
   }
+
+  static void SetBleSplitRate(ButtonScript &script,
+                              const ScriptByteCode *byteCode) {
+    const int rate = script.Pop();
+    Ble::SetSplitRate((BleSplitRate)rate);
+  }
+#if !defined(JAVELIN_ENCODER_COUNT)
+#define JAVELIN_ENCODER_COUNT 0
+#endif
+
+#if !defined(JAVELIN_ANALOG_DATA_COUNT)
+#define JAVELIN_ANALOG_DATA_COUNT 0
+#endif
+
+  static void AnalogDataInput(ButtonScript &script,
+                              const ScriptByteCode *byteCode) {
+    const int value = (int)script.Pop();
+    const int index = (int)script.Pop();
+    script.PressButton(script.Pop(), script.scriptTime);
+    ButtonScriptManager::GetInstance().ExecuteScriptIndex(
+        ButtonScript::GetAnalogInputScriptIndex(BUTTON_COUNT, index),
+        Clock::GetMilliseconds(), &value, 1);
+  }
+
+  static void EncoderInput(ButtonScript &script,
+                           const ScriptByteCode *byteCode) {
+    const int delta = (int)script.Pop();
+    const int index = (int)script.Pop();
+    const size_t scriptIndex = ButtonScript::GetEncoderScriptIndex(
+        BUTTON_COUNT, JAVELIN_ANALOG_DATA_COUNT, index);
+    ButtonScriptManager::GetInstance().ExecuteScriptIndex(
+        scriptIndex, Clock::GetMilliseconds(), &delta, 1);
+  }
+
+  static void PointerInput(ButtonScript &script,
+                           const ScriptByteCode *byteCode) {
+    int coordinates[3];
+    coordinates[2] = (int)script.Pop();
+    coordinates[1] = (int)script.Pop();
+    coordinates[0] = (int)script.Pop();
+    const int index = (int)script.Pop();
+    const size_t scriptIndex = ButtonScript::GetPointerScriptIndex(
+        BUTTON_COUNT, JAVELIN_ANALOG_DATA_COUNT, JAVELIN_ENCODER_COUNT, index);
+    ButtonScriptManager::GetInstance().ExecuteScriptIndex(
+        scriptIndex, Clock::GetMilliseconds(), coordinates, 3);
+  }
 };
 
 constexpr void (*ButtonScript::FUNCTION_TABLE[])(ButtonScript &,
@@ -1504,6 +1553,10 @@ constexpr void (*ButtonScript::FUNCTION_TABLE[])(ButtonScript &,
     &Function::GetSignatureAlgorithm,
     &Function::SetSignatureAlgorithms,
     &Function::IsLocationAdvertising,
+    &Function::SetBleSplitRate,
+    &Function::AnalogDataInput,
+    &Function::EncoderInput,
+    &Function::PointerInput,
 };
 
 void ButtonScript::PrintEventHistory() {
