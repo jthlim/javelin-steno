@@ -427,7 +427,8 @@ next:
   case BC::JUMP_VALUE: {
     const size_t offset = stack.Pop();
     if (offset == 0) {
-      goto exit;
+      stackTop = base;
+      return;
     }
     p = byteCode + offset;
     CONTINUE;
