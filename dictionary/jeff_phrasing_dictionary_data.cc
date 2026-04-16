@@ -420,9 +420,10 @@ constexpr JeffPhrasingStructureException UNIQUE_STARTERS[] = {
 
 // clang-format on
 
-constexpr JeffPhrasingMapData<4> ENDER_RB = {
+constexpr JeffPhrasingMapData<5> ENDER_RB = {
     .entries =
         {
+            {WordForm::ROOT, " ask"},
             {WordForm::THIRD_PERSON_SINGULAR, " asks"},
             {WordForm::PAST_PARTICIPLE, " asked"},
             {WordForm::PRESENT_PARTICIPLE, " asking"},
@@ -464,9 +465,10 @@ constexpr JeffPhrasingMapData<6> ENDER_BD = {
         },
 };
 
-constexpr JeffPhrasingMapData<4> ENDER_RPBG = {
+constexpr JeffPhrasingMapData<5> ENDER_RPBG = {
     .entries =
         {
+            {WordForm::ROOT, " become"},
             {WordForm::THIRD_PERSON_SINGULAR, " becomes"},
             {WordForm::PAST_PARTICIPLE, " become"},
             {WordForm::PRESENT_PARTICIPLE, " becoming"},
@@ -484,9 +486,10 @@ constexpr JeffPhrasingMapData<4> ENDER_RPBGD = {
         },
 };
 
-constexpr JeffPhrasingMapData<4> ENDER_BL = {
+constexpr JeffPhrasingMapData<5> ENDER_BL = {
     .entries =
         {
+            {WordForm::ROOT, " believe"},
             {WordForm::THIRD_PERSON_SINGULAR, " believes"},
             {WordForm::PAST_PARTICIPLE, " believed"},
             {WordForm::PRESENT_PARTICIPLE, " believing"},
@@ -504,9 +507,10 @@ constexpr JeffPhrasingMapData<4> ENDER_BLD = {
         },
 };
 
-constexpr JeffPhrasingMapData<4> ENDER_RBLG = {
+constexpr JeffPhrasingMapData<5> ENDER_RBLG = {
     .entries =
         {
+            {WordForm::ROOT, " call"},
             {WordForm::THIRD_PERSON_SINGULAR, " calls"},
             {WordForm::PAST_PARTICIPLE, " called"},
             {WordForm::PRESENT_PARTICIPLE, " calling"},
@@ -524,9 +528,10 @@ constexpr JeffPhrasingMapData<4> ENDER_RBLGD = {
         },
 };
 
-constexpr JeffPhrasingMapData<4> ENDER_RZ = {
+constexpr JeffPhrasingMapData<5> ENDER_RZ = {
     .entries =
         {
+            {WordForm::ROOT, " care"},
             {WordForm::THIRD_PERSON_SINGULAR, " cares"},
             {WordForm::PAST_PARTICIPLE, " cared"},
             {WordForm::PRESENT_PARTICIPLE, " caring"},
@@ -544,9 +549,10 @@ constexpr JeffPhrasingMapData<4> ENDER_RDZ = {
         },
 };
 
-constexpr JeffPhrasingMapData<4> ENDER_PBGZ = {
+constexpr JeffPhrasingMapData<5> ENDER_PBGZ = {
     .entries =
         {
+            {WordForm::ROOT, " change"},
             {WordForm::THIRD_PERSON_SINGULAR, " changes"},
             {WordForm::PAST_PARTICIPLE, " changed"},
             {WordForm::PRESENT_PARTICIPLE, " changing"},
@@ -564,9 +570,10 @@ constexpr JeffPhrasingMapData<4> ENDER_PBGDZ = {
         },
 };
 
-constexpr JeffPhrasingMapData<4> ENDER_BG = {
+constexpr JeffPhrasingMapData<5> ENDER_BG = {
     .entries =
         {
+            {WordForm::ROOT, " come"},
             {WordForm::THIRD_PERSON_SINGULAR, " comes"},
             {WordForm::PAST_PARTICIPLE, " come"},
             {WordForm::PRESENT_PARTICIPLE, " coming"},
@@ -584,9 +591,10 @@ constexpr JeffPhrasingMapData<4> ENDER_BGD = {
         },
 };
 
-constexpr JeffPhrasingMapData<4> ENDER_RBGZ = {
+constexpr JeffPhrasingMapData<5> ENDER_RBGZ = {
     .entries =
         {
+            {WordForm::ROOT, " consider"},
             {WordForm::THIRD_PERSON_SINGULAR, " considers"},
             {WordForm::PAST_PARTICIPLE, " considered"},
             {WordForm::PRESENT_PARTICIPLE, " considering"},
@@ -604,9 +612,10 @@ constexpr JeffPhrasingMapData<4> ENDER_RBGDZ = {
         },
 };
 
-constexpr JeffPhrasingMapData<4> ENDER_RP = {
+constexpr JeffPhrasingMapData<5> ENDER_RP = {
     .entries =
         {
+            {WordForm::ROOT, " do"},
             {WordForm::THIRD_PERSON_SINGULAR, " does"},
             {WordForm::PAST_PARTICIPLE, " done"},
             {WordForm::PRESENT_PARTICIPLE, " doing"},
@@ -624,9 +633,10 @@ constexpr JeffPhrasingMapData<4> ENDER_RPD = {
         },
 };
 
-constexpr JeffPhrasingMapData<4> ENDER_PGS = {
+constexpr JeffPhrasingMapData<5> ENDER_PGS = {
     .entries =
         {
+            {WordForm::ROOT, " expect"},
             {WordForm::THIRD_PERSON_SINGULAR, " expects"},
             {WordForm::PAST_PARTICIPLE, " expected"},
             {WordForm::PRESENT_PARTICIPLE, " expecting"},
@@ -644,9 +654,10 @@ constexpr JeffPhrasingMapData<4> ENDER_PGSZ = {
         },
 };
 
-constexpr JeffPhrasingMapData<4> ENDER_LT = {
+constexpr JeffPhrasingMapData<5> ENDER_LT = {
     .entries =
         {
+            {WordForm::ROOT, " feel"},
             {WordForm::THIRD_PERSON_SINGULAR, " feels"},
             {WordForm::PAST_PARTICIPLE, " felt"},
             {WordForm::PRESENT_PARTICIPLE, " feeling"},
@@ -664,9 +675,10 @@ constexpr JeffPhrasingMapData<4> ENDER_LTD = {
         },
 };
 
-constexpr JeffPhrasingMapData<4> ENDER_PBLG = {
+constexpr JeffPhrasingMapData<5> ENDER_PBLG = {
     .entries =
         {
+            {WordForm::ROOT, " find"},
             {WordForm::THIRD_PERSON_SINGULAR, " finds"},
             {WordForm::PAST_PARTICIPLE, " found"},
             {WordForm::PRESENT_PARTICIPLE, " finding"},
@@ -684,9 +696,10 @@ constexpr JeffPhrasingMapData<4> ENDER_PBLGD = {
         },
 };
 
-constexpr JeffPhrasingMapData<4> ENDER_RG = {
+constexpr JeffPhrasingMapData<5> ENDER_RG = {
     .entries =
         {
+            {WordForm::ROOT, " forget"},
             {WordForm::THIRD_PERSON_SINGULAR, " forgets"},
             {WordForm::PAST_PARTICIPLE, " forgotten"},
             {WordForm::PRESENT_PARTICIPLE, " forgetting"},
@@ -704,9 +717,10 @@ constexpr JeffPhrasingMapData<4> ENDER_RGD = {
         },
 };
 
-constexpr JeffPhrasingMapData<4> ENDER_GS = {
+constexpr JeffPhrasingMapData<5> ENDER_GS = {
     .entries =
         {
+            {WordForm::ROOT, " get"},
             {WordForm::THIRD_PERSON_SINGULAR, " gets"},
             {WordForm::PAST_PARTICIPLE, " gotten"},
             {WordForm::PRESENT_PARTICIPLE, " getting"},
@@ -724,9 +738,10 @@ constexpr JeffPhrasingMapData<4> ENDER_GSZ = {
         },
 };
 
-constexpr JeffPhrasingMapData<4> ENDER_GZ = {
+constexpr JeffPhrasingMapData<5> ENDER_GZ = {
     .entries =
         {
+            {WordForm::ROOT, " give"},
             {WordForm::THIRD_PERSON_SINGULAR, " gives"},
             {WordForm::PAST_PARTICIPLE, " given"},
             {WordForm::PRESENT_PARTICIPLE, " giving"},
@@ -744,9 +759,10 @@ constexpr JeffPhrasingMapData<4> ENDER_GDZ = {
         },
 };
 
-constexpr JeffPhrasingMapData<4> ENDER_G = {
+constexpr JeffPhrasingMapData<5> ENDER_G = {
     .entries =
         {
+            {WordForm::ROOT, " go"},
             {WordForm::THIRD_PERSON_SINGULAR, " goes"},
             {WordForm::PAST_PARTICIPLE, " gone"},
             {WordForm::PRESENT_PARTICIPLE, " going"},
@@ -764,9 +780,10 @@ constexpr JeffPhrasingMapData<4> ENDER_GD = {
         },
 };
 
-constexpr JeffPhrasingMapData<4> ENDER_T = {
+constexpr JeffPhrasingMapData<5> ENDER_T = {
     .entries =
         {
+            {WordForm::ROOT, " have"},
             {WordForm::THIRD_PERSON_SINGULAR, " has"},
             {WordForm::PAST_PARTICIPLE, " had"},
             {WordForm::PRESENT_PARTICIPLE, " having"},
@@ -784,9 +801,10 @@ constexpr JeffPhrasingMapData<4> ENDER_TD = {
         },
 };
 
-constexpr JeffPhrasingMapData<4> ENDER_PZ = {
+constexpr JeffPhrasingMapData<5> ENDER_PZ = {
     .entries =
         {
+            {WordForm::ROOT, " happen"},
             {WordForm::THIRD_PERSON_SINGULAR, " happens"},
             {WordForm::PAST_PARTICIPLE, " happened"},
             {WordForm::PRESENT_PARTICIPLE, " happening"},
@@ -804,9 +822,10 @@ constexpr JeffPhrasingMapData<4> ENDER_PDZ = {
         },
 };
 
-constexpr JeffPhrasingMapData<4> ENDER_PG = {
+constexpr JeffPhrasingMapData<5> ENDER_PG = {
     .entries =
         {
+            {WordForm::ROOT, " hear"},
             {WordForm::THIRD_PERSON_SINGULAR, " hears"},
             {WordForm::PAST_PARTICIPLE, " heard"},
             {WordForm::PRESENT_PARTICIPLE, " hearing"},
@@ -824,9 +843,10 @@ constexpr JeffPhrasingMapData<4> ENDER_PGD = {
         },
 };
 
-constexpr JeffPhrasingMapData<4> ENDER_RPS = {
+constexpr JeffPhrasingMapData<5> ENDER_RPS = {
     .entries =
         {
+            {WordForm::ROOT, " hope"},
             {WordForm::THIRD_PERSON_SINGULAR, " hopes"},
             {WordForm::PAST_PARTICIPLE, " hoped"},
             {WordForm::PRESENT_PARTICIPLE, " hoping"},
@@ -844,9 +864,10 @@ constexpr JeffPhrasingMapData<4> ENDER_RPSZ = {
         },
 };
 
-constexpr JeffPhrasingMapData<4> ENDER_PLG = {
+constexpr JeffPhrasingMapData<5> ENDER_PLG = {
     .entries =
         {
+            {WordForm::ROOT, " imagine"},
             {WordForm::THIRD_PERSON_SINGULAR, " imagines"},
             {WordForm::PAST_PARTICIPLE, " imagined"},
             {WordForm::PRESENT_PARTICIPLE, " imagining"},
@@ -864,9 +885,10 @@ constexpr JeffPhrasingMapData<4> ENDER_PLGD = {
         },
 };
 
-constexpr JeffPhrasingMapData<4> ENDER_PBGS = {
+constexpr JeffPhrasingMapData<5> ENDER_PBGS = {
     .entries =
         {
+            {WordForm::ROOT, " keep"},
             {WordForm::THIRD_PERSON_SINGULAR, " keeps"},
             {WordForm::PAST_PARTICIPLE, " kept"},
             {WordForm::PRESENT_PARTICIPLE, " keeping"},
@@ -884,9 +906,10 @@ constexpr JeffPhrasingMapData<4> ENDER_PBGSZ = {
         },
 };
 
-constexpr JeffPhrasingMapData<4> ENDER_PB = {
+constexpr JeffPhrasingMapData<5> ENDER_PB = {
     .entries =
         {
+            {WordForm::ROOT, " know"},
             {WordForm::THIRD_PERSON_SINGULAR, " knows"},
             {WordForm::PAST_PARTICIPLE, " known"},
             {WordForm::PRESENT_PARTICIPLE, " knowing"},
@@ -904,9 +927,10 @@ constexpr JeffPhrasingMapData<4> ENDER_PBD = {
         },
 };
 
-constexpr JeffPhrasingMapData<4> ENDER_RPBS = {
+constexpr JeffPhrasingMapData<5> ENDER_RPBS = {
     .entries =
         {
+            {WordForm::ROOT, " learn"},
             {WordForm::THIRD_PERSON_SINGULAR, " learns"},
             {WordForm::PAST_PARTICIPLE, " learned"},
             {WordForm::PRESENT_PARTICIPLE, " learning"},
@@ -924,9 +948,10 @@ constexpr JeffPhrasingMapData<4> ENDER_RPBSZ = {
         },
 };
 
-constexpr JeffPhrasingMapData<4> ENDER_LGZ = {
+constexpr JeffPhrasingMapData<5> ENDER_LGZ = {
     .entries =
         {
+            {WordForm::ROOT, " leave"},
             {WordForm::THIRD_PERSON_SINGULAR, " leaves"},
             {WordForm::PAST_PARTICIPLE, " left"},
             {WordForm::PRESENT_PARTICIPLE, " leaving"},
@@ -944,9 +969,10 @@ constexpr JeffPhrasingMapData<4> ENDER_LGDZ = {
         },
 };
 
-constexpr JeffPhrasingMapData<4> ENDER_LS = {
+constexpr JeffPhrasingMapData<5> ENDER_LS = {
     .entries =
         {
+            {WordForm::ROOT, " let"},
             {WordForm::THIRD_PERSON_SINGULAR, " lets"},
             {WordForm::PAST_PARTICIPLE, " let"},
             {WordForm::PRESENT_PARTICIPLE, " letting"},
@@ -964,9 +990,10 @@ constexpr JeffPhrasingMapData<4> ENDER_LSZ = {
         },
 };
 
-constexpr JeffPhrasingMapData<4> ENDER_BLG = {
+constexpr JeffPhrasingMapData<5> ENDER_BLG = {
     .entries =
         {
+            {WordForm::ROOT, " like"},
             {WordForm::THIRD_PERSON_SINGULAR, " likes"},
             {WordForm::PAST_PARTICIPLE, " liked"},
             {WordForm::PRESENT_PARTICIPLE, " liking"},
@@ -984,9 +1011,10 @@ constexpr JeffPhrasingMapData<4> ENDER_BLGD = {
         },
 };
 
-constexpr JeffPhrasingMapData<4> ENDER_LZ = {
+constexpr JeffPhrasingMapData<5> ENDER_LZ = {
     .entries =
         {
+            {WordForm::ROOT, " live"},
             {WordForm::THIRD_PERSON_SINGULAR, " lives"},
             {WordForm::PAST_PARTICIPLE, " lived"},
             {WordForm::PRESENT_PARTICIPLE, " living"},
@@ -1004,9 +1032,10 @@ constexpr JeffPhrasingMapData<4> ENDER_LDZ = {
         },
 };
 
-constexpr JeffPhrasingMapData<4> ENDER_L = {
+constexpr JeffPhrasingMapData<5> ENDER_L = {
     .entries =
         {
+            {WordForm::ROOT, " look"},
             {WordForm::THIRD_PERSON_SINGULAR, " looks"},
             {WordForm::PAST_PARTICIPLE, " looked"},
             {WordForm::PRESENT_PARTICIPLE, " looking"},
@@ -1024,9 +1053,10 @@ constexpr JeffPhrasingMapData<4> ENDER_LD = {
         },
 };
 
-constexpr JeffPhrasingMapData<4> ENDER_LG = {
+constexpr JeffPhrasingMapData<5> ENDER_LG = {
     .entries =
         {
+            {WordForm::ROOT, " love"},
             {WordForm::THIRD_PERSON_SINGULAR, " loves"},
             {WordForm::PAST_PARTICIPLE, " loved"},
             {WordForm::PRESENT_PARTICIPLE, " loving"},
@@ -1044,9 +1074,10 @@ constexpr JeffPhrasingMapData<4> ENDER_LGD = {
         },
 };
 
-constexpr JeffPhrasingMapData<4> ENDER_RPBL = {
+constexpr JeffPhrasingMapData<5> ENDER_RPBL = {
     .entries =
         {
+            {WordForm::ROOT, " make"},
             {WordForm::THIRD_PERSON_SINGULAR, " makes"},
             {WordForm::PAST_PARTICIPLE, " made"},
             {WordForm::PRESENT_PARTICIPLE, " making"},
@@ -1064,9 +1095,10 @@ constexpr JeffPhrasingMapData<4> ENDER_RPBLD = {
         },
 };
 
-constexpr JeffPhrasingMapData<4> ENDER_PBL = {
+constexpr JeffPhrasingMapData<5> ENDER_PBL = {
     .entries =
         {
+            {WordForm::ROOT, " mean"},
             {WordForm::THIRD_PERSON_SINGULAR, " means"},
             {WordForm::PAST_PARTICIPLE, " meant"},
             {WordForm::PRESENT_PARTICIPLE, " meaning"},
@@ -1084,9 +1116,10 @@ constexpr JeffPhrasingMapData<4> ENDER_PBLD = {
         },
 };
 
-constexpr JeffPhrasingMapData<4> ENDER_PBLS = {
+constexpr JeffPhrasingMapData<5> ENDER_PBLS = {
     .entries =
         {
+            {WordForm::ROOT, " mind"},
             {WordForm::THIRD_PERSON_SINGULAR, " minds"},
             {WordForm::PAST_PARTICIPLE, " minded"},
             {WordForm::PRESENT_PARTICIPLE, " minding"},
@@ -1104,9 +1137,10 @@ constexpr JeffPhrasingMapData<4> ENDER_PBLSZ = {
         },
 };
 
-constexpr JeffPhrasingMapData<4> ENDER_PLZ = {
+constexpr JeffPhrasingMapData<5> ENDER_PLZ = {
     .entries =
         {
+            {WordForm::ROOT, " move"},
             {WordForm::THIRD_PERSON_SINGULAR, " moves"},
             {WordForm::PAST_PARTICIPLE, " moved"},
             {WordForm::PRESENT_PARTICIPLE, " moving"},
@@ -1124,9 +1158,10 @@ constexpr JeffPhrasingMapData<4> ENDER_PLDZ = {
         },
 };
 
-constexpr JeffPhrasingMapData<4> ENDER_RPG = {
+constexpr JeffPhrasingMapData<5> ENDER_RPG = {
     .entries =
         {
+            {WordForm::ROOT, " need"},
             {WordForm::THIRD_PERSON_SINGULAR, " needs"},
             {WordForm::PAST_PARTICIPLE, " needed"},
             {WordForm::PRESENT_PARTICIPLE, " needing"},
@@ -1144,9 +1179,10 @@ constexpr JeffPhrasingMapData<4> ENDER_RPGD = {
         },
 };
 
-constexpr JeffPhrasingMapData<4> ENDER_PS = {
+constexpr JeffPhrasingMapData<5> ENDER_PS = {
     .entries =
         {
+            {WordForm::ROOT, " put"},
             {WordForm::THIRD_PERSON_SINGULAR, " puts"},
             {WordForm::PAST_PARTICIPLE, " put"},
             {WordForm::PRESENT_PARTICIPLE, " putting"},
@@ -1164,9 +1200,10 @@ constexpr JeffPhrasingMapData<4> ENDER_PSZ = {
         },
 };
 
-constexpr JeffPhrasingMapData<4> ENDER_RS = {
+constexpr JeffPhrasingMapData<5> ENDER_RS = {
     .entries =
         {
+            {WordForm::ROOT, " read"},
             {WordForm::THIRD_PERSON_SINGULAR, " reads"},
             {WordForm::PAST_PARTICIPLE, " read"},
             {WordForm::PRESENT_PARTICIPLE, " reading"},
@@ -1184,9 +1221,10 @@ constexpr JeffPhrasingMapData<4> ENDER_RSZ = {
         },
 };
 
-constexpr JeffPhrasingMapData<4> ENDER_RL = {
+constexpr JeffPhrasingMapData<5> ENDER_RL = {
     .entries =
         {
+            {WordForm::ROOT, " recall"},
             {WordForm::THIRD_PERSON_SINGULAR, " recalls"},
             {WordForm::PAST_PARTICIPLE, " recalled"},
             {WordForm::PRESENT_PARTICIPLE, " recalling"},
@@ -1204,9 +1242,10 @@ constexpr JeffPhrasingMapData<4> ENDER_RLD = {
         },
 };
 
-constexpr JeffPhrasingMapData<4> ENDER_RLS = {
+constexpr JeffPhrasingMapData<5> ENDER_RLS = {
     .entries =
         {
+            {WordForm::ROOT, " realize"},
             {WordForm::THIRD_PERSON_SINGULAR, " realizes"},
             {WordForm::PAST_PARTICIPLE, " realized"},
             {WordForm::PRESENT_PARTICIPLE, " realizing"},
@@ -1224,9 +1263,10 @@ constexpr JeffPhrasingMapData<4> ENDER_RLSZ = {
         },
 };
 
-constexpr JeffPhrasingMapData<4> ENDER_RPL = {
+constexpr JeffPhrasingMapData<5> ENDER_RPL = {
     .entries =
         {
+            {WordForm::ROOT, " remember"},
             {WordForm::THIRD_PERSON_SINGULAR, " remembers"},
             {WordForm::PAST_PARTICIPLE, " remembered"},
             {WordForm::PRESENT_PARTICIPLE, " remembering"},
@@ -1244,9 +1284,10 @@ constexpr JeffPhrasingMapData<4> ENDER_RPLD = {
         },
 };
 
-constexpr JeffPhrasingMapData<4> ENDER_RPLS = {
+constexpr JeffPhrasingMapData<5> ENDER_RPLS = {
     .entries =
         {
+            {WordForm::ROOT, " remain"},
             {WordForm::THIRD_PERSON_SINGULAR, " remains"},
             {WordForm::PAST_PARTICIPLE, " remained"},
             {WordForm::PRESENT_PARTICIPLE, " remaining"},
@@ -1264,9 +1305,10 @@ constexpr JeffPhrasingMapData<4> ENDER_RPLSZ = {
         },
 };
 
-constexpr JeffPhrasingMapData<4> ENDER_R = {
+constexpr JeffPhrasingMapData<5> ENDER_R = {
     .entries =
         {
+            {WordForm::ROOT, " run"},
             {WordForm::THIRD_PERSON_SINGULAR, " runs"},
             {WordForm::PAST_PARTICIPLE, " run"},
             {WordForm::PRESENT_PARTICIPLE, " running"},
@@ -1284,9 +1326,10 @@ constexpr JeffPhrasingMapData<4> ENDER_RD = {
         },
 };
 
-constexpr JeffPhrasingMapData<4> ENDER_BS = {
+constexpr JeffPhrasingMapData<5> ENDER_BS = {
     .entries =
         {
+            {WordForm::ROOT, " say"},
             {WordForm::THIRD_PERSON_SINGULAR, " says"},
             {WordForm::PAST_PARTICIPLE, " said"},
             {WordForm::PRESENT_PARTICIPLE, " saying"},
@@ -1304,9 +1347,10 @@ constexpr JeffPhrasingMapData<4> ENDER_BSZ = {
         },
 };
 
-constexpr JeffPhrasingMapData<4> ENDER_S = {
+constexpr JeffPhrasingMapData<5> ENDER_S = {
     .entries =
         {
+            {WordForm::ROOT, " see"},
             {WordForm::THIRD_PERSON_SINGULAR, " sees"},
             {WordForm::PAST_PARTICIPLE, " seen"},
             {WordForm::PRESENT_PARTICIPLE, " seeing"},
@@ -1324,9 +1368,10 @@ constexpr JeffPhrasingMapData<4> ENDER_SZ = {
         },
 };
 
-constexpr JeffPhrasingMapData<4> ENDER_BLS = {
+constexpr JeffPhrasingMapData<5> ENDER_BLS = {
     .entries =
         {
+            {WordForm::ROOT, " set"},
             {WordForm::THIRD_PERSON_SINGULAR, " sets"},
             {WordForm::PAST_PARTICIPLE, " set"},
             {WordForm::PRESENT_PARTICIPLE, " setting"},
@@ -1344,9 +1389,10 @@ constexpr JeffPhrasingMapData<4> ENDER_BLSZ = {
         },
 };
 
-constexpr JeffPhrasingMapData<4> ENDER_PLS = {
+constexpr JeffPhrasingMapData<5> ENDER_PLS = {
     .entries =
         {
+            {WordForm::ROOT, " seem"},
             {WordForm::THIRD_PERSON_SINGULAR, " seems"},
             {WordForm::PAST_PARTICIPLE, " seemed"},
             {WordForm::PRESENT_PARTICIPLE, " seeming"},
@@ -1364,9 +1410,10 @@ constexpr JeffPhrasingMapData<4> ENDER_PLSZ = {
         },
 };
 
-constexpr JeffPhrasingMapData<4> ENDER_RBZ = {
+constexpr JeffPhrasingMapData<5> ENDER_RBZ = {
     .entries =
         {
+            {WordForm::ROOT, " show"},
             {WordForm::THIRD_PERSON_SINGULAR, " shows"},
             {WordForm::PAST_PARTICIPLE, " shown"},
             {WordForm::PRESENT_PARTICIPLE, " showing"},
@@ -1384,9 +1431,10 @@ constexpr JeffPhrasingMapData<4> ENDER_RBDZ = {
         },
 };
 
-constexpr JeffPhrasingMapData<4> ENDER_RBT = {
+constexpr JeffPhrasingMapData<5> ENDER_RBT = {
     .entries =
         {
+            {WordForm::ROOT, " take"},
             {WordForm::THIRD_PERSON_SINGULAR, " takes"},
             {WordForm::PAST_PARTICIPLE, " taken"},
             {WordForm::PRESENT_PARTICIPLE, " taking"},
@@ -1404,9 +1452,10 @@ constexpr JeffPhrasingMapData<4> ENDER_RBTD = {
         },
 };
 
-constexpr JeffPhrasingMapData<4> ENDER_RLT = {
+constexpr JeffPhrasingMapData<5> ENDER_RLT = {
     .entries =
         {
+            {WordForm::ROOT, " tell"},
             {WordForm::THIRD_PERSON_SINGULAR, " tells"},
             {WordForm::PAST_PARTICIPLE, " told"},
             {WordForm::PRESENT_PARTICIPLE, " telling"},
@@ -1424,9 +1473,10 @@ constexpr JeffPhrasingMapData<4> ENDER_RLTD = {
         },
 };
 
-constexpr JeffPhrasingMapData<4> ENDER_PBG = {
+constexpr JeffPhrasingMapData<5> ENDER_PBG = {
     .entries =
         {
+            {WordForm::ROOT, " think"},
             {WordForm::THIRD_PERSON_SINGULAR, " thinks"},
             {WordForm::PAST_PARTICIPLE, " thought"},
             {WordForm::PRESENT_PARTICIPLE, " thinking"},
@@ -1444,9 +1494,10 @@ constexpr JeffPhrasingMapData<4> ENDER_PBGD = {
         },
 };
 
-constexpr JeffPhrasingMapData<4> ENDER_RT = {
+constexpr JeffPhrasingMapData<5> ENDER_RT = {
     .entries =
         {
+            {WordForm::ROOT, " try"},
             {WordForm::THIRD_PERSON_SINGULAR, " tries"},
             {WordForm::PAST_PARTICIPLE, " tried"},
             {WordForm::PRESENT_PARTICIPLE, " trying"},
@@ -1464,9 +1515,10 @@ constexpr JeffPhrasingMapData<4> ENDER_RTD = {
         },
 };
 
-constexpr JeffPhrasingMapData<4> ENDER_RPB = {
+constexpr JeffPhrasingMapData<5> ENDER_RPB = {
     .entries =
         {
+            {WordForm::ROOT, " understand"},
             {WordForm::THIRD_PERSON_SINGULAR, " understands"},
             {WordForm::PAST_PARTICIPLE, " understood"},
             {WordForm::PRESENT_PARTICIPLE, " understanding"},
@@ -1484,9 +1536,10 @@ constexpr JeffPhrasingMapData<4> ENDER_RPBD = {
         },
 };
 
-constexpr JeffPhrasingMapData<4> ENDER_Z = {
+constexpr JeffPhrasingMapData<5> ENDER_Z = {
     .entries =
         {
+            {WordForm::ROOT, " use"},
             {WordForm::THIRD_PERSON_SINGULAR, " uses"},
             {WordForm::PAST_PARTICIPLE, " used"},
             {WordForm::PRESENT_PARTICIPLE, " using"},
@@ -1504,9 +1557,10 @@ constexpr JeffPhrasingMapData<4> ENDER_DZ = {
         },
 };
 
-constexpr JeffPhrasingMapData<4> ENDER_P = {
+constexpr JeffPhrasingMapData<5> ENDER_P = {
     .entries =
         {
+            {WordForm::ROOT, " want"},
             {WordForm::THIRD_PERSON_SINGULAR, " wants"},
             {WordForm::PAST_PARTICIPLE, " wanted"},
             {WordForm::PRESENT_PARTICIPLE, " wanting"},
@@ -1524,9 +1578,10 @@ constexpr JeffPhrasingMapData<4> ENDER_PD = {
         },
 };
 
-constexpr JeffPhrasingMapData<4> ENDER_RBS = {
+constexpr JeffPhrasingMapData<5> ENDER_RBS = {
     .entries =
         {
+            {WordForm::ROOT, " wish"},
             {WordForm::THIRD_PERSON_SINGULAR, " wishes"},
             {WordForm::PAST_PARTICIPLE, " wished"},
             {WordForm::PRESENT_PARTICIPLE, " wishing"},
@@ -1544,9 +1599,10 @@ constexpr JeffPhrasingMapData<4> ENDER_RBSZ = {
         },
 };
 
-constexpr JeffPhrasingMapData<4> ENDER_RBG = {
+constexpr JeffPhrasingMapData<5> ENDER_RBG = {
     .entries =
         {
+            {WordForm::ROOT, " work"},
             {WordForm::THIRD_PERSON_SINGULAR, " works"},
             {WordForm::PAST_PARTICIPLE, " worked"},
             {WordForm::PRESENT_PARTICIPLE, " working"},
@@ -2131,10 +2187,16 @@ void ReverseBuilder::Generate() {
 
   for (const JeffPhrasingEnder &ender : phrasingData.enders) {
     uint8_t modeMask = ModeMask::FULL | ModeMask::SIMPLE;
-    if (uint32_t(ender.tense) & uint32_t(WordForm::PAST)) {
-      modeMask |= ModeMask::PAST;
-    } else {
+    switch (ender.tense) {
+    case WordForm::PRESENT:
       modeMask |= ModeMask::PRESENT;
+      break;
+    case WordForm::PAST:
+      modeMask |= ModeMask::PAST;
+      break;
+    default:
+      modeMask |= ModeMask::PAST | ModeMask::PRESENT;
+      break;
     }
     RecurseVariant(ender.ender, ender.stroke,
                    verbReplacement + suffixReplacement, ComponentMask::VERB,
@@ -2226,11 +2288,13 @@ void ReverseBuilder::RecurseVariant(const JeffPhrasingVariant &variant,
     const JeffPhrasingMap *map = variant.map;
     for (const JeffPhrasingMapEntry &entry : map->entries) {
       uint8_t localModeMask = modeMask;
-      if (entry.key & (uint32_t)WordForm::PRESENT) {
+      switch (entry.key) {
+      case uint32_t(WordForm::PRESENT):
         localModeMask &= ~ModeMask::PAST;
-      }
-      if (entry.key & (uint32_t)WordForm::PAST) {
+        break;
+      case uint32_t(WordForm::PAST):
         localModeMask &= ~ModeMask::PRESENT;
+        break;
       }
       RecurseVariant(entry.value, stroke, replacement, componentMask,
                      localModeMask, suffix);

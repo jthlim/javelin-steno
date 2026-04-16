@@ -244,10 +244,11 @@ void Flash::WriteBlock(const void *const target, const void *const data,
   const uint8_t *const d = (const uint8_t *)data;
 
   const uint8_t *programTargetStart = nullptr;
-  const uint8_t *programSourceStart;
 #if RUN_TESTS
+  const uint8_t *programSourceStart = nullptr;
   size_t programSize = 0;
 #else
+  const uint8_t *programSourceStart;
   size_t programSize;
 #endif
 

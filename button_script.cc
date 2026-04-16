@@ -1379,9 +1379,13 @@ public:
 
   static void SetBleSplitRate(ButtonScript &script,
                               const ScriptByteCode *byteCode) {
-    const int rate = script.Pop();
+    const int rate = (int) script.Pop();
     Ble::SetSplitRate((BleSplitRate)rate);
   }
+#if !defined(BUTTON_COUNT)
+#define BUTTON_COUNT 0
+#endif
+
 #if !defined(JAVELIN_ENCODER_COUNT)
 #define JAVELIN_ENCODER_COUNT 0
 #endif
@@ -1392,8 +1396,8 @@ public:
 
   static void AnalogDataInput(ButtonScript &script,
                               const ScriptByteCode *byteCode) {
-    const int value = (int)script.Pop();
-    const int index = (int)script.Pop();
+    const intptr_t value = script.Pop();
+    const intptr_t index = script.Pop();
     script.PressButton(script.Pop(), script.scriptTime);
     ButtonScriptManager::GetInstance().ExecuteScriptIndex(
         ButtonScript::GetAnalogInputScriptIndex(BUTTON_COUNT, index),
@@ -1402,8 +1406,8 @@ public:
 
   static void EncoderInput(ButtonScript &script,
                            const ScriptByteCode *byteCode) {
-    const int delta = (int)script.Pop();
-    const int index = (int)script.Pop();
+    const intptr_t delta = script.Pop();
+    const intptr_t index = script.Pop();
     const size_t scriptIndex = ButtonScript::GetEncoderScriptIndex(
         BUTTON_COUNT, JAVELIN_ANALOG_DATA_COUNT, index);
     ButtonScriptManager::GetInstance().ExecuteScriptIndex(
@@ -1412,7 +1416,7 @@ public:
 
   static void PointerInput(ButtonScript &script,
                            const ScriptByteCode *byteCode) {
-    int coordinates[3];
+    intptr_t coordinates[3];
     coordinates[2] = (int)script.Pop();
     coordinates[1] = (int)script.Pop();
     coordinates[0] = (int)script.Pop();

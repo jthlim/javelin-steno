@@ -1747,6 +1747,8 @@ TEST_BEGIN("JeffPhrasing: Reverse lookups") {
   VerifyReverseLookup("I can't", StenoStroke("SWRA*"));
   VerifyReverseLookup("I need to", StenoStroke("SWR-RPGT"));
   VerifyReverseLookup("I am going to", StenoStroke("SWREGT"));
+  VerifyReverseLookup("I was going", StenoStroke("SWREGD"));
+  VerifyReverseLookup("I was going to", StenoStroke("SWREGTD"));
   VerifyReverseLookup("if you go", StenoStroke("STPAUG"));
   VerifyReverseLookup("but I considered", StenoStroke("SPWHEURBGDZ"));
   // spellchecker: enable
