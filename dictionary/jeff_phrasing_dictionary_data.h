@@ -77,6 +77,7 @@ struct JeffPhrasingVariant {
 
   const JeffPhrasingVariant *Lookup(uint32_t key) const;
   const JeffPhrasingVariant *LookupWithDefaultOrSelf(uint32_t key) const;
+  const JeffPhrasingVariant *LookupWithDefaultOrFirst(uint32_t key) const;
 
   const char *ToString() const {
     assert(type == Type::TEXT);

@@ -11,7 +11,7 @@ public:
   constexpr FixedPoint() = default;
   constexpr FixedPoint(int value) : value(value << N) {}
   constexpr FixedPoint(unsigned int value) : value(value << N) {}
-  consteval FixedPoint(double value) : value((T)(value * (1 << N) + 0.5)) {}
+  consteval FixedPoint(double value) : value((T)(value * (T(1) << N) + 0.5)) {}
   constexpr FixedPoint(T value, bool) : value(value) {}
 
   constexpr int GetIntegral() const { return value >> N; }

@@ -80,6 +80,8 @@ public:
   void RetroactiveUpperCase(int count);
   void RetroactiveLowerCase(int count);
   void RetroactiveReplaceSpace(int count, const char *replacement);
+  void RetroSurroundCharacter(int count, const char *prefix,
+                              const char *suffix);
   void RetroactiveQuotes(int count, const char *startQuote,
                          const char *endQuote);
   void RetroactiveSingleQuotes(int count);
@@ -110,6 +112,7 @@ public:
   bool RetroReplaceSpaceFunction(const List<char *> &parameters);
   bool RetroSingleQuotesFunction(const List<char *> &parameters);
   bool RetroSurroundFunction(const List<char *> &parameters);
+  bool RetroSurroundCharacterFunction(const List<char *> &parameters);
   bool RetroTitleCaseFunction(const List<char *> &parameters);
   bool RetroUpperCaseFunction(const List<char *> &parameters);
   bool SetCaseFunction(const List<char *> &parameters);

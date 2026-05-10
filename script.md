@@ -656,7 +656,7 @@ the button index, then underglow lights after.
 - `func isConnected(<connectionId>)`
 
   - Returns whether _connectionId_ is active.
-  - Use _CONNECTION_ID_ACTIVE_ to determine if actions will reach any host.
+  - Use _CONNECTION_ANY_ to determine if actions will reach any host.
 
 - `func getActiveConnection() var`
 
@@ -715,7 +715,7 @@ the button index, then underglow lights after.
 - `func isUsbMounted() var` [deprecated]
 
   - Returns whether any usb port is connected.
-  - Superseded by `isConnected(CONNECTION_ID_ANY)`.
+  - Superseded by `isConnected(CONNECTION_ANY)`.
 
 - `func isUsbSuspended() var` [deprecated]
   - Returns whether any usb port is suspended.
@@ -724,11 +724,11 @@ the button index, then underglow lights after.
 Constants
 
 ```
-const CONNECTION_ID_NONE = 0;
-const CONNECTION_ID_ANY = 0;
-const CONNECTION_ID_BLE = 1;
-const CONNECTION_ID_USB = 2;
-const CONNECTION_ID_USB2 = 3;
+const CONNECTION_NONE = 0;
+const CONNECTION_ANY = 0;
+const CONNECTION_BLE = 1;
+const CONNECTION_USB = 2;
+const CONNECTION_USB2 = 3;
 ```
 
 ## Combo Support Functions
@@ -773,18 +773,18 @@ are suppressed until it is confirmed that no combo is involved.
   - Returns the active pair connection ID
   - Constants
     ```
-    const PAIR_CONNECTION_ID_NONE = 0;
-    const PAIR_CONNECTION_ID_BLE = 1;
-    const PAIR_CONNECTION_ID_CABLE = 2;
+    const PAIR_CONNECTION_NONE = 0;
+    const PAIR_CONNECTION_BLE = 1;
+    const PAIR_CONNECTION_CABLE = 2;
     ```
 
 - `func isPairConnected(pairConnectionId) var`
   - Returns whether the pair is connected
   - Constants
     ```
-    const PAIR_CONNECTION_ID_ANY = 0;
-    const PAIR_CONNECTION_ID_BLE = 1;
-    const PAIR_CONNECTION_ID_CABLE = 2;
+    const PAIR_CONNECTION_ANY = 0;
+    const PAIR_CONNECTION_BLE = 1;
+    const PAIR_CONNECTION_CABLE = 2;
     ```
 
 ## Power Related Functions
@@ -908,7 +908,11 @@ are suppressed until it is confirmed that no combo is involved.
 
 - `func playWaveform(<data>)`
 
-  - Placeholder, currently not available on any platform.
+  - Plays an audio waveform. The structure of data is:
+    - 2 bytes: Format. Currently must be 0 for 8-bit unsigned mono
+    - 2 bytes: Sample Rate
+    - 4 bytes: Sample Count
+    - n bytes: Data
 
 ## Security Key Functions
 
@@ -1268,7 +1272,8 @@ needs to be enabled in Web Tools to be able to see this information.
 
     const SCRIPT_ID_CONSOLE_ACCESS_REQUESTED = 19;
     const SCRIPT_ID_FLASH_WRITE_ACCESS_REQUESTED = 20;
-    const SCRIPT_ID_BEACON_MODE_STARTED = 21;
+    const SCRIPT_ID_BEACON_STARTED = 21;
+    const SCRIPT_ID_LOCATION_ADVERTISING_UPDATE = 22;
     ```
 
 - `func formatString(<format>, <value>) var`

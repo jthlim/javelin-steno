@@ -13,6 +13,9 @@
 const uint32_t ASSET_DIRECTORY_MAGIC = 0x4A414431; // "JAD1"
 const size_t MINIMUM_ASSET_DIRECTORY_SIZE = 2 * Flash::BLOCK_SIZE;
 
+const intptr_t EMPTY_HASH = -1;
+const intptr_t DELETED_HASH = 0;
+
 //---------------------------------------------------------------------------
 
 AssetManager AssetManager::instance;
@@ -33,7 +36,7 @@ size_t AssetDirectory::GetAssetCount() const {
   size_t count = 0;
   if (IsValid()) {
     for (intptr_t value : hashTable) {
-      if (value != 0 && value != -1) {
+      if (value != DELETED_HASH && value != EMPTY_HASH) {
         ++count;
       }
     }
@@ -47,11 +50,11 @@ const AssetEntry *AssetDirectory::GetAsset(const char *id) const {
   uint32_t index = hash;
   for (;;) {
     const intptr_t value = hashTable[index & HASH_TABLE_MASK];
-    if (value == -1) {
+    if (value == EMPTY_HASH) {
       return nullptr;
     }
 
-    if (value != 0) {
+    if (value != DELETED_HASH) {
       const AssetEntry *entry = (const AssetEntry *)value;
       if (entry->idHash == hash && Str::Eq(entry->id, id)) {
         return entry;
@@ -65,8 +68,8 @@ const AssetEntry *AssetDirectory::GetAsset(const char *id) const {
 void AssetDirectory::ListAssets() const {
   Console::Printf("[");
   bool isFirst = true;
-  for (intptr_t value : hashTable) {
-    if (value == 0 || value == -1) {
+  for (const intptr_t value : hashTable) {
+    if (value == DELETED_HASH || value == EMPTY_HASH) {
       continue;
     }
 
@@ -113,7 +116,7 @@ intptr_t AssetManager::GetEndEmptyDataRegion() const {
   intptr_t endEmptyRegion = intptr_t(directory) + directorySize;
   if (IsValid()) {
     for (intptr_t value : directory->hashTable) {
-      if (value != 0 && value != -1) {
+      if (value != DELETED_HASH && value != EMPTY_HASH) {
         if (value < endEmptyRegion) {
           endEmptyRegion = value;
         }
@@ -150,13 +153,21 @@ const char *AssetManager::AddAsset(const char *id, size_t size) {
 
   const size_t paddedAssetEntryLength = (idLength + sizeof(AssetEntry)) & -4;
   const size_t paddedDataSize = (size + 3) & -4;
-  const size_t totalSize = paddedAssetEntryLength + paddedDataSize;
-  if (totalSize > GetFreeSize()) {
-    return "Insufficient free space";
-  }
 
-  const intptr_t endEmptyRegion = GetEndEmptyDataRegion();
-  const intptr_t startWriteAddress = endEmptyRegion - totalSize;
+  const AssetEntry *existingEntry = directory->GetAsset(id);
+  if (existingEntry != nullptr && size <= existingEntry->size) {
+    Flash::instance.BeginWrite((uint8_t *)existingEntry);
+  } else {
+    const size_t totalSize = paddedAssetEntryLength + paddedDataSize;
+    if (totalSize > GetFreeSize()) {
+      return "Insufficient free space";
+    }
+
+    const intptr_t endEmptyRegion = GetEndEmptyDataRegion();
+    const intptr_t startWriteAddress = endEmptyRegion - totalSize;
+
+    Flash::instance.BeginWrite((uint8_t *)startWriteAddress);
+  }
 
   uint8_t buffer[256] = {};
   AssetEntry *entry = (AssetEntry *)buffer;
@@ -164,7 +175,6 @@ const char *AssetManager::AddAsset(const char *id, size_t size) {
   entry->idHash = Crc32::Hash(id, idLength);
   Mem::Copy(entry->id, id, idLength);
 
-  Flash::instance.BeginWrite((uint8_t *)startWriteAddress);
   Flash::instance.AddData(buffer, paddedAssetEntryLength);
   assetDataBytesRemaining = (uint32_t)size;
 
@@ -210,7 +220,7 @@ void AssetManager::WriteHeader() {
   for (;;) {
     index &= AssetDirectory::HASH_TABLE_MASK;
     const intptr_t value = directory->hashTable[index];
-    if (value == 0 || value == -1) {
+    if (value == DELETED_HASH || value == EMPTY_HASH) {
       Flash::Write(&directory->hashTable[index], &newEntry,
                    sizeof(AssetEntry *), FlashWriteMode::PRESERVE);
       return;

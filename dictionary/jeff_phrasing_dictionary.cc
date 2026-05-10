@@ -104,6 +104,16 @@ JeffPhrasingVariant::LookupWithDefaultOrSelf(uint32_t key) const {
   return result ? result : this;
 }
 
+const JeffPhrasingVariant *
+JeffPhrasingVariant::LookupWithDefaultOrFirst(uint32_t key) const {
+  const JeffPhrasingVariant *result = Lookup(key);
+  if (result) {
+    return result;
+  }
+
+  return (type == Type::MAP) ? &map->entries[0].value : this;
+}
+
 bool JeffPhrasingDictionaryData::IsValidPhraseStroke(StenoStroke stroke) const {
   for (const StenoStroke &nonPhraseStroke : nonPhraseStrokes) {
     if (nonPhraseStroke == stroke) {
@@ -298,7 +308,7 @@ char *PhrasingParts::CreatePhrase() const {
   uint32_t wordForm = uint32_t(pronoun->wordForm);
   const JeffPhrasingVariant *middleLookup =
       middle->word.LookupWithDefaultOrSelf((uint32_t)ender->tense)
-          ->LookupWithDefaultOrSelf(wordForm);
+          ->LookupWithDefaultOrFirst(wordForm);
 
   if (structure->useMiddleWordForm) {
     wordForm |= uint32_t(middleLookup->wordForm);
@@ -306,7 +316,7 @@ char *PhrasingParts::CreatePhrase() const {
 
   const char *structureText =
       structure->format.LookupWithDefaultOrSelf((uint32_t)ender->tense)
-          ->LookupWithDefaultOrSelf(wordForm)
+          ->LookupWithDefaultOrFirst(wordForm)
           ->ToString();
 
   if (structure->updatedWordForm != WordForm::UNSPECIFIED) {
@@ -314,7 +324,7 @@ char *PhrasingParts::CreatePhrase() const {
   }
 
   const char *verbText =
-      ender->ender.LookupWithDefaultOrSelf(wordForm)->ToString();
+      ender->ender.LookupWithDefaultOrFirst(wordForm)->ToString();
 
   // Abuse pattern replace code to substitute text.
   PatternMatch match;
@@ -1744,7 +1754,9 @@ TEST_BEGIN("JeffPhrasing: Reverse lookups") {
   VerifyReverseLookup("can I", StenoStroke("SWRAU"));
   VerifyReverseLookup("I", StenoStroke("SWR"));
   VerifyReverseLookup("I can", StenoStroke("SWRA"));
+  VerifyReverseLookup("I can go", StenoStroke("SWRAG"));
   VerifyReverseLookup("I can't", StenoStroke("SWRA*"));
+  VerifyReverseLookup("I couldn't go", StenoStroke("SWRA*GD"));
   VerifyReverseLookup("I need to", StenoStroke("SWR-RPGT"));
   VerifyReverseLookup("I am going to", StenoStroke("SWREGT"));
   VerifyReverseLookup("I was going", StenoStroke("SWREGD"));

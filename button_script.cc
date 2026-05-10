@@ -558,14 +558,23 @@ public:
     if (data[0] == 0) {
       static_assert(sizeof(ImageHeader) == 8);
       const ImageHeader *header = (const ImageHeader *)data;
+      if (header->version.ToUint32() != 0) {
+        return;
+      }
       format = header->format;
       width = header->width.ToUint32();
+      if (width == 0) {
+        return;
+      }
       height = header->height.ToUint32();
       data = (uint8_t *)(header + 1);
     } else {
       format = ImageFormat::BITMAP;
       width = *data++;
       height = *data++;
+    }
+    if (height == 0) {
+      return;
     }
     Display::DrawImage(displayId, x, y, width, height, format, data);
   }
@@ -1379,7 +1388,7 @@ public:
 
   static void SetBleSplitRate(ButtonScript &script,
                               const ScriptByteCode *byteCode) {
-    const int rate = (int) script.Pop();
+    const int rate = (int)script.Pop();
     Ble::SetSplitRate((BleSplitRate)rate);
   }
 #if !defined(BUTTON_COUNT)

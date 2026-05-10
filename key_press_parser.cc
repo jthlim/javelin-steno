@@ -74,6 +74,7 @@ constexpr KeyCodeName KEYS[] = {
     {"e", KeyCode::E},
     {"eject", KeyCode::CONSUMER_PAGE_EJECT},
     {"end", KeyCode::END},
+    {"enter", KeyCode::ENTER},
     {"equal", KeyCode::EQUAL},
     {"escape", KeyCode::ESC},
     {"exclam", KeyCode::_1},

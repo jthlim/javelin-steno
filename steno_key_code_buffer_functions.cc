@@ -36,6 +36,7 @@ constexpr KeyCodeFunctionEntry HANDLERS[] = {
     {"retro_replace_space", &StenoKeyCodeBuffer::RetroReplaceSpaceFunction},
     {"retro_single_quotes", &StenoKeyCodeBuffer::RetroSingleQuotesFunction},
     {"retro_surround", &StenoKeyCodeBuffer::RetroSurroundFunction},
+    {"retro_surround_character", &StenoKeyCodeBuffer::RetroSurroundCharacterFunction},
     {"retro_title", &StenoKeyCodeBuffer::RetroTitleCaseFunction},
     {"retro_upper", &StenoKeyCodeBuffer::RetroUpperCaseFunction},
     {"set_case", &StenoKeyCodeBuffer::SetCaseFunction},
@@ -368,12 +369,12 @@ void StenoKeyCodeBuffer::RetroactiveQuotes(int wordCount,
     return;
   }
 
-  StenoKeyCode *endQuoteBufferPointer = currentOutput;
-  AppendText(endQuote, Str::Length(endQuote), StenoCaseMode::NORMAL);
-  StenoKeyCode *startQuoteBufferPointer = currentOutput;
+  StenoKeyCode *previousEnd = currentOutput;
   AppendText(startQuote, Str::Length(startQuote), StenoCaseMode::NORMAL);
+  StenoKeyCode *afterPrefix = currentOutput;
+  AppendText(endQuote, Str::Length(endQuote), StenoCaseMode::NORMAL);
 
-  StenoKeyCode *p = endQuoteBufferPointer - 1;
+  StenoKeyCode *p = previousEnd - 1;
   while (wordCount) {
     for (;;) {
       if (p <= buffer) {
@@ -403,9 +404,9 @@ void StenoKeyCodeBuffer::RetroactiveQuotes(int wordCount,
   }
 
   // Rotate in place.
-  Reverse(p, startQuoteBufferPointer);
-  Reverse(startQuoteBufferPointer, currentOutput);
-  Reverse(p, currentOutput);
+  Reverse(p, previousEnd);
+  Reverse(previousEnd, afterPrefix);
+  Reverse(p, afterPrefix);
 }
 
 void StenoKeyCodeBuffer::RetroactiveSingleQuotes(int count) {
@@ -731,6 +732,46 @@ bool StenoKeyCodeBuffer::RetroSurroundFunction(const List<char *> &parameters) {
   return true;
 }
 
+void StenoKeyCodeBuffer::RetroSurroundCharacter(int count, const char *prefix,
+                                                const char *suffix) {
+  StenoKeyCode *previousEnd = currentOutput;
+  AppendText(prefix, Str::Length(prefix), StenoCaseMode::NORMAL);
+  StenoKeyCode *afterPrefix = currentOutput;
+  AppendText(suffix, Str::Length(suffix), StenoCaseMode::NORMAL);
+
+  StenoKeyCode *p = previousEnd;
+  while (count) {
+    if (p <= buffer) {
+      break;
+    }
+
+    --p;
+    --count;
+  }
+
+  // Rotate in place.
+  Reverse(p, previousEnd);
+  Reverse(previousEnd, afterPrefix);
+  Reverse(p, afterPrefix);
+}
+
+bool StenoKeyCodeBuffer::RetroSurroundCharacterFunction(
+    const List<char *> &parameters) {
+  if (parameters.GetCount() != 4) {
+    return false;
+  }
+
+  int characterCount;
+  if (!ReadIntegerParameter(characterCount, parameters[1])) {
+    return false;
+  }
+
+  const char *prefix = parameters[2];
+  const char *suffix = parameters[3];
+  RetroSurroundCharacter(characterCount, prefix, suffix);
+  return true;
+}
+
 bool StenoKeyCodeBuffer::RetroDoubleQuotesFunction(
     const List<char *> &parameters) {
   return CountHandler(&StenoKeyCodeBuffer::RetroactiveDoubleQuotes, parameters);
@@ -980,6 +1021,24 @@ TEST_BEGIN("StenoKeyCodeBuffer: RetroReplaceSpace <>") {
   buffer.AppendText("ab c", 4, StenoCaseMode::NORMAL);
   buffer.RetroactiveReplaceSpace(1, "<>");
   AssertBufferContent(buffer, "ab<>c");
+}
+TEST_END
+
+TEST_BEGIN("StenoKeyCodeBuffer: RetroSurround") {
+  StenoKeyCodeBuffer buffer;
+  buffer.Reset();
+  buffer.AppendText("abcd efgh", 9, StenoCaseMode::NORMAL);
+  buffer.RetroactiveQuotes(1, "[(", ")]");
+  AssertBufferContent(buffer, "abcd [(efgh)]");
+}
+TEST_END
+
+TEST_BEGIN("StenoKeyCodeBuffer: RetroSurroundCharacter") {
+  StenoKeyCodeBuffer buffer;
+  buffer.Reset();
+  buffer.AppendText("abcd", 4, StenoCaseMode::NORMAL);
+  buffer.RetroSurroundCharacter(2, "[(", ")]");
+  AssertBufferContent(buffer, "ab[(cd)]");
 }
 TEST_END
 

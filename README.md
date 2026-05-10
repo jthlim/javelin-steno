@@ -313,6 +313,19 @@ Text: `This is a test`
 
 Output: `This is [a test]`
 
+## `{:retro_surround_character:<n_characters>:<prefix>:<suffix>}`
+
+Surrounds the prior `n_characters` with `prefix` and `suffix`.
+
+Example usage:
+Text: `This is a test`
+
+```
+  {:retro_surround_character:2:[:]}
+```
+
+Output: `This is a te[st]`
+
 ## `{:retro_title:<n_words>}`
 
 Converts the prior `n_words` to title case.
