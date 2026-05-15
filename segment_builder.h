@@ -83,11 +83,14 @@ public:
   bool HasModifiedStrokeHistory() const { return hasModifiedStrokeHistory; }
   bool HasRawStroke() const { return hasRawStroke; }
 
+  size_t GetStartingStrokeId() const { return startingStrokeId; }
+
   static constexpr size_t BUFFER_SIZE = 256;
 
 private:
   bool hasModifiedStrokeHistory = false;
   bool hasRawStroke;
+  size_t startingStrokeId;
   size_t count = 0;
   const char *lastSegmentCommand;
   StenoStroke strokes[BUFFER_SIZE];

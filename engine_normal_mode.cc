@@ -28,20 +28,21 @@
 struct StenoEngine::ConvertTextData {
   ConvertTextData(StenoEngine *engine, StenoKeyCodeBuffer *keyCodeBuffer,
                   StenoSegmentList *segments, size_t startingOffset,
-                  bool executeSideEffects)
+                  size_t startingStrokeId, bool executeSideEffects)
       : engine(engine), keyCodeBuffer(keyCodeBuffer), segments(segments),
-        startingOffset(startingOffset), executeSideEffects(executeSideEffects) {
-  }
+        startingOffset(startingOffset), startingStrokeId(startingStrokeId),
+        executeSideEffects(executeSideEffects) {}
 
   StenoEngine *const engine;
   StenoKeyCodeBuffer *const keyCodeBuffer;
   StenoSegmentList *const segments;
   const size_t startingOffset;
+  const size_t startingStrokeId;
   const bool executeSideEffects;
 
   void ConvertText() {
     engine->ConvertText(*keyCodeBuffer, *segments, startingOffset,
-                        executeSideEffects);
+                        startingStrokeId, executeSideEffects);
   }
 
   static void ThreadEntryPoint(void *data) {
@@ -243,12 +244,14 @@ void StenoEngine::ProcessNormalModeStroke(StenoStroke stroke) {
 
   ConvertTextData previousConvertTextData(
       this, &previousConversionBuffer.keyCodeBuffer, &previousSegments,
-      startingOffset, false);
+      startingOffset,
+      previousConversionBuffer.segmentBuilder.GetStartingStrokeId(), false);
 #if !JAVELIN_THREADS
   previousConvertTextData.ConvertText();
 #endif
-  ConvertTextData nextConvertTextData(this, &nextConversionBuffer.keyCodeBuffer,
-                                      &nextSegments, startingOffset, true);
+  ConvertTextData nextConvertTextData(
+      this, &nextConversionBuffer.keyCodeBuffer, &nextSegments, startingOffset,
+      nextConversionBuffer.segmentBuilder.GetStartingStrokeId(), true);
 #if JAVELIN_THREADS
   RunParallel(&ConvertTextData::ThreadEntryPoint, &previousConvertTextData,
               &ConvertTextData::ThreadEntryPoint, &nextConvertTextData);
@@ -334,7 +337,8 @@ void StenoEngine::ProcessNormalModeStroke(StenoStroke stroke) {
 
   if (printSuggestions) {
     // PrintSuggestions will overwrite the previousConversionBuffer
-    PrintSuggestions(previousSegments, nextSegments);
+    PrintSuggestions(previousSegments, nextSegments,
+                     nextConversionBuffer.segmentBuilder.GetStartingStrokeId());
   }
 
 #if ENABLE_PROFILE
@@ -473,13 +477,15 @@ void StenoEngine::ProcessNormalModeUndo() {
 
   ConvertTextData previousConvertTextData(
       this, &previousConversionBuffer.keyCodeBuffer, &previousSegments,
-      startingOffset, false);
+      startingOffset,
+      previousConversionBuffer.segmentBuilder.GetStartingStrokeId(), false);
 #if !JAVELIN_THREADS
   previousConvertTextData.ConvertText();
 #endif
 
-  ConvertTextData nextConvertTextData(this, &nextConversionBuffer.keyCodeBuffer,
-                                      &nextSegments, startingOffset, false);
+  ConvertTextData nextConvertTextData(
+      this, &nextConversionBuffer.keyCodeBuffer, &nextSegments, startingOffset,
+      nextConversionBuffer.segmentBuilder.GetStartingStrokeId(), false);
 
 #if !JAVELIN_THREADS
   nextConvertTextData.ConvertText();
@@ -578,6 +584,7 @@ void StenoEngine::CreateSegmentsUsingLongerResult(
 
 void StenoEngine::ConvertText(StenoKeyCodeBuffer &keyCodeBuffer,
                               StenoSegmentList &segments, size_t startingOffset,
+                              size_t startingStrokeId,
                               bool executeSideEffects) {
   StenoState endState;
   if (startingOffset == segments.GetCount()) {
@@ -587,7 +594,7 @@ void StenoEngine::ConvertText(StenoKeyCodeBuffer &keyCodeBuffer,
     // starting offset.
     endState = state;
   } else {
-    StenoTokenizer tokenizer(segments, startingOffset);
+    StenoTokenizer tokenizer(segments, startingOffset, startingStrokeId);
     keyCodeBuffer.Populate(tokenizer, executeSideEffects);
     endState = keyCodeBuffer.state;
   }
@@ -692,7 +699,8 @@ void StenoEngine::PrintPaperTape(StenoStroke stroke,
 }
 
 void StenoEngine::PrintSuggestions(const StenoSegmentList &previousSegments,
-                                   const StenoSegmentList &nextSegments) {
+                                   const StenoSegmentList &nextSegments,
+                                   size_t nextStartStrokeId) {
 #if ENABLE_PROFILE_SUGGESTIONS
   sysTick->EnableCycleCount();
   const uint32_t t0 = sysTick->ReadCycleCount();
@@ -773,8 +781,9 @@ void StenoEngine::PrintSuggestions(const StenoSegmentList &previousSegments,
     const uint32_t t22 = sysTick->ReadCycleCount();
 #endif
 
-    newLookup = PrintSegmentSuggestion(startSegmentIndex, strokeThresholdCount,
-                                       nextSegments, lastLookup);
+    newLookup =
+        PrintSegmentSuggestion(startSegmentIndex, nextStartStrokeId,
+                               strokeThresholdCount, nextSegments, lastLookup);
 
 #if ENABLE_PROFILE_SUGGESTIONS
     const uint32_t t23 = sysTick->ReadCycleCount();
@@ -894,6 +903,7 @@ static bool ShouldShowSuggestions(const StenoSegmentList &segments,
 }
 
 char *StenoEngine::PrintSegmentSuggestion(size_t startSegmentIndex,
+                                          size_t startStrokeId,
                                           size_t strokeThresholdCount,
                                           const StenoSegmentList &segments,
                                           char *lastLookup) {
@@ -909,7 +919,7 @@ char *StenoEngine::PrintSegmentSuggestion(size_t startSegmentIndex,
   const uint32_t t1 = sysTick->ReadCycleCount();
 #endif
 
-  StenoTokenizer tokenizer(segments, startSegmentIndex);
+  StenoTokenizer tokenizer(segments, startSegmentIndex, startStrokeId);
   previousConversionBuffer.keyCodeBuffer.Populate(tokenizer, false);
 
 #if ENABLE_PROFILE_SUGGESTIONS

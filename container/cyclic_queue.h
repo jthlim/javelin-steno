@@ -68,6 +68,8 @@ public:
   }
   friend size_t end(const CyclicQueue &q) { return q.endIndex; }
 
+  size_t GetStartindex() const { return startIndex; }
+
 private:
   size_t startIndex = 0;
   size_t endIndex = 0;

@@ -157,8 +157,7 @@ void StenoEngine::UpdateAddTranslationModeTextBuffer(ConversionBuffer &buffer) {
 
     char strokeBuffer[StenoStroke::MAX_STRING_LENGTH];
     char *p = stroke.ToString(strokeBuffer);
-    buffer.keyCodeBuffer.AppendText(strokeBuffer, p - strokeBuffer,
-                                    StenoCaseMode::NORMAL);
+    buffer.keyCodeBuffer.AppendText(strokeBuffer, p, StenoCaseMode::NORMAL);
   }
 
   buffer.keyCodeBuffer.AppendText(TRANSLATION_PROMPT,
@@ -175,7 +174,7 @@ void StenoEngine::UpdateAddTranslationModeTextBuffer(ConversionBuffer &buffer) {
   altTranslationHistory.UpdateDefinitionBoundaries(
       i, segments, buffer.segmentBuilder.GetStrokes(0));
 
-  StenoTokenizer tokenizer(segments);
+  StenoTokenizer tokenizer(segments, 0, 0);
   buffer.keyCodeBuffer.Append(tokenizer, false);
   if (placeSpaceAfter && segments.IsNotEmpty()) {
     const StenoState lastState = buffer.keyCodeBuffer.state;
@@ -218,7 +217,7 @@ void StenoEngine::AddTranslation(size_t newlineIndex) {
     nextConversionBuffer.segmentBuilder.CreateSegments(context,
                                                        newlineIndex + 1);
 
-    StenoTokenizer tokenizer(segments);
+    StenoTokenizer tokenizer(segments, 0, 0);
     nextConversionBuffer.keyCodeBuffer.Append(tokenizer, false);
 
     word = nextConversionBuffer.keyCodeBuffer.ToString();

@@ -21,6 +21,7 @@
 #include "hal/mouse.h"
 #include "hal/power.h"
 #include "hal/rgb.h"
+#include "hal/rtc.h"
 #include "hal/sound.h"
 #include "hal/usb_status.h"
 #include "key.h"
@@ -1435,6 +1436,28 @@ public:
     ButtonScriptManager::GetInstance().ExecuteScriptIndex(
         scriptIndex, Clock::GetMilliseconds(), coordinates, 3);
   }
+
+  static void FormatDateTime(ButtonScript &script,
+                             const ScriptByteCode *byteCode) {
+    const intptr_t offset = script.Pop();
+    const char *text = byteCode->GetScriptData<char>(offset);
+
+    LimitedBufferWriter &writer =
+        script.formatStringWriter[script.formatStringWriterIndex];
+    script.formatStringWriterIndex = (script.formatStringWriterIndex + 1) & 1;
+
+    writer.Reset();
+    const DateTime now = RTC::GetDateTime();
+    now.Printf(writer, text);
+    writer.AddTrailingNull();
+    script.Push(byteCode->GetStringOffset((char *)writer.buffer));
+  }
+
+  static void IsDateTimeValid(ButtonScript &script,
+                              const ScriptByteCode *byteCode) {
+    const bool isValid = RTC::HasValidDateTime();
+    script.Push(isValid);
+  }
 };
 
 constexpr void (*ButtonScript::FUNCTION_TABLE[])(ButtonScript &,
@@ -1570,6 +1593,8 @@ constexpr void (*ButtonScript::FUNCTION_TABLE[])(ButtonScript &,
     &Function::AnalogDataInput,
     &Function::EncoderInput,
     &Function::PointerInput,
+    &Function::FormatDateTime,
+    &Function::IsDateTimeValid,
 };
 
 void ButtonScript::PrintEventHistory() {

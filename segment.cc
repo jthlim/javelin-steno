@@ -270,8 +270,9 @@ bool StenoSegmentList::HasManualStateChange(size_t startIndex) const {
 //---------------------------------------------------------------------------
 
 StenoTokenizer::StenoTokenizer(const StenoSegmentList &list,
-                               size_t startingOffset)
-    : list(list), elementIndex(startingOffset) {
+                               size_t startingOffset, size_t startingStrokeId)
+    : list(list), elementIndex(startingOffset),
+      startingStrokeId(startingStrokeId) {
   p = "";
   PrepareNextP();
 }
@@ -289,7 +290,7 @@ StenoToken StenoTokenizer::GetNext() {
         // Unterminated command... drop it.
         p = workingP;
         PrepareNextP();
-        return StenoToken("{}", 2, state, false);
+        return GetNext();
       }
       if (workingP[0] == '\\') [[unlikely]] {
         if (workingP[1] != '\0') [[likely]] {
@@ -326,10 +327,11 @@ UpdatePAndReturnSpan:
   p = workingP;
 
 ReturnSpan:
-  const size_t length = workingP - start;
   const bool isLastToken = elementIndex == list.GetCount();
+  const size_t tokenId = currentSegment->GetStrokeIndex(list[0].state) +
+                         currentSegment->strokeLength + startingStrokeId;
   PrepareNextP();
-  return StenoToken(start, length, state, isLastToken);
+  return StenoToken(start, workingP, state, tokenId, isLastToken);
 }
 
 void StenoTokenizer::PrepareNextP() {
@@ -348,6 +350,7 @@ void StenoTokenizer::PrepareNextP() {
     const StenoSegment &segment = list[elementIndex++];
     p = segment.lookup.GetText();
     nextState = segment.state;
+    currentSegment = &segment;
   }
 }
 
@@ -380,7 +383,7 @@ TEST_BEGIN("Segment tests") {
 
   history.CreateSegments(context);
 
-  StenoTokenizer tokenizer(segments);
+  StenoTokenizer tokenizer(segments, 0, 0);
 
   assert(tokenizer.HasMore());
   assert(Str::Eq(tokenizer.GetNext().text, "test"));

@@ -84,7 +84,8 @@ public:
 
   char *SwapTemplateValue(size_t index, char *data);
 
-  char *ConvertText(StenoSegmentList &segments, size_t startingOffset);
+  char *ConvertText(StenoSegmentList &segments, size_t startingOffset,
+                    size_t startingStrokeId);
 
 private:
   static constexpr size_t PAPER_TAPE_SUGGESTION_SEGMENT_LIMIT = 8;
@@ -181,7 +182,7 @@ private:
                                        const StenoSegmentList &longerSegments);
   void ConvertText(StenoKeyCodeBuffer &keyCodeBuffer,
                    StenoSegmentList &segments, size_t startingOffset,
-                   bool executeSideEffects);
+                   size_t startingStrokeId, bool executeSideEffects);
 
   void DumpKeyCodeBufferElements() const;
 
@@ -190,12 +191,13 @@ private:
                       const StenoSegmentList &nextSegments) const;
   void PrintPaperTapeUndo(size_t undoCount) const;
   void PrintSuggestions(const StenoSegmentList &previousSegments,
-                        const StenoSegmentList &nextSegments);
+                        const StenoSegmentList &nextSegments,
+                        size_t nextStartStrokeId);
   void PrintFingerSpellingSuggestions(const StenoSegmentList &previousSegments,
                                       const StenoSegmentList &nextSegments);
   void PrintSuggestion(const char *p, size_t arrowPrefixCount,
                        size_t strokeThreshold) const;
-  char *PrintSegmentSuggestion(size_t startSegmentIndex,
+  char *PrintSegmentSuggestion(size_t startSegmentIndex, size_t startStrokeId,
                                size_t strokeThresholdCount,
                                const StenoSegmentList &segments,
                                char *lastLookup);

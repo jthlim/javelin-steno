@@ -42,6 +42,7 @@ public:
   bool launchConsole = false;
   bool launchAddTranslation = false;
   bool doResetState = false;
+  size_t tokenId;
   StenoKeyCode *lastText;
   StenoState state;
   char *addTranslationText = nullptr;
@@ -53,19 +54,27 @@ public:
 
   StenoState GetPersistentState() const { return state.GetPersistentState(); }
 
-  void ProcessText(const char *text, size_t length);
-  void ProcessCommand(const char *command, size_t length);
+  void ProcessText(const char *text, const char *pEnd);
+  void ProcessCommand(const char *command, const char *pEnd);
   void ProcessOrthographicSuffix(const char *text, size_t length);
 
   void AppendSpace();
-  void AppendText(const char *p, size_t n, StenoCaseMode outputCaseMode);
-  void AppendTextNoCaseModeOverride(const char *p, size_t n,
+  void AppendText(const char *p, const char *pEnd,
+                  StenoCaseMode outputCaseMode);
+  void AppendText(const char *p, size_t n, StenoCaseMode outputCaseMode) {
+    AppendText(p, p + n, outputCaseMode);
+  }
+  void AppendTextNoCaseModeOverride(const char *p, const char *pEnd,
                                     StenoCaseMode outputCaseMode);
+  void AppendTextNoCaseModeOverride(const char *p, size_t n,
+                                    StenoCaseMode outputCaseMode) {
+    AppendTextNoCaseModeOverride(p, p + n, outputCaseMode);
+  }
 
   char *ToString(size_t startingOffset = 0) const;
   char *ToUnresolvedString() const;
 
-  static bool IsGlue(const char *p, size_t length);
+  static bool IsGlue(const char *p, const char *pEnd);
 
   bool ProcessKeyPresses(const char *p, const char *end);
   void ReleaseKeyStack(List<KeyCode> &keyPressStack);
@@ -119,6 +128,7 @@ public:
   bool SetSpaceFunction(const List<char *> &parameters);
   bool StitchFunction(const List<char *> &parameters);
   bool StitchLastWordFunction(const List<char *> &parameters);
+  bool TimeFunction(const List<char *> &parameters);
   bool ToggleDictionaryFunction(const List<char *> &parameters);
   bool UnicodeFunction(const List<char *> &parameters);
 

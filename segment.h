@@ -61,29 +61,31 @@ private:
 //
 // e.g. "{^}test{.}" has three tokens: "{^}", "test" and "{.}"
 struct StenoToken {
-  StenoToken(const char *text, size_t length, const StenoState *state,
-             bool isLastSegment)
-      : text(text), length(length), state(state), isLastSegment(isLastSegment) {
-  }
+  StenoToken(const char *text, const char *pEnd, const StenoState *state,
+             size_t id, bool isLastSegment)
+      : text(text), pEnd(pEnd), state(state), id(id),
+        isLastSegment(isLastSegment) {}
 
   // This text is *not* null terminated.
   const char *const text;
-  size_t length;
+  const char *const pEnd;
 
   // This can be null -- meaning that the state should be inferred.
   const StenoState *const state;
 
-  bool isLastSegment;
+  const size_t id;
+  const bool isLastSegment;
 
   // Returns text as a null-terminated string.
-  char *DupText() const { return Str::DupN(text, length); }
+  char *DupText() const { return Str::DupN(text, pEnd - text); }
 };
 
 class StenoTokenizerIterator;
 
 class StenoTokenizer {
 public:
-  StenoTokenizer(const StenoSegmentList &list, size_t startingOffset = 0);
+  StenoTokenizer(const StenoSegmentList &list, size_t startingOffset,
+                 size_t startingStrokeId);
 
   bool HasMore() const { return p != nullptr; }
   StenoToken GetNext();
@@ -94,6 +96,8 @@ public:
 private:
   const StenoSegmentList &list;
   size_t elementIndex;
+  size_t startingStrokeId;
+  const StenoSegment *currentSegment;
 
   const char *p;
   const StenoState *nextState = nullptr;

@@ -2,6 +2,7 @@
 
 #include "console.h"
 #include "engine.h"
+#include "hal/rtc.h"
 #include "host_layout.h"
 #include "mem.h"
 #include "state.h"
@@ -43,6 +44,7 @@ constexpr KeyCodeFunctionEntry HANDLERS[] = {
     {"set_space", &StenoKeyCodeBuffer::SetSpaceFunction},
     {"stitch", &StenoKeyCodeBuffer::StitchFunction},
     {"stitch_last_word", &StenoKeyCodeBuffer::StitchLastWordFunction},
+    {"time", &StenoKeyCodeBuffer::TimeFunction},
     {"toggle_dictionary", &StenoKeyCodeBuffer::ToggleDictionaryFunction},
 };
 // clang-format on
@@ -965,6 +967,68 @@ bool StenoKeyCodeBuffer::ConsoleFunction(const List<char *> &parameters) {
   return true;
 }
 
+class DateTimeTokenStore {
+public:
+  static DateTime Create(size_t tokenId);
+  static DateTime Get(size_t tokenId);
+
+private:
+  struct Entry {
+    size_t key;
+    DateTime value;
+  };
+
+  static CyclicQueue<Entry, 16> store;
+};
+
+CyclicQueue<DateTimeTokenStore::Entry, 16> DateTimeTokenStore::store;
+
+DateTime DateTimeTokenStore::Create(size_t tokenId) {
+  const DateTime result = RTC::GetDateTime();
+  for (size_t i = 0; i < store.GetCount(); ++i) {
+    Entry &entry = store[i];
+    if (entry.key == tokenId) {
+      entry.value = result;
+      return result;
+    }
+  }
+  store.Add(Entry{.key = tokenId, .value = result});
+  return result;
+}
+
+DateTime DateTimeTokenStore::Get(size_t tokenId) {
+  for (size_t i = 0; i < store.GetCount(); ++i) {
+    Entry &entry = store[i];
+    if (entry.key == tokenId) {
+      return entry.value;
+    }
+  }
+
+  return RTC::GetDateTime();
+}
+
+bool StenoKeyCodeBuffer::TimeFunction(const List<char *> &parameters) {
+  if (parameters.GetCount() < 2) {
+    return false;
+  }
+
+  // TODO: Store/cache dateTime.
+  const DateTime dateTime = executeSideEffects
+                                ? DateTimeTokenStore::Create(tokenId)
+                                : DateTimeTokenStore::Get(tokenId);
+
+  BufferWriter buffer;
+  dateTime.Printf(buffer, parameters[1]);
+  for (size_t i = 2; i < parameters.GetCount(); ++i) {
+    buffer.WriteByte(':');
+    dateTime.Printf(buffer, parameters[i]);
+  }
+
+  AppendText(buffer.GetBuffer(), buffer.GetCount(), StenoCaseMode::NORMAL);
+
+  return true;
+}
+
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
@@ -1002,7 +1066,6 @@ TEST_BEGIN("StenoKeyCodeBuffer: RetroReplaceSpace") {
   buffer.AppendText("ab c", 4, StenoCaseMode::NORMAL);
   buffer.RetroactiveReplaceSpace(1, "");
   AssertBufferContent(buffer, "abc");
-  ;
 }
 TEST_END
 

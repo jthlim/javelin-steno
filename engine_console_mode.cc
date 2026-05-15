@@ -79,7 +79,7 @@ void StenoEngine::UpdateConsoleModeTextBuffer(ConversionBuffer &buffer) {
   altTranslationHistory.UpdateDefinitionBoundaries(
       0, segments, buffer.segmentBuilder.GetStrokes(0));
 
-  StenoTokenizer tokenizer(segments);
+  StenoTokenizer tokenizer(segments, 0, 0);
   buffer.keyCodeBuffer.Append(tokenizer, false);
   if (placeSpaceAfter && segments.IsNotEmpty()) {
     const StenoState lastState = buffer.keyCodeBuffer.state;

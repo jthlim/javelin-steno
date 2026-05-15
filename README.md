@@ -417,6 +417,37 @@ Text: `This is a test`
 
 Output: `This i-s a t-e-s-t`
 
+## `{:time:<time_format>}`
+
+Formats the current date/time according to the `time_format` parameter.
+
+- %a: Short Weekday, e.g. "Sun"
+- %A: Long Weekday, e.g. "Sunday"
+- %w: Day of Week, 0..6 (Sunday is 0)
+- %y: Short Year, e.g. "13"
+- %Y: Long Year, e.g. "2013"
+- %b: Short Month, e.g. "Jan"
+- %B: Long Month, e.g. "January"
+- %m: Month, 01..12
+- %d: Day, 01..31
+- %e: Day, 1..31
+- %H: Hour, 00..23
+- %I: Hour, 01..12
+- %M: Minute, 00..59
+- %S: Seconds, 00..59
+- %p: "AM" or "PM"
+- %%: Literal % character
+
+Example usage:
+```
+  {:time:%Y-%m-%d %H:%M:%S}
+```
+
+Output: `2026-05-16 17:10:30`
+
+If a time has not yet been set, Javelin's web tools will set the current
+date/time when connecting to the board.
+
 ## `{:toggle_dictionary:<dictionary_name>}`
 
 Toggles a dictionary between enabled and disabled.

@@ -1279,10 +1279,15 @@ needs to be enabled in Web Tools to be able to see this information.
 - `func formatString(<format>, <value>) var`
 
   - Intended only for use with `getAsset`, `drawText` and `sendEvent`.
-  - _format_ must be a string constant and can contain C printf like formatters.
+  - _format_ must be a string literal and can contain C printf-like formatters.
     Check [writer.cc](writer.cc) for a full list.
   - _value_ is a single integer value to format. Pointer values cannot be used
     and will likely crash the script.
+
+- `func formatDate(<format>) var`
+
+  - _format_ must be a string literal and can contain C strftime-like formatters.
+    Check [date_time.cc](date_time.cc) for a full list.
 
 - `func getAsset(<assetName>) var`
 

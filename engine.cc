@@ -227,11 +227,12 @@ char *StenoEngine::SwapTemplateValue(size_t index, char *data) {
 }
 
 char *StenoEngine::ConvertText(StenoSegmentList &segments,
-                               size_t startingOffset) {
+                               size_t startingOffset, size_t startingStrokeId) {
   StenoKeyCodeBuffer &keyCodeBuffer = nextConversionBuffer.keyCodeBuffer;
   keyCodeBuffer.Reset();
   if (startingOffset < segments.GetCount()) {
-    ConvertText(keyCodeBuffer, segments, startingOffset, false);
+    ConvertText(keyCodeBuffer, segments, startingOffset, startingStrokeId,
+                false);
   }
   return keyCodeBuffer.ToString();
 }

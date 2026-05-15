@@ -34,24 +34,25 @@ void StenoKeyCodeBuffer::Append(StenoTokenizer &tokenizer,
       state = *token.state;
     }
     if (token.text[0] == '{') {
+      this->tokenId = token.id;
       this->executeSideEffects = token.isLastSegment && executeSideEffects;
-      ProcessCommand(token.text, token.length);
+      ProcessCommand(token.text, token.pEnd);
     } else {
       lastText = currentOutput;
-      ProcessText(token.text, token.length);
+      ProcessText(token.text, token.pEnd);
     }
   }
 }
 
 //---------------------------------------------------------------------------
 
-void StenoKeyCodeBuffer::ProcessText(const char *text, size_t length) {
-  const bool isAutoGlue = IsGlue(text, length);
+void StenoKeyCodeBuffer::ProcessText(const char *text, const char *pEnd) {
+  const bool isAutoGlue = IsGlue(text, pEnd);
   if (!state.joinNext && !(isAutoGlue && state.isGlue)) {
     AppendText(state.GetSpace(), state.spaceLength, StenoCaseMode::NORMAL);
   }
 
-  AppendText(text, length, state.caseMode);
+  AppendText(text, pEnd, state.caseMode);
   state.joinNext = false;
   state.isGlue = isAutoGlue;
   state.isManualStateChange = false;
@@ -64,25 +65,25 @@ void StenoKeyCodeBuffer::ProcessText(const char *text, size_t length) {
 //
 // This enables looking up: KPA*/RAOD -> RAO*D
 // and AFL/PW*ET/{:retro_lower:1} -> A*FL/PW*ET
-void StenoKeyCodeBuffer::AppendText(const char *p, size_t n,
+void StenoKeyCodeBuffer::AppendText(const char *p, const char *pEnd,
                                     StenoCaseMode caseMode) {
   if (state.overrideCaseMode != StenoCaseMode::NORMAL) {
     caseMode = state.overrideCaseMode;
   }
-  AppendTextNoCaseModeOverride(p, n, caseMode);
+  AppendTextNoCaseModeOverride(p, pEnd, caseMode);
 }
 
-void StenoKeyCodeBuffer::AppendTextNoCaseModeOverride(const char *p, size_t n,
+void StenoKeyCodeBuffer::AppendTextNoCaseModeOverride(const char *p,
+                                                      const char *pEnd,
                                                       StenoCaseMode caseMode) {
-  const char *end = p + n;
   Utf8Pointer utf8p(p);
   StenoKeyCode *d = currentOutput;
 
-  while (utf8p < end) {
+  while (utf8p < pEnd) {
     uint32_t c = *utf8p++;
 
     if (c == '\\') [[unlikely]] {
-      if (utf8p < end) [[likely]] {
+      if (utf8p < pEnd) [[likely]] {
         c = *utf8p++;
         switch (c) {
         case '{':
@@ -130,25 +131,22 @@ void StenoKeyCodeBuffer::AppendTextNoCaseModeOverride(const char *p, size_t n,
   wasLastActionAStitch = false;
 }
 
-bool StenoKeyCodeBuffer::IsGlue(const char *p, size_t length) {
+bool StenoKeyCodeBuffer::IsGlue(const char *p, const char *pEnd) {
   // Pure digits are considered glue.
-  while (length) {
+  while (p < pEnd) {
     if (!Unicode::IsAsciiDigit(*p++)) {
       return false;
     }
-    --length;
   }
   return true;
 }
 
 //---------------------------------------------------------------------------
 
-void StenoKeyCodeBuffer::ProcessCommand(const char *p, size_t length) {
-  const char *end = p + length;
-
+void StenoKeyCodeBuffer::ProcessCommand(const char *p, const char *pEnd) {
   assert(*p == '{');
-  assert(end[-1] == '}');
-  --end;
+  assert(pEnd[-1] == '}');
+  --pEnd;
 
   if (p[1] == '}') {
     // Cancel formatting
@@ -168,7 +166,7 @@ void StenoKeyCodeBuffer::ProcessCommand(const char *p, size_t length) {
       caseMode = state.caseMode;
     }
 
-    if (p == end) {
+    if (p == pEnd) {
       // {^} handling.
       state.caseMode = caseMode != UNSPECIFIED_CASE_MODE
                            ? caseMode
@@ -177,9 +175,9 @@ void StenoKeyCodeBuffer::ProcessCommand(const char *p, size_t length) {
       return;
     }
 
-    if (end[-1] == '^') {
+    if (pEnd[-1] == '^') {
       // Infix.
-      AppendText(p, end - 1 - p, state.caseMode);
+      AppendText(p, pEnd - 1, state.caseMode);
       state.caseMode = caseMode != UNSPECIFIED_CASE_MODE
                            ? caseMode
                            : state.GetNextWordCaseMode();
@@ -189,7 +187,7 @@ void StenoKeyCodeBuffer::ProcessCommand(const char *p, size_t length) {
     }
 
     // Orthographic suffix.
-    ProcessOrthographicSuffix(p, end - p);
+    ProcessOrthographicSuffix(p, pEnd - p);
     if (caseMode != UNSPECIFIED_CASE_MODE) {
       state.caseMode = caseMode;
     }
@@ -199,7 +197,7 @@ void StenoKeyCodeBuffer::ProcessCommand(const char *p, size_t length) {
   }
 
   // Prefix
-  if (end[-1] == '^') {
+  if (pEnd[-1] == '^') {
     ++p;
     StenoCaseMode caseMode = UNSPECIFIED_CASE_MODE;
     if (p[0] == '~' && p[1] == '|') {
@@ -210,7 +208,7 @@ void StenoKeyCodeBuffer::ProcessCommand(const char *p, size_t length) {
     if (!state.joinNext) {
       AppendText(state.GetSpace(), state.spaceLength, StenoCaseMode::NORMAL);
     }
-    AppendText(p, end - 1 - p, state.caseMode);
+    AppendText(p, pEnd - 1, state.caseMode);
     state.caseMode = caseMode != UNSPECIFIED_CASE_MODE
                          ? caseMode
                          : state.GetNextWordCaseMode();
@@ -221,36 +219,36 @@ void StenoKeyCodeBuffer::ProcessCommand(const char *p, size_t length) {
 
   if (p[1] == '*') {
     // Retroactive uppercase
-    if (p[2] == '<' && p + 3 == end) {
+    if (p[2] == '<' && p + 3 == pEnd) {
       RetroactiveUpperCase(1);
       return;
     }
 
     // Retroactive capitalize
-    if (p[2] == '-' && p[3] == '|' && p + 4 == end) {
+    if (p[2] == '-' && p[3] == '|' && p + 4 == pEnd) {
       RetroactiveCapitalize(1);
       return;
     }
 
     // Retroactive un-capitalize.
-    if (p[2] == '>' && p + 3 == end) {
+    if (p[2] == '>' && p + 3 == pEnd) {
       RetroactiveUncapitalize(1);
       return;
     }
 
     // Retroactive delete space
-    if (p[2] == '!' && p + 3 == end) {
+    if (p[2] == '!' && p + 3 == pEnd) {
       RetroactiveDeleteSpace();
       return;
     }
 
-    if (p[2] == '(' && end[-1] == ')') {
-      RetroactiveFormatCurrency(p + 3, end - 1);
+    if (p[2] == '(' && pEnd[-1] == ')') {
+      RetroactiveFormatCurrency(p + 3, pEnd - 1);
       return;
     }
   }
 
-  if (p + 2 == end) {
+  if (p + 2 == pEnd) {
     switch (p[1]) {
     case '.':
     case '?':
@@ -275,26 +273,26 @@ void StenoKeyCodeBuffer::ProcessCommand(const char *p, size_t length) {
   // Carry casing.
   if (p[1] == '~' && p[2] == '|') {
     p += 3;
-    AppendText(p, end - p, state.caseMode);
+    AppendText(p, pEnd, state.caseMode);
     return;
   }
 
   // Capitalize next word.
   if (p[1] == '-' && p[2] == '|') {
     p += 3;
-    AppendText(p, end - p, state.caseMode);
+    AppendText(p, pEnd, state.caseMode);
     state.caseMode = StenoCaseMode::TITLE_ONCE;
     return;
   }
 
   // Upper case next word.
-  if (p[1] == '<' && p + 2 == end) {
+  if (p[1] == '<' && p + 2 == pEnd) {
     state.caseMode = StenoCaseMode::UPPER_ONCE;
     return;
   }
 
   // Lower case next word.
-  if (p[1] == '>' && p + 2 == end) {
+  if (p[1] == '>' && p + 2 == pEnd) {
     state.caseMode = StenoCaseMode::LOWER_ONCE;
     return;
   }
@@ -305,7 +303,7 @@ void StenoKeyCodeBuffer::ProcessCommand(const char *p, size_t length) {
     if (!state.joinNext && !state.isGlue) {
       AppendText(state.GetSpace(), state.spaceLength, StenoCaseMode::NORMAL);
     }
-    AppendText(p, end - p, state.caseMode);
+    AppendText(p, pEnd, state.caseMode);
     state.caseMode = state.GetNextWordCaseMode();
     state.joinNext = false;
     state.isGlue = true;
@@ -322,7 +320,7 @@ void StenoKeyCodeBuffer::ProcessCommand(const char *p, size_t length) {
     List<char *> parameters;
     const char *token = p + 2;
     while (token) {
-      token = AddParameter(parameters, token, end);
+      token = AddParameter(parameters, token, pEnd);
     }
 
     const bool handled = ProcessFunction(parameters);
@@ -338,13 +336,13 @@ void StenoKeyCodeBuffer::ProcessCommand(const char *p, size_t length) {
     if (!executeSideEffects) {
       return;
     }
-    if (ProcessKeyPresses(p + 2, end)) {
+    if (ProcessKeyPresses(p + 2, pEnd)) {
       return;
     }
   }
 
   /// Just display the unhandled command.
-  AppendText(p, end + 1 - p, StenoCaseMode::NORMAL);
+  AppendText(p, pEnd + 1, StenoCaseMode::NORMAL);
 }
 
 const char *StenoKeyCodeBuffer::AddParameter(List<char *> &parameters,

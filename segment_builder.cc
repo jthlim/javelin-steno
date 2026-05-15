@@ -38,6 +38,8 @@ void StenoSegmentBuilder::TransferFrom(const StenoStrokeHistory &source,
       sourceStrokeCount <= maxCount ? 0 : sourceStrokeCount - maxCount;
   count = sourceStrokeCount - offset;
 
+  startingStrokeId = source.GetStartindex() + offset;
+
   for (size_t i = 0; i < count; ++i) {
     const StenoStrokeHistoryEntry &entry = source[offset + i];
     strokes[i] = entry.stroke;
@@ -452,8 +454,8 @@ void StenoSegmentBuilder::HandleRetroSetValue(BuildSegmentContext &context,
   if (currentOffset + length == count) {
     // Store for later update.
     context.setValueIndex = parameters.index;
-    char *text =
-        context.engine.ConvertText(context.segments, startingSegmentIndex);
+    char *text = context.engine.ConvertText(
+        context.segments, startingSegmentIndex, startingStrokeId);
     context.setValueText = Str::Trim(text);
     free(text);
   }
