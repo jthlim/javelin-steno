@@ -75,3 +75,13 @@ struct Mem {
 };
 
 //---------------------------------------------------------------------------
+
+template <typename T> T AlignUp(T p, size_t alignment) {
+  return (T)((intptr_t(p) + alignment - 1) & -alignment);
+}
+
+template <typename T> T AlignDown(T p, size_t alignment) {
+  return (T)(intptr_t(p) & -alignment);
+}
+
+//---------------------------------------------------------------------------

@@ -42,7 +42,7 @@ private:
     void OnDataReceived(const void *data, size_t length) final;
 #endif
 
-    static void ClearQueue();
+    void WaitUntilQueueIsNotFull();
 
     static const size_t MAXIMUM_SERIAL_QUEUE_SIZE = 128;
     CyclicQueue<uint8_t, MAXIMUM_SERIAL_QUEUE_SIZE> queue;

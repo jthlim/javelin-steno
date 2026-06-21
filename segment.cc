@@ -377,8 +377,9 @@ TEST_BEGIN("Segment tests") {
   StenoSystem system;
   const StenoCompiledOrthography compiledOrthography(
       StenoOrthography::emptyOrthography);
-  StenoCompactMapDictionary dictionary(TestDictionary::definition);
-  StenoEngine engine(dictionary, &system, compiledOrthography);
+  StenoCompactMapDictionary *dictionary = new (TestDictionary::definition)
+      StenoCompactMapDictionary(TestDictionary::definition);
+  StenoEngine engine(*dictionary, &system, compiledOrthography);
   BuildSegmentContext context(segments, engine);
 
   history.CreateSegments(context);
@@ -390,6 +391,8 @@ TEST_BEGIN("Segment tests") {
   assert(tokenizer.HasMore());
   assert(Str::Eq(tokenizer.GetNext().text, "{^ing}"));
   assert(!tokenizer.HasMore());
+
+  delete dictionary;
 }
 TEST_END
 

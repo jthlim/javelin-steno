@@ -105,8 +105,6 @@ public:
   // Returns true if successful.
   bool Remove(const StenoStroke *strokes, size_t length);
 
-  static void PrintJsonDictionary_Binding(void *context,
-                                          const char *commandLine);
   static void Reset_Binding(void *context, const char *commandLine);
   static void AddEntry_Binding(void *context, const char *commandLine);
   static void RemoveEntry_Binding(void *context, const char *commandLine);

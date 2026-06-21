@@ -24,7 +24,7 @@ AssetManager AssetManager::instance;
 
 const void *AssetEntry::GetData() const {
   const size_t idLength = Str::Length(id);
-  const size_t paddedIdLength = (idLength + 4) & -4;
+  const size_t paddedIdLength = AlignUp(idLength + 1, 4);
   return id + paddedIdLength;
 }
 
@@ -151,8 +151,9 @@ const char *AssetManager::AddAsset(const char *id, size_t size) {
     return "Asset name too long";
   }
 
+  // AssetEntry includes an extra 4 bytes so this padding is correct.
   const size_t paddedAssetEntryLength = (idLength + sizeof(AssetEntry)) & -4;
-  const size_t paddedDataSize = (size + 3) & -4;
+  const size_t paddedDataSize = AlignUp(size, 4);
 
   const AssetEntry *existingEntry = directory->GetAsset(id);
   if (existingEntry != nullptr && size <= existingEntry->size) {
@@ -190,7 +191,8 @@ void AssetManager::BeginWrite(const uint8_t *address) {
   Mem::Fill(Flash::instance.buffer, offsetIntoPage);
 
   const uint8_t *baseAddress =
-      (const uint8_t *)(intptr_t(address) & -Flash::WRITE_DATA_BUFFER_SIZE);
+      AlignDown(address, Flash::WRITE_DATA_BUFFER_SIZE);
+
   if (IsValid() &&
       (uint8_t *)directory + sizeof(AssetDirectory) > baseAddress) {
     const size_t copyBytes =
@@ -365,7 +367,7 @@ void AssetManager::AddConsoleCommands(Console &console) {
   console.RegisterCommand(
       "asset_data", "Uploads asset_data for the previous add_asset command",
       &AssetData_Binding, &instance);
-  console.RegisterCommand("reset_assets", "Adds an asset to the device",
+  console.RegisterCommand("reset_assets", "Removes all assets on the device",
                           &ResetAssets_Binding, &instance);
 }
 

@@ -1728,6 +1728,14 @@ TEST_BEGIN("JeffPhrasing: Enders tests") {
 }
 TEST_END
 
+TEST_BEGIN("JeffPhrasing: Full lookup tests") {
+  VerifyStroke("KPWHFB", "it has been");
+  VerifyStroke("KPWHAOFB", "it will have been");
+  VerifyStroke("KPWHEF", "it has been");
+  VerifyStroke("KPWHAOEF", "it will have been");
+}
+TEST_END
+
 TEST_BEGIN("JeffPhrasing: Omit past tense lookup when present exists") {
   StenoReverseDictionaryLookup lookup("to read");
   StenoJeffPhrasingDictionary::instance.ReverseLookup(lookup);

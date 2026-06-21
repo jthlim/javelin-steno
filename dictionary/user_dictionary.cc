@@ -21,8 +21,6 @@ constexpr size_t OFFSET_DATA = 1;
 
 constexpr uint32_t USER_DICTIONARY_MAGIC = 0x4455534a; // 'JSUD'
 
-// TODO: July 2026: Remove support for version 2.
-constexpr uint32_t USER_DICTIONARY_WITH_REVERSE_LOOKUP_VERSION = 2;
 constexpr uint32_t
     USER_DICTIONARY_WITH_REVERSE_LOOKUP_AND_REVERSE_DATABLOCK_VERSION = 3;
 
@@ -84,9 +82,8 @@ bool StenoUserDictionaryDescriptor::IsValid(
     const StenoUserDictionaryData &layout) const {
   return magic == USER_DICTIONARY_MAGIC && data.hashTable == layout.hashTable &&
          data.hashTableSize == layout.hashTableSize &&
-         (version == USER_DICTIONARY_WITH_REVERSE_LOOKUP_VERSION ||
-          version ==
-              USER_DICTIONARY_WITH_REVERSE_LOOKUP_AND_REVERSE_DATABLOCK_VERSION) &&
+         version ==
+             USER_DICTIONARY_WITH_REVERSE_LOOKUP_AND_REVERSE_DATABLOCK_VERSION &&
          data.Crc32() == crc32;
 }
 
@@ -96,9 +93,7 @@ inline void StenoUserDictionaryDescriptor::UpdateCrc32() {
 
 size_t StenoUserDictionaryDescriptor::GetUsedDataBlockSize(
     size_t totalDataBlockSize) const {
-  return version == USER_DICTIONARY_WITH_REVERSE_LOOKUP_VERSION
-             ? data.dataBlockSize
-             : totalDataBlockSize - data.dataBlockSizeRemaining;
+  return totalDataBlockSize - data.dataBlockSizeRemaining;
 }
 
 //---------------------------------------------------------------------------
@@ -325,23 +320,14 @@ StenoUserDictionary::AddToDataBlock(const StenoStroke *strokes, uint32_t length,
   const size_t wordLength = Str::Length(word);
 
   // Need to store null terminator + round up to nearest 4 bytes.
-  const size_t wordStorageLength = (wordLength + 4) & -4;
+  const size_t wordStorageLength = AlignUp(wordLength + 1, 4);
 
   const size_t totalLength =
       sizeof(uint32_t) + sizeof(StenoStroke) * length + wordStorageLength;
 
-  if (activeDescriptorCopy.version ==
-      USER_DICTIONARY_WITH_REVERSE_LOOKUP_VERSION) {
-    if (activeDescriptorCopy.data.dataBlockSize + totalLength >
-        layout.dataBlockSize) {
-      // Too big!
-      return AddToDataBlockResult(0, 0);
-    }
-  } else {
-    if (activeDescriptorCopy.data.dataBlockSizeRemaining < totalLength) {
-      // Too big!
-      return AddToDataBlockResult(0, 0);
-    }
+  if (activeDescriptorCopy.data.dataBlockSizeRemaining < totalLength) {
+    // Too big!
+    return AddToDataBlockResult(0, 0);
   }
 
   uint8_t *buffer = (uint8_t *)malloc(totalLength);
@@ -352,19 +338,10 @@ StenoUserDictionary::AddToDataBlock(const StenoStroke *strokes, uint32_t length,
          wordLength + 1);
 
   const size_t dataBlockOffset =
-      activeDescriptorCopy.version ==
-              USER_DICTIONARY_WITH_REVERSE_LOOKUP_VERSION
-          ? activeDescriptorCopy.data.dataBlockSize
-          : activeDescriptorCopy.data.dataBlockSizeRemaining - totalLength;
-
-  const FlashWriteMode writeMode =
-      activeDescriptorCopy.version ==
-              USER_DICTIONARY_WITH_REVERSE_LOOKUP_VERSION
-          ? FlashWriteMode::PRESERVE_BEFORE
-          : FlashWriteMode::PRESERVE_AFTER;
+      activeDescriptorCopy.data.dataBlockSizeRemaining - totalLength;
 
   const uint8_t *target = activeDescriptorCopy.data.dataBlock + dataBlockOffset;
-  Flash::Write(target, buffer, totalLength, writeMode);
+  Flash::Write(target, buffer, totalLength, FlashWriteMode::PRESERVE_AFTER);
   free(buffer);
 
   return AddToDataBlockResult(dataBlockOffset, totalLength);
@@ -374,12 +351,7 @@ void StenoUserDictionary::AddToDescriptor(
     size_t strokeLength, AddToDataBlockResult dataBlockResult) {
   StenoUserDictionaryDescriptor newDescriptor = activeDescriptorCopy;
 
-  if (activeDescriptorCopy.version ==
-      USER_DICTIONARY_WITH_REVERSE_LOOKUP_VERSION) {
-    newDescriptor.data.dataBlockSize += dataBlockResult.length;
-  } else {
-    newDescriptor.data.dataBlockSizeRemaining = dataBlockResult.offset;
-  }
+  newDescriptor.data.dataBlockSizeRemaining = dataBlockResult.offset;
 
   if (strokeLength > newDescriptor.data.maximumOutlineLength) {
     newDescriptor.data.maximumOutlineLength = (uint32_t)strokeLength;
@@ -593,13 +565,6 @@ void StenoUserDictionary::PrintInfo(int depth) const {
 
 //---------------------------------------------------------------------------
 
-void StenoUserDictionary::PrintJsonDictionary_Binding(void *context,
-                                                      const char *commandLine) {
-  const ExternalFlashSentry sentry;
-  StenoUserDictionary *userDictionary = (StenoUserDictionary *)context;
-  userDictionary->PrintJsonDictionary();
-}
-
 void StenoUserDictionary::Reset_Binding(void *context,
                                         const char *commandLine) {
   const ExternalFlashSentry sentry;
@@ -662,9 +627,6 @@ void StenoUserDictionary::RemoveEntry_Binding(void *context,
 
 void StenoUserDictionary::AddConsoleCommands(Console &console) {
 #if JAVELIN_USE_USER_DICTIONARY
-  console.RegisterCommand("print_user_dictionary",
-                          "Prints the user dictionary in JSON format",
-                          &PrintJsonDictionary_Binding, this);
   console.RegisterCommand("reset_user_dictionary", "Resets the user dictionary",
                           &Reset_Binding, this);
   console.RegisterCommand("add_user_entry",

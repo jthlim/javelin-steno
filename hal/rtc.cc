@@ -16,17 +16,26 @@ RTC RTC::instance;
 
 //---------------------------------------------------------------------------
 
-[[gnu::weak]] bool RTC::HasValidDateTime() { return instance.isValid; }
-
-[[gnu::weak]] DateTime RTC::GetDateTime() {
-  return instance.dateTime.AddSeconds(Clock::GetMilliseconds() / 1000 -
-                                      instance.setTime);
+[[gnu::weak]] bool RTC::HasValidDateTime() { return DefaultHasValidDateTime(); }
+[[gnu::weak]] DateTime RTC::GetDateTime() { return DefaultGetDateTime(); }
+[[gnu::weak]] void RTC::SetDateTime(const DateTime &dateTime) {
+  DefaultSetDateTime(dateTime);
 }
 
-[[gnu::weak]] void RTC::SetDateTime(const DateTime &dateTime) {
+bool RTC::DefaultHasValidDateTime() { return instance.isValid; }
+
+uint32_t RTC::GetMillisecondsSinceLastSet() {
+  return Clock::GetMilliseconds() - instance.setTime;
+}
+
+DateTime RTC::DefaultGetDateTime() {
+  return instance.dateTime.AddSeconds(GetMillisecondsSinceLastSet() / 1000);
+}
+
+void RTC::DefaultSetDateTime(const DateTime &dateTime) {
   instance.dateTime = dateTime;
   instance.isValid = true;
-  instance.setTime = Clock::GetMilliseconds() / 1000;
+  instance.setTime = Clock::GetMilliseconds();
 }
 
 void RTC::GetDateTimeValid_Binding() {

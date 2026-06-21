@@ -124,6 +124,10 @@ void ButtonScript::ReleaseAll() {
     Key::Release(uint32_t(keyIndex));
   }
   keyState.ClearAll();
+  for (const uint32_t scanCode : otherScanCodes) {
+    Key::Release(scanCode);
+  }
+  otherScanCodes.Reset();
 
   stenoState = 0;
   CancelAllStenoKeys();
@@ -322,13 +326,42 @@ bool ButtonScript::ProcessScanCode(int scanCode, ScanCodeAction action) {
 
 class ButtonScript::Function {
 public:
+  static void PressScanCodeKey(ButtonScript &script, uint32_t key) {
+    if (key < 256) {
+      if (!script.keyState.IsSet(key)) {
+        if (!script.ProcessScanCode(key, ScanCodeAction::PRESS)) {
+          script.keyState.Set(key);
+          Key::Press(key);
+        }
+      }
+    } else {
+      if (!script.otherScanCodes.Contains(key) &&
+          script.otherScanCodes.IsNotFull()) {
+        script.otherScanCodes.Add(key);
+        Key::Press(key);
+      }
+    }
+  }
+
   static void PressScanCode(ButtonScript &script,
                             const ScriptByteCode *byteCode) {
     const uint32_t key = (uint32_t)script.Pop();
-    if (key < 256 && !script.keyState.IsSet(key)) {
-      if (!script.ProcessScanCode(key, ScanCodeAction::PRESS)) {
-        script.keyState.Set(key);
-        Key::Press(key);
+    PressScanCodeKey(script, key);
+  }
+
+  static void ReleaseScanCodeKey(ButtonScript &script, uint32_t key) {
+    if (key < 256) {
+      if (script.keyState.IsSet(key)) {
+        if (!script.ProcessScanCode(key, ScanCodeAction::RELEASE)) {
+          script.keyState.Clear(key);
+          Key::Release(key);
+        }
+      }
+    } else {
+      const size_t index = script.otherScanCodes.FindIndexOf(key);
+      if (index != -1) {
+        script.otherScanCodes.RemoveIndex(index);
+        Key::Release(key);
       }
     }
   }
@@ -336,35 +369,24 @@ public:
   static void ReleaseScanCode(ButtonScript &script,
                               const ScriptByteCode *byteCode) {
     const uint32_t key = (uint32_t)script.Pop();
-    if (key < 256 && script.keyState.IsSet(key)) {
-      if (!script.ProcessScanCode(key, ScanCodeAction::RELEASE)) {
-        script.keyState.Clear(key);
-        Key::Release(key);
-      }
-    }
+    ReleaseScanCodeKey(script, key);
   }
 
   static void TapScanCode(ButtonScript &script,
                           const ScriptByteCode *byteCode) {
     const uint32_t key = (uint32_t)script.Pop();
-    if (key < 256) {
-      if (!script.ProcessScanCode(key, ScanCodeAction::TAP)) {
-        if (script.keyState.IsSet(key)) {
-          script.keyState.Clear(key);
-        } else {
-          Key::Press(key);
-        }
-        Key::Release(key);
-      }
-    }
+    PressScanCodeKey(script, key);
+    ReleaseScanCodeKey(script, key);
   }
 
   static void IsScanCodePressed(ButtonScript &script,
                                 const ScriptByteCode *byteCode) {
     const uint32_t key = (uint32_t)script.Pop();
-    int isPressed = 0;
+    int isPressed;
     if (key < 256) {
       isPressed = script.keyState.IsSet(key);
+    } else {
+      isPressed = script.otherScanCodes.Contains(key);
     }
     script.Push(isPressed);
   }
@@ -996,13 +1018,19 @@ public:
   static void MoveMouse(ButtonScript &script, const ScriptByteCode *byteCode) {
     const int32_t dy = (int32_t)script.Pop();
     const int32_t dx = (int32_t)script.Pop();
-    Mouse::Move(dx, dy);
+
+    // Ignore movements of 0.
+    if (dx | dy) {
+      Mouse::Move(dx, dy);
+    }
   }
 
   static void VWheelMouse(ButtonScript &script,
                           const ScriptByteCode *byteCode) {
     const int32_t delta = (int32_t)script.Pop();
-    Mouse::VWheel(delta);
+    if (delta) {
+      Mouse::VWheel(delta);
+    }
   }
 
   static void SetEnableButtonStates(ButtonScript &script,
@@ -1032,7 +1060,9 @@ public:
   static void HWheelMouse(ButtonScript &script,
                           const ScriptByteCode *byteCode) {
     const int32_t delta = (int32_t)script.Pop();
-    Mouse::HWheel(delta);
+    if (delta) {
+      Mouse::HWheel(delta);
+    }
   }
 
   static void EnableConsole(ButtonScript &script,
@@ -1404,8 +1434,8 @@ public:
 #define JAVELIN_ANALOG_DATA_COUNT 0
 #endif
 
-  static void AnalogDataInput(ButtonScript &script,
-                              const ScriptByteCode *byteCode) {
+  static void AnalogInput(ButtonScript &script,
+                          const ScriptByteCode *byteCode) {
     const intptr_t value = script.Pop();
     const intptr_t index = script.Pop();
     script.PressButton(script.Pop(), script.scriptTime);
@@ -1590,7 +1620,7 @@ constexpr void (*ButtonScript::FUNCTION_TABLE[])(ButtonScript &,
     &Function::SetSignatureAlgorithms,
     &Function::IsLocationAdvertising,
     &Function::SetBleSplitRate,
-    &Function::AnalogDataInput,
+    &Function::AnalogInput,
     &Function::EncoderInput,
     &Function::PointerInput,
     &Function::FormatDateTime,

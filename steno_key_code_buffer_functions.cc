@@ -1012,7 +1012,6 @@ bool StenoKeyCodeBuffer::TimeFunction(const List<char *> &parameters) {
     return false;
   }
 
-  // TODO: Store/cache dateTime.
   const DateTime dateTime = executeSideEffects
                                 ? DateTimeTokenStore::Create(tokenId)
                                 : DateTimeTokenStore::Get(tokenId);

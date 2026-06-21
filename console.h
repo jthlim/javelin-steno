@@ -55,6 +55,7 @@ private:
 //---------------------------------------------------------------------------
 
 enum class ConsoleEvent {
+  ANALOG_DATA,
   BUTTON_STATE,
   DICTIONARY_STATUS,
   PAPER_TAPE,
@@ -65,7 +66,6 @@ enum class ConsoleEvent {
   SUGGESTION,
   TEMPLATE_VALUE,
   TEXT,
-  ANALOG_DATA,
 
   COUNT,
 };

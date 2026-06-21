@@ -137,7 +137,7 @@ useful in combination with =transform and template values.
   =transform:{:add_translation:\n\nHello %0}
 ```
 
-## `{:console:}`
+## `{:console}`
 
 Starts interactive console mode.
 
@@ -436,6 +436,8 @@ Formats the current date/time according to the `time_format` parameter.
 - %M: Minute, 00..59
 - %S: Seconds, 00..59
 - %p: "AM" or "PM"
+- %t: "a" or "p" for AM or PM
+- %T: "A" or "P" for AM or PM
 - %%: Literal % character
 
 Example usage:

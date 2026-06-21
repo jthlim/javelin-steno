@@ -89,8 +89,7 @@ void Flash::BeginWrite(const uint8_t *address) {
   writeStart = address;
   writeInProgress = true;
 
-  const void *baseAddress =
-      (const void *)(intptr_t(address) & -WRITE_DATA_BUFFER_SIZE);
+  const void *baseAddress = AlignDown(address, WRITE_DATA_BUFFER_SIZE);
   const size_t offsetIntoPage = size_t(address) & (WRITE_DATA_BUFFER_SIZE - 1);
   memcpy(buffer, baseAddress, offsetIntoPage);
 }
@@ -102,8 +101,7 @@ void Flash::AddData(const uint8_t *data, size_t length) {
     memcpy(buffer + offset, data, remainingBufferLength);
 
     ExternalFlash::Begin();
-    const void *writeAddress =
-        (const void *)(size_t(target) & -WRITE_DATA_BUFFER_SIZE);
+    const void *writeAddress = AlignDown(target, WRITE_DATA_BUFFER_SIZE);
     Flash::WriteBlock(writeAddress, buffer, WRITE_DATA_BUFFER_SIZE);
     ExternalFlash::End();
 
@@ -125,8 +123,7 @@ void Flash::WriteRemaining() {
     const size_t bytesToCopy = WRITE_DATA_BUFFER_SIZE - bytesToWrite;
     memcpy(buffer + bytesToWrite, target, bytesToCopy);
 
-    const void *writeAddress =
-        (const void *)(size_t(target) & -WRITE_DATA_BUFFER_SIZE);
+    const void *writeAddress = AlignDown(target, WRITE_DATA_BUFFER_SIZE);
 
     Flash::WriteBlock(writeAddress, buffer, WRITE_DATA_BUFFER_SIZE);
   }
@@ -139,7 +136,7 @@ void Flash::WriteRemaining() {
                                     size_t size, FlashWriteMode writeMode) {
   while (size > 0) {
     const uint8_t *baseAddress =
-        (const uint8_t *)(intptr_t(target) & -WRITE_DATA_BUFFER_SIZE);
+        (const uint8_t *)AlignDown(target, WRITE_DATA_BUFFER_SIZE);
     const size_t offsetIntoPage = size_t(target) & (WRITE_DATA_BUFFER_SIZE - 1);
     memcpy(instance.buffer, baseAddress, offsetIntoPage);
 

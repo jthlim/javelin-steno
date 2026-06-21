@@ -14,16 +14,18 @@ SplitSerialBuffer::SplitSerialBufferData SplitSerialBuffer::instance;
 //---------------------------------------------------------------------------
 
 [[gnu::weak]]
-void SplitSerialBuffer::SplitSerialBufferData::ClearQueue() {}
+void SplitSerialBuffer::SplitSerialBufferData::WaitUntilQueueIsNotFull() {
+  while (queue.IsFull()) {
+    // Do nothing.
+  }
+}
 
 //---------------------------------------------------------------------------
 
 void SplitSerialBuffer::SplitSerialBufferData::Add(const uint8_t *data,
                                                    size_t length) {
   while (length) {
-    while (queue.IsFull()) {
-      ClearQueue();
-    }
+    WaitUntilQueueIsNotFull();
 
     const size_t available = queue.GetAvailable();
     const size_t transferCount = available > length ? length : available;

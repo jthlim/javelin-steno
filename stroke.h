@@ -85,6 +85,7 @@ struct StrokeMask {
 
     ALL = ((uint32_t)1 << StrokeBitIndex::COUNT) - 1,
 
+    SPECIAL_MASK = 0x80000000,
     UNICODE = (uint32_t)1 << StrokeBitIndex::UNICODE,
   };
 };

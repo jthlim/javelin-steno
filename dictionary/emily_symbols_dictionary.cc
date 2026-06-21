@@ -11,7 +11,8 @@ constexpr StenoStroke ACTIVATION_MASK(StrokeMask::SL | StrokeMask::TL |
                                       StrokeMask::KL | StrokeMask::PL |
                                       StrokeMask::WL | StrokeMask::HL |
                                       StrokeMask::RL | StrokeMask::DR |
-                                      StrokeMask::ZR | StrokeMask::UNICODE);
+                                      StrokeMask::ZR |
+                                      StrokeMask::SPECIAL_MASK);
 
 constexpr StenoStroke ACTIVATION_MATCH(StrokeMask::SL | StrokeMask::KL |
                                        StrokeMask::WL | StrokeMask::HL);

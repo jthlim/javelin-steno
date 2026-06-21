@@ -1,8 +1,8 @@
 //---------------------------------------------------------------------------
 
 #include "steno_key_code_emitter.h"
+#include "button_script_manager.h"
 #include "host_layout.h"
-#include "key.h"
 #include "steno_key_code.h"
 #include "steno_key_code_emitter_context.h"
 #include "unicode_script.h"
@@ -18,7 +18,11 @@ constexpr KeyCode::Value StenoKeyCodeEmitter::EmitterContext::MASK_KEY_CODES[] =
 //---------------------------------------------------------------------------
 
 StenoKeyCodeEmitter::EmitterContext::EmitterContext()
-    : hostLayout(HostLayouts::GetActiveLayout()) {}
+    : hostLayout(HostLayouts::GetActiveLayout()) {
+  initialModifiers = ButtonScriptManager::GetInstance().GetModifiers()
+                     << MODIFIER_BIT_SHIFT;
+  modifiers = initialModifiers;
+}
 
 //---------------------------------------------------------------------------
 
@@ -59,7 +63,7 @@ bool StenoKeyCodeEmitter::Process(const StenoKeyCode *previous,
     UnicodeScript::instance.ExecuteEndScript();
   }
 
-  context.ReleaseModifiers(context.modifiers);
+  context.RestoreModifiers();
 
   return context.shouldCombineUndo;
 }
@@ -67,11 +71,16 @@ bool StenoKeyCodeEmitter::Process(const StenoKeyCode *previous,
 void StenoKeyCodeEmitter::Emit(const StenoKeyCode *value, size_t length) const {
   EmitterContext context;
 
+  UnicodeScript::instance.SetContext(&context);
+  UnicodeScript::instance.ExecuteBeginScript();
+
   for (size_t i = 0; i < length; ++i) {
     context.ProcessStenoKeyCode(value[i]);
   }
 
-  context.ReleaseModifiers(context.modifiers);
+  UnicodeScript::instance.ExecuteEndScript();
+
+  context.RestoreModifiers();
 }
 
 //---------------------------------------------------------------------------
@@ -80,8 +89,8 @@ void StenoKeyCodeEmitter::EmitterContext::ProcessStenoKeyCode(
     StenoKeyCode stenoKeyCode) {
   // Convert the incoming keyCode to a raw character code.
   if (stenoKeyCode.IsRawKeyCode()) {
-    ReleaseModifiers(modifiers);
-    modifiers = 0;
+    UpdateModifiers(initialModifiers);
+    modifiers = initialModifiers;
 
     if (stenoKeyCode.IsPress()) {
       PressKey(stenoKeyCode.GetRawKeyCode());
@@ -130,10 +139,14 @@ void StenoKeyCodeEmitter::EmitterContext::EmitSequence(
 
 [[gnu::weak]] void
 StenoKeyCodeEmitter::EmitterContext::EmitKeyCode(uint32_t keyCode) {
-  ReleaseModifiers(modifiers & ~keyCode);
-  PressModifiers((keyCode & ~modifiers) & MODIFIER_MASK);
+  UpdateModifiers(keyCode);
   modifiers = keyCode & MODIFIER_MASK;
   TapKey(KeyCode::Value(keyCode & 0xff));
+}
+
+void StenoKeyCodeEmitter::EmitterContext::UpdateModifiers(uint32_t keyCode) {
+  ReleaseModifiers(modifiers & ~keyCode);
+  PressModifiers((keyCode & ~modifiers) & MODIFIER_MASK);
 }
 
 void StenoKeyCodeEmitter::EmitterContext::PressModifiers(uint32_t modifiers) {

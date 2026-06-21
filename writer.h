@@ -98,7 +98,6 @@ public:
 
   void Write(const char *data, size_t length) final;
   void WriteByte(char c) final;
-  void RemoveByte() { --bufferUsedCount; }
 
   void WriteBufferTo(IWriter *writer) const {
     writer->Write(buffer, bufferUsedCount);
@@ -117,7 +116,7 @@ public:
     return AdoptBuffer();
   }
 
-  const char *GetBuffer() const { return buffer; }
+  char *GetBuffer() const { return buffer; }
   size_t GetCount() const { return bufferUsedCount; }
   bool IsEmpty() const { return bufferUsedCount == 0; }
   bool IsNotEmpty() const { return bufferUsedCount != 0; }

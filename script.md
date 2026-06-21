@@ -399,6 +399,8 @@ const SC_CONSUMER_VOLUME_DOWN = 0xda;         // UsageId 0xea
 const SC_CONSUMER_BRIGHTNESS_UP = 0xde,       // UsageId 0x6f
 const SC_CONSUMER_BRIGHTNESS_DOWN = 0xdf,     // UsageId 0x70
 
+const SC_CONSUMER_FN_GLOBE = 0x1029d;
+
 const MOUSE_BUTTON_LEFT = 0;
 const MOUSE_BUTTON_RIGHT = 1;
 const MOUSE_BUTTON_MIDDLE = 2;
@@ -1056,6 +1058,18 @@ Javelin provides 3 ways of sending infrared data:
         - JVC = 0x0103
       - This signal repeats, and must be stopped using `stopInfrared()`
 
+    - `matsushita`:
+      - address: 5 bits
+      - command: 6 bits
+      - extra: unused
+      - This signal repeats, and must be stopped using `stopInfrared()`
+
+    - `mitsubishi`:
+      - address: 8 bits
+      - command: 8 bits
+      - extra: unused
+      - This signal repeats, and must be stopped using `stopInfrared()`
+
     - `nec`:
       - address: 8 bits
       - command: 8 bits
@@ -1080,16 +1094,22 @@ Javelin provides 3 ways of sending infrared data:
       - extra: unused
       - This signal repeats, and must be stopped using `stopInfrared()`
 
+    - `pioneer`:
+      - address: 8 bits
+      - command: 8 bits
+      - extra: unused
+      - This signal repeats, and must be stopped using `stopInfrared()`
+
     - `rc5`:
       - address: 5 bits
       - command: 7 bits
-      - extra: toggle flag
+      - extra: unused
       - This signal repeats, and must be stopped using `stopInfrared()`
 
     - `rc6`:
       - address: 8 bits
       - command: 8 bits
-      - extra: 4 bit header
+      - extra: 3 bit mode
       - This signal repeats, and must be stopped using `stopInfrared()`
 
     - `rca`:

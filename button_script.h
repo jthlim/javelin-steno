@@ -3,6 +3,7 @@
 #pragma once
 #include "bit_field.h"
 #include "button_state.h"
+#include "container/static_list.h"
 #include "scan_code_action.h"
 #include "script.h"
 #include "steno_key_state.h"
@@ -76,6 +77,10 @@ public:
     ++releaseCount;
     buttonState.Clear(keyIndex);
     CallRelease(keyIndex, scriptTime);
+  }
+
+  uint32_t GetModifiers() const {
+    return (uint32_t)keyState.GetRange(0xe0, 0xe8);
   }
 
   void PrintInfo() const;
@@ -170,6 +175,7 @@ private:
   ButtonState buttonState;
   BitField<256> keyState;
   BitField<32> mouseButtonState;
+  StaticList<uint32_t, 8> otherScanCodes;
   LimitedBufferWriter formatStringWriter[2];
   LimitedBufferWriter consoleWriter;
   Buffer *bufferHead = nullptr;

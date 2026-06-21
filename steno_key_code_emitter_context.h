@@ -15,7 +15,8 @@ struct HostLayout;
 struct StenoKeyCodeEmitter::EmitterContext {
   EmitterContext();
 
-  uint32_t modifiers = 0;
+  uint32_t modifiers;
+  uint32_t initialModifiers;
   bool shouldCombineUndo = true;
   const HostLayout &hostLayout;
 
@@ -36,6 +37,9 @@ struct StenoKeyCodeEmitter::EmitterContext {
   void PressModifiers(uint32_t modifiers);
   void ReleaseModifiers(uint32_t modifiers);
   void ReleaseModifiers();
+  void UpdateModifiers(uint32_t keycode);
+
+  void RestoreModifiers() { UpdateModifiers(initialModifiers); }
 
   void EmitAscii(uint32_t unicode);
   void EmitNonAscii(uint32_t unicode);

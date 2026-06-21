@@ -83,7 +83,12 @@ private:
 public:
   constexpr PatternComponent();
 
+#if JAVELIN_USE_PATTERN_JIT
+  bool Match(const char *p, PatternContext &context) const { return false; }
+  virtual void Compile(PatternJitContext &context) const = 0;
+#else
   virtual bool Match(const char *p, PatternContext &context) const = 0;
+#endif
   virtual bool IsEpsilon() const { return false; }
   virtual bool IsCapture() const { return false; }
 
@@ -96,10 +101,6 @@ public:
   virtual size_t GetMinimumLength(const PatternRecurseContext &context) const;
   virtual size_t GetMaximumLength(const PatternRecurseContext &context) const;
   virtual void MarkRequiredCaptures(const void *loopbackObject);
-
-#if JAVELIN_USE_PATTERN_JIT
-  virtual void Compile(PatternJitContext &context) const = 0;
-#endif
 
   static void *operator new(size_t size);
   static void operator delete(void *p) {}
@@ -136,9 +137,7 @@ public:
 
 class SuccessPatternComponent final : public PatternComponent {
 public:
-  virtual bool Match(const char *p, PatternContext &context) const {
-    return true;
-  }
+  bool Match(const char *p, PatternContext &context) const { return true; }
   virtual void RemoveEpsilon() {}
   virtual void UpdateQuickReject(PatternQuickReject &quickReject) const {}
 
@@ -168,7 +167,7 @@ private:
   using super = PatternComponent;
 
 public:
-  virtual bool Match(const char *p, PatternContext &context) const;
+  bool Match(const char *p, PatternContext &context) const;
   virtual bool IsEpsilon() const { return true; }
 
   virtual void GenerateMetrics(const PatternRecurseContext &context);
@@ -192,7 +191,7 @@ private:
 
 class AnyPatternComponent : public SingleBytePatternComponent {
 public:
-  virtual bool Match(const char *p, PatternContext &context) const;
+  bool Match(const char *p, PatternContext &context) const;
 
   JIT_COMPONENT_METHOD
 };
@@ -202,7 +201,7 @@ private:
   using super = PatternComponent;
 
 public:
-  virtual bool Match(const char *p, PatternContext &context) const;
+  bool Match(const char *p, PatternContext &context) const;
 
   virtual void GenerateMetrics(const PatternRecurseContext &context);
   virtual size_t GetMaximumLength(const PatternRecurseContext &context) const;
@@ -223,7 +222,7 @@ public:
                                 CapturePatternComponent *captureEnd)
       : index(index), captureStart(captureStart), captureEnd(captureEnd) {}
 
-  virtual bool Match(const char *p, PatternContext &context) const;
+  bool Match(const char *p, PatternContext &context) const;
   virtual size_t GetMinimumLength(const PatternRecurseContext &context) const;
   virtual size_t GetMaximumLength(const PatternRecurseContext &context) const;
 
@@ -242,7 +241,7 @@ private:
   using super = PatternComponent;
 
 public:
-  virtual bool Match(const char *p, PatternContext &context) const;
+  bool Match(const char *p, PatternContext &context) const;
 
   JIT_COMPONENT_METHOD
 
@@ -277,7 +276,7 @@ public:
   BranchPatternComponent(PatternComponent *branch, BranchType type)
       : branch(branch), type(type) {}
 
-  virtual bool Match(const char *p, PatternContext &context) const;
+  bool Match(const char *p, PatternContext &context) const;
   virtual void RemoveEpsilon() final;
 
   virtual void GenerateMetrics(const PatternRecurseContext &context);
@@ -297,14 +296,14 @@ private:
 
 class StartOfLinePatternComponent : public PatternComponent {
 public:
-  virtual bool Match(const char *p, PatternContext &context) const;
+  bool Match(const char *p, PatternContext &context) const;
 
   JIT_COMPONENT_METHOD
 };
 
 class EndOfLinePatternComponent : public PatternComponent {
 public:
-  virtual bool Match(const char *p, PatternContext &context) const;
+  bool Match(const char *p, PatternContext &context) const;
 
   virtual bool HasEndAnchor(const PatternRecurseContext &context) const {
     return true;
@@ -322,7 +321,7 @@ public:
 
   virtual bool IsCapture() const { return true; }
 
-  virtual bool Match(const char *p, PatternContext &context) const;
+  bool Match(const char *p, PatternContext &context) const;
   virtual size_t GetMinimumLength(const PatternRecurseContext &context) const;
   virtual size_t GetMaximumLength(const PatternRecurseContext &context) const;
 
@@ -347,7 +346,7 @@ public:
   AlwaysCapturePatternComponent(const CapturePatternComponent &other)
       : super(other) {}
 
-  virtual bool Match(const char *p, PatternContext &context) const final;
+  bool Match(const char *p, PatternContext &context) const;
 
   JIT_COMPONENT_METHOD
 };
@@ -360,7 +359,7 @@ public:
 
   virtual void UpdateQuickReject(PatternQuickReject &quickReject) const;
 
-  virtual bool Match(const char *p, PatternContext &context) const final;
+  bool Match(const char *p, PatternContext &context) const;
 
   JIT_COMPONENT_METHOD
 
@@ -381,7 +380,7 @@ public:
 
   virtual void UpdateQuickReject(PatternQuickReject &quickReject) const;
 
-  virtual bool Match(const char *p, PatternContext &context) const final;
+  bool Match(const char *p, PatternContext &context) const;
 
   virtual size_t GetMinimumLength(const PatternRecurseContext &context) const;
   virtual size_t GetMaximumLength(const PatternRecurseContext &context) const;
@@ -389,8 +388,8 @@ public:
   JIT_COMPONENT_METHOD
 
   static void *operator new(size_t size, size_t textLength) {
-    return PatternComponent::operator new((size + textLength + sizeof(size_t)) &
-                                          -sizeof(size_t));
+    return PatternComponent::operator new(
+        AlignUp(size + textLength + 1, sizeof(size_t)));
   }
 
 private:
@@ -415,7 +414,7 @@ public:
   AlternatePatternComponent(PatternComponent *initialComponent)
       : ContainerPatternComponent(initialComponent) {}
 
-  virtual bool Match(const char *p, PatternContext &context) const final;
+  bool Match(const char *p, PatternContext &context) const;
 
   virtual void GenerateMetrics(const PatternRecurseContext &context);
 

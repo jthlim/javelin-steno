@@ -8,7 +8,7 @@
 //---------------------------------------------------------------------------
 
 struct KeyCode {
-  enum Value : uint8_t {
+  enum Value : uint32_t {
     A = 0x04,
     B = 0x05,
     C = 0x06,
@@ -170,23 +170,25 @@ struct KeyCode {
     R_META = 0xe7,
 
     // From Consumer Page (0x0c)
-    CONSUMER_PAGE_PLAY = 0xa0,                // UsageId 0xb0
-    CONSUMER_PAGE_PAUSE = 0xa1,               // UsageId 0xb1
-    CONSUMER_PAGE_RECORD = 0xa2,              // UsageId 0xb2
-    CONSUMER_PAGE_FAST_FORWARD = 0xa3,        // UsageId 0xb3
-    CONSUMER_PAGE_REWIND = 0xa4,              // UsageId 0xb4
-    CONSUMER_PAGE_SCAN_NEXT_TRACK = 0xa5,     // UsageId 0xb5
-    CONSUMER_PAGE_SCAN_PREVIOUS_TRACK = 0xa6, // UsageId 0xb6
-    CONSUMER_PAGE_STOP = 0xa7,                // UsageId 0xb7
-    CONSUMER_PAGE_EJECT = 0xa8,               // UsageId 0xb8
-    CONSUMER_PAGE_STOP_EJECT = 0xbc,          // UsageId 0xcc
-    CONSUMER_PAGE_PLAY_PAUSE = 0xbd,          // UsageId 0xcd
-    CONSUMER_PAGE_PLAY_SKIP = 0xbe,           // UsageId 0xce
-    CONSUMER_PAGE_MUTE = 0xd2,                // UsageId 0xe2
-    CONSUMER_PAGE_VOLUME_UP = 0xd9,           // UsageId 0xe9
-    CONSUMER_PAGE_VOLUME_DOWN = 0xda,         // UsageId 0xea
-    CONSUMER_PAGE_BRIGHTNESS_UP = 0xde,       // UsageId 0x6f
-    CONSUMER_PAGE_BRIGHTNESS_DOWN = 0xdf,     // UsageId 0x70
+    CONSUMER_PAGE_PLAY = 0x100b0,
+    CONSUMER_PAGE_PAUSE = 0x100b1,
+    CONSUMER_PAGE_RECORD = 0x100b2,
+    CONSUMER_PAGE_FAST_FORWARD = 0x100b3,
+    CONSUMER_PAGE_REWIND = 0x100b4,
+    CONSUMER_PAGE_SCAN_NEXT_TRACK = 0x100b5,
+    CONSUMER_PAGE_SCAN_PREVIOUS_TRACK = 0x100b6,
+    CONSUMER_PAGE_STOP = 0x100b7,
+    CONSUMER_PAGE_EJECT = 0x100b8,
+    CONSUMER_PAGE_STOP_EJECT = 0x100cc,
+    CONSUMER_PAGE_PLAY_PAUSE = 0x100cd,
+    CONSUMER_PAGE_PLAY_SKIP = 0x100ce,
+    CONSUMER_PAGE_MUTE = 0x100e2,
+    CONSUMER_PAGE_VOLUME_UP = 0x100e9,
+    CONSUMER_PAGE_VOLUME_DOWN = 0x100ea,
+    CONSUMER_PAGE_BRIGHTNESS_UP = 0x1006f,
+    CONSUMER_PAGE_BRIGHTNESS_DOWN = 0x10070,
+
+    CONSUMER_PAGE_FN_GLOBE = 0x1029d,
   };
 
   KeyCode() = default;

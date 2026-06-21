@@ -132,6 +132,7 @@ void StenoStroke::Set(const char *string) {
 char *StenoStroke::ToString(char *buffer) const {
   Utf8Pointer utf8(buffer);
   const StrokeKey *pEnd = end(formatter);
+  const uint32_t localKeyState = keyState;
   for (const StrokeKey *p = begin(formatter); p != pEnd;) {
     switch (p->type) {
     [[unlikely]] case StrokeKeyType::SEPARATOR:
@@ -141,13 +142,14 @@ char *StenoStroke::ToString(char *buffer) const {
       // Rather than adding 32 bits to every instance of the structure,
       // use two consecutive entries for separators.
       assert(p[1].type == StrokeKeyType::SEPARATOR_FOLLOW_MASK);
-      if ((keyState & p[0].mask) == 0 && (keyState & p[1].mask) != 0) {
+      if ((localKeyState & p[0].mask) == 0 &&
+          (localKeyState & p[1].mask) != 0) {
         utf8.SetAndAdvance(p->c);
       }
       p += 2;
       break;
     [[likely]] case StrokeKeyType::MASK:
-      if ((keyState & p->mask) == p->mask) {
+      if ((localKeyState & p->mask) == p->mask) [[unlikely]] {
         utf8.SetAndAdvance(p->c);
       }
       ++p;

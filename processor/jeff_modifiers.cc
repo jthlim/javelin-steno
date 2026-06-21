@@ -32,10 +32,10 @@ constexpr StenoStroke StenoJeffModifiers::ALT_MASK(StrokeMask::BR);
 //---------------------------------------------------------------------------
 
 struct JeffModifiersData {
-  uint32_t keyState : 24;
-  KeyCode::Value keyCode;
+  uint32_t keyState;
+  KeyCode keyCode;
 };
-static_assert(sizeof(JeffModifiersData) == 4);
+static_assert(sizeof(JeffModifiersData) == 8);
 
 const JeffModifiersData DATA[] = {
     {

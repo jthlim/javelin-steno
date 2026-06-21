@@ -192,9 +192,10 @@ constexpr JeffPhrasingMapData<2> FULL_STRUCTURE_BE = {
         },
 };
 
-constexpr JeffPhrasingMapData<2> FULL_STRUCTURE_HAVE_PRESENT = {
+constexpr JeffPhrasingMapData<3> FULL_STRUCTURE_HAVE_PRESENT = {
     .entries =
         {
+            {WordForm::ROOT, "\\0\\1 have\\2\\3"},
             {WordForm::THIRD_PERSON_SINGULAR, "\\0\\1 has\\2\\3"},
             {WordForm::UNSPECIFIED, "\\0\\1 have\\2\\3"},
         },
@@ -216,9 +217,10 @@ constexpr JeffPhrasingMapData<2> FULL_STRUCTURE_HAVE = {
         },
 };
 
-constexpr JeffPhrasingMapData<2> FULL_STRUCTURE_HAVE_BEEN_PRESENT = {
+constexpr JeffPhrasingMapData<3> FULL_STRUCTURE_HAVE_BEEN_PRESENT = {
     .entries =
         {
+            {WordForm::ROOT, "\\0\\1 have been\\2\\3"},
             {WordForm::THIRD_PERSON_SINGULAR, "\\0\\1 has been\\2\\3"},
             {WordForm::UNSPECIFIED, "\\0\\1 have been\\2\\3"},
         },
@@ -1377,7 +1379,7 @@ constexpr JeffPhrasingMapData<4> ENDER_RBZ = {
 constexpr JeffPhrasingMapData<4> ENDER_RBDZ = {
     .entries =
         {
-            {WordForm::ROOT, " want"},
+            {WordForm::ROOT, " show"},
             {WordForm::PAST_PARTICIPLE, " shown"},
             {WordForm::PRESENT_PARTICIPLE, " showing"},
             {WordForm::UNSPECIFIED, " showed"},

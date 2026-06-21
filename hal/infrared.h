@@ -83,20 +83,26 @@ public:
   static void Stop();
 
 private:
+  static uint8_t toggle;
+
   static void SendDysonMessage(uint32_t address, uint32_t command, uint32_t _);
   static void SendJvcMessage(uint32_t address, uint32_t command, uint32_t _);
   static void SendKaseikyoMessage(uint32_t address, uint32_t command,
                                   uint32_t vendor);
+  static void SendMatsushitaMessage(uint32_t address, uint32_t command,
+                                    uint32_t _);
+  static void SendMitsubishiMessage(uint32_t address, uint32_t command,
+                                    uint32_t _);
   static void SendNECMessage(uint32_t address, uint32_t command, uint32_t _);
   static void SendNECXMessage(uint32_t address, uint32_t command, uint32_t _);
   static void SendNECData(const uint8_t *data);
   static void SendNEC42Message(uint32_t address, uint32_t command, uint32_t _);
   static void SendNEC42XMessage(uint32_t address, uint32_t command, uint32_t _);
   static void SendNEC42Data(const uint8_t *data);
-  static void SendRC5Message(uint32_t address, uint32_t command,
-                             uint32_t toggle);
-  static void SendRC6Message(uint32_t address, uint32_t command,
-                             uint32_t toggle);
+  static void SendPioneerMessage(uint32_t address, uint32_t command,
+                                 uint32_t _);
+  static void SendRC5Message(uint32_t address, uint32_t command, uint32_t _);
+  static void SendRC6Message(uint32_t address, uint32_t command, uint32_t mode);
   static void SendRCAMessage(uint32_t address, uint32_t command, uint32_t _);
   static void SendSamsungMessage(uint32_t address, uint32_t command,
                                  uint32_t _);

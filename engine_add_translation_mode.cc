@@ -85,7 +85,7 @@ void StenoEngine::ProcessAddTranslationModeStroke(StenoStroke stroke) {
         StenoUserDictionary::MAX_STROKE_COUNT) {
       return;
     }
-    if ((stroke & StrokeMask::UNICODE).IsNotEmpty()) {
+    if ((stroke & StrokeMask::SPECIAL_MASK).IsNotEmpty()) {
       // Don't allow unicode when defining the stroke.
       return;
     }

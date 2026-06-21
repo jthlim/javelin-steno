@@ -138,10 +138,13 @@ DateTime DateTime::AddSeconds(uint32_t seconds) const {
 // %d	Day, 01..31
 // %e	Day, 1..31
 // %H	Hour, 00..23
+// %i	Hour, 1..12
 // %I	Hour, 01..12
 // %M	Minute, 00..59
 // %S	Seconds, 00..59
 // %p	"AM" or "PM"
+// %t	"a" or "p" for AM or PM.
+// %T	"A" or "P" for AM or PM.
 // %%	%	Literal % character
 void DateTime::Printf(IWriter &output, const char *format) const {
   for (;;)
@@ -186,6 +189,9 @@ void DateTime::Printf(IWriter &output, const char *format) const {
       case 'H':
         output.Printf("%02d", hours);
         break;
+      case 'i':
+        output.Printf("%d", (hours + 11) % 12 + 1);
+        break;
       case 'I':
         output.Printf("%02d", (hours + 11) % 12 + 1);
         break;
@@ -197,6 +203,12 @@ void DateTime::Printf(IWriter &output, const char *format) const {
         break;
       case 'p':
         output.WriteString(hours < 12 ? "AM" : "PM");
+        break;
+      case 't':
+        output.WriteByte(hours < 12 ? 'a' : 'p');
+        break;
+      case 'T':
+        output.WriteByte(hours < 12 ? 'A' : 'P');
         break;
       case '%':
         output.WriteByte('%');

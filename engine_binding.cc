@@ -161,7 +161,11 @@ void StenoEngine::Lookup_Binding(void *context, const char *commandLine) {
         if (writer.IsNotEmpty()) {
           writer.WriteByte(' ');
         }
-        writer.WriteString(segment.lookup.GetText());
+        const char *text = segment.lookup.GetText();
+        while (*text == ' ') {
+          ++text;
+        }
+        writer.WriteString(text);
       }
       writer.WriteByte(0);
       lookupDictionaryContext.Add(entry.strokes, entry.length,
@@ -245,10 +249,15 @@ void StenoEngine::LookupStroke_Binding(void *context, const char *commandLine) {
       char scratchBuffer[256];
       BufferWriter buffer(scratchBuffer, sizeof(scratchBuffer));
 
-      buffer.WriteString(segments[0].lookup.GetText());
-      for (const StenoSegment &segment : segments.Skip(1)) {
-        buffer.WriteByte(' ');
-        buffer.WriteString(segment.lookup.GetText());
+      for (const StenoSegment &segment : segments) {
+        if (buffer.IsNotEmpty()) {
+          buffer.WriteByte(' ');
+        }
+        const char *text = segment.lookup.GetText();
+        while (*text == ' ') {
+          ++text;
+        }
+        buffer.WriteString(text);
       }
       buffer.WriteByte('\0');
       Console::Printf("t: %Y\n\n", buffer.GetBuffer());
@@ -419,7 +428,7 @@ void StenoEngine::AddConsoleCommands(Console &console) {
   console.RegisterCommand("toggle_dictionary", "Toggles a dictionary",
                           StenoEngine::ToggleDictionary_Binding, this);
   console.RegisterCommand("print_dictionary",
-                          "Prints all dictionaries in JSON format",
+                          "Prints a dictionary in JSON format",
                           StenoEngine::PrintDictionary_Binding, this);
   console.RegisterCommand("lookup", "Looks up a definition",
                           StenoEngine::Lookup_Binding, this);

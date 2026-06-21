@@ -587,13 +587,12 @@ void IWriter::Vprintf(const char *p, va_list args) {
       }
       buffer.WriteByte('\0');
       const size_t length = buffer.GetCount();
-      const char *outline = buffer.GetBuffer();
+      char *outline = buffer.GetBuffer();
 
       if (IsYamlSafe(outline + 1)) {
-        Write(outline + 1, length - 1);
+        Write(outline + 1, length - 2);
       } else {
-        buffer.RemoveByte();
-        buffer.WriteByte('\"');
+        outline[length - 1] = '\"';
         Write(outline, length);
       }
       goto NextSegment;
@@ -696,14 +695,13 @@ static constexpr char ZEROS[] = "0000000000000000";
 void IWriter::WriteSegment(int flags, const char *start, const char *end,
                            int width) {
   const size_t length = end - start;
-  if (length < width) {
+  if (length < width) [[unlikely]] {
+    const char *fill = (flags & FLAG_FILL_ZERO) ? ZEROS : SPACES;
+
     size_t fillCount = width - length;
     while (fillCount) {
       const size_t fillSegmentCount = ClampMax(fillCount, 16);
-
-      const char *fill = (flags & FLAG_FILL_ZERO) ? ZEROS : SPACES;
       Write(fill, fillSegmentCount);
-
       fillCount -= fillSegmentCount;
     }
   }

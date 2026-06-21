@@ -469,7 +469,7 @@ ContainerPatternComponent::ContainerPatternComponent(
 }
 
 void ContainerPatternComponent::Add(PatternComponent *component) {
-  const size_t capacity = (componentCount + 3) & -4;
+  const size_t capacity = AlignUp(componentCount, 4);
   if (componentCount == capacity) {
 #if JAVELIN_USE_PATTERN_JIT
     PatternComponent **newComponents = (PatternComponent **)operator new(

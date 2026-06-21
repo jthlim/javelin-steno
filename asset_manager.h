@@ -18,6 +18,7 @@ struct AssetEntry {
 
   const void *GetData() const;
 };
+static_assert(sizeof(AssetEntry) == 12);
 
 struct AssetDirectory : public JavelinMallocAllocate {
   static const size_t HASH_TABLE_SIZE = 1024;

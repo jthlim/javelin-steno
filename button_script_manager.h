@@ -120,6 +120,8 @@ public:
   void
   CancelAllCombosForByteCode(const Interval<const uint8_t *> &byteCodeRange);
 
+  uint32_t GetModifiers() const { return script.GetModifiers(); }
+
 private:
   ButtonScriptManager(const uint8_t *scriptByteCode);
 
