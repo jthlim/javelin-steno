@@ -429,6 +429,7 @@ Formats the current date/time according to the `time_format` parameter.
 - %b: Short Month, e.g. "Jan"
 - %B: Long Month, e.g. "January"
 - %m: Month, 01..12
+- %n: Month, 1..12
 - %d: Day, 01..31
 - %e: Day, 1..31
 - %H: Hour, 00..23
@@ -438,7 +439,7 @@ Formats the current date/time according to the `time_format` parameter.
 - %p: "AM" or "PM"
 - %t: "a" or "p" for AM or PM
 - %T: "A" or "P" for AM or PM
-- %%: Literal % character
+- %%: Literal "%" character
 
 Example usage:
 ```

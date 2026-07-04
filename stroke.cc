@@ -150,7 +150,7 @@ char *StenoStroke::ToString(char *buffer) const {
       break;
     [[likely]] case StrokeKeyType::MASK:
       if ((localKeyState & p->mask) == p->mask) [[unlikely]] {
-        utf8.SetAndAdvance(p->c);
+        utf8.SetAndAdvance(p->maskC);
       }
       ++p;
       break;

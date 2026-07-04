@@ -183,6 +183,18 @@ bool Str::HasPrefix(const char *p, const char *prefix) {
   }
 }
 
+bool Str::HasPrefixWord(const char *p, const char *prefix) {
+  for (;;) {
+    const int c = *prefix++;
+    if (c == '\0') {
+      return *p == '\0' || *p == ' ';
+    }
+    if (c != *p++) {
+      return false;
+    }
+  }
+}
+
 bool Str::HasSuffix(const char *p, const char *suffix) {
   const size_t length = Length(p);
   const size_t suffixLength = Length(suffix);

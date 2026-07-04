@@ -1,6 +1,7 @@
 //---------------------------------------------------------------------------
 
 #pragma once
+#include <stddef.h>
 #include <stdint.h>
 
 //---------------------------------------------------------------------------
@@ -29,15 +30,28 @@ struct DateTime {
 
   void Printf(IWriter &output, const char *format) const;
 
-  bool operator==(const DateTime &other) const {
-    return seconds == other.seconds        //
-           && minutes == other.minutes     //
-           && hours == other.hours         //
-           && dayOfWeek == other.dayOfWeek //
-           && day == other.day             //
-           && month == other.month         //
-           && year == other.year;          //
-  }
+  bool operator==(const DateTime &other) const;
 };
+static_assert(sizeof(DateTime) == 8);
+
+inline bool DateTime::operator==(const DateTime &other) const {
+  // return seconds == other.seconds        //
+  //        && minutes == other.minutes     //
+  //        && hours == other.hours         //
+  //        && dayOfWeek == other.dayOfWeek //
+  //        && day == other.day             //
+  //        && month == other.month         //
+  //        && year == other.year;          //
+
+  struct Comparator {
+    size_t data[sizeof(DateTime) / sizeof(size_t)];
+
+    bool operator==(const Comparator &o) const = default;
+  };
+
+  const Comparator *o1 = (const Comparator *)this;
+  const Comparator *o2 = (const Comparator *)&other;
+  return *o1 == *o2;
+}
 
 //---------------------------------------------------------------------------

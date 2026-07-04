@@ -69,6 +69,7 @@ public:
   }
 
   static bool HasPrefix(const char *p, const char *prefix);
+  static bool HasPrefixWord(const char *p, const char *prefix);
   static bool HasSuffix(const char *p, const char *suffix);
 
   // Returns the end of the write area. buffer must have enough space to store

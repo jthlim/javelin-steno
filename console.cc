@@ -330,8 +330,8 @@ void Console::ProcessChannelCommand(Channel &channel, size_t offset) {
 
 const ConsoleCommand *Console::GetCommand(const char *buffer) {
   for (size_t i = 0; i < commandCount; ++i) {
-    if (Str::HasPrefix(buffer, commands[i].command) &&
-        Unicode::IsWhitespace(buffer[Str::Length(commands[i].command)])) {
+    if (buffer[0] == commands[i].command[0] &&
+        Str::HasPrefixWord(buffer, commands[i].command)) {
       return &commands[i];
     }
   }

@@ -3,6 +3,8 @@
 #pragma once
 #include "bit_field.h"
 
+#include JAVELIN_BOARD_CONFIG
+
 //---------------------------------------------------------------------------
 
 #if defined(JAVELIN_BUTTON_STATE_BIT_SIZE)

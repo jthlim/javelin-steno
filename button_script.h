@@ -40,6 +40,7 @@ enum class ButtonScriptId : int {
 
   BEACON_MODE_STARTED,
   LOCATION_ADVERTISING_UPDATE,
+  RTC_UPDATE,
 
   COUNT,
 };
@@ -71,6 +72,13 @@ public:
     ++pressCount;
     buttonState.Set(keyIndex);
     CallPress(keyIndex, scriptTime);
+  }
+
+  void UpdateAllPressButtonState(const ButtonState &pressed) {
+    buttonState |= pressed;
+  }
+  void UpdateAllReleasedButtonState(const ButtonState &released) {
+    buttonState &= ~released;
   }
 
   void ReleaseButton(size_t keyIndex, uint32_t scriptTime) {

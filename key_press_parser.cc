@@ -327,6 +327,20 @@ TEST_BEGIN("KeyPressParser tests") {
 }
 TEST_END
 
+TEST_BEGIN("KeyPressParser empty paren test") {
+  const char *test = "Windows_L()";
+  StenoKeyPressTokenizer tokenizer(test, test + Str::Length(test));
+  assert(tokenizer.GetNext() ==
+         StenoKeyPressToken(StenoKeyPressToken::Type::KEY, KeyCode::L_META));
+  assert(tokenizer.GetNext() ==
+         StenoKeyPressToken(StenoKeyPressToken::Type::OPEN_PAREN));
+  assert(tokenizer.GetNext() ==
+         StenoKeyPressToken(StenoKeyPressToken::Type::CLOSE_PAREN));
+  assert(tokenizer.GetNext() ==
+         StenoKeyPressToken(StenoKeyPressToken::Type::END));
+}
+TEST_END
+
 TEST_BEGIN("KeyPressParser sort test") {
   for (size_t i = 0; i < sizeof(KEYS) / sizeof(*KEYS); ++i) {
     const char *keyName = KEYS[i].name;

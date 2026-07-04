@@ -1,6 +1,7 @@
 //---------------------------------------------------------------------------
 
 #include "rtc.h"
+#include "../button_script_manager.h"
 #include "../clock.h"
 #include "../console.h"
 #include "../str.h"
@@ -36,6 +37,7 @@ void RTC::DefaultSetDateTime(const DateTime &dateTime) {
   instance.dateTime = dateTime;
   instance.isValid = true;
   instance.setTime = Clock::GetMilliseconds();
+  ButtonScriptManager::ExecuteScript(ButtonScriptId::RTC_UPDATE);
 }
 
 void RTC::GetDateTimeValid_Binding() {

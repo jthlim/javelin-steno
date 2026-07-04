@@ -9,8 +9,6 @@
 #include "timer_manager.h"
 #include "unicode.h"
 
-#include JAVELIN_BOARD_CONFIG
-
 //---------------------------------------------------------------------------
 
 #define CONSOLE_LOG_BUTTON_PRESSES 0
@@ -108,6 +106,8 @@ void ButtonScriptManager::Update(const ButtonState &newButtonState,
   const ButtonState releasedButtons = buttonState & ~newButtonState;
 
   buttonState = newButtonState;
+  script.UpdateAllPressButtonState(pressedButtons);
+  script.UpdateAllReleasedButtonState(releasedButtons);
 
   for (const size_t buttonIndex : releasedButtons) {
 #if PROFILE_BUTTON_ACTIVITY

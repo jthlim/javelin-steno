@@ -16,12 +16,18 @@ enum StrokeKeyType : uint8_t {
 };
 
 struct StrokeKey {
-  uint16_t c;
-  StrokeKeyType type;
+  union {
+    struct {
+      uint32_t c : 24;
+      StrokeKeyType type;
+    };
+    uint32_t maskC;
+  };
   uint32_t mask;
 
   bool IsSingleBit() const { return (mask & (mask - 1)) == 0; }
 };
+static_assert(sizeof(StrokeKey) == 8);
 
 //---------------------------------------------------------------------------
 

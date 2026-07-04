@@ -135,6 +135,7 @@ DateTime DateTime::AddSeconds(uint32_t seconds) const {
 // %b	Short Month, e.g. "Jan"
 // %B	Long Month, e.g. "January"
 // %m	Month, 01..12
+// %n	Month, 1..12
 // %d	Day, 01..31
 // %e	Day, 1..31
 // %H	Hour, 00..23
@@ -179,6 +180,9 @@ void DateTime::Printf(IWriter &output, const char *format) const {
         break;
       case 'm':
         output.Printf("%02d", month);
+        break;
+      case 'n':
+        output.Printf("%d", month);
         break;
       case 'd':
         output.Printf("%02d", day);

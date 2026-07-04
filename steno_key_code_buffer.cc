@@ -577,4 +577,20 @@ TEST_BEGIN("StenoKeyCodeBuffer tests") {
 }
 TEST_END
 
+TEST_BEGIN("StenoKeyCodeBuffer empty parenthesis test") {
+  StenoKeyCodeBuffer *buffer = new StenoKeyCodeBuffer();
+  buffer->Reset();
+
+  const char *test = "Windows_L()";
+  buffer->ProcessKeyPresses(test, test + Str::Length(test));
+
+  // clang-format off
+  assert(buffer->buffer[0] == StenoKeyCode::CreateRawKeyCodePress(KeyCode::L_META));
+  assert(buffer->buffer[1] == StenoKeyCode::CreateRawKeyCodeRelease(KeyCode::L_META));
+  // clang-format on
+
+  delete buffer;
+}
+TEST_END
+
 //---------------------------------------------------------------------------

@@ -43,7 +43,10 @@ public:
     ExecuteScript(byteCode->scriptOffsets[index]);
   }
   void ExecuteByteCode(const ScriptByteCode *code) {
-    Run(code->scriptOffsets[0], code);
+    const size_t offset = code->scriptOffsets[0];
+    if (offset) {
+      Run(code->scriptOffsets[0], code);
+    }
   }
 
   void ExecuteScript(size_t offset, const intptr_t *parameters,

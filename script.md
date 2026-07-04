@@ -1294,6 +1294,7 @@ needs to be enabled in Web Tools to be able to see this information.
     const SCRIPT_ID_FLASH_WRITE_ACCESS_REQUESTED = 20;
     const SCRIPT_ID_BEACON_STARTED = 21;
     const SCRIPT_ID_LOCATION_ADVERTISING_UPDATE = 22;
+    const SCRIPT_ID_RTC_UPDATE = 23;
     ```
 
 - `func formatString(<format>, <value>) var`
