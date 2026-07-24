@@ -762,12 +762,30 @@ void StenoEngine::PrintSuggestions(const StenoSegmentList &previousSegments,
       }
       strokeThresholdCount += segment.strokeLength;
 
+      const char *startSegmentText = segment.lookup.GetText();
+
+      if (startSegmentText[0] == '{') {
+        // Avoid suggestions when inserting spaces.
+        if (Str::Eq(startSegmentText, "{^ ^}")) {
+          const StenoState *state = segment.state;
+          if (state && !state->joinNext) {
+            goto exit;
+          }
+        }
+
+        if (startSegmentText[1] == ':') {
+          // Avoid suggestions when using set_value or set_mode, set_case
+          if (Str::HasPrefix(startSegmentText, "{:==set_value") ||
+              Str::HasPrefix(startSegmentText, "{:set_")) {
+            goto exit;
+          }
+        }
+      }
+
       // Consider it a segment start if it isn't a suffix stroke and it isn't
       // a fingerspelling joined to a previous fingerspelling.
       // This will still give suggestions after prefixes, e.g.
       //   overwatching: AUFR/WAFP/-G will suggest to combine WAFPG
-      const char *startSegmentText = segment.lookup.GetText();
-
       if (!Str::IsJoinPrevious(startSegmentText) &&
           (startSegmentIndex == 0 ||
            !Str::IsFingerSpellingCommand(startSegmentText) ||

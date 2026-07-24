@@ -180,8 +180,8 @@ void StenoKeyCodeBuffer::ProcessCommand(const char *p, const char *pEnd) {
       AppendText(p, pEnd - 1, state.caseMode);
       state.caseMode = caseMode != UNSPECIFIED_CASE_MODE
                            ? caseMode
-                           : state.GetNextWordCaseMode();
-
+                           : state.GetPrefixNextWordCaseMode();
+      state.overrideCaseMode = state.GetPrefixNextWordOverrideCaseMode();
       state.joinNext = true;
       return;
     }
@@ -211,7 +211,8 @@ void StenoKeyCodeBuffer::ProcessCommand(const char *p, const char *pEnd) {
     AppendText(p, pEnd - 1, state.caseMode);
     state.caseMode = caseMode != UNSPECIFIED_CASE_MODE
                          ? caseMode
-                         : state.GetNextWordCaseMode();
+                         : state.GetPrefixNextWordCaseMode();
+    state.overrideCaseMode = state.GetPrefixNextWordOverrideCaseMode();
     state.isGlue = false;
     state.joinNext = true;
     return;

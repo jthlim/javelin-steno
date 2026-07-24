@@ -55,13 +55,22 @@ struct StenoState {
 
   static const StenoCaseMode NEXT_WORD_CASE_MODE[];
   static const StenoCaseMode NEXT_LETTER_CASE_MODE[];
+  static const StenoCaseMode PREFIX_NEXT_WORD_CASE_MODE[];
 
   StenoCaseMode GetNextWordCaseMode() const {
     return NEXT_WORD_CASE_MODE[(int)caseMode];
   }
 
+  StenoCaseMode GetPrefixNextWordCaseMode() const {
+    return PREFIX_NEXT_WORD_CASE_MODE[(int)caseMode];
+  }
+
   StenoCaseMode GetNextWordOverrideCaseMode() const {
     return NEXT_WORD_CASE_MODE[(int)overrideCaseMode];
+  }
+
+  StenoCaseMode GetPrefixNextWordOverrideCaseMode() const {
+    return PREFIX_NEXT_WORD_CASE_MODE[(int)overrideCaseMode];
   }
 
   void Reset();

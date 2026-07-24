@@ -549,24 +549,24 @@ void StenoJeffPhrasingDictionary::PrintDictionary(
     for (uint32_t m = 0; m < 8; ++m) {
       const StenoStroke middle = StenoStroke(m << StrokeBitIndex::A);
 
-      for (uint32_t n = 0; n < 2; ++n) {
-        const StenoStroke negation = StenoStroke(n << StrokeBitIndex::STAR);
+      for (uint32_t s = 0; s < 8; ++s) {
+        const StenoStroke structure = StenoStroke(s << StrokeBitIndex::E);
 
-        for (uint32_t s = 0; s < 16; ++s) {
-          const StenoStroke structure = StenoStroke(s << StrokeBitIndex::E);
+        for (const JeffPhrasingEnder &ender :
+             JeffPhrasingDictionaryData::instance.enders) {
 
-          for (const JeffPhrasingEnder &ender :
-               JeffPhrasingDictionaryData::instance.enders) {
+          const StenoStroke stroke =
+              starter.stroke | middle | structure | ender.stroke;
 
-            const StenoStroke stroke =
-                starter.stroke | middle | negation | structure | ender.stroke;
-
-            StenoDictionaryLookupResult lookup =
-                Lookup(StenoDictionaryLookup(&stroke, 1));
-            if (lookup.IsValid()) {
-              context.Print(stroke, lookup.GetText());
-              lookup.Destroy();
+          StenoDictionaryLookupResult lookup =
+              Lookup(StenoDictionaryLookup(&stroke, 1));
+          if (lookup.IsValid()) {
+            const char *text = lookup.GetText();
+            if (*text == ' ') {
+              ++text;
             }
+            context.Print(stroke, text);
+            lookup.Destroy();
           }
         }
       }
@@ -591,7 +591,11 @@ void StenoJeffPhrasingDictionary::PrintDictionary(
           StenoDictionaryLookupResult lookup =
               Lookup(StenoDictionaryLookup(&stroke, 1));
           if (lookup.IsValid()) {
-            context.Print(stroke, lookup.GetText());
+            const char *text = lookup.GetText();
+            if (*text == ' ') {
+              ++text;
+            }
+            context.Print(stroke, text);
             lookup.Destroy();
           }
         }

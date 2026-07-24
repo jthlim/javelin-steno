@@ -27,6 +27,17 @@ constexpr StenoCaseMode StenoState::NEXT_LETTER_CASE_MODE[] = {
     StenoCaseMode::NORMAL,     // TITLE_ONCE
 };
 
+constexpr StenoCaseMode StenoState::PREFIX_NEXT_WORD_CASE_MODE[] = {
+    StenoCaseMode::NORMAL,     // NORMAL
+    StenoCaseMode::LOWER,      // LOWER
+    StenoCaseMode::UPPER,      // UPPER
+    StenoCaseMode::CAMEL,      // TITLE
+    StenoCaseMode::CAMEL,      // CAMEL
+    StenoCaseMode::LOWER_ONCE, // LOWER_ONCE
+    StenoCaseMode::UPPER_ONCE, // UPPER_ONCE
+    StenoCaseMode::NORMAL,     // TITLE_ONCE
+};
+
 //---------------------------------------------------------------------------
 
 StenoState::SpaceBuffer StenoState::SpaceBuffer::instance = {

@@ -350,7 +350,6 @@ void StenoSegmentBuilder::AddRawStroke(BuildSegmentContext &context,
                                       states + offset,
                                       StenoDictionaryLookupResult::NO_OP));
   } else {
-
     hasRawStroke = true;
 
     char buffer[StenoStroke::MAX_STRING_LENGTH];
@@ -440,7 +439,7 @@ void StenoSegmentBuilder::HandleRetroSetValue(BuildSegmentContext &context,
   }
 
   const char *format = parameters.format;
-  while (format && *format == ' ') {
+  while (*format && *format == ' ') {
     ++format;
   }
 
@@ -451,25 +450,30 @@ void StenoSegmentBuilder::HandleRetroSetValue(BuildSegmentContext &context,
   }
 
   // Only set the value if it is the last entry in the buffer.
+  char *text = context.engine.ConvertText(
+      context.segments, startingSegmentIndex, startingStrokeId);
+  const size_t backspaceCount = Str::Length(text);
   if (currentOffset + length == count) {
     // Store for later update.
     context.setValueIndex = parameters.index;
-    char *text = context.engine.ConvertText(
-        context.segments, startingSegmentIndex, startingStrokeId);
     context.setValueText = Str::Trim(text);
-    free(text);
   }
-
-  size_t historyOffset =
-      context.segments[startingSegmentIndex].GetStrokeIndex(states);
-  for (size_t i = startingSegmentIndex; i < context.segments.GetCount(); ++i) {
-    StenoSegment &segment = context.segments[i];
-    segment.lookup.Destroy();
-  }
-  context.segments.SetCount(startingSegmentIndex);
+  free(text);
 
   BufferWriter writer;
   EscapeCommand(writer, command);
+  writer.WriteString("{^}");
+  for (size_t i = 0; i < backspaceCount; ++i) {
+    writer.WriteByte('\b');
+  }
+
+  const StenoState startingState =
+      *context.segments[startingSegmentIndex].state;
+  writer.Printf("{:set_case:%d:%d}", startingState.caseMode,
+                startingState.overrideCaseMode);
+  if (startingState.joinNext) {
+    writer.WriteString("{^}");
+  }
 
   // Special case if followed by =transform
   if (Str::HasPrefix(format, "=transform:")) {
@@ -488,8 +492,7 @@ void StenoSegmentBuilder::HandleRetroSetValue(BuildSegmentContext &context,
   }
 
   context.segments.Add(
-      StenoSegment(currentOffset - historyOffset + length,
-                   SegmentLookupType::DIRECT, states + historyOffset,
+      StenoSegment(length, SegmentLookupType::DIRECT, states + currentOffset,
                    StenoDictionaryLookupResult::CreateFromBuffer(writer)));
 }
 

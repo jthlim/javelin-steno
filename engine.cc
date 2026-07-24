@@ -377,7 +377,7 @@ void StenoEngineTester::TestSetTransform(StenoEngine &engine) {
   engine.ProcessStroke(StenoStroke("K"));
   text = engine.nextConversionBuffer.keyCodeBuffer.ToString();
   assert(Str::Eq(engine.GetTemplateValue(0), "dog"));
-  assert(Str::Eq(text, "xcat xdog"));
+  assert(Str::Eq(text, " xdog"));
   free(text);
 }
 

@@ -780,8 +780,23 @@ bool StenoKeyCodeBuffer::RetroDoubleQuotesFunction(
 }
 
 bool StenoKeyCodeBuffer::SetCaseFunction(const List<char *> &parameters) {
-  if (parameters.GetCount() != 2) {
+  if (parameters.GetCount() > 3) {
     return false;
+  }
+
+  if (parameters.GetCount() == 3) {
+    // Special internal method used by set_value.
+    int caseMode;
+    int overrideCaseMode;
+    if (!ReadIntegerParameter(caseMode, parameters[1])) {
+      return false;
+    }
+    if (!ReadIntegerParameter(overrideCaseMode, parameters[2])) {
+      return false;
+    }
+    state.caseMode = (StenoCaseMode)caseMode;
+    state.overrideCaseMode = (StenoCaseMode)overrideCaseMode;
+    return true;
   }
 
   if (Str::Eq(parameters[1], "normal")) {

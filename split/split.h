@@ -31,7 +31,7 @@ enum class SplitHandlerId {
 };
 
 enum SplitMetricId {
-  RESET_COUNT,
+  CONNECTION_RESET_COUNT,
   TIMEOUT_COUNT,
   MAGIC_MISMATCH_COUNT,
   HASH_FAILURE_COUNT,

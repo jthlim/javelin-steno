@@ -1169,15 +1169,33 @@ public:
   }
 
   static void Atan2(ButtonScript &script, const ScriptByteCode *byteCode) {
+    struct Cache {
+      int x;
+      int y;
+      int result;
+    };
+
+    static Cache cache;
+
     const int x = (int)script.Pop();
     const int y = (int)script.Pop();
     if (x == 0 && y == 0) {
       script.Push(0);
       return;
     }
+
+    if (x == cache.x && y == cache.y) {
+      script.Push(cache.result);
+      return;
+    }
+
     const float angle = atan2(y, x);
     const int fixedPointDegrees = (int)(angle * (32768 / M_PI));
     script.Push(fixedPointDegrees);
+
+    cache.x = x;
+    cache.y = y;
+    cache.result = fixedPointDegrees;
   }
 
   static void FormatString(ButtonScript &script,
