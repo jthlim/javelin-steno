@@ -60,8 +60,7 @@ static constexpr uint32_t CRC32_TABLE[256] = {
 #if JAVELIN_PLATFORM_NRF5_SDK
 [[gnu::section(".code_ram")]]
 #endif
-[[gnu::weak]] uint32_t
-Crc32::Hash(const void *p, size_t count) {
+[[gnu::weak]] uint32_t Crc32::Hash(const void *p, size_t count) {
   const uint8_t *v = (const uint8_t *)p;
   uint32_t hash = 0xffffffff;
 

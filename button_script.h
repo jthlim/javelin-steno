@@ -228,6 +228,12 @@ private:
   CancelAllTimersForByteCode(const Interval<const uint8_t *> &byteCodeRange);
   void
   CancelAllCombosForByteCode(const Interval<const uint8_t *> &byteCodeRange);
+
+  LimitedBufferWriter &GetStringWriter() {
+    LimitedBufferWriter &writer = formatStringWriter[formatStringWriterIndex];
+    formatStringWriterIndex = (formatStringWriterIndex + 1) & 1;
+    return writer;
+  }
 };
 
 //---------------------------------------------------------------------------

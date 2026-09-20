@@ -62,6 +62,7 @@ private:
   void OnConnectionReset();
 
   void OnReceivedBatteryPercentUpdated();
+  void OnReceivedIsPoweredUpdated();
 };
 
 #else
@@ -71,6 +72,7 @@ public:
   static void RegisterHandlers() {}
 
   void OnReceivedBatteryPercentUpdated();
+  void OnReceivedIsPoweredUpdated();
 
   static UsbStatus &GetLocalUsbStatus() { return UsbStatus::instance; }
 };

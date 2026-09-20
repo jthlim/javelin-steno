@@ -226,13 +226,31 @@ constexpr KeyCodeName KEYS[] = {
 };
 // spellchecker: enable
 
+static int CompareIgnoringUnderscore(const char *a, const char *b) {
+  for (;;) {
+    int ca = *a++;
+    while (ca == '_') {
+      ca = *a++;
+    }
+
+    int cb = *b++;
+    while (cb == '_') {
+      cb = *b++;
+    }
+
+    if (ca == 0 || ca != cb) {
+      return ca - cb;
+    }
+  }
+}
+
 static const KeyCodeName *GetKeyCodeName(const char *name) {
   size_t left = 0;
   size_t right = sizeof(KEYS) / sizeof(*KEYS);
 
   while (left < right) {
     const size_t mid = (left + right) / 2;
-    const int comparison = Str::Compare(name, KEYS[mid].name);
+    const int comparison = CompareIgnoringUnderscore(name, KEYS[mid].name);
     if (comparison < 0) {
       right = mid;
     } else if (comparison > 0) {
@@ -345,6 +363,22 @@ TEST_BEGIN("KeyPressParser sort test") {
   for (size_t i = 0; i < sizeof(KEYS) / sizeof(*KEYS); ++i) {
     const char *keyName = KEYS[i].name;
     assert(GetKeyCodeName(keyName) != nullptr);
+  }
+}
+TEST_END
+
+TEST_BEGIN("KeyPressParser no underscore test") {
+  char buffer[64];
+  for (size_t i = 0; i < sizeof(KEYS) / sizeof(*KEYS); ++i) {
+    char *p = buffer;
+    for (const char *keyName = KEYS[i].name; *keyName; ++keyName) {
+      if (*keyName == '_') {
+        continue;
+      }
+      *p++ = *keyName;
+    }
+    *p = '\0';
+    assert(GetKeyCodeName(buffer) != nullptr);
   }
 }
 TEST_END

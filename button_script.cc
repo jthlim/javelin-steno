@@ -32,6 +32,7 @@
 #include "split/split_usb_status.h"
 #include "str.h"
 #include "timer_manager.h"
+#include "totp.h"
 #include "uint16.h"
 #include "wpm_tracker.h"
 
@@ -1204,9 +1205,7 @@ public:
     const intptr_t offset = script.Pop();
     const char *text = byteCode->GetScriptData<char>(offset);
 
-    LimitedBufferWriter &writer =
-        script.formatStringWriter[script.formatStringWriterIndex];
-    script.formatStringWriterIndex = (script.formatStringWriterIndex + 1) & 1;
+    LimitedBufferWriter &writer = script.GetStringWriter();
 
     writer.SetPrintfPointerOffset(byteCode);
     writer.Reset();
@@ -1506,6 +1505,26 @@ public:
     const bool isValid = RTC::HasValidDateTime();
     script.Push(isValid);
   }
+
+  static void GenerateTotp(ButtonScript &script,
+                           const ScriptByteCode *byteCode) {
+    const intptr_t offset = script.Pop();
+    const void *totpData = byteCode->GetScriptData<void>(offset);
+
+    LimitedBufferWriter &output = script.GetStringWriter();
+    output.Reset();
+    Totp::Generate(output, totpData);
+    output.AddTrailingNull();
+
+    script.Push(byteCode->GetStringOffset((char *)output.buffer));
+  }
+
+  static void GetTotpPeriod(ButtonScript &script,
+                            const ScriptByteCode *byteCode) {
+    const intptr_t offset = script.Pop();
+    const void *totpData = byteCode->GetScriptData<void>(offset);
+    script.Push(Totp::GetPeriod(totpData));
+  }
 };
 
 constexpr void (*ButtonScript::FUNCTION_TABLE[])(ButtonScript &,
@@ -1643,6 +1662,8 @@ constexpr void (*ButtonScript::FUNCTION_TABLE[])(ButtonScript &,
     &Function::PointerInput,
     &Function::FormatDateTime,
     &Function::IsDateTimeValid,
+    &Function::GenerateTotp,
+    &Function::GetTotpPeriod,
 };
 
 void ButtonScript::PrintEventHistory() {

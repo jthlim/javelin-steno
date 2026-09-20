@@ -94,7 +94,8 @@ public:
   void DestroyDescriptorBlock();
 
   // Returns true if successful.
-  virtual bool Add(const StenoStroke *strokes, size_t length, const char *word);
+  virtual bool Add(const StenoStroke *strokes, size_t length,
+                   const char *definition);
 
   virtual bool CanRemove() const { return true; }
   virtual bool Remove(const char *dictionaryName, const StenoStroke *strokes,
@@ -128,11 +129,11 @@ private:
   };
 
   AddToDataBlockResult AddToDataBlock(const StenoStroke *strokes,
-                                      uint32_t length, const char *word);
+                                      uint32_t length, const char *definition);
   void AddToDescriptor(size_t strokeLength,
                        AddToDataBlockResult dataBlockResult);
   bool AddToHashTable(const StenoStroke *strokes, size_t length, size_t offset);
-  bool AddToReverseHashTable(const char *word, size_t offset);
+  bool AddToReverseHashTable(const char *definition, size_t offset);
   void WriteEntryIndex(size_t entryIndex, uint32_t offset);
   void WriteReverseEntryIndex(size_t entryIndex, uint32_t offset);
 

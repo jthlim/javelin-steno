@@ -224,35 +224,32 @@ size_t StenoSegmentList::GetWordStartingSegmentIndex(size_t endIndex) const {
   size_t index = endIndex;
 
   // Special case trailing spaces.
-  while (index && Str::IsSpace((*this)[index].lookup.GetText())) {
+  while (index && Str::IsWordSeparator((*this)[index].lookup.GetText())) {
     --index;
   }
 
-  if (Str::IsFingerSpellingCommand((*this)[index].lookup.GetText())) {
-    // In the case of finger spelling, keep consuming until all finger spelling
-    // used.
-    while (index &&
-           Str::IsFingerSpellingCommand((*this)[index - 1].lookup.GetText())) {
-      --index;
-    }
-  } else {
-    while (index) {
+  while (index) {
+    if (Str::IsFingerSpellingCommand((*this)[index].lookup.GetText())) {
+      // In the case of finger spelling, keep consuming until all finger
+      // spelling used.
+      while (index && Str::IsFingerSpellingCommand(
+                          (*this)[index - 1].lookup.GetText())) {
+        --index;
+      }
+    } else {
       if (Str::HasPrefix((*this)[index].lookup.GetText(), "{^")) {
         --index;
         continue;
       }
-
-      if (index > 0) {
-        const char *previousLookup = (*this)[index - 1].lookup.GetText();
-        if (Str::HasSuffix(previousLookup, "^}") &&
-            !Str::IsSpace(previousLookup)) {
-          --index;
-          continue;
-        }
-      }
-
-      break;
     }
+
+    const char *previousLookup = (*this)[index - 1].lookup.GetText();
+    if (Str::HasSuffix(previousLookup, "^}") &&
+        !Str::IsWordSeparator(previousLookup)) {
+      --index;
+      continue;
+    }
+    break;
   }
 
   return index;
@@ -303,24 +300,47 @@ StenoToken StenoTokenizer::GetNext() {
     ++workingP;
   } else {
     for (;;) {
-      switch (*workingP) {
-      case '\0':
-      case ' ':
-      case '{':
-        goto UpdatePAndReturnSpan;
+      // switch (*workingP) {
+      // case '\0':
+      // case ' ':
+      // case '{':
+      //   goto UpdatePAndReturnSpan;
 
-      case '\\':
-        if (workingP[1] == '\0') {
-          p = workingP + 1;
-          goto ReturnSpan;
+      // case '\\':
+      //   if (workingP[1] == '\0') {
+      //     p = workingP + 1;
+      //     goto ReturnSpan;
+      //   }
+      //   workingP += 2;
+      //   break;
+
+      // [[likely]] default:
+      //   ++workingP;
+      // }
+
+      const int c = *workingP++;
+      asm volatile("" : "+r"(workingP));
+
+      // Combine c == '\0' and c == ' ' into a single check.
+      if ((c | 32) == 32) [[unlikely]] {
+        goto DecWorkingPAndReturnSpan;
+      }
+      // Do precheck for '{' (0x5c) and '\\' (0x7b)
+      if ((c & 0x58) == 0x58) [[unlikely]] {
+        if (c == '{') [[unlikely]] {
+          goto DecWorkingPAndReturnSpan;
         }
-        workingP += 2;
-        break;
-
-      [[likely]] default:
-        ++workingP;
+        if (c == '\\') [[unlikely]] {
+          if (*workingP == '\0') {
+            goto UpdatePAndReturnSpan;
+          }
+          ++workingP;
+        }
       }
     }
+
+  DecWorkingPAndReturnSpan:
+    --workingP;
   }
 
 UpdatePAndReturnSpan:

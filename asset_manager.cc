@@ -300,6 +300,10 @@ void AssetManager::AssetData_Binding(void *context, const char *commandLine) {
   }
 
   uint8_t decodeBuffer[256];
+  if (Str::Length(p) >= sizeof(decodeBuffer) * 4 / 3) {
+    Console::Printf("ERR Data too long\n\n");
+    return;
+  }
   const size_t byteCount = Base64::Decode(decodeBuffer, (const uint8_t *)p);
 
   if (byteCount == 0) {

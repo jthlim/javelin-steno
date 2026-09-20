@@ -29,6 +29,8 @@ struct BuildSegmentContext {
   const StenoDictionary &dictionary;
   const StenoCompiledOrthography &orthography;
   const size_t maximumOutlineLength;
+
+  void SetSegmentCount(size_t count);
 };
 
 //---------------------------------------------------------------------------

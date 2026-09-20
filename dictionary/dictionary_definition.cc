@@ -15,14 +15,14 @@
 
 StenoDictionary *StenoDictionaryDefinition::Create() const {
   switch (type) {
-  case StenoDictionaryType::COMPACT_MAP:
-    return new (*(StenoCompactMapDictionaryDefinition *)this)
-        StenoCompactMapDictionary(*(StenoCompactMapDictionaryDefinition *)this);
-
-  case StenoDictionaryType::FULL_MAP:
-    return new (*(StenoFullMapDictionaryDefinition *)this)
-        StenoFullMapDictionary(*(StenoFullMapDictionaryDefinition *)this);
-
+  case StenoDictionaryType::COMPACT_MAP: {
+    const auto &definition = *(const StenoCompactMapDictionaryDefinition *)this;
+    return new (definition) StenoCompactMapDictionary(definition);
+  }
+  case StenoDictionaryType::FULL_MAP: {
+    const auto &definition = *(const StenoFullMapDictionaryDefinition *)this;
+    return new (definition) StenoFullMapDictionary(definition);
+  }
   case StenoDictionaryType::JEFF_SHOW_STROKE:
     return &StenoJeffShowStrokeDictionary::instance;
 

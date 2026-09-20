@@ -8,7 +8,7 @@
 
 //---------------------------------------------------------------------------
 
-constexpr uint8_t KEY_CODE_TO_UNICODE[256][2] = {
+constexpr uint8_t KEY_CODE_TO_UNICODE[KeyCode::KP_EQUAL + 1][2] = {
     {},         // 0
     {},         // 1
     {},         // 2
@@ -142,12 +142,21 @@ uint32_t KeyCode::ConvertToUnicode(uint32_t keyCodeAndModifiers) {
       (keyCodeAndModifiers & MODIFIER_SHIFT_FLAG) ? 1 : 0;
   const uint32_t keyCodeIndex = keyCodeAndModifiers & 0xff;
 
+  if (keyCodeIndex >=
+      sizeof(KEY_CODE_TO_UNICODE) / sizeof(*KEY_CODE_TO_UNICODE)) {
+    return 0;
+  }
+
   return KEY_CODE_TO_UNICODE[keyCodeIndex][caseIndex];
 }
 
 KeyCode KeyCode::TranslateForHostLayout() const {
   // Don't try and translate keypad items.
   if (KeyCode::KP_SLASH <= value && value <= KeyCode::KP_EQUAL) {
+    return *this;
+  }
+
+  if (value >= sizeof(KEY_CODE_TO_UNICODE) / sizeof(*KEY_CODE_TO_UNICODE)) {
     return *this;
   }
 

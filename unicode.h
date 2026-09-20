@@ -29,13 +29,20 @@ public:
     return c - '0';
   }
 
-#if JAVELIN_CPU_CORTEX_M0 || JAVELIN_CPU_CORTEX_M4
   static bool IsWhitespace(uint32_t c) {
-    return c == ' ' || int32_t(0x807c0000u << c) < 0;
-  }
+#if JAVELIN_CPU_CORTEX_M4 || JAVELIN_CPU_CORTEX_M33
+    // '\0' does not return a defined value.
+    bool carry;
+    uint32_t dummy;
+    const uint32_t bitmask = 0x8000'1f00;
+    asm("lsrs %1, %2, %3"
+        : "=@cccs"(carry), "=r"(dummy)
+        : "r"(bitmask), "r"(c));
+    return carry;
 #else
-  static bool IsWhitespace(uint32_t c);
+    return c == ' ' || (9 <= c && c <= 13);
 #endif
+  }
 
   static bool IsWordCharacter(uint32_t c);
 };

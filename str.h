@@ -14,7 +14,12 @@ public:
   static bool Contains(const char *p, char c) {
     return strchr(p, c) != nullptr;
   }
+
   static bool IsSpace(const char *p);
+
+  // For a infix definition ({^xxx^}), return true for xxx being any non-word
+  // character except for {^-^}
+  static bool IsWordSeparator(const char *p);
 
   static char *Join(const char *const *p, size_t n);
 
@@ -48,9 +53,6 @@ public:
     return IgnoreCaseEq(a, b, Length(b));
   }
 
-  // Compares Trim(a) == b without allocations.
-  static bool TrimEq(const char *a, const char *b);
-
   static inline int Compare(const char *a, const char *b) {
     return strcmp(a, b);
   }
@@ -76,7 +78,7 @@ public:
   // the result;
   static char *WriteJson(char *buffer, const char *text);
 
-  // Removes leading and trailing whitespace.
+  // Removes leading and trailing space characters.
   // Always returns a newly allocated string.
   static char *Trim(const char *data);
 
@@ -91,6 +93,9 @@ public:
   // Returns the character after the number if successful, null otherwise.
   static const char *ParseInteger(int *result, const char *p,
                                   bool allowNegative = true);
+
+  // Parse n hex digits, returning -1 if any are invalid.
+  static int ParseHexDigits(const char *p, size_t n);
 
   // Returns nullptr if there's no word character.
   // p can be null.

@@ -193,7 +193,7 @@ void StenoFullMapDictionaryStrokesDefinition::PrintEntriesWithPartialOutline(
     return;
   }
 
-  // This routine finds candidate strokes, then ensured they're valid matches.
+  // This routine finds candidate strokes, then ensures they're valid matches.
   // It is about 4x faster than stepping through each entry and checking if
   // there's a partial match.
   const uintptr_t dataStart = uintptr_t(data);
@@ -501,11 +501,13 @@ const StenoFullMapDictionaryStrokesDefinition *
 StenoFullMapDictionary::CreateStrokeCache(
     StenoFullMapDictionary *object,
     const StenoFullMapDictionaryDefinition &definition) {
+  const XipPointer<StenoFullMapDictionaryDefinition> localDefinition =
+      &definition;
   const size_t byteSize = sizeof(StenoFullMapDictionaryStrokesDefinition) *
-                          definition.maximumOutlineLength;
+                          localDefinition->maximumOutlineLength;
   StenoFullMapDictionaryStrokesDefinition *strokes =
       (StenoFullMapDictionaryStrokesDefinition *)(object + 1);
-  Mem::Copy(strokes, definition.strokes, byteSize);
+  Mem::Copy(strokes, localDefinition->strokes, byteSize);
   return strokes - 1;
 }
 

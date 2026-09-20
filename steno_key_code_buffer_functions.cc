@@ -100,7 +100,7 @@ void StenoKeyCodeBuffer::RetroactiveCapitalize(int wordCount) {
       if (p < buffer) {
         goto epilog;
       }
-      if (!p->IsWhitespace()) {
+      if (p->IsLetter()) {
         break;
       }
       --p;
@@ -110,12 +110,10 @@ void StenoKeyCodeBuffer::RetroactiveCapitalize(int wordCount) {
       if (p < buffer) {
         goto epilog;
       }
-      if (p->IsWhitespace()) {
+      if (!p->IsUnicode('_') && !p->IsUnicode('\'') && !p->IsLetter()) {
         break;
       }
-      if (p->IsLetter()) {
-        lastCharacterPointer = p;
-      }
+      lastCharacterPointer = p;
       --p;
     }
 
@@ -133,7 +131,7 @@ void StenoKeyCodeBuffer::RetroactiveUncapitalize(int wordCount) {
       if (p < buffer) {
         return;
       }
-      if (!p->IsWhitespace()) {
+      if (p->IsLetter()) {
         break;
       }
       --p;
@@ -144,12 +142,10 @@ void StenoKeyCodeBuffer::RetroactiveUncapitalize(int wordCount) {
       if (p < buffer) {
         break;
       }
-      if (p->IsWhitespace()) {
+      if (!p->IsUnicode('_') && !p->IsUnicode('\'') && !p->IsLetter()) {
         break;
       }
-      if (p->IsLetter()) {
-        lastCharacterPointer = p;
-      }
+      lastCharacterPointer = p;
       --p;
     }
     lastCharacterPointer->SetCase(StenoCaseMode::LOWER_ONCE);
@@ -165,7 +161,7 @@ void StenoKeyCodeBuffer::RetroactiveTitleCase(int wordCount) {
       if (p < buffer) {
         return;
       }
-      if (!p->IsWhitespace()) {
+      if (p->IsLetter()) {
         break;
       }
       --p;
@@ -176,12 +172,12 @@ void StenoKeyCodeBuffer::RetroactiveTitleCase(int wordCount) {
       if (p < buffer) {
         break;
       }
-      if (p->IsWhitespace()) {
+      if (p->IsUnicode('_')) {
+        lastCharacterPointer->SetCase(StenoCaseMode::TITLE);
+      } else if (!p->IsUnicode('\'') && !p->IsLetter()) {
         break;
       }
-      if (p->IsLetter()) {
-        lastCharacterPointer = p;
-      }
+      lastCharacterPointer = p;
       --p;
     }
     lastCharacterPointer->SetCase(StenoCaseMode::TITLE);
@@ -197,7 +193,7 @@ void StenoKeyCodeBuffer::RetroactiveUpperCase(int wordCount) {
       if (p < buffer) {
         return;
       }
-      if (!p->IsWhitespace()) {
+      if (p->IsLetter()) {
         break;
       }
       --p;
@@ -208,7 +204,7 @@ void StenoKeyCodeBuffer::RetroactiveUpperCase(int wordCount) {
         return;
       }
 
-      if (p->IsWhitespace()) {
+      if (!p->IsUnicode('_') && !p->IsUnicode('\'') && !p->IsLetter()) {
         break;
       }
       p->SetCase(StenoCaseMode::UPPER);
@@ -226,7 +222,7 @@ void StenoKeyCodeBuffer::RetroactiveLowerCase(int wordCount) {
       if (p < buffer) {
         return;
       }
-      if (!p->IsWhitespace()) {
+      if (p->IsLetter()) {
         break;
       }
       --p;
@@ -237,7 +233,7 @@ void StenoKeyCodeBuffer::RetroactiveLowerCase(int wordCount) {
         return;
       }
 
-      if (p->IsWhitespace()) {
+      if (!p->IsUnicode('_') && !p->IsUnicode('\'') && !p->IsLetter()) {
         break;
       }
       p->SetCase(StenoCaseMode::LOWER);
@@ -292,24 +288,11 @@ void StenoKeyCodeBuffer::RepeatLastCharacterCount(int characterCount) {
 void StenoKeyCodeBuffer::RepeatLastFragmentCount(int fragmentCount) {
   StenoKeyCode *p = currentOutput - 1;
   while (fragmentCount > 0) {
-    for (;;) {
-      if (p <= buffer) {
-        break;
-      }
-
-      if (!p->IsWhitespace()) {
-        break;
-      }
+    while (p > buffer && p->IsWhitespace()) {
       --p;
     }
 
-    for (;;) {
-      if (p <= buffer) {
-        break;
-      }
-      if (p->IsWhitespace()) {
-        break;
-      }
+    while (p > buffer && !p->IsWhitespace()) {
       --p;
     }
 
@@ -378,24 +361,11 @@ void StenoKeyCodeBuffer::RetroactiveQuotes(int wordCount,
 
   StenoKeyCode *p = previousEnd - 1;
   while (wordCount) {
-    for (;;) {
-      if (p <= buffer) {
-        break;
-      }
-      if (!p->IsWhitespace()) {
-        break;
-      }
+    while (p > buffer && p->IsWhitespace()) {
       --p;
     }
 
-    for (;;) {
-      if (p <= buffer) {
-        break;
-      }
-
-      if (p->IsWhitespace()) {
-        break;
-      }
+    while (p > buffer && !p->IsWhitespace()) {
       --p;
     }
 
@@ -901,10 +871,8 @@ bool StenoKeyCodeBuffer::StitchLastWordFunction(
   StenoKeyCode *p = currentOutput - 1;
 
   for (size_t wc = 0; wc < wordCount; ++wc, --p) {
-    for (; p > buffer; --p) {
-      if (!p->IsWhitespace()) {
-        break;
-      }
+    while (p > buffer && p->IsWhitespace()) {
+      --p;
     }
 
     while (p > buffer && !p[-1].IsWhitespace()) {
@@ -918,10 +886,7 @@ bool StenoKeyCodeBuffer::StitchLastWordFunction(
   StenoKeyCode *output = p + delimiterNeededCount * delimiterLength;
 
   for (size_t wc = 0; wc < wordCount; ++wc) {
-    while (p > buffer) {
-      if (!p->IsWhitespace()) {
-        break;
-      }
+    while (p > buffer && p->IsWhitespace()) {
       *output-- = *p--;
     }
 
@@ -1071,6 +1036,36 @@ TEST_BEGIN("StenoKeyCodeBuffer: Backspace() should give expected results") {
   assert(buffer.buffer[1] == StenoKeyCode::CreateRawKeyCodePress(KeyCode::F1));
   assert(buffer.buffer[2] ==
          StenoKeyCode::CreateRawKeyCodeRelease(KeyCode::F1));
+}
+TEST_END
+
+TEST_BEGIN("StenoKeyCodeBuffer: RetroTitleCase") {
+  StenoKeyCodeBuffer buffer;
+  buffer.Reset();
+  buffer.AppendText("ab c:def", 8, StenoCaseMode::NORMAL);
+  buffer.RetroactiveTitleCase(1);
+  AssertBufferContent(buffer, "ab c:Def");
+
+  buffer.RetroactiveTitleCase(2);
+  AssertBufferContent(buffer, "ab C:Def");
+
+  buffer.RetroactiveTitleCase(3);
+  AssertBufferContent(buffer, "Ab C:Def");
+}
+TEST_END
+
+TEST_BEGIN("StenoKeyCodeBuffer: RetroUpperCase") {
+  StenoKeyCodeBuffer buffer;
+  buffer.Reset();
+  buffer.AppendText("ab c:def", 8, StenoCaseMode::NORMAL);
+  buffer.RetroactiveUpperCase(1);
+  AssertBufferContent(buffer, "ab c:DEF");
+
+  buffer.RetroactiveUpperCase(2);
+  AssertBufferContent(buffer, "ab C:DEF");
+
+  buffer.RetroactiveUpperCase(3);
+  AssertBufferContent(buffer, "AB C:DEF");
 }
 TEST_END
 

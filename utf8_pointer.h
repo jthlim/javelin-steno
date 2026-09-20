@@ -13,7 +13,7 @@ public:
   Utf8Pointer(const uint8_t *p) : p((uint8_t *)p) {}
 
   uint32_t operator*() const {
-    if (*p < 0x80) {
+    if (*p < 0x80) [[likely]] {
       return *p;
     }
     return Read();
@@ -27,6 +27,7 @@ public:
 
   void SetAndAdvance(uint32_t c);
   void SetAsciiAndAdvance(uint8_t c) { *p++ = c; }
+  void AdvanceBytes(size_t n) { p += n; }
   void SetTerminatingNull() { *p = '\0'; }
   static uint32_t BytesForCharacterCode(uint32_t c);
 

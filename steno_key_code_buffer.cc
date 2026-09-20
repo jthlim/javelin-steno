@@ -97,6 +97,9 @@ void StenoKeyCodeBuffer::AppendTextNoCaseModeOverride(const char *p,
         case 'b':
           c = '\b';
           break;
+        case 'e':
+          c = '\e';
+          break;
         case 'f':
           c = '\f';
           break;
@@ -109,7 +112,39 @@ void StenoKeyCodeBuffer::AppendTextNoCaseModeOverride(const char *p,
         case 't':
           c = '\t';
           break;
+
+        case 'x': {
+          const int x = Str::ParseHexDigits(utf8p.GetRawPointer(), 2);
+          if (x < 0) {
+            goto BadEscape;
+          }
+
+          c = x;
+          utf8p.AdvanceBytes(2);
+        } break;
+
+        case 'u': {
+          const int u = Str::ParseHexDigits(utf8p.GetRawPointer(), 4);
+          if (u < 0) {
+            goto BadEscape;
+          }
+
+          c = u;
+          utf8p.AdvanceBytes(4);
+
+          // Check for surrogate pairs.
+          if (0xdc00 <= u && u < 0xe000 && d > buffer) {
+            const uint32_t previous = d[-1].GetUnicode();
+            if (0xd800 <= previous && previous < 0xdc00) {
+              d[-1].SetUnicode(((previous & 0x3ff) << 10) + (u & 0x3ff) +
+                               0x10000);
+              continue;
+            }
+          }
+        } break;
+
         default:
+        BadEscape:
           *d++ = StenoKeyCode('\\', StenoCaseMode::NORMAL);
           caseMode = GetNextLetterCaseMode(caseMode);
         }
@@ -589,6 +624,54 @@ TEST_BEGIN("StenoKeyCodeBuffer empty parenthesis test") {
   assert(buffer->buffer[0] == StenoKeyCode::CreateRawKeyCodePress(KeyCode::L_META));
   assert(buffer->buffer[1] == StenoKeyCode::CreateRawKeyCodeRelease(KeyCode::L_META));
   // clang-format on
+
+  delete buffer;
+}
+TEST_END
+
+TEST_BEGIN("StenoKeyCodeBuffer \\xnn test") {
+  StenoKeyCodeBuffer *buffer = new StenoKeyCodeBuffer();
+  buffer->Reset();
+  buffer->state.joinNext = true;
+
+  const char *test = "a\\x1bc";
+  buffer->ProcessText(test, test + Str::Length(test));
+
+  assert(buffer->buffer[0].GetUnicode() == 'a');
+  assert(buffer->buffer[1].GetUnicode() == 0x1b);
+  assert(buffer->buffer[2].GetUnicode() == 'c');
+
+  delete buffer;
+}
+TEST_END
+
+TEST_BEGIN("StenoKeyCodeBuffer \\unnnn test") {
+  StenoKeyCodeBuffer *buffer = new StenoKeyCodeBuffer();
+  buffer->Reset();
+  buffer->state.joinNext = true;
+
+  const char *test = "a\\u1234c";
+  buffer->ProcessText(test, test + Str::Length(test));
+
+  assert(buffer->buffer[0].GetUnicode() == 'a');
+  assert(buffer->buffer[1].GetUnicode() == 0x1234);
+  assert(buffer->buffer[2].GetUnicode() == 'c');
+
+  delete buffer;
+}
+TEST_END
+
+TEST_BEGIN("StenoKeyCodeBuffer \\unnnn surrogate pairs test") {
+  StenoKeyCodeBuffer *buffer = new StenoKeyCodeBuffer();
+  buffer->Reset();
+  buffer->state.joinNext = true;
+
+  const char *test = "a\\ud83d\\ude00c";
+  buffer->ProcessText(test, test + Str::Length(test));
+
+  assert(buffer->buffer[0].GetUnicode() == 'a');
+  assert(buffer->buffer[1].GetUnicode() == 0x1f600);
+  assert(buffer->buffer[2].GetUnicode() == 'c');
 
   delete buffer;
 }

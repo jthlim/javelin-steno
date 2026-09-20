@@ -28,7 +28,12 @@ public:
 private:
   bool isValid;
   uint32_t setTime;
-  DateTime dateTime = DateTime{.day = 1, .month = 1, .year = 1970};
+  DateTime dateTime = DateTime{
+      .day = 1,
+      .month = 1,
+      .year = 1970,
+      .timezoneSeconds = 0,
+  };
 
   static RTC instance;
 

@@ -9,6 +9,9 @@
 const char *
 ScriptByteCode::FindStringOrReturnOriginal(const char *string) const {
   const StenoScriptHashTable *hashTable = GetHashTable();
+  if (hashTable->size == 0) {
+    return string;
+  }
 
   const size_t mask = hashTable->size - 1;
   const size_t length = Str::Length(string);

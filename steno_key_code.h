@@ -52,6 +52,7 @@ public:
   bool IsWordCharacter() const { return Unicode::IsWordCharacter(unicode); } // *
 
   uint32_t GetUnicode() const { return isRawKeyCode ? 0 : unicode; }
+  void SetUnicode(uint32_t x) { unicode = x; }
 
   // Returns the output case mode for unicode, and NORMAL for raw key codes.
   StenoCaseMode GetOutputCaseMode() const { return outputCaseMode; } // *

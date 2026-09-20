@@ -284,17 +284,17 @@ void StenoUserDictionary::DestroyDescriptorBlock() {
 }
 
 bool StenoUserDictionary::Add(const StenoStroke *strokes, size_t length,
-                              const char *word) {
+                              const char *definition) {
   // Verify that it doesn't already exist.
   const StenoUserDictionaryEntry *entry =
       LookupEntry(StenoDictionaryLookup(strokes, length));
 
-  if (entry && Str::Eq(entry->GetText(), word)) {
+  if (entry && Str::Eq(entry->GetText(), definition)) {
     return true;
   }
 
   const AddToDataBlockResult data =
-      AddToDataBlock(strokes, (uint32_t)length, word);
+      AddToDataBlock(strokes, (uint32_t)length, definition);
   if (data.length == 0) {
     return false;
   }
@@ -306,7 +306,7 @@ bool StenoUserDictionary::Add(const StenoStroke *strokes, size_t length,
   if (entry) {
     RemoveFromReverseHashTable(entry);
   }
-  AddToReverseHashTable(word, data.offset);
+  AddToReverseHashTable(definition, data.offset);
 
   maximumOutlineLength = activeDescriptorCopy.data.maximumOutlineLength;
   OnLookupDataChanged();
@@ -316,14 +316,14 @@ bool StenoUserDictionary::Add(const StenoStroke *strokes, size_t length,
 
 StenoUserDictionary::AddToDataBlockResult
 StenoUserDictionary::AddToDataBlock(const StenoStroke *strokes, uint32_t length,
-                                    const char *word) {
-  const size_t wordLength = Str::Length(word);
+                                    const char *definition) {
+  const size_t definitionLength = Str::Length(definition);
 
   // Need to store null terminator + round up to nearest 4 bytes.
-  const size_t wordStorageLength = AlignUp(wordLength + 1, 4);
+  const size_t definitionStorageLength = AlignUp(definitionLength + 1, 4);
 
   const size_t totalLength =
-      sizeof(uint32_t) + sizeof(StenoStroke) * length + wordStorageLength;
+      sizeof(uint32_t) + sizeof(StenoStroke) * length + definitionStorageLength;
 
   if (activeDescriptorCopy.data.dataBlockSizeRemaining < totalLength) {
     // Too big!
@@ -334,8 +334,8 @@ StenoUserDictionary::AddToDataBlock(const StenoStroke *strokes, uint32_t length,
   StenoUserDictionaryEntry *entry = (StenoUserDictionaryEntry *)buffer;
   entry->strokeLength = length;
   strokes->CopyTo(entry->strokes, length);
-  memcpy(buffer + sizeof(uint32_t) + sizeof(StenoStroke) * length, word,
-         wordLength + 1);
+  memcpy(buffer + sizeof(uint32_t) + sizeof(StenoStroke) * length, definition,
+         definitionLength + 1);
 
   const size_t dataBlockOffset =
       activeDescriptorCopy.data.dataBlockSizeRemaining - totalLength;
@@ -400,9 +400,9 @@ bool StenoUserDictionary::AddToHashTable(const StenoStroke *strokes,
   return false;
 }
 
-bool StenoUserDictionary::AddToReverseHashTable(const char *word,
+bool StenoUserDictionary::AddToReverseHashTable(const char *definition,
                                                 size_t dataOffset) {
-  size_t entryIndex = Crc32::Hash(word, Str::Length(word));
+  size_t entryIndex = Crc32::Hash(definition, Str::Length(definition));
 
   for (int probeCount = 0; probeCount < 64; ++probeCount) {
     entryIndex &= activeDescriptorCopy.data.hashTableSize - 1;

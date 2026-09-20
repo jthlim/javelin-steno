@@ -42,13 +42,14 @@ void Rgb::SetRgb_Binding(void *context, const char *commandLine) {
 }
 
 void Rgb::SetRgbBase64(size_t startRgbId, const uint8_t *p) {
-  uint8_t buffer[256];
+  uint8_t *buffer = (uint8_t *)malloc(Console::BUFFER_SIZE * 3 / 4);
   const size_t byteCount = Base64::Decode(buffer, (uint8_t *)p);
   const size_t rgbCount = byteCount / 3;
   const uint8_t *rgb = buffer;
   for (int i = 0; i < rgbCount; ++i, rgb += 3) {
     SetRgb(startRgbId + i, rgb[0], rgb[1], rgb[2]);
   }
+  free(buffer);
 }
 
 void Rgb::SetHsv(size_t id, int h, int s, int v) {

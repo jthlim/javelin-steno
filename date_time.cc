@@ -1,6 +1,7 @@
 //---------------------------------------------------------------------------
 
 #include "date_time.h"
+#include "clamp.h"
 #include "writer.h"
 
 //---------------------------------------------------------------------------
@@ -41,8 +42,10 @@ static bool IsLeapYear(uint32_t year) {
   return (year % 100 != 0) || (year % 400 == 0);
 }
 
-DateTime DateTime::Create(uint32_t secondsSinceUnixEpoch) {
+DateTime DateTime::Create(uint32_t secondsSinceUnixEpoch,
+                          int32_t timezoneSeconds) {
   DateTime result;
+  result.timezoneSeconds = timezoneSeconds;
 
   uint32_t daysRemaining = secondsSinceUnixEpoch / 86400;
   const uint32_t secondsInDay = secondsSinceUnixEpoch % 86400;
@@ -81,8 +84,35 @@ DateTime DateTime::Create(uint32_t secondsSinceUnixEpoch) {
   return result;
 }
 
+uint32_t DateTime::GetSecondsSinceUnixEpoch() const {
+  if (year < 1970) {
+    return 0;
+  }
+  if (year > 2106) {
+    return 0xffffffff;
+  }
+
+  uint64_t totalDays = day - 1;
+  for (uint32_t y = 1970; y < year; ++y) {
+    totalDays += IsLeapYear(y) ? 366 : 365;
+  }
+
+  const uint8_t *monthDays =
+      IsLeapYear(year) ? MONTH_DAYS_LEAP_YEAR : MONTH_DAYS_NO_LEAP_YEAR;
+  const int endMonth = ClampMax(month, 12);
+  for (int m = 1; m < endMonth; ++m) {
+    totalDays += monthDays[m - 1];
+  }
+
+  const int64_t totalSeconds =
+      ((totalDays * 24 + hours) * 60 + minutes) * 60ll + seconds -
+      timezoneSeconds;
+  return (uint32_t)Clamp(totalSeconds, 0, 0xffffffff);
+}
+
 DateTime DateTime::AddSeconds(uint32_t seconds) const {
   DateTime result;
+  result.timezoneSeconds = timezoneSeconds;
 
   const uint32_t totalSeconds = seconds + this->seconds;
   result.seconds = uint8_t(totalSeconds % 60);
@@ -146,6 +176,8 @@ DateTime DateTime::AddSeconds(uint32_t seconds) const {
 // %p	"AM" or "PM"
 // %t	"a" or "p" for AM or PM.
 // %T	"A" or "P" for AM or PM.
+// %u	Unix Timestamp
+// %z	Timezone in +hhmm format, e.g. -0600
 // %%	%	Literal % character
 void DateTime::Printf(IWriter &output, const char *format) const {
   for (;;)
@@ -214,6 +246,18 @@ void DateTime::Printf(IWriter &output, const char *format) const {
       case 'T':
         output.WriteByte(hours < 12 ? 'A' : 'P');
         break;
+      case 'u':
+        output.Printf("%u", GetSecondsSinceUnixEpoch());
+        break;
+      case 'z': {
+        int tzMinutes = timezoneSeconds / 60;
+        int sign = '+';
+        if (tzMinutes < 0) {
+          tzMinutes = -tzMinutes;
+          sign = '-';
+        }
+        output.Printf("%c%02u%02u", sign, tzMinutes / 60, tzMinutes % 60);
+      } break;
       case '%':
         output.WriteByte('%');
         break;
@@ -230,6 +274,9 @@ void DateTime::Printf(IWriter &output, const char *format) const {
         return;
       case 'b':
         output.WriteByte('\b');
+        break;
+      case 'e':
+        output.WriteByte('\e');
         break;
       case 'f':
         output.WriteByte('\f');
@@ -274,13 +321,13 @@ void DateTime::Printf(IWriter &output, const char *format) const {
 //---------------------------------------------------------------------------
 
 static void VerifyDate(uint32_t time, const DateTime &dateTime) {
-  const DateTime a = DateTime::Create(time);
+  const DateTime a = DateTime::Create(time, 0);
   assert(a == dateTime);
 }
 static void VerifyDate(uint32_t time, uint16_t year, uint8_t month, uint8_t day,
                        uint8_t dayOfWeek, uint8_t hours, uint8_t minutes,
                        uint8_t seconds) {
-  const DateTime a = DateTime::Create(time);
+  const DateTime a = DateTime::Create(time, 0);
   const DateTime b = DateTime{
       .seconds = seconds,
       .minutes = minutes,
@@ -289,6 +336,7 @@ static void VerifyDate(uint32_t time, uint16_t year, uint8_t month, uint8_t day,
       .day = day,
       .month = month,
       .year = year,
+      .timezoneSeconds = 0,
   };
   assert(a == b);
 }
@@ -300,18 +348,49 @@ TEST_BEGIN("DateTime: Verify DateTime::Create returns expected values") {
 TEST_END
 
 TEST_BEGIN("DateTime: Verify DateTime::Add returns expected values") {
-  const DateTime a = DateTime::Create(1767225599);
+  const DateTime a = DateTime::Create(1767225599, 0);
   const DateTime b = a.AddSeconds(60 * 60 * 24 * 60 + 1);
   VerifyDate(1767225599 + 60 * 60 * 24 * 60 + 1, b);
 }
 TEST_END
 
 TEST_BEGIN("DateTime: Printf produces expected results") {
-  const DateTime a = DateTime::Create(1767225598);
+  const DateTime a = DateTime::Create(1767225598, 0);
   BufferWriter writer;
   a.Printf(writer, "Time %Y-%m-%d %H:%M:%S");
   writer.WriteByte('\0');
   assert(Str::Eq(writer.GetBuffer(), "Time 2025-12-31 23:59:58"));
+}
+TEST_END
+
+TEST_BEGIN(
+    "DateTime: Verify GetSecondsSinceUnixEpoch returns expected values") {
+  const DateTime epoch = DateTime::Create(0, 0);
+  assert(epoch.GetSecondsSinceUnixEpoch() == 0);
+
+  const DateTime dt1 = DateTime::Create(1767225599, 0);
+  assert(dt1.GetSecondsSinceUnixEpoch() == 1767225599);
+
+  const DateTime maxDt = DateTime::Create(0xffffffff, 0);
+  assert(maxDt.GetSecondsSinceUnixEpoch() == 0xffffffff);
+
+  const DateTime preEpoch = DateTime{.seconds = 59,
+                                     .minutes = 59,
+                                     .hours = 23,
+                                     .dayOfWeek = 3,
+                                     .day = 31,
+                                     .month = 12,
+                                     .year = 1969};
+  assert(preEpoch.GetSecondsSinceUnixEpoch() == 0);
+
+  const DateTime overflowDt = DateTime{.seconds = 0,
+                                       .minutes = 0,
+                                       .hours = 0,
+                                       .dayOfWeek = 0,
+                                       .day = 1,
+                                       .month = 1,
+                                       .year = 2200};
+  assert(overflowDt.GetSecondsSinceUnixEpoch() == 0xffffffff);
 }
 TEST_END
 

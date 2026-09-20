@@ -160,7 +160,7 @@ struct StenoDictionaryCollection {
   SizedList<const uint8_t *> prefixes;
   SizedList<const uint8_t *> suffixes;
   uint32_t timestamp;
-  const XipPointer<StenoDictionaryDefinition> dictionaries[];
+  XipPointer<StenoDictionaryDefinition> dictionaries[];
 
   // Returns whether the timestamp at the start of the dictionary matches
   // the timestamp at the end of the text block.

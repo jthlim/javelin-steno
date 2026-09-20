@@ -20,6 +20,15 @@ BuildSegmentContext::BuildSegmentContext(StenoSegmentList &segments,
       orthography(engine.GetOrthography()),
       maximumOutlineLength(dictionary.GetMaximumOutlineLength()) {}
 
+void BuildSegmentContext::SetSegmentCount(size_t count) {
+  assert(count < segments.GetCount());
+
+  for (size_t i = count; i < segments.GetCount(); ++i) {
+    segments[i].lookup.Destroy();
+  }
+  segments.SetCount(count);
+}
+
 //---------------------------------------------------------------------------
 
 void StenoSegmentBuilder::TransferStartFrom(const StenoSegmentBuilder &source,
@@ -524,15 +533,13 @@ void StenoSegmentBuilder::HandleRetroTransform(BuildSegmentContext &context,
   WriteRetroTransform(context.segments, startingSegmentIndex, format,
                       bufferWriter);
 
-  for (size_t i = startingSegmentIndex; i < context.segments.GetCount(); ++i) {
-    StenoSegment &segment = context.segments[i];
-    segment.lookup.Destroy();
-    segment.lookup = StenoDictionaryLookupResult::NO_OP;
-  }
+  StenoSegment &startingSegment = context.segments[startingSegmentIndex];
+  const size_t startingStrokeOffset = startingSegment.GetStrokeIndex(states);
+  context.SetSegmentCount(startingSegmentIndex);
 
-  hasModifiedStrokeHistory = true;
   context.segments.Add(StenoSegment(
-      length, SegmentLookupType::DIRECT, states + currentOffset,
+      currentOffset + length - startingStrokeOffset,
+      SegmentLookupType::HISTORY_MODIFIED, states + startingStrokeOffset,
       StenoDictionaryLookupResult::CreateFromBuffer(bufferWriter)));
 }
 

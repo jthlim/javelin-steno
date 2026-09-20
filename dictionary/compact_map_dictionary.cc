@@ -386,11 +386,14 @@ const StenoCompactMapDictionaryStrokesDefinition *
 StenoCompactMapDictionary::CreateStrokeCache(
     StenoCompactMapDictionary *object,
     const StenoCompactMapDictionaryDefinition &definition) {
+  const XipPointer<StenoCompactMapDictionaryDefinition> localDefinition =
+      &definition;
+
   const size_t byteSize = sizeof(StenoCompactMapDictionaryStrokesDefinition) *
-                          definition.maximumOutlineLength;
+                          localDefinition->maximumOutlineLength;
   StenoCompactMapDictionaryStrokesDefinition *strokes =
       (StenoCompactMapDictionaryStrokesDefinition *)(object + 1);
-  Mem::Copy(strokes, definition.strokes, byteSize);
+  Mem::Copy(strokes, localDefinition->strokes, byteSize);
   return strokes - 1;
 }
 

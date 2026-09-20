@@ -20,14 +20,94 @@ bool Str::IsSpace(const char *p) {
   if (p[0] == '~' && p[1] == '|') {
     p += 2;
   }
-  if (*p == ' ' || *p == '\n') {
+  if (Unicode::IsWhitespace(*p)) {
     ++p;
-  } else if (p[0] == '\\' && p[1] == 'n') {
+  } else if (p[0] == '\\' && (p[1] == 'n' || p[1] == 'r' || p[1] == 't' ||
+                              p[1] == 'f' || p[1] == 'v')) {
     p += 2;
   } else {
     return false;
   }
   return p[0] == '^' && p[1] == '}';
+}
+
+bool Str::IsWordSeparator(const char *p) {
+  for (;;) {
+    if (p[0] == '{' && p[1] == '}') {
+      p += 2;
+      continue;
+    }
+
+    if (p[0] == '{') {
+      if (p[1] == '^') {
+        if (p[2] == '}') {
+          p += 3;
+        } else {
+          p += 2;
+        }
+      } else {
+        p += 1;
+      }
+    }
+    break;
+  }
+
+  const char *pEnd = p + Str::Length(p) - 2;
+  for (;;) {
+    if (pEnd[1] != '}') {
+      return false;
+    }
+    if (pEnd[0] == '{') {
+      pEnd += 2;
+      continue;
+    }
+
+    if (pEnd[0] != '^') {
+      return false;
+    }
+    if (pEnd[-1] == '{') {
+      pEnd--;
+    }
+    break;
+  }
+  if (p[0] == '~' && p[1] == '|') {
+    p += 2;
+  }
+
+  if (p >= pEnd) {
+    return false;
+  }
+
+  if (p + 1 == pEnd && p[0] == '-') {
+    return false;
+  }
+
+  while (p < pEnd) {
+    switch (int c = *p++; c) {
+    case '\\':
+      switch (c = *p++; c) {
+      case '0':
+      case 'e':
+      case 'n':
+      case 'r':
+      case 't':
+      case 'f':
+      case 'v':
+      case ' ':
+        continue;
+      }
+
+      [[fallthrough]];
+
+    default:
+      if (Unicode::IsWordCharacter(c)) {
+        return false;
+      }
+      break;
+    }
+  }
+
+  return true;
 }
 
 char *Str::Asprintf(const char *p, ...) {
@@ -39,26 +119,6 @@ char *Str::Asprintf(const char *p, ...) {
   va_end(args);
 
   return bufferWriter.TerminateStringAndAdoptBuffer();
-}
-
-bool Str::TrimEq(const char *a, const char *b) {
-  while (*a && Unicode::IsWhitespace(*a)) {
-    ++a;
-  }
-  while (*b) {
-    if (*a++ != *b++) {
-      return false;
-    }
-  }
-  for (;;) {
-    if (*a == '\0') {
-      return true;
-    }
-    if (!Unicode::IsWhitespace(*a)) {
-      return false;
-    }
-    ++a;
-  }
 }
 
 size_t Str::Sprintf(char *target, const char *p, ...) {
@@ -81,18 +141,26 @@ bool Str::IsFingerSpellingCommand(const char *p) {
       continue;
     }
     if (c == '{') [[unlikely]] {
-      if (*p == '&') {
-        p++;
-        return true;
+      if (*p != '&') {
+        return false;
       }
-      while (*p) {
+      ++p;
+      for (;;) {
         const int c = *p++;
+        if (c == '\0') {
+          return false;
+        }
         if (c == '\\' && *p != '\0') {
           ++p;
         } else if (c == '}') {
+          if (*p == '\0') {
+            return true;
+          }
           break;
         }
       }
+    } else {
+      return false;
     }
   }
 
@@ -104,16 +172,28 @@ bool Str::IsJoinPrevious(const char *p) {
 }
 
 bool Str::ContainsKeyCode(const char *p) {
-  while (*p) {
+  for (;;) {
     const int c = *p++;
-    if (c == '{') [[unlikely]] {
-      if (*p == '#') [[unlikely]] {
-        return true;
+    if (c == '\0') [[unlikely]] {
+      return false;
+    }
+
+    if (c == '\\') [[unlikely]] {
+      if (*p == '\0') {
+        return false;
       }
+      ++p;
+      continue;
+    }
+
+    if (c != '{') [[likely]] {
+      continue;
+    }
+
+    if (*p == '#') [[unlikely]] {
+      return true;
     }
   }
-
-  return false;
 }
 
 [[gnu::noinline]] char *Str::Join(const char *const *data, size_t n) {
@@ -219,13 +299,13 @@ bool Str::IgnoreCaseEq(const char *a, const char *b, size_t bLength) {
 
 char *Str::Trim(const char *data) {
   const char *start = data;
-  while (*start && Unicode::IsWhitespace(*start)) {
+  while (*start && *start == ' ') {
     ++start;
   }
   const char *p = start;
   const char *end = start;
   while (*p) {
-    if (!Unicode::IsWhitespace(*p++)) {
+    if (*p++ != ' ') {
       end = p;
     }
   }
@@ -318,6 +398,18 @@ const char *Str::ParseInteger(int *result, const char *p, bool allowNegative) {
   return p;
 }
 
+int Str::ParseHexDigits(const char *p, size_t n) {
+  int result = 0;
+  for (size_t i = 0; i < n; ++i) {
+    const int c = Unicode::GetHexValue(p[i]);
+    if (c == -1) {
+      return -1;
+    }
+    result = 16 * result + c;
+  }
+  return result;
+}
+
 const char *Str::AdvanceToWordCharacter(const char *p) {
   if (!p) {
     return nullptr;
@@ -394,6 +486,25 @@ TEST_BEGIN("Str::IsSpace returns correct results") {
   assert(Str::IsSpace("{^~|\n^}"));
   assert(Str::IsSpace("{^\n^}"));
   assert(Str::IsSpace("{^\\n^}"));
+}
+TEST_END
+
+TEST_BEGIN("Str::IsWordSeparator returns correct results") {
+  assert(Str::IsWordSeparator("{^@^}"));
+  assert(Str::IsWordSeparator("{^ ^}"));
+  assert(!Str::IsWordSeparator("{^-^}"));
+  assert(Str::IsWordSeparator("{}{^@^}"));
+  assert(!Str::IsWordSeparator("{^-^}"));
+  assert(Str::IsWordSeparator("{}@{^}"));
+  assert(!Str::IsWordSeparator("{}-{^}"));
+}
+TEST_END
+
+TEST_BEGIN("Str::IsFingerSpellingCommand returns correct results") {
+  assert(Str::IsFingerSpellingCommand("{&T}"));
+  assert(!Str::IsFingerSpellingCommand("{&T"));
+  assert(!Str::IsFingerSpellingCommand("{T}"));
+  assert(!Str::IsFingerSpellingCommand("T"));
 }
 TEST_END
 

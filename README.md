@@ -46,7 +46,7 @@ Example usage:
 With `SPHRA*EUPB` defined as:
 
 ```
-  =retro_transform:2:%s: "%l" -> "%t"
+  =retro_transform:2:`%s`: "%l" -> "%t"
 ```
 
 Assuming default main.json, then:

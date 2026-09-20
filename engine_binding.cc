@@ -139,7 +139,9 @@ void StenoEngine::Lookup_Binding(void *context, const char *commandLine) {
   StenoEngine *engine = (StenoEngine *)context;
   engine->ReverseLookup(lookup);
 
-  Console::Printf("[");
+  if (lookup.results.GetCount() != 1) {
+    Console::Printf("[");
+  }
 
   ConsoleLookupDictionaryContext lookupDictionaryContext(definition);
 
@@ -173,7 +175,11 @@ void StenoEngine::Lookup_Binding(void *context, const char *commandLine) {
     }
   }
 
-  Console::Printf("]\n\n");
+  if (lookup.results.GetCount() != 1) {
+    Console::Printf("]\n\n");
+  } else {
+    Console::Printf("\n\n");
+  }
 }
 
 void StenoEngine::LookupPrefix_Binding(void *context, const char *commandLine) {
@@ -225,7 +231,9 @@ void StenoEngine::LookupStroke_Binding(void *context, const char *commandLine) {
       dictionaries, parser.GetData(), parser.GetCount());
 
   if (dictionaries.IsNotEmpty()) {
-    Console::Printf("[");
+    if (dictionaries.GetCount() != 1) {
+      Console::Printf("[");
+    }
     bool isFirstTime = true;
     for (const StenoDictionary *dictionary : dictionaries) {
       const StenoDictionaryLookupResult result =
@@ -238,7 +246,11 @@ void StenoEngine::LookupStroke_Binding(void *context, const char *commandLine) {
 
       isFirstTime = false;
     }
-    Console::Printf("]\n\n");
+    if (dictionaries.GetCount() != 1) {
+      Console::Printf("]\n\n");
+    } else {
+      Console::Printf("\n\n");
+    }
   } else {
     StenoSegmentList segments(parser.GetCount());
     ConversionBuffer &buffer = engine->previousConversionBuffer;

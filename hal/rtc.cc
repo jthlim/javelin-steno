@@ -75,7 +75,7 @@ void RTC::SetDateTime_Binding(void *context, const char *commandLine) {
       if (*p == '\0') {
         if (i == 1) {
           // Try to use it as a unix timestamp.
-          SetDateTime(DateTime::Create(parsedValues[0]));
+          SetDateTime(DateTime::Create(parsedValues[0], 0));
           Console::SendOk();
         } else {
           Console::Printf("ERR Missing parameters\n\n");
@@ -90,6 +90,19 @@ void RTC::SetDateTime_Binding(void *context, const char *commandLine) {
       return;
     }
   }
+  int timeZoneSeconds = 0;
+  if (*p == '-' || *p == '+') {
+    const int sign = *p == '-' ? -1 : 1;
+    int timeZone;
+    p = Str::ParseInteger(&timeZone, p + 1, true);
+    if (!p) {
+      Console::Printf("ERR Unable to parse timezone\n\n");
+      return;
+    }
+    const int timeZoneHours = timeZone / 100;
+    const int timeZoneMinutes = timeZone % 100;
+    timeZoneSeconds = sign * (timeZoneHours * 60 + timeZoneMinutes) * 60;
+  }
 
   SetDateTime(DateTime{
       .seconds = uint8_t(parsedValues[5]),
@@ -99,6 +112,7 @@ void RTC::SetDateTime_Binding(void *context, const char *commandLine) {
       .day = uint8_t(parsedValues[2]),
       .month = uint8_t(parsedValues[1]),
       .year = uint16_t(parsedValues[0]),
+      .timezoneSeconds = timeZoneSeconds,
   });
 
   Console::SendOk();

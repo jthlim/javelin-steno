@@ -81,24 +81,6 @@ bool Unicode::IsLetter(uint32_t c) {
   return Lookup(c, LETTER_DATA, sizeof(LETTER_DATA) / sizeof(*LETTER_DATA));
 }
 
-#if JAVELIN_CPU_CORTEX_M0 || JAVELIN_CPU_CORTEX_M4
-#else
-bool Unicode::IsWhitespace(uint32_t c) {
-  switch (c) {
-  case '\0':
-  case '\n':
-  case '\r':
-  case '\t':
-  case '\f':
-  case '\v':
-  case ' ':
-    return true;
-  default:
-    return false;
-  }
-}
-#endif
-
 bool Unicode::IsWordCharacter(uint32_t c) {
   if (c == '_') {
     return true;

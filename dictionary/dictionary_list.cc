@@ -48,7 +48,7 @@ StenoDictionaryList::Lookup(const StenoDictionaryLookup &lookup) const {
       continue;
     }
 
-    StenoDictionaryLookupResult result = entry->Lookup(lookup);
+    const StenoDictionaryLookupResult result = entry->Lookup(lookup);
     if (result.IsValid()) {
 #if ENABLE_DICTIONARY_LOOKUP_CACHE
       if (lookup.updateCache) {
