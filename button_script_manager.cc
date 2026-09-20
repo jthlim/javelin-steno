@@ -16,7 +16,7 @@
 
 //---------------------------------------------------------------------------
 
-constexpr intptr_t TIMER_ID = -('B' * 256 + 'S');
+constexpr intptr_t COMBO_TIMER_ID = -(('C' << 16) | ('T' << 8) | 'I');
 
 //--------------------------------------------------------------------
 
@@ -177,8 +177,9 @@ void ButtonScriptManager::PressButton(size_t buttonIndex, uint32_t scriptTime) {
       if (matches.partialMatch->comboTimeOut == 0) {
         break;
       }
-      TimerManager::instance.StartTimer(
-          TIMER_ID, matches.partialMatch->comboTimeOut, 0, this, scriptTime);
+      TimerManager::instance.StartTimer(COMBO_TIMER_ID,
+                                        matches.partialMatch->comboTimeOut,
+                                        false, this, scriptTime);
       return;
     }
 
@@ -192,7 +193,7 @@ void ButtonScriptManager::PressButton(size_t buttonIndex, uint32_t scriptTime) {
     TriggerMaximumMatch(comboLength);
   } while (pendingComboButtons.IsNotEmpty());
 
-  TimerManager::instance.StopTimer(TIMER_ID, scriptTime);
+  TimerManager::instance.StopTimer(COMBO_TIMER_ID, scriptTime);
 }
 
 void ButtonScriptManager::ReleaseButton(size_t buttonIndex,
@@ -201,7 +202,7 @@ void ButtonScriptManager::ReleaseButton(size_t buttonIndex,
     return TriggerRelease(buttonIndex, scriptTime);
   }
 
-  TimerManager::instance.StopTimer(TIMER_ID, scriptTime);
+  TimerManager::instance.StopTimer(COMBO_TIMER_ID, scriptTime);
 
   // If the index is in the pending list, then trigger all items up to and
   // including the entry with index.
