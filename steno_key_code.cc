@@ -4,8 +4,8 @@
 
 //---------------------------------------------------------------------------
 
-uint32_t StenoKeyCode::ResolveUnicodeInterrnal(uint32_t unicode,
-                                               StenoCaseMode mode) {
+uint32_t StenoKeyCode::ResolveUnicodeInternal(uint32_t unicode,
+                                              StenoCaseMode mode) {
   switch (mode) {
   case StenoCaseMode::NORMAL:
   case StenoCaseMode::CAMEL:

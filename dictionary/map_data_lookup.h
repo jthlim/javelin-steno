@@ -45,11 +45,22 @@ struct StenoTextBlock {
   static const uint8_t *FindPreviousWordStart(const uint8_t *p) {
 #if JAVELIN_CPU_CORTEX_M4 || JAVELIN_CPU_CORTEX_M33
     uint32_t mask;
-    do {
-      p -= 4;
-      const uint32_t v = *(const uint32_t *)p;
-      mask = uqsub8(v, 0xfefefefe);
-    } while (mask == 0);
+
+    // do {
+    //   p -= 4;
+    //   const uint32_t v = *(const uint32_t *)p;
+    //   mask = uqsub8(v, 0xfefefefe);
+    // } while (mask == 0);
+    //
+    asm volatile(".align 2                  \n"
+                 "1:                        \n"
+                 "  ldr %1, [%0, #-4]!      \n"
+                 "  uqsub8 %1, %1, %2       \n"
+                 "  cmp %1, #0              \n"
+                 "  beq 1b                  \n"
+                 : "+r"(p), "=r"(mask)
+                 : "r"(0xfefefefe));
+
     return (p + 4) - (__builtin_clz(mask) >> 3);
 #else
     while (p[-1] != 0xff) {
@@ -58,14 +69,25 @@ struct StenoTextBlock {
     return p;
 #endif
   }
+
   static const uint8_t *FindNextWordStart(const uint8_t *p) {
 #if JAVELIN_CPU_CORTEX_M4 || JAVELIN_CPU_CORTEX_M33
     uint32_t mask;
-    do {
-      const uint32_t v = *(const uint32_t *)p;
-      p += 4;
-      mask = uqsub8(v, 0xfefefefe);
-    } while (mask == 0);
+
+    // do {
+    //   const uint32_t v = *(const uint32_t *)p;
+    //   p += 4;
+    //   mask = uqsub8(v, 0xfefefefe);
+    // } while (mask == 0);
+    asm volatile(".align 2                  \n"
+                 "1:                        \n"
+                 "  ldr %1, [%0], #4        \n"
+                 "  uqsub8 %1, %1, %2       \n"
+                 "  cmp %1, #0              \n"
+                 "  beq 1b                  \n"
+                 : "+r"(p), "=r"(mask)
+                 : "r"(0xfefefefe));
+
     return (p - 3) + (__builtin_clz(__builtin_bswap32((mask))) >> 3);
 #else
     while (*p++ != 0xff) {

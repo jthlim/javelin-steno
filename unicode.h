@@ -29,9 +29,18 @@ public:
     return c - '0';
   }
 
+  // Returns true for ASCII whitespace characters:
+  //
+  // * Space (ASCII 32)
+  // * Horizontal Tab (ASCII 9, '\t')
+  // * Newline (ASCII 10, '\n')
+  // * Vertical Tab (ASCII 11, '\v')
+  // * Form Feed (ASCII 12, '\f')
+  // * Carriage Return (ASCII 13, '\r')
+  //
+  // On ARM32, IsWhitespace(0) is not defined.
   static bool IsWhitespace(uint32_t c) {
 #if JAVELIN_CPU_CORTEX_M4 || JAVELIN_CPU_CORTEX_M33
-    // '\0' does not return a defined value.
     bool carry;
     uint32_t dummy;
     const uint32_t bitmask = 0x8000'1f00;

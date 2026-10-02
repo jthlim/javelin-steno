@@ -49,7 +49,9 @@ public:
   bool IsAsciiDigit() const { return Unicode::IsAsciiDigit(unicode); } // *
   bool IsUnicode(uint32_t value) const { return unicode == value; }    // *
   bool IsSpace() const { return unicode == ' '; }                      // *
-  bool IsWordCharacter() const { return Unicode::IsWordCharacter(unicode); } // *
+  bool IsWordCharacter() const {
+    return Unicode::IsWordCharacter(unicode);
+  } // *
 
   uint32_t GetUnicode() const { return isRawKeyCode ? 0 : unicode; }
   void SetUnicode(uint32_t x) { unicode = x; }
@@ -119,9 +121,9 @@ private:
     if (mode == StenoCaseMode::NORMAL) [[likely]] {
       return unicode;
     }
-    return ResolveUnicodeInterrnal(unicode, mode);
+    return ResolveUnicodeInternal(unicode, mode);
   }
-  static uint32_t ResolveUnicodeInterrnal(uint32_t unicode, StenoCaseMode mode);
+  static uint32_t ResolveUnicodeInternal(uint32_t unicode, StenoCaseMode mode);
 };
 
 static_assert(sizeof(StenoKeyCode) == 4);

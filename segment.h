@@ -47,12 +47,14 @@ struct StenoSegment {
 private:
   StenoSegment() : lookupType(SegmentLookupType::UNKNOWN) {}
 
+  static bool IsEmptyCommand(const char *start, const char *end);
   static bool IsPunctuationCommand(const char *start, const char *end);
   static bool IsPrefixCommand(const char *start, const char *end);
   static bool IsSuffixCommand(const char *start, const char *end);
-  static bool IsCarryCapitalizationCommand(const char *start, const char *end);
+  static bool IsCapitalizationCommand(const char *start, const char *end);
   static bool IsCaseModifierCommand(const char *start, const char *end);
   static bool IsFingerSpellingCommand(const char *start, const char *end);
+  static bool IsKeyCodeCommand(const char *start, const char *end);
 };
 
 //---------------------------------------------------------------------------
@@ -102,7 +104,7 @@ private:
   const char *p;
   const StenoState *nextState = nullptr;
 
-  void PrepareNextP();
+  void PrepareNextP(const char *p);
 };
 
 class StenoTokenizerIterator {

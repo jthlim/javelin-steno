@@ -254,32 +254,32 @@ void StenoKeyCodeBuffer::ProcessCommand(const char *p, const char *pEnd) {
   }
 
   if (p[1] == '*') {
-    // Retroactive uppercase
+    // Retro uppercase
     if (p[2] == '<' && p + 3 == pEnd) {
-      RetroactiveUpperCase(1);
+      RetroUpperCase(1);
       return;
     }
 
-    // Retroactive capitalize
+    // Retro capitalize
     if (p[2] == '-' && p[3] == '|' && p + 4 == pEnd) {
-      RetroactiveCapitalize(1);
+      RetroCapitalize(1);
       return;
     }
 
-    // Retroactive un-capitalize.
+    // Retro un-capitalize.
     if (p[2] == '>' && p + 3 == pEnd) {
-      RetroactiveUncapitalize(1);
+      RetroUncapitalize(1);
       return;
     }
 
-    // Retroactive delete space
+    // Retro delete space
     if (p[2] == '!' && p + 3 == pEnd) {
-      RetroactiveDeleteSpace();
+      RetroDeleteSpace();
       return;
     }
 
     if (p[2] == '(' && pEnd[-1] == ')') {
-      RetroactiveFormatCurrency(p + 3, pEnd - 1);
+      RetroFormatCurrency(p + 3, pEnd - 1);
       return;
     }
   }

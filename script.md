@@ -66,6 +66,7 @@ determinable at the point of declaration.
 - `var varName;`
 - `var varName = <expr>;`
 - `var varName[<SIZE>];`
+- `final varName = <expr>;`
 
 Array sizes must be constant at the point of declaration.
 

@@ -976,9 +976,7 @@ char *StenoEngine::PrintSegmentSuggestion(size_t startSegmentIndex,
       // as a non-space lookup.
       const size_t length = Str::Length(spaceRemoved);
       if (length != 0 && spaceRemoved[length - 1] == ' ') {
-        spaceRemoved = Str::DupN(spaceRemoved, length - 1);
-        free(lookup);
-        lookup = spaceRemoved;
+        spaceRemoved[length - 1] = '\0';
         usePrefixSyntax = false;
       }
     }

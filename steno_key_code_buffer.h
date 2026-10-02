@@ -83,23 +83,22 @@ public:
                                   const char *end);
 
   void Backspace(int count);
-  void RetroactiveCapitalize(int count);
-  void RetroactiveUncapitalize(int count);
-  void RetroactiveTitleCase(int count);
-  void RetroactiveUpperCase(int count);
-  void RetroactiveLowerCase(int count);
-  void RetroactiveReplaceSpace(int count, const char *replacement);
+  void RetroCapitalize(int count);
+  void RetroUncapitalize(int count);
+  void RetroTitleCase(int count);
+  void RetroUpperCase(int count);
+  void RetroLowerCase(int count);
+  void RetroReplaceSpace(int count, const char *replacement);
   void RetroSurroundCharacter(int count, const char *prefix,
                               const char *suffix);
-  void RetroactiveQuotes(int count, const char *startQuote,
-                         const char *endQuote);
-  void RetroactiveSingleQuotes(int count);
-  void RetroactiveDoubleQuotes(int count);
-  void RetroactiveDeleteSpace();
-  void RetroactiveFormatCurrency(const char *pStart, const char *pEnd);
-  void RepeatLastCharacterCount(int count);
-  void RepeatLastFragmentCount(int count);
-  void RepeatLastWordCount(int count);
+  void RetroQuotes(int count, const char *startQuote, const char *endQuote);
+  void RetroSingleQuotes(int count);
+  void RetroDoubleQuotes(int count);
+  void RetroDeleteSpace();
+  void RetroFormatCurrency(const char *pStart, const char *pEnd);
+  void RepeatLastCharacterCount(int characterCount, int repeatCount);
+  void RepeatLastFragmentCount(int fragmentCount, int repeatCount);
+  void RepeatLastWordCount(int wordCount, int repeatCount);
 
   bool ProcessFunction(const List<char *> &parameters);
 
@@ -138,6 +137,8 @@ private:
   static void Reverse(StenoKeyCode *start, StenoKeyCode *end);
 
   bool CountHandler(void (StenoKeyCodeBuffer::*handler)(int),
+                    const List<char *> &parameters);
+  bool CountHandler(void (StenoKeyCodeBuffer::*handler)(int, int),
                     const List<char *> &parameters);
 };
 

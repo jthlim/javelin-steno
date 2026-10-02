@@ -208,16 +208,22 @@ Supported values are determined at firmware build time.
   {:host_layout:us_windows_alt}
 ```
 
-## `{:repeat_last_character:<character_count>}`
+## `{:repeat_last_character:<character_count=1>:<repeat_count=1>}`
 
-Repeats the last `character_count` characters.
+Repeats the last `character_count` characters `repeat_count` times.
 
-## `{:repeat_last_fragment:<fragment_count>}`
+Example:
+```
+  "hey{:repeat_last_character:1:5}" -> "heyyyyyy"
+  "hey{:repeat_last_character:3:2}" -> "heyheyhey"
+```
+
+## `{:repeat_last_fragment:<fragment_count=1>:<repeat_count=1>}`
 
 Repeats the last `fragment_count` fragments. Fragments are delineated by
 whitespace characters.
 
-## `{:repeat_last_word:<word_count>}`
+## `{:repeat_last_word:<word_count=1>:<repeat_count=1>}`
 
 Repeats the last `word_count` words. Words are consecutive alphanumeric or
 consecutive non-alphanumeric characters.
@@ -235,7 +241,7 @@ Example usage:
   {:reset_state}
 ```
 
-## `{:retro_capitalise:<nth_word>}`
+## `{:retro_capitalise:<nth_word=1>}`
 
 Converts the prior `nth_word` word to capital.
 
@@ -248,7 +254,7 @@ Text: `This is a test`
 
 Output: `This Is a test`
 
-## `{:retro_double_quotes:<n_words>}`
+## `{:retro_double_quotes:<n_words=1>}`
 
 Surrounds the prior `n_words` with double quotes.
 
@@ -261,7 +267,7 @@ Text: `This is a test`
 
 Output: `This is "a test"`
 
-## `{:retro_lower:<n_words>}`
+## `{:retro_lower:<n_words=1>}`
 
 Lower cases the prior `n_words`.
 
@@ -287,7 +293,7 @@ Text: `This is a test`
 
 Output: `This is_a_test`
 
-## `{:retro_single_quotes:<n_words>}`
+## `{:retro_single_quotes:<n_words=1>}`
 
 Surrounds the prior `n_words` with single quotes.
 
@@ -326,7 +332,7 @@ Text: `This is a test`
 
 Output: `This is a te[st]`
 
-## `{:retro_title:<n_words>}`
+## `{:retro_title:<n_words=1>}`
 
 Converts the prior `n_words` to title case.
 
@@ -339,7 +345,7 @@ Text: `This is a test`
 
 Output: `This Is A Test`
 
-## `{:retro_upper:<n_words>}`
+## `{:retro_upper:<n_words=1>}`
 
 Converts the prior `n_words` to upper case.
 

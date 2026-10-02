@@ -20,6 +20,7 @@ class StenoCompiledOrthography::BestCandidate {
 public:
   void Add(char *newCandidate, int score);
 
+  bool IsBest() const { return score == 0; }
   char *GetResult() const { return candidate; }
 
   bool IsEmpty() const { return candidate == nullptr; }
@@ -331,17 +332,26 @@ char *StenoCompiledOrthography::AddSuffixInternal(const char *word,
     if (Str::Eq(suffix, alias.text)) {
       AddCandidates(bestCandidate, word, wordLength, alias.alias,
                     BestCandidate::EXCLUDE_WORD_SCORE);
+      if (bestCandidate.IsBest()) {
+        goto end;
+      }
     }
   }
 
-  char *simple = Str::Join(word, suffix);
-  const int score =
-      WordList::GetWordRank(simple, BestCandidate::FALLBACK_SCORE);
-  bestCandidate.Add(simple, score);
+  {
+    char *simple = Str::Join(word, suffix);
+    const int score =
+        WordList::GetWordRank(simple, BestCandidate::FALLBACK_SCORE);
+    bestCandidate.Add(simple, score);
+    if (bestCandidate.IsBest()) {
+      goto end;
+    }
+  }
 
   AddCandidates(bestCandidate, word, wordLength, suffix,
                 BestCandidate::NOT_IN_WORD_LIST_SCORE);
 
+end:
   return bestCandidate.GetResult();
 }
 
@@ -399,6 +409,9 @@ void StenoCompiledOrthography::AddCandidates(BestCandidate &bestCandidate,
     char *candidate = match.Replace(rules[i].replacement);
     const int score = WordList::GetWordRank(candidate, defaultScore);
     bestCandidate.Add(candidate, score);
+    if (bestCandidate.IsBest()) {
+      break;
+    }
   }
   free(text);
 }

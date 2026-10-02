@@ -32,6 +32,10 @@ inline bool StenoSegment::IsPunctuationCommand(const char *start,
   }
 }
 
+inline bool StenoSegment::IsEmptyCommand(const char *start, const char *end) {
+  return start == end;
+}
+
 inline bool StenoSegment::IsPrefixCommand(const char *start, const char *end) {
   return end[-1] == '^';
 }
@@ -40,9 +44,18 @@ inline bool StenoSegment::IsSuffixCommand(const char *start, const char *end) {
   return *start == '^';
 }
 
-inline bool StenoSegment::IsCarryCapitalizationCommand(const char *start,
-                                                       const char *end) {
-  return start[0] == '~' && start[1] == '|';
+inline bool StenoSegment::IsCapitalizationCommand(const char *start,
+                                                  const char *end) {
+  switch (start[1]) {
+  case '|':
+    return start[0] == '~' || start[0] == '-';
+
+  case '}':
+    return start[0] == '>' || start[0] == '<';
+
+  default:
+    return false;
+  }
 }
 
 inline bool StenoSegment::IsCaseModifierCommand(const char *start,
@@ -52,6 +65,10 @@ inline bool StenoSegment::IsCaseModifierCommand(const char *start,
 
 inline bool StenoSegment::IsFingerSpellingCommand(const char *start,
                                                   const char *end) {
+  return *start == '&';
+}
+
+inline bool StenoSegment::IsKeyCodeCommand(const char *start, const char *end) {
   return *start == '#';
 }
 
@@ -76,28 +93,31 @@ SegmentHistoryRequirements StenoSegment::GetHistoryRequirements() const {
       ++text;
     }
 
-    if (text[0] == '{') {
+    if (text[0] == '{') [[unlikely]] {
       // Handle commands.
       const char *start = text + 1;
       const char *end = start;
 
       for (;;) {
-        if (*end == '\0') {
+        if (*end == '\0') [[unlikely]] {
           return result;
         }
-        if (*end == '\\') {
+        if (*end == '}') [[unlikely]] {
+          break;
+        }
+        if (*end == '\\') [[unlikely]] {
           if (end[1] == '\0') {
             return result;
           }
           end += 2;
-        } else if (*end == '}') {
-          break;
         } else {
           ++end;
         }
       }
 
-      if (IsSuffixCommand(start, end)) {
+      if (IsEmptyCommand(start, end)) {
+        // Do nothing.. empty command.
+      } else if (IsSuffixCommand(start, end)) {
         if (!hasLiteral) {
           result = SegmentHistoryRequirements::FIRST_NON_COMMAND;
         }
@@ -107,9 +127,11 @@ SegmentHistoryRequirements StenoSegment::GetHistoryRequirements() const {
         // Do nothing
       } else if (IsPrefixCommand(start, end)) {
         // Do nothing
-      } else if (IsCarryCapitalizationCommand(start, end)) {
+      } else if (IsCapitalizationCommand(start, end)) {
         // Do nothing
       } else if (IsFingerSpellingCommand(start, end)) {
+        // Do nothing
+      } else if (IsKeyCodeCommand(start, end)) {
         // Do nothing
       } else {
         // Unhandled command, do nothing.
@@ -124,16 +146,17 @@ SegmentHistoryRequirements StenoSegment::GetHistoryRequirements() const {
 
       // Skip all text.
       for (;;) {
-        if (*text == '\0') {
+        if (*text == '\0') [[unlikely]] {
           return result;
         }
-        if (*text == '\\') {
-          if (text[1] == '\0') {
+        if (*text == '{') [[unlikely]] {
+          break;
+        }
+        if (*text == '\\') [[unlikely]] {
+          if (text[1] == '\0') [[unlikely]] {
             return result;
           }
           text += 2;
-        } else if (*text == '{') {
-          break;
         } else {
           ++text;
         }
@@ -270,8 +293,19 @@ StenoTokenizer::StenoTokenizer(const StenoSegmentList &list,
                                size_t startingOffset, size_t startingStrokeId)
     : list(list), elementIndex(startingOffset),
       startingStrokeId(startingStrokeId) {
-  p = "";
-  PrepareNextP();
+  if (list.IsEmpty()) [[unlikely]] {
+    p = nullptr;
+    return;
+  }
+
+  const StenoSegment &segment = list[elementIndex++];
+  nextState = segment.state;
+  currentSegment = &segment;
+  p = segment.lookup.GetText();
+
+  if (const int c = *p; c == '\0' || c == ' ') [[unlikely]] {
+    PrepareNextP(p);
+  }
 }
 
 StenoToken StenoTokenizer::GetNext() {
@@ -285,9 +319,8 @@ StenoToken StenoTokenizer::GetNext() {
     while (*workingP != '}') [[likely]] {
       if (*workingP == '\0') [[unlikely]] {
         // Unterminated command... drop it.
-        p = workingP;
-        PrepareNextP();
-        return GetNext();
+        start = workingP;
+        goto UpdatePAndReturnSpan;
       }
       if (workingP[0] == '\\') [[unlikely]] {
         if (workingP[1] != '\0') [[likely]] {
@@ -344,26 +377,24 @@ StenoToken StenoTokenizer::GetNext() {
   }
 
 UpdatePAndReturnSpan:
-  p = workingP;
-
-ReturnSpan:
   const bool isLastToken = elementIndex == list.GetCount();
   const size_t tokenId = currentSegment->GetStrokeIndex(list[0].state) +
                          currentSegment->strokeLength + startingStrokeId;
-  PrepareNextP();
+  PrepareNextP(workingP);
   return StenoToken(start, workingP, state, tokenId, isLastToken);
 }
 
-void StenoTokenizer::PrepareNextP() {
+void StenoTokenizer::PrepareNextP(const char *p) {
   for (;;) {
     while (*p == ' ') [[unlikely]] {
       ++p;
     }
     if (*p != '\0') [[unlikely]] {
+      this->p = p;
       return;
     }
     if (elementIndex == list.GetCount()) [[unlikely]] {
-      p = nullptr;
+      this->p = nullptr;
       return;
     }
 

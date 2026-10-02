@@ -32,6 +32,7 @@ constexpr KeyCodeFunctionEntry HANDLERS[] = {
     {"repeat_last_word", &StenoKeyCodeBuffer::RepeatLastWord},
     {"reset_state", &StenoKeyCodeBuffer::ResetStateFunction},
     {"retro_capitalise", &StenoKeyCodeBuffer::RetroCapitalizeFunction},
+    {"retro_capitalize", &StenoKeyCodeBuffer::RetroCapitalizeFunction},
     {"retro_double_quotes", &StenoKeyCodeBuffer::RetroDoubleQuotesFunction},
     {"retro_lower", &StenoKeyCodeBuffer::RetroLowerCaseFunction},
     {"retro_replace_space", &StenoKeyCodeBuffer::RetroReplaceSpaceFunction},
@@ -87,7 +88,7 @@ void StenoKeyCodeBuffer::Backspace(int backspaceCount) {
   currentOutput = d;
 }
 
-void StenoKeyCodeBuffer::RetroactiveCapitalize(int wordCount) {
+void StenoKeyCodeBuffer::RetroCapitalize(int wordCount) {
   if (GetCount() == 0) {
     return;
   }
@@ -124,7 +125,7 @@ epilog:
   lastCharacterPointer->SetCase(StenoCaseMode::TITLE_ONCE);
 }
 
-void StenoKeyCodeBuffer::RetroactiveUncapitalize(int wordCount) {
+void StenoKeyCodeBuffer::RetroUncapitalize(int wordCount) {
   StenoKeyCode *p = currentOutput - 1;
   while (wordCount > 0) {
     for (;;) {
@@ -154,7 +155,7 @@ void StenoKeyCodeBuffer::RetroactiveUncapitalize(int wordCount) {
   }
 }
 
-void StenoKeyCodeBuffer::RetroactiveTitleCase(int wordCount) {
+void StenoKeyCodeBuffer::RetroTitleCase(int wordCount) {
   StenoKeyCode *p = currentOutput - 1;
   while (wordCount > 0) {
     for (;;) {
@@ -186,7 +187,7 @@ void StenoKeyCodeBuffer::RetroactiveTitleCase(int wordCount) {
   }
 }
 
-void StenoKeyCodeBuffer::RetroactiveUpperCase(int wordCount) {
+void StenoKeyCodeBuffer::RetroUpperCase(int wordCount) {
   StenoKeyCode *p = currentOutput - 1;
   while (wordCount > 0) {
     for (;;) {
@@ -215,7 +216,7 @@ void StenoKeyCodeBuffer::RetroactiveUpperCase(int wordCount) {
   }
 }
 
-void StenoKeyCodeBuffer::RetroactiveLowerCase(int wordCount) {
+void StenoKeyCodeBuffer::RetroLowerCase(int wordCount) {
   StenoKeyCode *p = currentOutput - 1;
   while (wordCount > 0) {
     for (;;) {
@@ -244,8 +245,8 @@ void StenoKeyCodeBuffer::RetroactiveLowerCase(int wordCount) {
   }
 }
 
-void StenoKeyCodeBuffer::RetroactiveReplaceSpace(int wordCount,
-                                                 const char *replacement) {
+void StenoKeyCodeBuffer::RetroReplaceSpace(int wordCount,
+                                           const char *replacement) {
   const size_t replacementLength = Str::Length(replacement);
   StenoKeyCode *p = currentOutput;
   while (wordCount) {
@@ -273,83 +274,91 @@ void StenoKeyCodeBuffer::RetroactiveReplaceSpace(int wordCount,
   }
 }
 
-void StenoKeyCodeBuffer::RepeatLastCharacterCount(int characterCount) {
-  const StenoKeyCode *pEnd = currentOutput;
-  const StenoKeyCode *p = pEnd - characterCount;
-  if (p < buffer) {
-    p = buffer;
-  }
+void StenoKeyCodeBuffer::RepeatLastCharacterCount(int characterCount,
+                                                  int repeatCount) {
+  for (int i = 0; i < repeatCount; ++i) {
+    const StenoKeyCode *pEnd = currentOutput;
+    const StenoKeyCode *p = pEnd - characterCount;
+    if (p < buffer) {
+      p = buffer;
+    }
 
-  while (p < pEnd) {
-    *currentOutput++ = *p++;
+    while (p < pEnd) {
+      *currentOutput++ = *p++;
+    }
   }
 }
 
-void StenoKeyCodeBuffer::RepeatLastFragmentCount(int fragmentCount) {
-  StenoKeyCode *p = currentOutput - 1;
-  while (fragmentCount > 0) {
-    while (p > buffer && p->IsWhitespace()) {
-      --p;
-    }
-
-    while (p > buffer && !p->IsWhitespace()) {
-      --p;
-    }
-
-    --fragmentCount;
-  }
-
-  if (p->IsWhitespace()) {
-    ++p;
-  }
-
-  StenoKeyCode *pEnd = currentOutput;
-  while (pEnd > buffer && pEnd[-1].IsWhitespace()) {
-    --pEnd;
-  }
-  AppendSpace();
-  while (p < pEnd) {
-    *currentOutput++ = *p++;
-  }
-}
-
-void StenoKeyCodeBuffer::RepeatLastWordCount(int wordCount) {
-  StenoKeyCode *p = currentOutput;
-  while (wordCount > 0) {
-    if (p == buffer) {
-      return;
-    }
-    --p;
-    while (p > buffer && p->IsWhitespace()) {
-      --p;
-    }
-
-    if (p->IsWordCharacter()) {
-      while (p > buffer && p[-1].IsWordCharacter()) {
+void StenoKeyCodeBuffer::RepeatLastFragmentCount(int fragmentCount,
+                                                 int repeatCount) {
+  for (int i = 0; i < repeatCount; ++i) {
+    StenoKeyCode *p = currentOutput - 1;
+    while (fragmentCount > 0) {
+      while (p > buffer && p->IsWhitespace()) {
         --p;
       }
-    } else {
-      while (p > buffer && !p[-1].IsWordCharacter() && !p[-1].IsWhitespace()) {
+
+      while (p > buffer && !p->IsWhitespace()) {
         --p;
       }
+
+      --fragmentCount;
     }
 
-    --wordCount;
-  }
+    if (p->IsWhitespace()) {
+      ++p;
+    }
 
-  StenoKeyCode *pEnd = currentOutput;
-  while (pEnd > buffer && pEnd[-1].IsWhitespace()) {
-    --pEnd;
-  }
-  AppendSpace();
-  while (p < pEnd) {
-    *currentOutput++ = *p++;
+    StenoKeyCode *pEnd = currentOutput;
+    while (pEnd > buffer && pEnd[-1].IsWhitespace()) {
+      --pEnd;
+    }
+    AppendSpace();
+    while (p < pEnd) {
+      *currentOutput++ = *p++;
+    }
   }
 }
 
-void StenoKeyCodeBuffer::RetroactiveQuotes(int wordCount,
-                                           const char *startQuote,
-                                           const char *endQuote) {
+void StenoKeyCodeBuffer::RepeatLastWordCount(int wordCount, int repeatCount) {
+  for (int i = 0; i < repeatCount; ++i) {
+    StenoKeyCode *p = currentOutput;
+    while (wordCount > 0) {
+      if (p == buffer) {
+        return;
+      }
+      --p;
+      while (p > buffer && p->IsWhitespace()) {
+        --p;
+      }
+
+      if (p->IsWordCharacter()) {
+        while (p > buffer && p[-1].IsWordCharacter()) {
+          --p;
+        }
+      } else {
+        while (p > buffer && !p[-1].IsWordCharacter() &&
+               !p[-1].IsWhitespace()) {
+          --p;
+        }
+      }
+
+      --wordCount;
+    }
+
+    StenoKeyCode *pEnd = currentOutput;
+    while (pEnd > buffer && pEnd[-1].IsWhitespace()) {
+      --pEnd;
+    }
+    AppendSpace();
+    while (p < pEnd) {
+      *currentOutput++ = *p++;
+    }
+  }
+}
+
+void StenoKeyCodeBuffer::RetroQuotes(int wordCount, const char *startQuote,
+                                     const char *endQuote) {
   if (GetCount() == 0) {
     return;
   }
@@ -381,15 +390,15 @@ void StenoKeyCodeBuffer::RetroactiveQuotes(int wordCount,
   Reverse(p, afterPrefix);
 }
 
-void StenoKeyCodeBuffer::RetroactiveSingleQuotes(int count) {
-  RetroactiveQuotes(count, "'", "'");
+void StenoKeyCodeBuffer::RetroSingleQuotes(int count) {
+  RetroQuotes(count, "'", "'");
 }
 
-void StenoKeyCodeBuffer::RetroactiveDoubleQuotes(int count) {
-  RetroactiveQuotes(count, "\"", "\"");
+void StenoKeyCodeBuffer::RetroDoubleQuotes(int count) {
+  RetroQuotes(count, "\"", "\"");
 }
 
-void StenoKeyCodeBuffer::RetroactiveDeleteSpace() {
+void StenoKeyCodeBuffer::RetroDeleteSpace() {
   // Finds the first whitespace in the buffer and removes it.
   StenoKeyCode *end = currentOutput;
   StenoKeyCode *p = end - 1;
@@ -406,8 +415,8 @@ void StenoKeyCodeBuffer::RetroactiveDeleteSpace() {
 // Currency takes the previous number and a template, and replaces a 'c'
 // with a number formatted with a comma every 3 digits, and at least two digits
 // after the decimal point.
-void StenoKeyCodeBuffer::RetroactiveFormatCurrency(const char *pStart,
-                                                   const char *pEnd) {
+void StenoKeyCodeBuffer::RetroFormatCurrency(const char *pStart,
+                                             const char *pEnd) {
   char numberBuffer[32];
   size_t numberBufferLength = 0;
   bool hasDecimal = false;
@@ -637,6 +646,33 @@ bool StenoKeyCodeBuffer::CountHandler(void (StenoKeyCodeBuffer::*handler)(int),
   return true;
 }
 
+bool StenoKeyCodeBuffer::CountHandler(void (StenoKeyCodeBuffer::*handler)(int,
+                                                                          int),
+                                      const List<char *> &parameters) {
+
+  int count = 1;
+  int repeatCount = 1;
+  switch (parameters.GetCount()) {
+  case 3:
+    if (!ReadIntegerParameter(repeatCount, parameters[2])) {
+      return false;
+    }
+    [[fallthrough]];
+  case 2:
+    if (!ReadIntegerParameter(count, parameters[1])) {
+      return false;
+    }
+    break;
+  case 1:
+    break;
+  default:
+    return false;
+  }
+
+  (this->*handler)(count, repeatCount);
+  return true;
+}
+
 bool StenoKeyCodeBuffer::RepeatLastCharacter(const List<char *> &parameters) {
   return CountHandler(&StenoKeyCodeBuffer::RepeatLastCharacterCount,
                       parameters);
@@ -652,22 +688,22 @@ bool StenoKeyCodeBuffer::RepeatLastWord(const List<char *> &parameters) {
 
 bool StenoKeyCodeBuffer::RetroCapitalizeFunction(
     const List<char *> &parameters) {
-  return CountHandler(&StenoKeyCodeBuffer::RetroactiveCapitalize, parameters);
+  return CountHandler(&StenoKeyCodeBuffer::RetroCapitalize, parameters);
 }
 
 bool StenoKeyCodeBuffer::RetroTitleCaseFunction(
     const List<char *> &parameters) {
-  return CountHandler(&StenoKeyCodeBuffer::RetroactiveTitleCase, parameters);
+  return CountHandler(&StenoKeyCodeBuffer::RetroTitleCase, parameters);
 }
 
 bool StenoKeyCodeBuffer::RetroUpperCaseFunction(
     const List<char *> &parameters) {
-  return CountHandler(&StenoKeyCodeBuffer::RetroactiveUpperCase, parameters);
+  return CountHandler(&StenoKeyCodeBuffer::RetroUpperCase, parameters);
 }
 
 bool StenoKeyCodeBuffer::RetroLowerCaseFunction(
     const List<char *> &parameters) {
-  return CountHandler(&StenoKeyCodeBuffer::RetroactiveLowerCase, parameters);
+  return CountHandler(&StenoKeyCodeBuffer::RetroLowerCase, parameters);
 }
 
 bool StenoKeyCodeBuffer::RetroReplaceSpaceFunction(
@@ -681,13 +717,13 @@ bool StenoKeyCodeBuffer::RetroReplaceSpaceFunction(
     return false;
   }
 
-  RetroactiveReplaceSpace(wordCount, parameters[2]);
+  RetroReplaceSpace(wordCount, parameters[2]);
   return true;
 }
 
 bool StenoKeyCodeBuffer::RetroSingleQuotesFunction(
     const List<char *> &parameters) {
-  return CountHandler(&StenoKeyCodeBuffer::RetroactiveSingleQuotes, parameters);
+  return CountHandler(&StenoKeyCodeBuffer::RetroSingleQuotes, parameters);
 }
 
 bool StenoKeyCodeBuffer::RetroSurroundFunction(const List<char *> &parameters) {
@@ -700,7 +736,7 @@ bool StenoKeyCodeBuffer::RetroSurroundFunction(const List<char *> &parameters) {
     return false;
   }
 
-  RetroactiveQuotes(wordCount, parameters[2], parameters[3]);
+  RetroQuotes(wordCount, parameters[2], parameters[3]);
   return true;
 }
 
@@ -746,7 +782,7 @@ bool StenoKeyCodeBuffer::RetroSurroundCharacterFunction(
 
 bool StenoKeyCodeBuffer::RetroDoubleQuotesFunction(
     const List<char *> &parameters) {
-  return CountHandler(&StenoKeyCodeBuffer::RetroactiveDoubleQuotes, parameters);
+  return CountHandler(&StenoKeyCodeBuffer::RetroDoubleQuotes, parameters);
 }
 
 bool StenoKeyCodeBuffer::SetCaseFunction(const List<char *> &parameters) {
@@ -1043,13 +1079,13 @@ TEST_BEGIN("StenoKeyCodeBuffer: RetroTitleCase") {
   StenoKeyCodeBuffer buffer;
   buffer.Reset();
   buffer.AppendText("ab c:def", 8, StenoCaseMode::NORMAL);
-  buffer.RetroactiveTitleCase(1);
+  buffer.RetroTitleCase(1);
   AssertBufferContent(buffer, "ab c:Def");
 
-  buffer.RetroactiveTitleCase(2);
+  buffer.RetroTitleCase(2);
   AssertBufferContent(buffer, "ab C:Def");
 
-  buffer.RetroactiveTitleCase(3);
+  buffer.RetroTitleCase(3);
   AssertBufferContent(buffer, "Ab C:Def");
 }
 TEST_END
@@ -1058,13 +1094,13 @@ TEST_BEGIN("StenoKeyCodeBuffer: RetroUpperCase") {
   StenoKeyCodeBuffer buffer;
   buffer.Reset();
   buffer.AppendText("ab c:def", 8, StenoCaseMode::NORMAL);
-  buffer.RetroactiveUpperCase(1);
+  buffer.RetroUpperCase(1);
   AssertBufferContent(buffer, "ab c:DEF");
 
-  buffer.RetroactiveUpperCase(2);
+  buffer.RetroUpperCase(2);
   AssertBufferContent(buffer, "ab C:DEF");
 
-  buffer.RetroactiveUpperCase(3);
+  buffer.RetroUpperCase(3);
   AssertBufferContent(buffer, "AB C:DEF");
 }
 TEST_END
@@ -1073,7 +1109,7 @@ TEST_BEGIN("StenoKeyCodeBuffer: RetroReplaceSpace") {
   StenoKeyCodeBuffer buffer;
   buffer.Reset();
   buffer.AppendText("ab c", 4, StenoCaseMode::NORMAL);
-  buffer.RetroactiveReplaceSpace(1, "");
+  buffer.RetroReplaceSpace(1, "");
   AssertBufferContent(buffer, "abc");
 }
 TEST_END
@@ -1082,7 +1118,7 @@ TEST_BEGIN("StenoKeyCodeBuffer: RetroReplaceSpace _") {
   StenoKeyCodeBuffer buffer;
   buffer.Reset();
   buffer.AppendText("ab c", 4, StenoCaseMode::NORMAL);
-  buffer.RetroactiveReplaceSpace(1, "_");
+  buffer.RetroReplaceSpace(1, "_");
   AssertBufferContent(buffer, "ab_c");
 }
 TEST_END
@@ -1091,7 +1127,7 @@ TEST_BEGIN("StenoKeyCodeBuffer: RetroReplaceSpace <>") {
   StenoKeyCodeBuffer buffer;
   buffer.Reset();
   buffer.AppendText("ab c", 4, StenoCaseMode::NORMAL);
-  buffer.RetroactiveReplaceSpace(1, "<>");
+  buffer.RetroReplaceSpace(1, "<>");
   AssertBufferContent(buffer, "ab<>c");
 }
 TEST_END
@@ -1100,7 +1136,7 @@ TEST_BEGIN("StenoKeyCodeBuffer: RetroSurround") {
   StenoKeyCodeBuffer buffer;
   buffer.Reset();
   buffer.AppendText("abcd efgh", 9, StenoCaseMode::NORMAL);
-  buffer.RetroactiveQuotes(1, "[(", ")]");
+  buffer.RetroQuotes(1, "[(", ")]");
   AssertBufferContent(buffer, "abcd [(efgh)]");
 }
 TEST_END
@@ -1118,7 +1154,7 @@ TEST_BEGIN("StenoKeyCodeBuffer: :repeat_last_character:1") {
   StenoKeyCodeBuffer buffer;
   buffer.Reset();
   buffer.AppendText("ab c", 4, StenoCaseMode::NORMAL);
-  buffer.RepeatLastCharacterCount(1);
+  buffer.RepeatLastCharacterCount(1, 1);
   AssertBufferContent(buffer, "ab cc");
 }
 TEST_END
@@ -1127,8 +1163,26 @@ TEST_BEGIN("StenoKeyCodeBuffer: :repeat_last_character:3") {
   StenoKeyCodeBuffer buffer;
   buffer.Reset();
   buffer.AppendText("ab c", 4, StenoCaseMode::NORMAL);
-  buffer.RepeatLastCharacterCount(3);
+  buffer.RepeatLastCharacterCount(3, 1);
   AssertBufferContent(buffer, "ab cb c");
+}
+TEST_END
+
+TEST_BEGIN("StenoKeyCodeBuffer: :repeat_last_character:1:3") {
+  StenoKeyCodeBuffer buffer;
+  buffer.Reset();
+  buffer.AppendText("ab c", 4, StenoCaseMode::NORMAL);
+  buffer.RepeatLastCharacterCount(1, 3);
+  AssertBufferContent(buffer, "ab cccc");
+}
+TEST_END
+
+TEST_BEGIN("StenoKeyCodeBuffer: :repeat_last_character:3:3") {
+  StenoKeyCodeBuffer buffer;
+  buffer.Reset();
+  buffer.AppendText("ab c", 4, StenoCaseMode::NORMAL);
+  buffer.RepeatLastCharacterCount(3, 3);
+  AssertBufferContent(buffer, "ab cb cb cb c");
 }
 TEST_END
 
@@ -1136,7 +1190,7 @@ TEST_BEGIN("StenoKeyCodeBuffer: :repeat_last_fragment:1") {
   StenoKeyCodeBuffer buffer;
   buffer.Reset();
   buffer.AppendText("ab c", 4, StenoCaseMode::NORMAL);
-  buffer.RepeatLastFragmentCount(1);
+  buffer.RepeatLastFragmentCount(1, 1);
   AssertBufferContent(buffer, "ab c c");
   ;
 }
@@ -1146,7 +1200,7 @@ TEST_BEGIN("StenoKeyCodeBuffer: :repeat_last_fragment:2") {
   StenoKeyCodeBuffer buffer;
   buffer.Reset();
   buffer.AppendText("ab: (c)", 7, StenoCaseMode::NORMAL);
-  buffer.RepeatLastFragmentCount(2);
+  buffer.RepeatLastFragmentCount(2, 1);
   AssertBufferContent(buffer, "ab: (c) ab: (c)");
 }
 TEST_END
@@ -1155,7 +1209,7 @@ TEST_BEGIN("StenoKeyCodeBuffer: :repeat_last_word:1") {
   StenoKeyCodeBuffer buffer;
   buffer.Reset();
   buffer.AppendText("ab c", 4, StenoCaseMode::NORMAL);
-  buffer.RepeatLastWordCount(1);
+  buffer.RepeatLastWordCount(1, 1);
   AssertBufferContent(buffer, "ab c c");
 }
 TEST_END
@@ -1164,7 +1218,7 @@ TEST_BEGIN("StenoKeyCodeBuffer: :repeat_last_word:2") {
   StenoKeyCodeBuffer buffer;
   buffer.Reset();
   buffer.AppendText("ab: (c)", 7, StenoCaseMode::NORMAL);
-  buffer.RepeatLastWordCount(2);
+  buffer.RepeatLastWordCount(2, 1);
   AssertBufferContent(buffer, "ab: (c) c)");
 }
 TEST_END
