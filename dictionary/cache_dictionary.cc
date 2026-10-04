@@ -38,11 +38,8 @@ void StenoCacheDictionary::CacheEntry::AddResult(
     const StenoDictionaryLookupResult result,
     const StenoDictionary *dictionary) {
   provider = dictionary;
-  if (result.IsStatic()) {
-    staticDefinition = result.GetText();
-  } else {
-    staticDefinition = nullptr;
-  }
+  staticDefinition = result.IsStatic() ? result.GetText() : nullptr;
+
   hash = lookup.hash;
   strokeLength = lookup.length;
   lookup.strokes->CopyTo(strokes, lookup.length);
@@ -96,9 +93,6 @@ void StenoCacheDictionary::Cache::AddResult(
     const StenoDictionaryLookup &lookup,
     const StenoDictionaryLookupResult result,
     const StenoDictionary *dictionary) {
-  if (lookup.length > MAXIMUM_STROKE_SIZE_TO_CACHE) {
-    return;
-  }
   CacheBlock &block = blocks[lookup.hash % CACHE_BLOCKS];
   block.AddResult(lookup, result, dictionary);
 }
@@ -118,7 +112,6 @@ StenoCacheDictionary::Lookup(const StenoDictionaryLookup &lookup) const {
   return LookupInternal(lookup);
 }
 
-[[gnu::noinline]]
 StenoDictionaryLookupResult StenoCacheDictionary::LookupInternal(
     const StenoDictionaryLookup &lookup) const {
   const CacheEntry *entry = cache.GetCacheEntry(lookup);
@@ -126,7 +119,6 @@ StenoDictionaryLookupResult StenoCacheDictionary::LookupInternal(
 #if ENABLE_DICTIONARY_LOOKUP_CACHE_STATS
     stats.lookup.miss++;
 #endif
-    lookup.updateCache = true;
     return super::Lookup(lookup);
   }
 
@@ -172,7 +164,6 @@ const StenoDictionary *StenoCacheDictionary::GetDictionaryForOutline(
 #if ENABLE_DICTIONARY_LOOKUP_CACHE_STATS
     stats.getDictionaryForOutline.miss++;
 #endif
-    lookup.updateCache = true;
     return super::GetDictionaryForOutline(lookup);
   }
 
@@ -185,11 +176,23 @@ const StenoDictionary *StenoCacheDictionary::GetDictionaryForOutline(
 void StenoCacheDictionary::AddResult(const StenoDictionaryLookup &lookup,
                                      const StenoDictionaryLookupResult result,
                                      const StenoDictionary *provider) {
+  if (lookup.length > MAXIMUM_STROKE_SIZE_TO_CACHE) {
+    return;
+  }
+#if ENABLE_DICTIONARY_LOOKUP_CACHE_STATS
+  stats.lengthCount[lookup.length - 1]++;
+#endif
   cache.AddResult(lookup, result, provider);
 }
 
 void StenoCacheDictionary::AddNoResult(const StenoDictionaryLookup &lookup) {
 #if CACHE_INVALID_LOOKUPS
+  if (lookup.length > MAXIMUM_STROKE_SIZE_TO_CACHE) {
+    return;
+  }
+#if ENABLE_DICTIONARY_LOOKUP_CACHE_STATS
+  stats.lengthCount[lookup.length - 1]++;
+#endif
   cache.AddResult(lookup, StenoDictionaryLookupResult::CreateInvalid(),
                   nullptr);
 #endif
@@ -215,6 +218,9 @@ void StenoCacheDictionary::PrintInfo() {
                   stats.getDictionaryForOutline.lengthLimitExceeded,
                   stats.getDictionaryForOutline.miss,
                   stats.getDictionaryForOutline.hitDictionary);
+  Console::Printf("  cacheLengths: %zu, %zu, %zu, %zu\n", stats.lengthCount[0],
+                  stats.lengthCount[1], stats.lengthCount[2],
+                  stats.lengthCount[3]);
 #endif
 }
 

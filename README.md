@@ -208,6 +208,16 @@ Supported values are determined at firmware build time.
   {:host_layout:us_windows_alt}
 ```
 
+## `{:lookup}`
+
+Starts interactive lookup mode.
+
+Example usage:
+
+```
+  Lookup>{^ ^}{:lookup}
+```
+
 ## `{:repeat_last_character:<character_count=1>:<repeat_count=1>}`
 
 Repeats the last `character_count` characters `repeat_count` times.

@@ -4,6 +4,7 @@
 #include "state.h"
 #include "str.h"
 #include "unicode.h"
+#include "writer.h"
 #include <assert.h>
 
 //---------------------------------------------------------------------------
@@ -403,6 +404,22 @@ void StenoTokenizer::PrepareNextP(const char *p) {
     nextState = segment.state;
     currentSegment = &segment;
   }
+}
+
+//---------------------------------------------------------------------------
+
+void StenoSegmentList::WriteToBuffer(BufferWriter &buffer) {
+  for (const StenoSegment &segment : *this) {
+    if (buffer.IsNotEmpty()) {
+      buffer.WriteByte(' ');
+    }
+    const char *text = segment.lookup.GetText();
+    while (*text == ' ') {
+      ++text;
+    }
+    buffer.WriteString(text);
+  }
+  buffer.WriteByte(0);
 }
 
 //---------------------------------------------------------------------------

@@ -59,7 +59,8 @@ struct StenoFullHashMapEntryBlock {
 };
 
 struct StenoCompactMapDictionaryStrokesDefinition {
-  size_t hashMapMask;
+  const size_t hashMapMask;
+  const StenoStroke firstStrokeMask;
 
   // Stroke -> text information.
   const uint8_t *data;
@@ -81,7 +82,8 @@ struct StenoCompactMapDictionaryStrokesDefinition {
 };
 
 struct StenoFullMapDictionaryStrokesDefinition {
-  size_t hashMapMask;
+  const size_t hashMapMask;
+  const StenoStroke firstStrokeMask;
 
   // Stroke -> text information.
   const uint8_t *data;
@@ -132,12 +134,14 @@ static_assert(sizeof(StenoDictionaryDefinition) == 4);
 
 struct StenoCompactMapDictionaryDefinition : public StenoDictionaryDefinition {
   XipPointer<char> name;
+  const StenoStroke mask;
   const uint8_t *textBlock;
   const StenoCompactMapDictionaryStrokesDefinition *strokes;
 };
 
 struct StenoFullMapDictionaryDefinition : public StenoDictionaryDefinition {
   XipPointer<char> name;
+  const StenoStroke mask;
   const uint8_t *textBlock;
   const StenoFullMapDictionaryStrokesDefinition *strokes;
 };

@@ -16,6 +16,14 @@ class StenoCompiledOrthography;
 
 //---------------------------------------------------------------------------
 
+enum class StenoEngineMode : uint8_t {
+  NONE = 0,
+  NORMAL = 0,
+  ADD_TRANSLATION = 1,
+  CONSOLE = 2,
+  LOOKUP = 3,
+};
+
 // Large statically allocated buffers to avoid fragmentation preventing them
 // from being allocated.
 //
@@ -39,8 +47,7 @@ public:
 
   bool executeSideEffects = false;
   bool wasLastActionAStitch = false;
-  bool launchConsole = false;
-  bool launchAddTranslation = false;
+  StenoEngineMode launchMode = StenoEngineMode::NONE;
   bool doResetState = false;
   size_t tokenId;
   StenoKeyCode *lastText;
@@ -105,6 +112,7 @@ public:
   // parameters[0] == function name.
   bool AddTranslationFunction(const List<char *> &parameters);
   bool ConsoleFunction(const List<char *> &parameters);
+  bool LookupFunction(const List<char *> &parameters);
   bool DisableAllDictionariesFunction(const List<char *> &parameters);
   bool DisableDictionaryFunction(const List<char *> &parameters);
   bool EnableAllDictionariesFunction(const List<char *> &parameters);

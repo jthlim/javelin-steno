@@ -27,6 +27,7 @@ constexpr KeyCodeFunctionEntry HANDLERS[] = {
     {"enable_all_dictionaries", &StenoKeyCodeBuffer::EnableAllDictionariesFunction},
     {"enable_dictionary", &StenoKeyCodeBuffer::EnableDictionaryFunction},
     {"host_layout", &StenoKeyCodeBuffer::HostLayoutFunction},
+    {"lookup", &StenoKeyCodeBuffer::LookupFunction},
     {"repeat_last_character", &StenoKeyCodeBuffer::RepeatLastCharacter},
     {"repeat_last_fragment", &StenoKeyCodeBuffer::RepeatLastFragment},
     {"repeat_last_word", &StenoKeyCodeBuffer::RepeatLastWord},
@@ -517,7 +518,7 @@ bool StenoKeyCodeBuffer::AddTranslationFunction(
     return true;
   }
 
-  launchAddTranslation = true;
+  launchMode = StenoEngineMode::ADD_TRANSLATION;
 
   if (parameters.GetCount() >= 2) {
     BufferWriter unescaped;
@@ -975,11 +976,24 @@ bool StenoKeyCodeBuffer::ConsoleFunction(const List<char *> &parameters) {
   }
 
   if (parameters.GetCount() == 1) {
-    launchConsole = true;
+    launchMode = StenoEngineMode::CONSOLE;
   } else {
     Console::RunCommand(parameters[1], *ConsoleWriter::GetActiveWriter());
   }
 
+  return true;
+}
+
+bool StenoKeyCodeBuffer::LookupFunction(const List<char *> &parameters) {
+  if (parameters.GetCount() > 1) {
+    return false;
+  }
+
+  if (!executeSideEffects) {
+    return true;
+  }
+
+  launchMode = StenoEngineMode::LOOKUP;
   return true;
 }
 

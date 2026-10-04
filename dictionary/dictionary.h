@@ -166,22 +166,31 @@ public:
 
 struct StenoDictionaryLookup {
   StenoDictionaryLookup(const StenoStroke *strokes, size_t length)
-      : strokes(strokes), length(length),
+      : strokes(strokes), length(length), mask(CalculateMask(strokes, length)),
         hash(StenoStroke::Hash(strokes, length)) {}
 
   StenoDictionaryLookup(const StenoStroke *strokes, size_t length,
                         const StenoDictionary *dictionaryHint)
-      : strokes(strokes), length(length),
+      : strokes(strokes), length(length), mask(CalculateMask(strokes, length)),
         hash(StenoStroke::Hash(strokes, length)),
         dictionaryHint(dictionaryHint) {}
 
   const StenoStroke *strokes;
   size_t length;
+  StenoStroke mask;
   uint32_t hash;
   const StenoDictionary *dictionaryHint;
-#if ENABLE_DICTIONARY_LOOKUP_CACHE
-  mutable bool updateCache = false;
-#endif
+
+  // Generates a bitfield containing all bits in the strokes.
+  //
+  // This allows dictionaries to quick reject lookups
+  static StenoStroke CalculateMask(const StenoStroke *strokes, size_t length) {
+    StenoStroke mask = *strokes++;
+    while (--length) {
+      mask |= *strokes++;
+    }
+    return mask;
+  }
 };
 
 //---------------------------------------------------------------------------

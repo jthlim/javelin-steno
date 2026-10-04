@@ -4,29 +4,42 @@
 #include "dictionary/unicode_dictionary.h"
 #include "engine.h"
 #include "key_code.h"
-#include "steno_key_code_emitter_context.h"
-#include "utf8_pointer.h"
+#include "steno_key_code_emitter_hid_writer.h"
 
 //---------------------------------------------------------------------------
 
-void StenoEngine::InitiateConsoleMode() {
-  mode = StenoEngineMode::CONSOLE;
+void StenoEngine::InitiateAltMode(StenoEngineMode newMode) {
+  mode = newMode;
 
   altTranslationHistory.Reset();
   altTranslationState = state;
   altTranslationState.joinNext = true;
 
   previousConversionBuffer.keyCodeBuffer.Reset();
-  UpdateConsoleModeTextBuffer(nextConversionBuffer);
+  UpdateAltModeTextBuffer(nextConversionBuffer);
   emitter.Process(previousConversionBuffer.keyCodeBuffer,
                   nextConversionBuffer.keyCodeBuffer);
 }
 
-void StenoEngine::ProcessConsoleModeStroke(StenoStroke stroke) {
-  UpdateConsoleModeTextBuffer(previousConversionBuffer);
+void StenoEngine::ProcessAltModeStroke(StenoStroke stroke) {
+  UpdateAltModeTextBuffer(previousConversionBuffer);
 
   if (IsNewline(stroke)) {
-    ConsoleModeExecute();
+    if (altTranslationHistory.IsEmpty()) {
+      EndAltMode();
+      return;
+    }
+    switch (mode) {
+    case StenoEngineMode::NORMAL:
+    case StenoEngineMode::ADD_TRANSLATION:
+      break;
+    case StenoEngineMode::CONSOLE:
+      ConsoleModeExecute();
+      break;
+    case StenoEngineMode::LOOKUP:
+      LookupModeExecute();
+      break;
+    }
     mode = StenoEngineMode::NORMAL;
     ResetState();
     return;
@@ -38,7 +51,7 @@ void StenoEngine::ProcessConsoleModeStroke(StenoStroke stroke) {
 
   altTranslationHistory.Add(stroke, altTranslationState);
 
-  UpdateConsoleModeTextBuffer(nextConversionBuffer);
+  UpdateAltModeTextBuffer(nextConversionBuffer);
   altTranslationState = nextConversionBuffer.keyCodeBuffer.GetPersistentState();
 
   if (emitter.Process(previousConversionBuffer.keyCodeBuffer,
@@ -47,26 +60,26 @@ void StenoEngine::ProcessConsoleModeStroke(StenoStroke stroke) {
   }
 }
 
-void StenoEngine::ProcessConsoleModeUndo() {
+void StenoEngine::ProcessAltModeUndo() {
   if (altTranslationHistory.IsEmpty()) {
-    EndConsoleMode();
+    EndAltMode();
     return;
   }
 
-  UpdateConsoleModeTextBuffer(previousConversionBuffer);
+  UpdateAltModeTextBuffer(previousConversionBuffer);
 
   const size_t undoCount = altTranslationHistory.GetUndoCount();
   altTranslationState =
       altTranslationHistory.Back(undoCount).state.GetPersistentState();
   altTranslationHistory.RemoveBack(undoCount);
 
-  UpdateConsoleModeTextBuffer(nextConversionBuffer);
+  UpdateAltModeTextBuffer(nextConversionBuffer);
 
   emitter.Process(previousConversionBuffer.keyCodeBuffer,
                   nextConversionBuffer.keyCodeBuffer);
 }
 
-void StenoEngine::UpdateConsoleModeTextBuffer(ConversionBuffer &buffer) {
+void StenoEngine::UpdateAltModeTextBuffer(ConversionBuffer &buffer) {
   buffer.keyCodeBuffer.Reset();
 
   StenoSegmentList segments(altTranslationHistory.GetCount());
@@ -89,8 +102,8 @@ void StenoEngine::UpdateConsoleModeTextBuffer(ConversionBuffer &buffer) {
   }
 }
 
-void StenoEngine::EndConsoleMode() {
-  UpdateConsoleModeTextBuffer(previousConversionBuffer);
+void StenoEngine::EndAltMode() {
+  UpdateAltModeTextBuffer(previousConversionBuffer);
   nextConversionBuffer.keyCodeBuffer.Reset();
   emitter.Process(previousConversionBuffer.keyCodeBuffer,
                   nextConversionBuffer.keyCodeBuffer);
@@ -101,8 +114,8 @@ void StenoEngine::EndConsoleMode() {
 
 //---------------------------------------------------------------------------
 
-bool StenoEngine::HandleConsoleModeScanCode(uint32_t scanCodeAndModifiers,
-                                            ScanCodeAction action) {
+bool StenoEngine::HandleAltModeScanCode(uint32_t scanCodeAndModifiers,
+                                        ScanCodeAction action) {
   const KeyCode keyCode = KeyCode::Value(scanCodeAndModifiers & 0xff);
   if (keyCode.IsModifier()) {
     return false;
@@ -111,11 +124,11 @@ bool StenoEngine::HandleConsoleModeScanCode(uint32_t scanCodeAndModifiers,
   if (action == ScanCodeAction::PRESS || action == ScanCodeAction::TAP) {
     const uint32_t unicode = KeyCode::ConvertToUnicode(scanCodeAndModifiers);
     if (unicode == '\b') {
-      ProcessConsoleModeUndo();
+      ProcessUndo();
     } else if (unicode != 0) {
       const StenoStroke unicodeStroke =
           StenoUnicodeDictionary::CreateUnicodeStroke(unicode);
-      ProcessConsoleModeStroke(unicodeStroke);
+      ProcessStroke(unicodeStroke);
     }
   }
   return true;
@@ -123,37 +136,64 @@ bool StenoEngine::HandleConsoleModeScanCode(uint32_t scanCodeAndModifiers,
 
 //---------------------------------------------------------------------------
 
-class HidWriter final : public IWriter {
-public:
-  HidWriter() {}
-  ~HidWriter() { context.ReleaseModifiers(context.modifiers); }
-
-  virtual void Write(const char *data, size_t length);
-
-  StenoKeyCodeEmitter::EmitterContext context;
-};
-
-void HidWriter::Write(const char *data, size_t length) {
-  Utf8Pointer utf8(data);
-  const char *end = data + length;
-
-  while (utf8 < end) {
-    const uint32_t unicode = *utf8++;
-
-    const StenoKeyCode stenoKeyCode(unicode, StenoCaseMode::NORMAL);
-    context.ProcessStenoKeyCode(stenoKeyCode);
-  }
-};
-
 void StenoEngine::ConsoleModeExecute() {
   char *command = previousConversionBuffer.keyCodeBuffer.ToString();
-  HidWriter writer;
+  StenoKeyCodeEmitter::HidWriter writer;
   writer.context.TapKey(KeyCode::ENTER);
   if (!Console::RunCommand(command, writer)) {
     writer.Printf(
         "ERR Invalid command. Use \"help\" for a list of commands\n\n");
   }
   free(command);
+}
+
+void StenoEngine::LookupModeExecute() {
+  char *definition = previousConversionBuffer.keyCodeBuffer.ToString();
+  StenoKeyCodeEmitter::HidWriter writer;
+
+  StenoReverseDictionaryLookup lookup(definition);
+  ReverseLookup(lookup);
+  free(definition);
+
+  if (!lookup.HasResults()) {
+    writer.Printf("\nNo definitions found\n\n");
+    return;
+  }
+
+  lookup.results.Sort([](const StenoReverseDictionaryResult *a,
+                         const StenoReverseDictionaryResult *b) -> int {
+    if (a->length != b->length) {
+      return int(a->length - b->length);
+    }
+    const size_t length = a->length;
+    for (size_t i = 0; i < length; ++i) {
+      if (a->strokes[i] != b->strokes[i]) {
+        return a->strokes[i].GetKeyState() - b->strokes[i].GetKeyState();
+      }
+    }
+    return 0;
+  });
+
+  for (const StenoReverseDictionaryResult &entry : lookup.results) {
+    StenoSegmentList segments(entry.length);
+    ConversionBuffer &buffer = previousConversionBuffer;
+    CreateSegments(segments, buffer.segmentBuilder, entry.strokes,
+                   entry.length);
+
+    // Print definition.
+    if (segments.GetCount() == 1) {
+      char *t = Str::Trim(segments[0].lookup.GetText());
+      writer.Printf("\n%T: \"%J\"", entry.strokes, entry.length, t);
+      free(t);
+    } else {
+      BufferWriter buffer;
+      segments.WriteToBuffer(buffer);
+      writer.Printf("\n%T: \"%J\"", entry.strokes, entry.length,
+                    buffer.GetBuffer());
+    }
+  }
+
+  writer.Printf("\n\n");
 }
 
 //---------------------------------------------------------------------------

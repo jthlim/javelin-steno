@@ -9,6 +9,7 @@
 class StenoKeyCodeEmitter {
 public:
   struct EmitterContext;
+  class HidWriter;
 
   // Processes previous and current keycode buffers and determines what
   // differences to emit.

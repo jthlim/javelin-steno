@@ -85,8 +85,8 @@ void StenoEngine::ProcessAddTranslationModeStroke(StenoStroke stroke) {
         StenoUserDictionary::MAX_STROKE_COUNT) {
       return;
     }
-    if ((stroke & StrokeMask::SPECIAL_MASK).IsNotEmpty()) {
-      // Don't allow unicode when defining the stroke.
+    if ((stroke & StrokeMask::SPECIAL).IsNotEmpty()) {
+      // Don't allow special strokes when defining the stroke.
       return;
     }
   } else if (newlineIndex + 1 == altTranslationHistory.GetCount()) {
@@ -247,32 +247,10 @@ void StenoEngine::DeleteTranslation(size_t newlineIndex) {
 
 //---------------------------------------------------------------------------
 
-bool StenoEngine::HandleAddTranslationModeScanCode(
-    uint32_t scanCodeAndModifiers, ScanCodeAction action) {
-  const KeyCode keyCode = KeyCode::Value(scanCodeAndModifiers & 0xff);
-  if (keyCode.IsModifier()) {
-    return false;
-  }
-
-  if (action == ScanCodeAction::PRESS || action == ScanCodeAction::TAP) {
-    const uint32_t unicode = KeyCode::ConvertToUnicode(scanCodeAndModifiers);
-    if (unicode == '\b') {
-      ProcessAddTranslationModeUndo();
-    } else if (unicode != 0) {
-      const StenoStroke unicodeStroke =
-          StenoUnicodeDictionary::CreateUnicodeStroke(unicode);
-      ProcessAddTranslationModeStroke(unicodeStroke);
-    }
-  }
-  return true;
-}
-
-//---------------------------------------------------------------------------
-
 bool StenoEngine::IsNewline(StenoStroke stroke) const {
   // Handle 'enter' in qwerty mode press.
-  if (stroke == StenoStroke(StrokeMask::UNICODE | '\n') ||
-      stroke == StenoStroke(StrokeMask::UNICODE | '\r')) {
+  if (stroke == StenoStroke(SpecialStrokeMask::UNICODE | '\n') ||
+      stroke == StenoStroke(SpecialStrokeMask::UNICODE | '\r')) {
     return true;
   }
 

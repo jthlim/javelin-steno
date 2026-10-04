@@ -14,11 +14,11 @@ StenoDictionaryLookupResult
 StenoUnicodeDictionary::Lookup(const StenoDictionaryLookup &lookup) const {
   assert(lookup.length == 1);
   const StenoStroke stroke = lookup.strokes[0];
-  if ((stroke & StrokeMask::SPECIAL_MASK) != StrokeMask::UNICODE) {
+  if ((stroke & SpecialStrokeMask::TYPE) != SpecialStrokeMask::UNICODE) {
     return StenoDictionaryLookupResult::CreateInvalid();
   }
 
-  const int unicode = (stroke & ~StrokeMask::SPECIAL_MASK).GetKeyState();
+  const int unicode = (stroke & SpecialStrokeMask::DATA).GetKeyState();
   switch (unicode) {
   case '{':
     return StenoDictionaryLookupResult::CreateStaticString("{^}\\{");
@@ -53,8 +53,9 @@ const StenoDictionary *StenoUnicodeDictionary::GetDictionaryForOutline(
     const StenoDictionaryLookup &lookup) const {
   assert(lookup.length == 1);
   const StenoStroke stroke = lookup.strokes[0];
-  return ((stroke & StrokeMask::SPECIAL_MASK) == StrokeMask::UNICODE) ? this
-                                                                      : nullptr;
+  return ((stroke & SpecialStrokeMask::TYPE) == SpecialStrokeMask::UNICODE)
+             ? this
+             : nullptr;
 }
 
 const char *StenoUnicodeDictionary::GetName() const {

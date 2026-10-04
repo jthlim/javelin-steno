@@ -159,17 +159,7 @@ void StenoEngine::Lookup_Binding(void *context, const char *commandLine) {
       free(t);
     } else {
       BufferWriter writer;
-      for (const StenoSegment &segment : segments) {
-        if (writer.IsNotEmpty()) {
-          writer.WriteByte(' ');
-        }
-        const char *text = segment.lookup.GetText();
-        while (*text == ' ') {
-          ++text;
-        }
-        writer.WriteString(text);
-      }
-      writer.WriteByte(0);
+      segments.WriteToBuffer(writer);
       lookupDictionaryContext.Add(entry.strokes, entry.length,
                                   writer.GetBuffer(), entry.dictionary);
     }
@@ -260,18 +250,7 @@ void StenoEngine::LookupStroke_Binding(void *context, const char *commandLine) {
     if (!buffer.segmentBuilder.HasRawStroke()) {
       char scratchBuffer[256];
       BufferWriter buffer(scratchBuffer, sizeof(scratchBuffer));
-
-      for (const StenoSegment &segment : segments) {
-        if (buffer.IsNotEmpty()) {
-          buffer.WriteByte(' ');
-        }
-        const char *text = segment.lookup.GetText();
-        while (*text == ' ') {
-          ++text;
-        }
-        buffer.WriteString(text);
-      }
-      buffer.WriteByte('\0');
+      segments.WriteToBuffer(buffer);
       Console::Printf("t: %Y\n\n", buffer.GetBuffer());
     } else {
       Console::Printf("[]\n\n");

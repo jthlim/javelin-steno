@@ -71,6 +71,7 @@ struct OrthospellingData {
   };
 
   const char *name;
+  const StenoStroke mask;
   SizedList<Starter> starters;
   SizedList<Letter> letters;
   SizedList<Exit> exits;

@@ -13,8 +13,7 @@
 
 void StenoKeyCodeBuffer::Reset() {
   wasLastActionAStitch = false;
-  launchConsole = false;
-  launchAddTranslation = false;
+  launchMode = StenoEngineMode::NONE;
   doResetState = false;
   state.Reset();
   currentOutput = buffer;

@@ -313,16 +313,20 @@ void StenoEngine::ProcessNormalModeStroke(StenoStroke stroke) {
                nextConversionBuffer.keyCodeBuffer);
   PrintPaperTape(stroke, previousSegments, nextSegments);
 
-  if (nextConversionBuffer.keyCodeBuffer.launchAddTranslation) {
+  switch (nextConversionBuffer.keyCodeBuffer.launchMode) {
+  [[likely]] case StenoEngineMode::NONE:
+    break;
+
+  case StenoEngineMode::ADD_TRANSLATION:
     history.SetBackNoCombineUndo();
     InitiateAddTranslationMode(
         nextConversionBuffer.keyCodeBuffer.addTranslationText);
     return;
-  }
 
-  if (nextConversionBuffer.keyCodeBuffer.launchConsole) {
+  case StenoEngineMode::CONSOLE:
+  case StenoEngineMode::LOOKUP:
     history.SetBackNoCombineUndo();
-    InitiateConsoleMode();
+    InitiateAltMode(nextConversionBuffer.keyCodeBuffer.launchMode);
     return;
   }
 
@@ -589,9 +593,9 @@ void StenoEngine::ConvertText(StenoKeyCodeBuffer &keyCodeBuffer,
   StenoState endState;
   if (startingOffset == segments.GetCount()) {
     keyCodeBuffer.Reset();
-    // The call sites of ConvertText ensure that the StenoEngine's state here is
-    // equivalent to what it would be if segments had been converted up to the
-    // starting offset.
+    // The call sites of ConvertText ensure that the StenoEngine's state
+    // here is equivalent to what it would be if segments had been converted
+    // up to the starting offset.
     endState = state;
   } else {
     StenoTokenizer tokenizer(segments, startingOffset, startingStrokeId);
@@ -782,9 +786,9 @@ void StenoEngine::PrintSuggestions(const StenoSegmentList &previousSegments,
         }
       }
 
-      // Consider it a segment start if it isn't a suffix stroke and it isn't
-      // a fingerspelling joined to a previous fingerspelling.
-      // This will still give suggestions after prefixes, e.g.
+      // Consider it a segment start if it isn't a suffix stroke and it
+      // isn't a fingerspelling joined to a previous fingerspelling. This
+      // will still give suggestions after prefixes, e.g.
       //   overwatching: AUFR/WAFP/-G will suggest to combine WAFPG
       if (!Str::IsJoinPrevious(startSegmentText) &&
           (startSegmentIndex == 0 ||

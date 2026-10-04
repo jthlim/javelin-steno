@@ -158,7 +158,7 @@ void StenoCompactMapDictionaryStrokesDefinition::PrintEntriesWithPartialOutline(
 
 StenoCompactMapDictionary::StenoCompactMapDictionary(
     const StenoCompactMapDictionaryDefinition &definition)
-    : StenoDictionary(definition.maximumOutlineLength),
+    : StenoDictionary(definition.maximumOutlineLength), mask(definition.mask),
       textBlock(definition.textBlock), definition(definition),
       strokes(CreateStrokeCache(this, definition)) {
   dataRange.min = strokes[1].data;
@@ -175,10 +175,14 @@ void *StenoCompactMapDictionary::operator new(
 
 const CompactStenoMapDictionaryDataEntry *StenoCompactMapDictionary::FindEntry(
     const StenoDictionaryLookup &lookup) const {
+  if ((lookup.mask & ~mask).IsNotEmpty()) {
+    return nullptr;
+  }
+
   const StenoCompactMapDictionaryStrokesDefinition &strokesDefinition =
       strokes[lookup.length];
 
-  if (strokesDefinition.hashMapMask == 0) {
+  if ((lookup.strokes[0] & ~strokesDefinition.firstStrokeMask).IsNotEmpty()) {
     return nullptr;
   }
 

@@ -247,7 +247,7 @@ void StenoFullMapDictionaryStrokesDefinition::PrintEntriesWithPartialOutline(
 
 StenoFullMapDictionary::StenoFullMapDictionary(
     const StenoFullMapDictionaryDefinition &definition)
-    : StenoDictionary(definition.maximumOutlineLength),
+    : StenoDictionary(definition.maximumOutlineLength), mask(definition.mask),
       textBlock(definition.textBlock), definition(definition),
       strokes(CreateStrokeCache(this, definition)) {
   dataRange.min = strokes[1].data;
@@ -265,8 +265,11 @@ const FullStenoMapDictionaryDataEntry *
 StenoFullMapDictionary::FindEntry(const StenoDictionaryLookup &lookup) const {
   const StenoFullMapDictionaryStrokesDefinition &strokesDefinition =
       strokes[lookup.length];
+  if ((lookup.mask & ~mask).IsNotEmpty()) {
+    return nullptr;
+  }
 
-  if (strokesDefinition.hashMapMask == 0) [[unlikely]] {
+  if ((lookup.strokes[0] & ~strokesDefinition.firstStrokeMask).IsNotEmpty()) {
     return nullptr;
   }
 

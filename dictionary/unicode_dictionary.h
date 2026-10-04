@@ -19,7 +19,7 @@ public:
   virtual const char *GetName() const;
 
   static StenoStroke CreateUnicodeStroke(uint32_t unicode) {
-    return StenoStroke(StrokeMask::UNICODE | unicode);
+    return StenoStroke(SpecialStrokeMask::UNICODE | unicode);
   }
 
   static StenoUnicodeDictionary instance;

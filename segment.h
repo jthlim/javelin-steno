@@ -7,6 +7,7 @@
 
 //---------------------------------------------------------------------------
 
+class BufferWriter;
 class StenoSegmentList;
 
 //---------------------------------------------------------------------------
@@ -141,6 +142,8 @@ public:
   size_t GetWordStartingSegmentIndex(size_t endIndex) const;
 
   bool HasManualStateChange(size_t startIndex) const;
+
+  void WriteToBuffer(BufferWriter &buffer);
 };
 
 //---------------------------------------------------------------------------

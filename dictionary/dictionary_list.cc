@@ -51,17 +51,13 @@ StenoDictionaryList::Lookup(const StenoDictionaryLookup &lookup) const {
     const StenoDictionaryLookupResult result = entry->Lookup(lookup);
     if (result.IsValid()) {
 #if ENABLE_DICTIONARY_LOOKUP_CACHE
-      if (lookup.updateCache) {
-        cacheDictionaryContainer->AddResult(lookup, result, entry.dictionary);
-      }
+      cacheDictionaryContainer->AddResult(lookup, result, entry.dictionary);
 #endif
       return result;
     }
   }
 #if ENABLE_DICTIONARY_LOOKUP_CACHE
-  if (lookup.updateCache) {
-    cacheDictionaryContainer->AddNoResult(lookup);
-  }
+  cacheDictionaryContainer->AddNoResult(lookup);
 #endif
   return StenoDictionaryLookupResult::CreateInvalid();
 }
@@ -83,19 +79,15 @@ const StenoDictionary *StenoDictionaryList::GetDictionaryForOutline(
     const StenoDictionary *result = entry->GetDictionaryForOutline(lookup);
     if (result) {
 #if ENABLE_DICTIONARY_LOOKUP_CACHE
-      if (lookup.updateCache) {
-        cacheDictionaryContainer->AddResult(
-            lookup, StenoDictionaryLookupResult::CreateInvalid(),
-            entry.dictionary);
-      }
+      cacheDictionaryContainer->AddResult(
+          lookup, StenoDictionaryLookupResult::CreateInvalid(),
+          entry.dictionary);
 #endif
       return result;
     }
   }
 #if ENABLE_DICTIONARY_LOOKUP_CACHE
-  if (lookup.updateCache) {
-    cacheDictionaryContainer->AddNoResult(lookup);
-  }
+  cacheDictionaryContainer->AddNoResult(lookup);
 #endif
   return nullptr;
 }

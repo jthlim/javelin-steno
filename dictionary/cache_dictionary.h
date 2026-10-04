@@ -48,6 +48,7 @@ private:
   struct Stats {
     OperationStats lookup;
     OperationStats getDictionaryForOutline;
+    size_t lengthCount[MAXIMUM_STROKE_SIZE_TO_CACHE];
   };
 
   static Stats stats;

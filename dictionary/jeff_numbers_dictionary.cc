@@ -18,7 +18,7 @@ StenoJeffNumbersDictionary StenoJeffNumbersDictionary::instance;
 static void ToRoman(char *outBuffer, int value, bool useLower);
 static char *ToWords(char *digits);
 
-const StenoStroke ACTIVATION_MASK(StrokeMask::NUM | ~StrokeMask::ALL);
+const StenoStroke ACTIVATION_MASK(StrokeMask::NUM | ~StrokeMask::ALL_STENOTYPE);
 const StenoStroke ACTIVATION_MATCH(StrokeMask::NUM);
 
 const StenoStroke ALL_DIGITS_MASK(StrokeMask::SL | StrokeMask::TL |
@@ -69,15 +69,14 @@ bool EndsWith(char *p, size_t length, const char (&suffix)[N]) {
 
 StenoDictionaryLookupResult
 StenoJeffNumbersDictionary::Lookup(const StenoDictionaryLookup &lookup) const {
-  if ((lookup.strokes[0] & ACTIVATION_MASK) != ACTIVATION_MATCH) {
+  if ((lookup.strokes[0] & ACTIVATION_MASK) != ACTIVATION_MATCH) [[likely]] {
     return StenoDictionaryLookupResult::CreateInvalid();
   }
   return LookupInternal(lookup);
 }
 
 // Split off to no-inline to help gcc generate better early-out code.
-[[gnu::noinline]] StenoDictionaryLookupResult
-StenoJeffNumbersDictionary::LookupInternal(
+StenoDictionaryLookupResult StenoJeffNumbersDictionary::LookupInternal(
     const StenoDictionaryLookup &lookup) const {
   char *result = nullptr;
   char scratch[32];

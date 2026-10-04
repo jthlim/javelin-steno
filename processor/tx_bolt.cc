@@ -44,7 +44,7 @@ constexpr TxBoltCode TX_BOLT_LOOKUP[] = {
     {3, 0b00001000}, // ZR
 };
 static_assert(sizeof(TX_BOLT_LOOKUP) / sizeof(TxBoltCode) ==
-                  StrokeBitIndex::COUNT,
+                  StrokeBitIndex::STENOTYPE_COUNT,
               "TX bolt table must be complete");
 
 void StenoTxBoltPacket::Set(const StenoStroke &stroke) {
@@ -61,7 +61,7 @@ void StenoTxBoltPacket::Set(const StenoStroke &stroke) {
   uint32_t localKeyState = stroke.GetKeyState();
   while (localKeyState) {
     const int index = __builtin_ctzl(localKeyState);
-    if (index < StrokeBitIndex::COUNT) {
+    if (index < StrokeBitIndex::STENOTYPE_COUNT) {
       const TxBoltCode boltCode = TX_BOLT_LOOKUP[index];
       data[boltCode.group] |= boltCode.bitmask;
     }

@@ -224,7 +224,7 @@ PhrasingParts DetermineParts(StenoStroke stroke) {
     return PhrasingParts::CreateInvalid();
   }
 
-  if ((stroke & (StrokeMask::NUM | StrokeMask::UNICODE)).IsNotEmpty()) {
+  if ((stroke & (StrokeMask::NUM | ~StrokeMask::ALL_STENOTYPE)).IsNotEmpty()) {
     return PhrasingParts::CreateInvalid();
   }
 

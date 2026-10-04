@@ -45,6 +45,7 @@ public:
                const StenoCompactMapDictionaryDefinition &definition) noexcept;
 
 private:
+  const StenoStroke mask;
   const uint8_t *const textBlock;
   const StenoCompactMapDictionaryDefinition &definition;
   Interval<const void *> dataRange;

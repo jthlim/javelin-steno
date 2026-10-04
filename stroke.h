@@ -56,9 +56,13 @@ struct StrokeBitIndex {
     SR,
     DR,
     ZR,
-    COUNT,
+    CARET,
+    PLUS,
 
-    UNICODE = 31,
+    STENOTYPE_COUNT = ZR + 1,
+    EXTENDED_STENOTYPE_COUNT = PLUS + 1,
+
+    SPECIAL = 31,
     NONE = -1
   };
 };
@@ -88,11 +92,24 @@ struct StrokeMask {
     SR = (uint32_t)1 << StrokeBitIndex::SR,
     DR = (uint32_t)1 << StrokeBitIndex::DR,
     ZR = (uint32_t)1 << StrokeBitIndex::ZR,
+    CARET = (uint32_t)1 << StrokeBitIndex::CARET,
+    PLUS = (uint32_t)1 << StrokeBitIndex::PLUS,
 
-    ALL = ((uint32_t)1 << StrokeBitIndex::COUNT) - 1,
+    ALL_STENOTYPE = ((uint32_t)1 << StrokeBitIndex::STENOTYPE_COUNT) - 1,
+    ALL_EXTENDED_STENOTYPE =
+        ((uint32_t)1 << StrokeBitIndex::EXTENDED_STENOTYPE_COUNT) - 1,
 
-    SPECIAL_MASK = 0x80000000,
-    UNICODE = (uint32_t)1 << StrokeBitIndex::UNICODE,
+    SPECIAL = (uint32_t)1 << StrokeBitIndex::SPECIAL,
+  };
+};
+
+// Upper 8 bits of StrokeMask determine the special type.
+struct SpecialStrokeMask {
+  enum {
+    UNICODE = 0x8000'0000,
+
+    TYPE = 0xff00'0000,
+    DATA = 0x00ff'ffff,
   };
 };
 

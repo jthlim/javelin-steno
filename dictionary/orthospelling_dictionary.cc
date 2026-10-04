@@ -19,6 +19,9 @@ StenoOrthospellingDictionary::StenoOrthospellingDictionary(
 
 StenoDictionaryLookupResult StenoOrthospellingDictionary::Lookup(
     const StenoDictionaryLookup &lookup) const {
+  if ((lookup.mask & ~data.mask).IsNotEmpty()) {
+    return StenoDictionaryLookupResult::CreateInvalid();
+  }
 
   const OrthospellingData::Starter *starter =
       data.GetStarterDefinition(lookup.strokes[0]);

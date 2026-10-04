@@ -53,6 +53,7 @@ private:
     void Update(const HashStats &stats);
   };
 
+  const StenoStroke mask;
   const uint8_t *const textBlock;
   const StenoFullMapDictionaryDefinition &definition;
   Interval<const void *> dataRange;

@@ -5,6 +5,7 @@
 #include JAVELIN_BOARD_CONFIG
 
 #include "console.h"
+#include "dictionary/unicode_dictionary.h"
 #include "dictionary/user_dictionary.h"
 #include "flash.h"
 #include "hal/external_flash.h"
@@ -58,7 +59,7 @@ void StenoEngine::Process(const StenoKeyState &value, StenoAction action) {
 
 void StenoEngine::Process(StenoStroke stroke) {
   ++strokeCount;
-  if (stroke == undoStroke) {
+  if (stroke == undoStroke) [[unlikely]] {
     ProcessUndo();
   } else {
     ProcessStroke(stroke);
@@ -78,7 +79,8 @@ void StenoEngine::ProcessStroke(StenoStroke stroke) {
     return;
 
   case StenoEngineMode::CONSOLE:
-    ProcessConsoleModeStroke(stroke);
+  case StenoEngineMode::LOOKUP:
+    ProcessAltModeStroke(stroke);
     return;
   }
 }
@@ -96,7 +98,8 @@ void StenoEngine::ProcessUndo() {
     return;
 
   case StenoEngineMode::CONSOLE:
-    ProcessConsoleModeUndo();
+  case StenoEngineMode::LOOKUP:
+    ProcessAltModeUndo();
     return;
   }
 }
@@ -107,15 +110,11 @@ bool StenoEngine::ProcessScanCode(uint32_t scanCodeAndModifiers,
   case StenoEngineMode::NORMAL:
     return false;
 
-  case StenoEngineMode::ADD_TRANSLATION: {
+  case StenoEngineMode::ADD_TRANSLATION:
+  case StenoEngineMode::CONSOLE:
+  case StenoEngineMode::LOOKUP:
     const ExternalFlashSentry externalFlashSentry;
-    return HandleAddTranslationModeScanCode(scanCodeAndModifiers, action);
-  }
-
-  case StenoEngineMode::CONSOLE: {
-    const ExternalFlashSentry externalFlashSentry;
-    return HandleConsoleModeScanCode(scanCodeAndModifiers, action);
-  }
+    return HandleAltModeScanCode(scanCodeAndModifiers, action);
   }
   return false;
 }

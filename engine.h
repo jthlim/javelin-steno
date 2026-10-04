@@ -22,10 +22,6 @@ struct StenoSystem;
 
 //---------------------------------------------------------------------------
 
-enum StenoEngineMode { NORMAL, ADD_TRANSLATION, CONSOLE };
-
-//---------------------------------------------------------------------------
-
 class StenoEngine final : public StenoProcessorElement {
 public:
   StenoEngine(StenoDictionary &dictionary, const StenoSystem *system,
@@ -152,14 +148,16 @@ private:
   void EndAddTranslationMode();
   void FreeAddTranslationText();
 
-  void InitiateConsoleMode();
-  void ProcessConsoleModeUndo();
-  void ProcessConsoleModeStroke(StenoStroke stroke);
-  bool HandleConsoleModeScanCode(uint32_t scanCodeAndModifiers,
-                                 ScanCodeAction action);
-  void UpdateConsoleModeTextBuffer(ConversionBuffer &buffer);
+  void InitiateAltMode(StenoEngineMode mode);
+  void ProcessAltModeUndo();
+  void ProcessAltModeStroke(StenoStroke stroke);
+  bool HandleAltModeScanCode(uint32_t scanCodeAndModifiers,
+                             ScanCodeAction action);
+  void UpdateAltModeTextBuffer(ConversionBuffer &buffer);
+  void EndAltMode();
+
   void ConsoleModeExecute();
-  void EndConsoleMode();
+  void LookupModeExecute();
 
   bool IsNewline(StenoStroke stroke) const;
   void AddTranslation(size_t newlineIndex);
