@@ -30,13 +30,24 @@ const StenoCompactHashMapEntryBlock offsets2[] = {
 };
 
 const StenoCompactMapDictionaryStrokesDefinition strokes[] = {
-    {.hashMapMask = hashMapSize1 - 1, .data = data1, .offsets = offsets1},
-    {.hashMapMask = hashMapSize2 - 1, .data = data2, .offsets = offsets2},
+    {
+        .hashMapMask = hashMapSize1 - 1,
+        .firstStrokeMask = 0xcf88c,
+        .data = data1,
+        .offsets = offsets1,
+    },
+    {
+        .hashMapMask = hashMapSize2 - 1,
+        .firstStrokeMask = 0x82804,
+        .data = data2,
+        .offsets = offsets2,
+    },
 };
 
 constexpr StenoCompactMapDictionaryDefinition TestDictionary::definition = {
     {true, 2, StenoDictionaryType::COMPACT_MAP, 0},
     "main.json",
+    0x2cf88c,
     textBlock,
     strokes,
 };

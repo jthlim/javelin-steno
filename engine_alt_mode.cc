@@ -160,20 +160,6 @@ void StenoEngine::LookupModeExecute() {
     return;
   }
 
-  lookup.results.Sort([](const StenoReverseDictionaryResult *a,
-                         const StenoReverseDictionaryResult *b) -> int {
-    if (a->length != b->length) {
-      return int(a->length - b->length);
-    }
-    const size_t length = a->length;
-    for (size_t i = 0; i < length; ++i) {
-      if (a->strokes[i] != b->strokes[i]) {
-        return a->strokes[i].GetKeyState() - b->strokes[i].GetKeyState();
-      }
-    }
-    return 0;
-  });
-
   for (const StenoReverseDictionaryResult &entry : lookup.results) {
     StenoSegmentList segments(entry.length);
     ConversionBuffer &buffer = previousConversionBuffer;
@@ -190,6 +176,9 @@ void StenoEngine::LookupModeExecute() {
       segments.WriteToBuffer(buffer);
       writer.Printf("\n%T: \"%J\"", entry.strokes, entry.length,
                     buffer.GetBuffer());
+    }
+    if (!entry.dictionary->IsInternal()) {
+      writer.Printf(" (%J)", entry.dictionary->GetName());
     }
   }
 

@@ -162,10 +162,11 @@ void StenoReverseDictionaryLookup::SortResults() {
       return (int)pa->length - (int)pb->length;
     }
 
-    const uint32_t popCountA = StenoStroke::PopCount(pa->strokes, pa->length);
-    const uint32_t popCountB = StenoStroke::PopCount(pb->strokes, pb->length);
-    if (popCountA != popCountB) {
-      return (int)popCountA - (int)popCountB;
+    const size_t length = pa->length;
+    for (size_t i = 0; i < length; ++i) {
+      if (pa->strokes[i] != pb->strokes[i]) {
+        return pa->strokes[i].GetKeyState() - pb->strokes[i].GetKeyState();
+      }
     }
 
     return int(intptr_t(pa) - intptr_t(pb));

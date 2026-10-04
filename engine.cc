@@ -501,7 +501,7 @@ TEST_BEGIN("Engine: Random spam") {
   const size_t iterationCount = 1000;
 #endif
   for (size_t i = 0; i < iterationCount; ++i) {
-    const StenoStroke stroke(rand() & StrokeMask::ALL);
+    const StenoStroke stroke(rand() & StrokeMask::ALL_STENOTYPE);
     engine.ProcessStroke(stroke);
   }
 
