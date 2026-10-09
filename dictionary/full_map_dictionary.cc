@@ -263,13 +263,19 @@ void *StenoFullMapDictionary::operator new(
 
 const FullStenoMapDictionaryDataEntry *
 StenoFullMapDictionary::FindEntry(const StenoDictionaryLookup &lookup) const {
-  const StenoFullMapDictionaryStrokesDefinition &strokesDefinition =
-      strokes[lookup.length];
   if ((lookup.mask & ~mask).IsNotEmpty()) {
     return nullptr;
   }
 
+  const StenoFullMapDictionaryStrokesDefinition &strokesDefinition =
+      strokes[lookup.length];
+
   if ((lookup.strokes[0] & ~strokesDefinition.firstStrokeMask).IsNotEmpty()) {
+    return nullptr;
+  }
+
+  if ((lookup.strokes[lookup.length - 1] & ~strokesDefinition.lastStrokeMask)
+          .IsNotEmpty()) {
     return nullptr;
   }
 

@@ -186,6 +186,11 @@ const CompactStenoMapDictionaryDataEntry *StenoCompactMapDictionary::FindEntry(
     return nullptr;
   }
 
+  if ((lookup.strokes[lookup.length - 1] & ~strokesDefinition.lastStrokeMask)
+          .IsNotEmpty()) {
+    return nullptr;
+  }
+
   size_t entryIndex = lookup.hash & strokesDefinition.hashMapMask;
   const size_t offset = strokesDefinition.GetOffset(entryIndex);
   if (offset == (size_t)-1) {

@@ -9,18 +9,18 @@
 
 // clang-format off
 constexpr JeffPhrasingSimpleStarter SIMPLE_STARTERS[] = {
-    {StenoStroke(0x146 /*STHA*/), "that"},
-    {StenoStroke(0x116 /*STPA*/), "if"},
-    {StenoStroke(0x62 /*SWH*/), "when"},
-    {StenoStroke(0x162 /*SWHA*/), "what"},
-    {StenoStroke(0xe2 /*SWHR*/), "where"},
-    {StenoStroke(0x262 /*SWHO*/), "who"},
-    {StenoStroke(0x362 /*SWHAO*/), "why"},
-    {StenoStroke(0x72 /*SPWH*/), "but"},
-    {StenoStroke(0x96 /*STPR*/), "for"},
+    {StenoStroke(0x146 /*STHA*/), {"that"}},
+    {StenoStroke(0x116 /*STPA*/), {"if"}},
+    {StenoStroke(0x62 /*SWH*/), {"when"}},
+    {StenoStroke(0x162 /*SWHA*/), {"what"}},
+    {StenoStroke(0xe2 /*SWHR*/), {"where"}},
+    {StenoStroke(0x262 /*SWHO*/), {"who"}},
+    {StenoStroke(0x362 /*SWHAO*/), {"why"}},
+    {StenoStroke(0x72 /*SPWH*/), {"but"}},
+    {StenoStroke(0x96 /*STPR*/), {"for"}},
 
     // # Remove the entry below if you don't want "and" phrases.
-    {StenoStroke(0x1a /*SKP*/), "and"},
+    {StenoStroke(0x1a /*SKP*/), {"and"}},
 };
 
 constexpr JeffPhrasingFullStarter FULL_STARTERS[] = {

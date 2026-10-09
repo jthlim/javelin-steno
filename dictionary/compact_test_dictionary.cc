@@ -33,12 +33,14 @@ const StenoCompactMapDictionaryStrokesDefinition strokes[] = {
     {
         .hashMapMask = hashMapSize1 - 1,
         .firstStrokeMask = 0xcf88c,
+        .lastStrokeMask = 0xcf88c,
         .data = data1,
         .offsets = offsets1,
     },
     {
         .hashMapMask = hashMapSize2 - 1,
         .firstStrokeMask = 0x82804,
+        .lastStrokeMask = 0x200000,
         .data = data2,
         .offsets = offsets2,
     },

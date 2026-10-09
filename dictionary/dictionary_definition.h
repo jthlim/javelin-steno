@@ -61,6 +61,7 @@ struct StenoFullHashMapEntryBlock {
 struct StenoCompactMapDictionaryStrokesDefinition {
   const size_t hashMapMask;
   const StenoStroke firstStrokeMask;
+  const StenoStroke lastStrokeMask;
 
   // Stroke -> text information.
   const uint8_t *data;
@@ -84,6 +85,7 @@ struct StenoCompactMapDictionaryStrokesDefinition {
 struct StenoFullMapDictionaryStrokesDefinition {
   const size_t hashMapMask;
   const StenoStroke firstStrokeMask;
+  const StenoStroke lastStrokeMask;
 
   // Stroke -> text information.
   const uint8_t *data;
