@@ -288,7 +288,11 @@ StenoDictionaryLookupResult
 StenoJeffPhrasingDictionary::Lookup(const StenoDictionaryLookup &lookup) const {
   assert(lookup.length == 1);
 
-  const PhrasingParts parts = DetermineParts(lookup.strokes[0]);
+  if ((lookup.firstStroke & ~StrokeMask::ALL_STENOTYPE).IsNotEmpty()) {
+    return StenoDictionaryLookupResult::CreateInvalid();
+  }
+
+  const PhrasingParts parts = DetermineParts(lookup.firstStroke);
   if (!parts.IsValid()) {
     return StenoDictionaryLookupResult::CreateInvalid();
   }
@@ -297,10 +301,14 @@ StenoJeffPhrasingDictionary::Lookup(const StenoDictionaryLookup &lookup) const {
 }
 
 const StenoDictionary *StenoJeffPhrasingDictionary::GetDictionaryForOutline(
-    const StenoDictionaryLookup &lookup) const {
+    const StenoGetDictionaryForOutline &lookup) const {
   assert(lookup.length == 1);
 
-  const PhrasingParts parts = DetermineParts(lookup.strokes[0]);
+  if ((lookup.firstStroke & ~StrokeMask::ALL_STENOTYPE).IsNotEmpty()) {
+    return nullptr;
+  }
+
+  const PhrasingParts parts = DetermineParts(lookup.firstStroke);
   return parts.IsValid() ? this : nullptr;
 }
 

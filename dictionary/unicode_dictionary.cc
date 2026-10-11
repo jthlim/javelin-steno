@@ -13,8 +13,9 @@ StenoUnicodeDictionary StenoUnicodeDictionary::instance;
 StenoDictionaryLookupResult
 StenoUnicodeDictionary::Lookup(const StenoDictionaryLookup &lookup) const {
   assert(lookup.length == 1);
-  const StenoStroke stroke = lookup.strokes[0];
-  if ((stroke & SpecialStrokeMask::TYPE) != SpecialStrokeMask::UNICODE) {
+  const StenoStroke stroke = lookup.firstStroke;
+  if ((stroke & SpecialStrokeMask::TYPE) != SpecialStrokeMask::UNICODE)
+      [[likely]] {
     return StenoDictionaryLookupResult::CreateInvalid();
   }
 
@@ -50,9 +51,9 @@ StenoUnicodeDictionary::Lookup(const StenoDictionaryLookup &lookup) const {
 }
 
 const StenoDictionary *StenoUnicodeDictionary::GetDictionaryForOutline(
-    const StenoDictionaryLookup &lookup) const {
+    const StenoGetDictionaryForOutline &lookup) const {
   assert(lookup.length == 1);
-  const StenoStroke stroke = lookup.strokes[0];
+  const StenoStroke stroke = lookup.firstStroke;
   return ((stroke & SpecialStrokeMask::TYPE) == SpecialStrokeMask::UNICODE)
              ? this
              : nullptr;

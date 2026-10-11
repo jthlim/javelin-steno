@@ -157,7 +157,7 @@ StenoUserDictionary::Lookup(const StenoDictionaryLookup &lookup) const {
 }
 
 const StenoDictionary *StenoUserDictionary::GetDictionaryForOutline(
-    const StenoDictionaryLookup &lookup) const {
+    const StenoGetDictionaryForOutline &lookup) const {
   const StenoUserDictionaryEntry *entry = LookupEntry(lookup);
   return entry != nullptr ? this : nullptr;
 }

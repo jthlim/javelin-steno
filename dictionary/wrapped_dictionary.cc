@@ -17,7 +17,7 @@ StenoWrappedDictionary::Lookup(const StenoDictionaryLookup &lookup) const {
 }
 
 const StenoDictionary *StenoWrappedDictionary::GetDictionaryForOutline(
-    const StenoDictionaryLookup &lookup) const {
+    const StenoGetDictionaryForOutline &lookup) const {
   return lookupDictionary->GetDictionaryForOutline(lookup);
 }
 

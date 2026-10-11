@@ -151,7 +151,7 @@ StenoDictionaryLookupResult StenoCacheDictionary::LookupInternal(
 }
 
 const StenoDictionary *StenoCacheDictionary::GetDictionaryForOutline(
-    const StenoDictionaryLookup &lookup) const {
+    const StenoGetDictionaryForOutline &lookup) const {
   if (lookup.length > MAXIMUM_STROKE_SIZE_TO_CACHE) {
 #if ENABLE_DICTIONARY_LOOKUP_CACHE_STATS
     stats.getDictionaryForOutline.lengthLimitExceeded++;

@@ -7,11 +7,11 @@
 
 //---------------------------------------------------------------------------
 
-constexpr StenoStroke ACTIVATION_MASK(StrokeMask::SL | StrokeMask::TL |
-                                      StrokeMask::KL | StrokeMask::PL |
-                                      StrokeMask::WL | StrokeMask::HL |
-                                      StrokeMask::RL | StrokeMask::DR |
-                                      StrokeMask::ZR |
+constexpr StenoStroke ACTIVATION_MASK(StrokeMask::NUM | StrokeMask::SL |
+                                      StrokeMask::TL | StrokeMask::KL |
+                                      StrokeMask::PL | StrokeMask::WL |
+                                      StrokeMask::HL | StrokeMask::RL |
+                                      StrokeMask::DR | StrokeMask::ZR |
                                       ~StrokeMask::ALL_STENOTYPE);
 
 constexpr StenoStroke ACTIVATION_MATCH(StrokeMask::SL | StrokeMask::KL |
@@ -279,7 +279,7 @@ static const EmilySymbolData *LookupDataStroke(StenoStroke stroke) {
 StenoDictionaryLookupResult
 StenoEmilySymbolsDictionary::Lookup(const StenoDictionaryLookup &lookup) const {
   assert(lookup.length == 1);
-  const StenoStroke s = lookup.strokes[0];
+  const StenoStroke s = lookup.firstStroke;
   if ((s & ACTIVATION_MASK) != ACTIVATION_MATCH) {
     return StenoDictionaryLookupResult::CreateInvalid();
   }
@@ -324,9 +324,9 @@ StenoEmilySymbolsDictionary::Lookup(const StenoDictionaryLookup &lookup) const {
 }
 
 const StenoDictionary *StenoEmilySymbolsDictionary::GetDictionaryForOutline(
-    const StenoDictionaryLookup &lookup) const {
+    const StenoGetDictionaryForOutline &lookup) const {
   assert(lookup.length == 1);
-  const StenoStroke stroke = lookup.strokes[0];
+  const StenoStroke stroke = lookup.firstStroke;
   if ((stroke & ACTIVATION_MASK) != ACTIVATION_MATCH) {
     return nullptr;
   }

@@ -76,7 +76,7 @@ public:
   using StenoDictionary::Lookup;
 
   virtual const StenoDictionary *
-  GetDictionaryForOutline(const StenoDictionaryLookup &lookup) const;
+  GetDictionaryForOutline(const StenoGetDictionaryForOutline &lookup) const;
 
   virtual void
   PrintEntriesWithPartialOutline(PrintPartialOutlineContext &context) const;

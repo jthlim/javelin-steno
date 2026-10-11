@@ -20,7 +20,7 @@ public:
   using super::Lookup;
 
   virtual const StenoDictionary *
-  GetDictionaryForOutline(const StenoDictionaryLookup &lookup) const;
+  GetDictionaryForOutline(const StenoGetDictionaryForOutline &lookup) const;
   using super::GetDictionaryForOutline;
 
   virtual const char *GetName() const;
@@ -29,9 +29,6 @@ public:
 
 private:
   StenoStroke GetDigits(char *scratch, StenoStroke stroke) const;
-
-  StenoDictionaryLookupResult
-  LookupInternal(const StenoDictionaryLookup &lookup) const;
 
   static char *ProcessYear(char *data, int base);
 };

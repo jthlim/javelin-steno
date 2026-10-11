@@ -19,27 +19,23 @@ StenoJeffShowStrokeDictionary StenoJeffShowStrokeDictionary::instance;
 
 StenoDictionaryLookupResult StenoJeffShowStrokeDictionary::Lookup(
     const StenoDictionaryLookup &lookup) const {
-  if (lookup.strokes[0] != trigger) [[likely]] {
+  if (lookup.firstStroke != trigger) [[likely]] {
     return StenoDictionaryLookupResult::CreateInvalid();
   }
-  return LookupInternal(lookup);
-}
 
-// Split off to no-inline to help gcc generate better early-out code.
-StenoDictionaryLookupResult StenoJeffShowStrokeDictionary::LookupInternal(
-    const StenoDictionaryLookup &lookup) const {
-  const StenoStroke *strokes = lookup.strokes;
   const size_t length = lookup.length;
   if (length == 1) {
     return StenoDictionaryLookupResult::CreateStaticString("`");
   }
+
+  const StenoStroke *strokes = lookup.strokes;
   for (size_t i = 1; i < length - 1; ++i) {
     if (strokes[i] == trigger) {
       return StenoDictionaryLookupResult::CreateInvalid();
     }
   }
 
-  const bool closed = (strokes[length - 1] == trigger);
+  const bool closed = (lookup.lastStroke == trigger);
   const size_t end = closed ? length - 1 : length;
   char *text = Str::Asprintf(closed ? "`%T`" : "`%T", strokes + 1, end - 1);
 
@@ -47,12 +43,12 @@ StenoDictionaryLookupResult StenoJeffShowStrokeDictionary::LookupInternal(
 }
 
 const StenoDictionary *StenoJeffShowStrokeDictionary::GetDictionaryForOutline(
-    const StenoDictionaryLookup &lookup) const {
-  const StenoStroke *strokes = lookup.strokes;
-  if (strokes[0] != trigger) {
+    const StenoGetDictionaryForOutline &lookup) const {
+  if (lookup.firstStroke != trigger) [[likely]] {
     return nullptr;
   }
 
+  const StenoStroke *strokes = lookup.strokes;
   const size_t length = lookup.length;
   for (size_t i = 1; i < length - 1; ++i) {
     if (strokes[i] == trigger) {

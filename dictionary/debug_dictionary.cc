@@ -18,8 +18,7 @@ StenoDebugDictionary StenoDebugDictionary::instance;
 
 StenoDictionaryLookupResult
 StenoDebugDictionary::Lookup(const StenoDictionaryLookup &lookup) const {
-  const StenoStroke *strokes = lookup.strokes;
-  if (strokes[0] != trigger) {
+  if (lookup.firstStroke != trigger) {
     return StenoDictionaryLookupResult::CreateInvalid();
   }
 

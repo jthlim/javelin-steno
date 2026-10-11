@@ -192,6 +192,17 @@ public:
     } while (--length);
   }
 
+  // Generates a bitfield containing all bits in the strokes.
+  //
+  // This allows dictionaries to quick reject lookups
+  static StenoStroke CalculateMask(const StenoStroke *strokes, size_t length) {
+    StenoStroke mask = *strokes++;
+    while (--length) {
+      mask |= *strokes++;
+    }
+    return mask;
+  }
+
   static void SetLanguage(const SizedList<StrokeKey> &keys);
 
   static constexpr size_t MAX_STRING_LENGTH = 94;

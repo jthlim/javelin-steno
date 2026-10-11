@@ -310,9 +310,6 @@ StenoTokenizer::StenoTokenizer(const StenoSegmentList &list,
 }
 
 StenoToken StenoTokenizer::GetNext() {
-  const StenoState *state = nextState;
-  nextState = nullptr;
-
   assert(p != nullptr);
   const char *start = p;
   const char *workingP = p;
@@ -381,6 +378,8 @@ UpdatePAndReturnSpan:
   const bool isLastToken = elementIndex == list.GetCount();
   const size_t tokenId = currentSegment->GetStrokeIndex(list[0].state) +
                          currentSegment->strokeLength + startingStrokeId;
+  const StenoState *state = nextState;
+  nextState = nullptr;
   PrepareNextP(workingP);
   return StenoToken(start, workingP, state, tokenId, isLastToken);
 }

@@ -17,7 +17,7 @@ public:
   using super::Lookup;
 
   virtual const StenoDictionary *
-  GetDictionaryForOutline(const StenoDictionaryLookup &lookup) const;
+  GetDictionaryForOutline(const StenoGetDictionaryForOutline &lookup) const;
   using super::GetDictionaryForOutline;
 
   virtual void

@@ -17,10 +17,12 @@ StenoDictionary::Stats StenoDictionary::stats;
 
 //---------------------------------------------------------------------------
 
-#if JAVELIN_PLATFORM_NRF5_SDK || JAVELIN_PLATFORM_PICO_SDK
+constexpr StenoDictionaryLookupResult StenoDictionaryLookupResult::NO_OP =
+    StenoDictionaryLookupResult::CreateStaticString("{:=}");
 
-constexpr StenoDictionaryLookupResult
-    StenoDictionaryLookupResult::NO_OP("{:=}");
+//---------------------------------------------------------------------------
+
+#if JAVELIN_PLATFORM_NRF5_SDK || JAVELIN_PLATFORM_PICO_SDK
 
 #if JAVELIN_CPU_CORTEX_M0
 
@@ -55,9 +57,6 @@ const char *StenoDictionaryLookupResult::CloneInternal(const char *text) {
 }
 
 #else
-
-const StenoDictionaryLookupResult StenoDictionaryLookupResult::NO_OP =
-    StenoDictionaryLookupResult::CreateStaticString("{:=}");
 
 void StenoDictionaryLookupResult::Nop(StenoDictionaryLookupResult *) {}
 
@@ -276,7 +275,7 @@ void ConsoleLookupDictionaryContext::PrintDefinition(const char *definition) {
 //---------------------------------------------------------------------------
 
 const StenoDictionary *StenoDictionary::GetDictionaryForOutline(
-    const StenoDictionaryLookup &lookup) const {
+    const StenoGetDictionaryForOutline &lookup) const {
   StenoDictionaryLookupResult lookupResult = Lookup(lookup);
   const bool result = lookupResult.IsValid();
   lookupResult.Destroy();
@@ -286,10 +285,11 @@ const StenoDictionary *StenoDictionary::GetDictionaryForOutline(
 void StenoDictionary::GetDictionariesForOutline(
     List<const StenoDictionary *> &results,
     const StenoDictionaryLookup &lookup) const {
-  const StenoDictionary *dictionary = GetDictionaryForOutline(lookup);
-  if (dictionary) {
-    results.Add(dictionary);
+  StenoDictionaryLookupResult lookupResult = Lookup(lookup);
+  if (lookupResult.IsValid()) {
+    results.Add(this);
   }
+  lookupResult.Destroy();
 }
 
 void StenoDictionary::ReverseLookup(

@@ -24,7 +24,7 @@ StenoDictionaryLookupResult StenoOrthospellingDictionary::Lookup(
   }
 
   const OrthospellingData::Starter *starter =
-      data.GetStarterDefinition(lookup.strokes[0]);
+      data.GetStarterDefinition(lookup.firstStroke);
   if (starter == nullptr) {
     return StenoDictionaryLookupResult::CreateInvalid();
   }
@@ -40,7 +40,7 @@ StenoDictionaryLookupResult StenoOrthospellingDictionary::Lookup(
   BufferWriter result;
   result.WriteString(starter->definition);
 
-  const StenoStroke remainder = lookup.strokes[0] & ~starter->activation.mask;
+  const StenoStroke remainder = lookup.firstStroke & ~starter->activation.mask;
   if (remainder.IsNotEmpty()) {
     ProcessStroke(result, buffer, remainder);
   }
@@ -64,10 +64,25 @@ void StenoOrthospellingDictionary::ProcessStroke(
 }
 
 const StenoDictionary *StenoOrthospellingDictionary::GetDictionaryForOutline(
-    const StenoDictionaryLookup &lookup) const {
+    const StenoGetDictionaryForOutline &lookup) const {
+  if ((lookup.mask & ~data.mask).IsNotEmpty()) {
+    return nullptr;
+  }
+
   const OrthospellingData::Starter *starter =
-      data.GetStarterDefinition(lookup.strokes[0]);
-  return starter != nullptr ? this : nullptr;
+      data.GetStarterDefinition(lookup.firstStroke);
+  if (starter == nullptr) {
+    return nullptr;
+  }
+
+  for (size_t i = 1; i < lookup.length; ++i) {
+    if (data.GetStarterDefinition(lookup.strokes[i]) != nullptr ||
+        data.IsExit(lookup.strokes[i])) {
+      return nullptr;
+    }
+  }
+
+  return this;
 }
 
 const char *StenoOrthospellingDictionary::GetName() const { return data.name; }

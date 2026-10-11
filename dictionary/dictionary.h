@@ -48,7 +48,6 @@ private:
 
 public:
   bool IsValid() const { return text != nullptr; }
-
   bool IsStatic() const { return IsStatic(text); }
 
   const char *GetText() const { return text; }
@@ -64,11 +63,13 @@ public:
     return StenoDictionaryLookupResult(nullptr);
   }
 
-  static StenoDictionaryLookupResult CreateStaticString(const uint8_t *p) {
+  static constexpr StenoDictionaryLookupResult
+  CreateStaticString(const uint8_t *p) {
     return CreateStaticString((const char *)p);
   }
 
-  static StenoDictionaryLookupResult CreateStaticString(const char *p) {
+  static constexpr StenoDictionaryLookupResult
+  CreateStaticString(const char *p) {
     return StenoDictionaryLookupResult(p);
   }
 
@@ -107,7 +108,6 @@ private:
 
 public:
   bool IsValid() const { return text != nullptr; }
-
   bool IsStatic() const { return destroyMethod == &Nop; }
 
   const char *GetText() const { return text; }
@@ -124,11 +124,13 @@ public:
     return result;
   }
 
-  static StenoDictionaryLookupResult CreateStaticString(const uint8_t *p) {
+  static constexpr StenoDictionaryLookupResult
+  CreateStaticString(const uint8_t *p) {
     return CreateStaticString((const char *)p);
   }
 
-  static StenoDictionaryLookupResult CreateStaticString(const char *p) {
+  static constexpr StenoDictionaryLookupResult
+  CreateStaticString(const char *p) {
     StenoDictionaryLookupResult result;
     result.text = p;
     result.destroyMethod = &Nop;
@@ -166,31 +168,27 @@ public:
 
 struct StenoDictionaryLookup {
   StenoDictionaryLookup(const StenoStroke *strokes, size_t length)
-      : strokes(strokes), length(length), mask(CalculateMask(strokes, length)),
+      : strokes(strokes), length(length),
+        mask(StenoStroke::CalculateMask(strokes, length)),
+        firstStroke(strokes[0]), lastStroke(strokes[length - 1]),
         hash(StenoStroke::Hash(strokes, length)) {}
-
-  StenoDictionaryLookup(const StenoStroke *strokes, size_t length,
-                        const StenoDictionary *dictionaryHint)
-      : strokes(strokes), length(length), mask(CalculateMask(strokes, length)),
-        hash(StenoStroke::Hash(strokes, length)),
-        dictionaryHint(dictionaryHint) {}
 
   const StenoStroke *strokes;
   size_t length;
   StenoStroke mask;
+  StenoStroke firstStroke;
+  StenoStroke lastStroke;
   uint32_t hash;
-  const StenoDictionary *dictionaryHint;
+};
 
-  // Generates a bitfield containing all bits in the strokes.
-  //
-  // This allows dictionaries to quick reject lookups
-  static StenoStroke CalculateMask(const StenoStroke *strokes, size_t length) {
-    StenoStroke mask = *strokes++;
-    while (--length) {
-      mask |= *strokes++;
-    }
-    return mask;
-  }
+struct StenoGetDictionaryForOutline : public StenoDictionaryLookup {
+  using super = StenoDictionaryLookup;
+
+  StenoGetDictionaryForOutline(const StenoStroke *strokes, size_t length,
+                               const StenoDictionary *dictionaryHint)
+      : super(strokes, length), dictionaryHint(dictionaryHint) {}
+
+  const StenoDictionary *dictionaryHint;
 };
 
 //---------------------------------------------------------------------------
@@ -366,7 +364,7 @@ public:
   }
 
   virtual const StenoDictionary *
-  GetDictionaryForOutline(const StenoDictionaryLookup &lookup) const;
+  GetDictionaryForOutline(const StenoGetDictionaryForOutline &lookup) const;
 
   virtual void
   GetDictionariesForOutline(List<const StenoDictionary *> &results,
@@ -393,7 +391,7 @@ public:
       const StenoStroke *strokes, size_t length,
       const StenoDictionary *dictionaryHint = nullptr) const {
     return GetDictionaryForOutline(
-        StenoDictionaryLookup(strokes, length, dictionaryHint));
+        StenoGetDictionaryForOutline(strokes, length, dictionaryHint));
   }
   inline bool HasOutline(const StenoStroke *strokes, size_t length) const {
     return GetDictionaryForOutline(strokes, length) != nullptr;

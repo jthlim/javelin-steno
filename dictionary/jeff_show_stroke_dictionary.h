@@ -17,7 +17,7 @@ public:
   using StenoDictionary::Lookup;
 
   virtual const StenoDictionary *
-  GetDictionaryForOutline(const StenoDictionaryLookup &lookup) const;
+  GetDictionaryForOutline(const StenoGetDictionaryForOutline &lookup) const;
 
   virtual const char *GetName() const;
 
@@ -25,9 +25,6 @@ public:
 
 private:
   static const StenoStroke trigger;
-
-  StenoDictionaryLookupResult
-  LookupInternal(const StenoDictionaryLookup &lookup) const;
 };
 
 //---------------------------------------------------------------------------

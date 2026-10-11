@@ -63,7 +63,7 @@ StenoDictionaryList::Lookup(const StenoDictionaryLookup &lookup) const {
 }
 
 const StenoDictionary *StenoDictionaryList::GetDictionaryForOutline(
-    const StenoDictionaryLookup &lookup) const {
+    const StenoGetDictionaryForOutline &lookup) const {
 #if ENABLE_DICTIONARY_STATS
   stats.dictionaryForOutlineCount++;
 #endif

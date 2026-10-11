@@ -67,7 +67,7 @@ public:
   Lookup(const StenoDictionaryLookup &lookup) const;
 
   virtual const StenoDictionary *
-  GetDictionaryForOutline(const StenoDictionaryLookup &lookup) const;
+  GetDictionaryForOutline(const StenoGetDictionaryForOutline &lookup) const;
 
   virtual void
   GetDictionariesForOutline(List<const StenoDictionary *> &results,

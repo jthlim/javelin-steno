@@ -69,15 +69,10 @@ bool EndsWith(char *p, size_t length, const char (&suffix)[N]) {
 
 StenoDictionaryLookupResult
 StenoJeffNumbersDictionary::Lookup(const StenoDictionaryLookup &lookup) const {
-  if ((lookup.strokes[0] & ACTIVATION_MASK) != ACTIVATION_MATCH) [[likely]] {
+  if ((lookup.firstStroke & ACTIVATION_MASK) != ACTIVATION_MATCH) [[likely]] {
     return StenoDictionaryLookupResult::CreateInvalid();
   }
-  return LookupInternal(lookup);
-}
 
-// Split off to no-inline to help gcc generate better early-out code.
-StenoDictionaryLookupResult StenoJeffNumbersDictionary::LookupInternal(
-    const StenoDictionaryLookup &lookup) const {
   char *result = nullptr;
   char scratch[32];
 
@@ -313,7 +308,7 @@ StenoDictionaryLookupResult StenoJeffNumbersDictionary::LookupInternal(
 }
 
 const StenoDictionary *StenoJeffNumbersDictionary::GetDictionaryForOutline(
-    const StenoDictionaryLookup &lookup) const {
+    const StenoGetDictionaryForOutline &lookup) const {
   for (size_t i = 0; i < lookup.length; ++i) {
     if ((lookup.strokes[i] & ACTIVATION_MASK) != ACTIVATION_MATCH) {
       return nullptr;

@@ -182,12 +182,11 @@ const CompactStenoMapDictionaryDataEntry *StenoCompactMapDictionary::FindEntry(
   const StenoCompactMapDictionaryStrokesDefinition &strokesDefinition =
       strokes[lookup.length];
 
-  if ((lookup.strokes[0] & ~strokesDefinition.firstStrokeMask).IsNotEmpty()) {
+  if ((lookup.firstStroke & ~strokesDefinition.firstStrokeMask).IsNotEmpty()) {
     return nullptr;
   }
 
-  if ((lookup.strokes[lookup.length - 1] & ~strokesDefinition.lastStrokeMask)
-          .IsNotEmpty()) {
+  if ((lookup.lastStroke & ~strokesDefinition.lastStrokeMask).IsNotEmpty()) {
     return nullptr;
   }
 
@@ -199,21 +198,20 @@ const CompactStenoMapDictionaryDataEntry *StenoCompactMapDictionary::FindEntry(
 
   // Size of CompactStenoMapDictionaryDataEntry for this length.
   const size_t entrySize = 3 + 3 * lookup.length;
-  size_t dataIndex = offset * entrySize;
+  const uint8_t *entryData = strokesDefinition.data + offset * entrySize;
 
   for (;;) {
     const CompactStenoMapDictionaryDataEntry &entry =
-        (const CompactStenoMapDictionaryDataEntry &)
-            strokesDefinition.data[dataIndex];
+        *(const CompactStenoMapDictionaryDataEntry *)entryData;
 
     if (entry.Equals(lookup.strokes, lookup.length)) {
       return &entry;
     }
 
-    dataIndex += entrySize;
+    entryData += entrySize;
     if (++entryIndex > strokesDefinition.hashMapMask) [[unlikely]] {
       entryIndex = 0;
-      dataIndex = 0;
+      entryData = strokesDefinition.data;
     }
 
     if (!strokesDefinition.HasEntry(entryIndex)) {
@@ -231,7 +229,7 @@ StenoCompactMapDictionary::Lookup(const StenoDictionaryLookup &lookup) const {
 }
 
 const StenoDictionary *StenoCompactMapDictionary::GetDictionaryForOutline(
-    const StenoDictionaryLookup &lookup) const {
+    const StenoGetDictionaryForOutline &lookup) const {
   const CompactStenoMapDictionaryDataEntry *entry = FindEntry(lookup);
   return entry == nullptr ? nullptr : this;
 }

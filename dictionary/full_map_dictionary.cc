@@ -270,14 +270,23 @@ StenoFullMapDictionary::FindEntry(const StenoDictionaryLookup &lookup) const {
   const StenoFullMapDictionaryStrokesDefinition &strokesDefinition =
       strokes[lookup.length];
 
-  if ((lookup.strokes[0] & ~strokesDefinition.firstStrokeMask).IsNotEmpty()) {
+  if ((lookup.firstStroke & ~strokesDefinition.firstStrokeMask).IsNotEmpty()) {
     return nullptr;
   }
 
-  if ((lookup.strokes[lookup.length - 1] & ~strokesDefinition.lastStrokeMask)
-          .IsNotEmpty()) {
+  if ((lookup.lastStroke & ~strokesDefinition.lastStrokeMask).IsNotEmpty()) {
     return nullptr;
   }
+
+  return FindEntryInternal(lookup);
+}
+
+[[gnu::noinline]]
+const FullStenoMapDictionaryDataEntry *
+StenoFullMapDictionary::FindEntryInternal(
+    const StenoDictionaryLookup &lookup) const {
+  const StenoFullMapDictionaryStrokesDefinition &strokesDefinition =
+      strokes[lookup.length];
 
   size_t entryIndex = lookup.hash & strokesDefinition.hashMapMask;
   const size_t offset = strokesDefinition.GetOffset(entryIndex);
@@ -287,21 +296,20 @@ StenoFullMapDictionary::FindEntry(const StenoDictionaryLookup &lookup) const {
 
   // Size of FullStenoMapDictionaryDataEntry for this length.
   const size_t entrySize = 4 + 4 * lookup.length;
-  size_t dataIndex = offset * entrySize;
+  const uint8_t *entryData = strokesDefinition.data + offset * entrySize;
 
   for (;;) {
     const FullStenoMapDictionaryDataEntry &entry =
-        (const FullStenoMapDictionaryDataEntry &)
-            strokesDefinition.data[dataIndex];
+        *(const FullStenoMapDictionaryDataEntry *)entryData;
 
     if (entry.Equals(lookup.strokes, lookup.length)) {
       return &entry;
     }
 
-    dataIndex += entrySize;
+    entryData += entrySize;
     if (++entryIndex > strokesDefinition.hashMapMask) [[unlikely]] {
       entryIndex = 0;
-      dataIndex = 0;
+      entryData = strokesDefinition.data;
     }
 
     if (!strokesDefinition.HasEntry(entryIndex)) {
@@ -319,7 +327,7 @@ StenoFullMapDictionary::Lookup(const StenoDictionaryLookup &lookup) const {
 }
 
 const StenoDictionary *StenoFullMapDictionary::GetDictionaryForOutline(
-    const StenoDictionaryLookup &lookup) const {
+    const StenoGetDictionaryForOutline &lookup) const {
   const FullStenoMapDictionaryDataEntry *entry = FindEntry(lookup);
   return entry == nullptr ? nullptr : this;
 }
