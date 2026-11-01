@@ -67,12 +67,12 @@ void SplitConsole::OnDataReceived(const void *data, size_t length) {
 void SplitConsole::PairBinding(void *context, const char *commandLine) {
   const char *p = strchr(commandLine, ' ');
   if (!p) {
-    Console::Printf("ERR missing pair command\n\n");
+    Console::Printf("ERR Missing pair command\n\n");
     return;
   }
 
   if (!Connection::IsPairConnected()) {
-    Console::Printf("ERR pair not connected\n\n");
+    Console::Printf("ERR Pair not connected\n\n");
     return;
   }
 

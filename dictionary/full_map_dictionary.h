@@ -64,8 +64,9 @@ private:
   const FullStenoMapDictionaryDataEntry *
   FindEntry(const StenoDictionaryLookup &lookup) const;
 
-  const FullStenoMapDictionaryDataEntry *
-  FindEntryInternal(const StenoDictionaryLookup &lookup) const;
+  const FullStenoMapDictionaryDataEntry *FindEntryInternal(
+      const StenoDictionaryLookup &lookup,
+      const StenoFullMapDictionaryStrokesDefinition &strokesDefinition) const;
 
   static const StenoFullMapDictionaryStrokesDefinition *
   CreateStrokeCache(StenoFullMapDictionary *object,

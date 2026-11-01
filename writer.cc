@@ -37,6 +37,12 @@ constexpr int FLAG_LENGTH_64_BIT = 2;
 constexpr char BASE64_ALPHABET[] =
     "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
 
+#if JAVELIN_PLATFORM_NRF5_SDK || JAVELIN_PLATFORM_PICO_SDK
+#define CHECK_POINTER_SIGN 1
+#else
+#define CHECK_POINTER_SIGN 0
+#endif
+
 //---------------------------------------------------------------------------
 
 static void Reverse(char *start, char *end) {
@@ -444,7 +450,7 @@ void IWriter::Vprintf(const char *p, va_list args) {
         flags |= FLAG_LENGTH_64_BIT;
         ++p;
       }
-    } else if (*p == 'h' || *p == 'z') {
+    } else if (*p == 'h') {
       ++p;
     } else if (*p == 'z') {
       if (sizeof(size_t) == sizeof(uint64_t)) {
@@ -536,6 +542,11 @@ void IWriter::Vprintf(const char *p, va_list args) {
 
     case 's':
       start = va_arg(args, char *) + printfPointerOffset;
+#if CHECK_POINTER_SIGN
+      if (intptr_t(start) < 0) {
+        start = (char *)"ERR Invalid pointer";
+      }
+#endif
       end = start + Str::Length(start);
       break;
 
@@ -602,6 +613,13 @@ void IWriter::Vprintf(const char *p, va_list args) {
       // Write multiple strokes.
       const StenoStroke *strokes = va_arg(args, const StenoStroke *);
       strokes = (const StenoStroke *)(intptr_t(strokes) + printfPointerOffset);
+
+#if CHECK_POINTER_SIGN
+      if (intptr_t(strokes) < 0) {
+        goto NextSegment;
+      }
+#endif
+
       const size_t strokeCount = va_arg(args, size_t);
       for (size_t j = 0; j < strokeCount; ++j) {
         char *p = scratch;
@@ -617,6 +635,13 @@ void IWriter::Vprintf(const char *p, va_list args) {
       // Write Data (void*, length) as Base64
       const uint8_t *data = va_arg(args, const uint8_t *);
       data += printfPointerOffset;
+
+#if CHECK_POINTER_SIGN
+      if (intptr_t(data) < 0) {
+        goto NextSegment;
+      }
+#endif
+
       const size_t length = va_arg(args, size_t);
       if (IsYamlSafeData(data, length)) {
         WriteBase64(data, length);
@@ -631,6 +656,13 @@ void IWriter::Vprintf(const char *p, va_list args) {
       // Write Data (void*, length) as Base64
       const uint8_t *data = va_arg(args, const uint8_t *);
       data += printfPointerOffset;
+
+#if CHECK_POINTER_SIGN
+      if (intptr_t(data) < 0) {
+        goto NextSegment;
+      }
+#endif
+
       const size_t length = va_arg(args, size_t);
       WriteBase64(data, length);
       goto NextSegment;
@@ -638,6 +670,11 @@ void IWriter::Vprintf(const char *p, va_list args) {
     case 'Y': {
       // Write as YAML
       char *p = va_arg(args, char *) + printfPointerOffset;
+#if CHECK_POINTER_SIGN
+      if (intptr_t(p) < 0) {
+        p = (char *)"ERR Invalid pointer";
+      }
+#endif
       const size_t length = Str::Length(p);
       if (IsYamlSafe(p)) {
         start = p;
@@ -661,6 +698,11 @@ void IWriter::Vprintf(const char *p, va_list args) {
     case 'J': {
       // Write as JSON
       const char *p = va_arg(args, char *) + printfPointerOffset;
+#if CHECK_POINTER_SIGN
+      if (intptr_t(p) < 0) {
+        p = "ERR Invalid pointer";
+      }
+#endif
       const size_t length = Str::Length(p);
       char *jsonBuffer =
           length <= sizeof(scratch) / 2 ? scratch : (char *)malloc(2 * length);

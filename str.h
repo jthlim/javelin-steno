@@ -97,6 +97,10 @@ public:
   // Parse n hex digits, returning -1 if any are invalid.
   static int ParseHexDigits(const char *p, size_t n);
 
+  static const char *ParseCommandLine(int *results, const char *commandLine,
+                                      size_t count,
+                                      const char *const *errorMessages);
+
   // Returns nullptr if there's no word character.
   // p can be null.
   static const char *AdvanceToWordCharacter(const char *p);

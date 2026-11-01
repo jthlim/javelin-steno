@@ -18,6 +18,7 @@
 constexpr size_t OFFSET_EMPTY = 0xffffffff;
 constexpr size_t OFFSET_DELETED = 0;
 constexpr size_t OFFSET_DATA = 1;
+constexpr size_t INVALID_INDEX = (size_t)-1;
 
 constexpr uint32_t USER_DICTIONARY_MAGIC = 0x4455534a; // 'JSUD'
 
@@ -66,8 +67,8 @@ StenoUserDictionaryData::FindMostRecentDescriptor() const {
     i -= DESCRIPTOR_ENTRY_SIZE;
 
     const StenoUserDictionaryDescriptor *test = GetDescriptor(i);
-    if ((!result || test->GetUsedDataBlockSize(dataBlockSize) >=
-                        result->GetUsedDataBlockSize(dataBlockSize)) &&
+    if ((!result || test->data.dataBlockSizeRemaining <
+                        result->data.dataBlockSizeRemaining) &&
         test->IsValid(*this)) {
       result = test;
     }
@@ -373,6 +374,7 @@ void StenoUserDictionary::AddToDescriptor(
 bool StenoUserDictionary::AddToHashTable(const StenoStroke *strokes,
                                          size_t length, size_t dataOffset) {
   size_t entryIndex = StenoStroke::Hash(strokes, length);
+  size_t deletedIndex = INVALID_INDEX;
 
   for (int probeCount = 0; probeCount < 64; ++probeCount) {
     entryIndex &= activeDescriptorCopy.data.hashTableSize - 1;
@@ -380,9 +382,15 @@ bool StenoUserDictionary::AddToHashTable(const StenoStroke *strokes,
     const uint32_t offset = activeDescriptorCopy.data.hashTable[entryIndex];
     switch (offset) {
     case OFFSET_EMPTY:
-    case OFFSET_DELETED:
-      WriteEntryIndex(entryIndex, uint32_t(dataOffset + OFFSET_DATA));
+      WriteEntryIndex(deletedIndex != INVALID_INDEX ? deletedIndex : entryIndex,
+                      uint32_t(dataOffset + OFFSET_DATA));
       return true;
+
+    case OFFSET_DELETED:
+      if (deletedIndex == INVALID_INDEX) {
+        deletedIndex = entryIndex;
+      }
+      break;
 
     default:
       const StenoUserDictionaryEntry *entry =
@@ -394,9 +402,16 @@ bool StenoUserDictionary::AddToHashTable(const StenoStroke *strokes,
         WriteEntryIndex(entryIndex, uint32_t(dataOffset + OFFSET_DATA));
         return true;
       }
-      ++entryIndex;
     }
+
+    ++entryIndex;
   }
+
+  if (deletedIndex != INVALID_INDEX) {
+    WriteEntryIndex(deletedIndex, uint32_t(dataOffset + OFFSET_DATA));
+    return true;
+  }
+
   return false;
 }
 
@@ -412,13 +427,14 @@ bool StenoUserDictionary::AddToReverseHashTable(const char *definition,
     switch (offset) {
     case OFFSET_EMPTY:
     case OFFSET_DELETED:
+      // ReverseHashTable can never have a collision, so just write to the
+      // first empty or deleted slot.
       WriteReverseEntryIndex(entryIndex, uint32_t(dataOffset + OFFSET_DATA));
       return true;
-
-    default:
-      ++entryIndex;
     }
+    ++entryIndex;
   }
+
   return false;
 }
 
@@ -645,6 +661,15 @@ void StenoUserDictionary::AddConsoleCommands(Console &console) {
 #include "../unit_test.h"
 
 [[gnu::aligned(4096)]] static uint8_t userDictionaryBuffer[512 * 1024];
+
+TEST_BEGIN("StenoUserDictionaryData methods return expected values") {
+  const StenoUserDictionaryData layout(userDictionaryBuffer,
+                                       sizeof(userDictionaryBuffer));
+
+  assert(layout.GetDataStart() == userDictionaryBuffer);
+  assert(layout.GetDataLength() == sizeof(userDictionaryBuffer));
+}
+TEST_END
 
 TEST_BEGIN("StenoUserDictionary will reset if descriptor is invalid") {
   const StenoUserDictionaryData layout(userDictionaryBuffer,

@@ -173,16 +173,12 @@ void StenoEngine::Lookup_Binding(void *context, const char *commandLine) {
 }
 
 void StenoEngine::LookupPrefix_Binding(void *context, const char *commandLine) {
-  const char *p = strchr(commandLine, ' ');
+  int count;
+  static constexpr const char *errors[] = {
+      "ERR No count specified\n\n",
+  };
+  const char *p = Str::ParseCommandLine(&count, commandLine, 1, errors);
   if (!p) {
-    Console::Printf("ERR No count specified\n\n");
-    return;
-  }
-
-  int count = 0;
-  p = Str::ParseInteger(&count, p + 1, false);
-  if (!p) {
-    Console::Printf("ERR No count specified\n\n");
     return;
   }
 
@@ -376,24 +372,21 @@ void StenoEngine::ListTemplateValues_Binding(void *context,
 
 void StenoEngine::SetTemplateValue_Binding(void *context,
                                            const char *commandLine) {
-  const char *p = strchr(commandLine, ' ');
+  unsigned int index;
+  static constexpr const char *errors[] = {
+      "ERR Missing template index\n\n",
+  };
+  const char *p = Str::ParseCommandLine((int *)&index, commandLine, 1, errors);
   if (!p) {
-    Console::Printf("ERR No parameters specified\n\n");
     return;
   }
-  int index = 0;
-  ++p;
-  p = Str::ParseInteger(&index, p, false);
-  if (!p) {
-    Console::Printf("ERR index parameter missing\n\n");
-    return;
-  }
+
   if (index >= TEMPLATE_VALUE_COUNT) {
-    Console::Printf("ERR index parameter out of range\n\n");
+    Console::Printf("ERR Index parameter out of range\n\n");
     return;
   }
   if (*p != ' ') {
-    Console::Printf("ERR value missing\n\n");
+    Console::Printf("ERR Value missing\n\n");
     return;
   }
   ++p;

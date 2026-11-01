@@ -5,6 +5,7 @@
 #include <stdint.h>
 #include <stdlib.h>
 #if RUN_TESTS
+#include <stdio.h>
 #include <vector>
 #endif
 
@@ -83,7 +84,7 @@ private:
   uint8_t *target;
 };
 
-class BufferWriter final : public IWriter {
+class BufferWriter : public IWriter {
 public:
   BufferWriter();
   BufferWriter(char *scratch, size_t scratchLength)
@@ -128,6 +129,14 @@ private:
   char *inlineBuffer;
 
   void Reallocate();
+};
+
+template <size_t N> class SmallBufferWriter : public BufferWriter {
+public:
+  SmallBufferWriter() : BufferWriter(scratch, N) {}
+
+private:
+  char scratch[N];
 };
 
 class BlockWriterBase : public IWriter {
@@ -184,5 +193,14 @@ public:
   size_t bufferUsedCount = 0;
   uint8_t buffer[BUFFER_SIZE + 1];
 };
+
+#if RUN_TESTS
+class StdioWriter final : public IWriter {
+public:
+  virtual void Write(const char *data, size_t length) {
+    fwrite(data, 1, length, stdout);
+  }
+};
+#endif
 
 //---------------------------------------------------------------------------

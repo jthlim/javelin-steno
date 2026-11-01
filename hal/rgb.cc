@@ -8,16 +8,14 @@
 //---------------------------------------------------------------------------
 
 void Rgb::SetRgb_Binding(void *context, const char *commandLine) {
-  const char *p = strchr(commandLine, ' ');
-  if (!p) {
-    Console::Printf("ERR Missing parameters\n\n");
-    return;
-  }
-
   int startRgbId;
-  p = Str::ParseInteger(&startRgbId, p + 1, false);
+  static constexpr const char *errors[] = {
+      "ERR Missing parameters\n\n",
+      "ERR Missing parameters\n\n",
+      "ERR Missing parameters\n\n",
+  };
+  const char *p = Str::ParseCommandLine(&startRgbId, commandLine, 1, errors);
   if (!p) {
-    Console::Printf("ERR Missing parameters\n\n");
     return;
   }
 
@@ -28,13 +26,8 @@ void Rgb::SetRgb_Binding(void *context, const char *commandLine) {
   }
 
   int values[3];
-  for (int i = 0; i < 3; ++i) {
-    p = Str::ParseInteger(&values[i], p + 1, false);
-
-    if (!p) {
-      Console::Printf("ERR Missing parameters\n\n");
-      return;
-    }
+  if (!Str::ParseCommandLine(values, p, 3, errors)) {
+    return;
   }
 
   SetRgb(startRgbId, values[0], values[1], values[2]);

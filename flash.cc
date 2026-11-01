@@ -314,6 +314,29 @@ void Flash::BeginWriteBinding(void *context, const char *commandLine) {
   Console::SendOk();
 }
 
+void Flash::ReadBinding(void *context, const char *commandLine) {
+  struct Parameters {
+    int address;
+    int length;
+  };
+
+  Parameters parameters;
+  static constexpr const char *errors[] = {
+      "ERR Missing address\n\n",
+      "ERR Missing length\n\n",
+  };
+  if (!Str::ParseCommandLine(&parameters.address, commandLine, 2, errors)) {
+    return;
+  }
+
+  ExternalFlash::Begin();
+  Console::Printf("0x%x (0x%x): %D\n\n", parameters.address, parameters.length,
+                  (void *)intptr_t(parameters.address),
+                  size_t(parameters.length));
+
+  ExternalFlash::End();
+}
+
 void Flash::WriteBinding(void *context, const char *commandLine) {
   const char *p = strchr(commandLine, ' ');
   if (!p) {
@@ -368,6 +391,8 @@ void Flash::AddConsoleCommands(Console &console) {
                           &Flash::WriteBinding, nullptr);
   console.RegisterCommand("end_write", "Completes writing to flash",
                           &Flash::EndWriteBinding, nullptr);
+  console.RegisterCommand("read", "Reads data from the specified address",
+                          &Flash::ReadBinding, nullptr);
 }
 
 //---------------------------------------------------------------------------

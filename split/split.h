@@ -88,6 +88,7 @@ public:
   static void OnConnectionReset() { handlers.OnConnectionReset(); }
   static void OnConnect() { handlers.OnConnect(); }
 
+private:
   struct Handlers
       : public FastIterableStaticList<SplitTxHandler *,
                                       (size_t)SplitHandlerId::COUNT> {
@@ -97,6 +98,9 @@ public:
 
   static Handlers handlers;
   static size_t txPacketTypeCounts[(size_t)SplitHandlerId::COUNT];
+
+  friend class Split;
+  friend class SplitTxHandler;
 };
 
 enum class RxBufferValidateResult {
@@ -121,8 +125,11 @@ struct RxBuffer {
   static void OnConnect();
   static void OnConnectionReset();
 
+private:
   static SplitRxHandler *handlers[];
   static size_t rxPacketTypeCounts[(size_t)SplitHandlerId::COUNT];
+
+  friend class Split;
 };
 
 class SplitTxHandler {

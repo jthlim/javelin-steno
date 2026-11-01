@@ -168,10 +168,10 @@ void RxBuffer::Process() const {
   while (offset < header.wordCount) {
     const uint32_t blockHeader = buffer[offset++];
     const uint32_t type = blockHeader >> 16;
-    rxPacketTypeCounts[type]++;
     const size_t length = blockHeader & 0xffff;
 
     if (type < (size_t)SplitHandlerId::COUNT) {
+      rxPacketTypeCounts[type]++;
       SplitRxHandler *handler = handlers[type];
       if (handler != nullptr) {
         handler->OnDataReceived(&buffer[offset], length);

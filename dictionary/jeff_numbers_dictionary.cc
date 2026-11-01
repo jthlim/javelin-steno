@@ -289,7 +289,7 @@ StenoJeffNumbersDictionary::Lookup(const StenoDictionaryLookup &lookup) const {
         }
       }
       free(result);
-      if (value <= 0 || value >= 3999) {
+      if (value <= 0 || value > 3999) {
         return StenoDictionaryLookupResult::CreateInvalid();
       }
       ToRoman(scratch, value, (control & StrokeMask::STAR) != 0);

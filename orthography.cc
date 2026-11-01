@@ -2,6 +2,7 @@
 
 #include "orthography.h"
 
+#include "clamp.h"
 #include "console.h"
 #include "crc32.h"
 #include "hal/external_flash.h"
@@ -94,7 +95,9 @@ void StenoCompiledOrthography::CacheEntry::Set(uint32_t crc, const char *word,
   }
   const size_t resultLength = Str::Length(result);
   size_t commonSuffixLength = 0;
-  while (commonSuffixLength + commonWordLength < resultLength &&
+  const size_t maxCommonSuffixLength =
+      Min(suffixLength, resultLength - commonWordLength);
+  while (commonSuffixLength < maxCommonSuffixLength &&
          result[resultLength - commonSuffixLength - 1] ==
              suffix[suffixLength - commonSuffixLength - 1]) {
     ++commonSuffixLength;
@@ -271,8 +274,11 @@ StenoCompiledOrthography::StenoCompiledOrthography(
 
 const Pattern *
 StenoCompiledOrthography::CreatePatterns(const StenoOrthography &orthography) {
-  Pattern *patterns =
-      (Pattern *)malloc(sizeof(Pattern) * orthography.rules.GetCount());
+  size_t count = orthography.rules.GetCount();
+  if (intptr_t(count) < 0) {
+    return nullptr;
+  }
+  Pattern *patterns = (Pattern *)malloc(sizeof(Pattern) * count);
   Pattern *p = patterns;
   for (const StenoOrthographyRule &rule : orthography.rules) {
     *p++ = Pattern::Compile(rule.testPattern);

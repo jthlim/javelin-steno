@@ -1083,7 +1083,7 @@ public:
                                const ScriptByteCode *byteCode) {
     // Prevent console scripts from turning off flash write protection.
     if (!script.IsInbuiltByteCode(byteCode)) {
-      Console::Printf("ERR protected method\n\n");
+      Console::Printf("ERR Protected method\n\n");
       return;
     }
 

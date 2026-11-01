@@ -13,7 +13,7 @@ struct Uint32 {
           (uint8_t)(value >> 24)} {}
 
   uint32_t ToUint32() const {
-    return b[0] | (b[1] << 8) | (b[2] << 16) | (b[3] << 24);
+    return b[0] | (b[1] << 8) | (b[2] << 16) | (uint32_t(b[3]) << 24);
   }
 
   uint8_t b[4];

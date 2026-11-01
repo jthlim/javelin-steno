@@ -278,16 +278,14 @@ StenoFullMapDictionary::FindEntry(const StenoDictionaryLookup &lookup) const {
     return nullptr;
   }
 
-  return FindEntryInternal(lookup);
+  return FindEntryInternal(lookup, strokesDefinition);
 }
 
 [[gnu::noinline]]
 const FullStenoMapDictionaryDataEntry *
 StenoFullMapDictionary::FindEntryInternal(
-    const StenoDictionaryLookup &lookup) const {
-  const StenoFullMapDictionaryStrokesDefinition &strokesDefinition =
-      strokes[lookup.length];
-
+    const StenoDictionaryLookup &lookup,
+    const StenoFullMapDictionaryStrokesDefinition &strokesDefinition) const {
   size_t entryIndex = lookup.hash & strokesDefinition.hashMapMask;
   const size_t offset = strokesDefinition.GetOffset(entryIndex);
   if (offset == (size_t)-1) [[likely]] {

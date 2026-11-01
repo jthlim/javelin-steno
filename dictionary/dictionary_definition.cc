@@ -75,7 +75,7 @@ bool StenoDictionaryCollection::HasMatchingTimestamp() const {
   const XipPointer<uint8_t> textBlockEnd = end(textBlock);
   const uint32_t endOfTextBlockTimestamp =
       textBlockEnd[0] | (textBlockEnd[1] << 8) | (textBlockEnd[2] << 16) |
-      (textBlockEnd[3] << 24);
+      (uint32_t(textBlockEnd[3]) << 24);
   return timestamp == endOfTextBlockTimestamp;
 }
 

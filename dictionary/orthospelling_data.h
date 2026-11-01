@@ -30,7 +30,7 @@ struct OrthospellingData {
 
   struct Letter {
     MaskedStroke activation;
-    uint8_t order; // 0-2 inclusive, representing the buffer used in
+    uint8_t order;
     const char data[7];
 
     bool IsMatch(StenoStroke stroke) const {

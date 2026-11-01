@@ -19,14 +19,14 @@ struct StenoUserDictionaryData {
     assert((size & (size - 1)) == 0);
     hashTable = (uint32_t *)mem;
     reverseHashTable = (const uint32_t *)(mem + size / 8);
-    hashTableSize = size / 32;
+    hashTableSize = uint32_t(size / 32);
     dataBlock = mem + size / 4;
     dataBlockSize = 3 * size / 4 - ALL_DESCRIPTORS_SIZE;
     maximumOutlineLength = 0;
   }
 
   const uint32_t *hashTable;
-  size_t hashTableSize; // Number of uint32_t, not number of bytes
+  uint32_t hashTableSize;
   const uint8_t *dataBlock;
   union {
     size_t dataBlockSize;

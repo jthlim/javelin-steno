@@ -23,3 +23,8 @@ template <typename T, typename U> T ClampMax(T value, U max) {
 }
 
 //---------------------------------------------------------------------------
+
+template <typename T, typename U> T Min(T a, U b) { return a < b ? a : b; }
+template <typename T, typename U> T Max(T a, U b) { return a > b ? a : b; }
+
+//---------------------------------------------------------------------------

@@ -11,7 +11,7 @@
 template <typename T, size_t CAPACITY> class LimitedList {
 public:
   bool IsEmpty() const { return count == 0; }
-  bool IsNotEmpty() const { return count == 0; }
+  bool IsNotEmpty() const { return count != 0; }
 
   // Returns the number of elements contained in the list.
   size_t GetCount() const { return (count > CAPACITY) ? CAPACITY : count; }

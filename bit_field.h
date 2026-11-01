@@ -45,7 +45,7 @@ private:
 
 public:
   bool IsSet(size_t n) const {
-    return (data[n / BITS_PER_WORD] & (1ULL << n % BITS_PER_WORD)) != 0;
+    return (data[n / BITS_PER_WORD] & (size_t(1) << n % BITS_PER_WORD)) != 0;
   }
   bool IsClear(size_t n) const { return !IsSet(n); }
 
@@ -69,19 +69,27 @@ public:
   // Undefined results if it crosses a size_t boundary.
   size_t GetRange(size_t startIndex, size_t endIndex) const {
     const size_t value = data[startIndex / BITS_PER_WORD];
-    const size_t topClearShift = BITS_PER_WORD - endIndex % BITS_PER_WORD;
+    const size_t topClearShift = (BITS_PER_WORD - endIndex) % BITS_PER_WORD;
     const size_t bottomClearShift = startIndex % BITS_PER_WORD;
     return value << topClearShift >> (bottomClearShift + topClearShift);
   }
 
-  void Set(size_t n) { data[n / BITS_PER_WORD] |= 1ULL << n % BITS_PER_WORD; }
+  void Set(size_t n) {
+    data[n / BITS_PER_WORD] |= size_t(1) << n % BITS_PER_WORD;
+  }
   void Clear(size_t n) {
-    data[n / BITS_PER_WORD] &= ~(1ULL << n % BITS_PER_WORD);
+    data[n / BITS_PER_WORD] &= ~(size_t(1) << n % BITS_PER_WORD);
   }
 
   void ClearAll() {
     for (size_t i = 0; i < WORD_COUNT; ++i) {
       data[i] = 0;
+    }
+  }
+
+  void SetAll() {
+    for (size_t i = 0; i < WORD_COUNT; ++i) {
+      data[i] = (size_t)-1;
     }
   }
 

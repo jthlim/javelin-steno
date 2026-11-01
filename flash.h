@@ -57,6 +57,7 @@ public:
   static void BeginWriteBinding(void *context, const char *commandLine);
   static void WriteBinding(void *context, const char *commandLine);
   static void EndWriteBinding(void *context, const char *commandLine);
+  static void ReadBinding(void *context, const char *commandLine);
 
   static void AddConsoleCommands(Console &console);
 

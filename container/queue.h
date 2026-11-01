@@ -61,7 +61,7 @@ public:
   size_t GetCount() const { return count; }
 
 private:
-  size_t count;
+  size_t count = 0;
 };
 
 //---------------------------------------------------------------------------

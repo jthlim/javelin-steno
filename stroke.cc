@@ -92,6 +92,11 @@ List<StrokeKey> StenoStroke::parsers;
 
 void StenoStroke::SetLanguage(const SizedList<StrokeKey> &keys) {
   parsers.Reset();
+  if (intptr_t(keys.count) < 0) {
+    // Protection for crashes with bad flash.
+    return;
+  }
+
   for (const StrokeKey &key : keys) {
     switch (key.type) {
     case StrokeKeyType::MASK:

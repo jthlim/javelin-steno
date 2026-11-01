@@ -10,11 +10,12 @@
 
 //---------------------------------------------------------------------------
 
-const uint32_t ASSET_DIRECTORY_MAGIC = 0x4A414431; // "JAD1"
-const size_t MINIMUM_ASSET_DIRECTORY_SIZE = 2 * Flash::BLOCK_SIZE;
+constexpr uint32_t ASSET_DIRECTORY_MAGIC = 0x4A414431; // "JAD1"
+constexpr size_t MINIMUM_ASSET_DIRECTORY_SIZE = 2 * Flash::BLOCK_SIZE;
 
-const intptr_t EMPTY_HASH = -1;
-const intptr_t DELETED_HASH = 0;
+constexpr intptr_t EMPTY_HASH = -1;
+constexpr intptr_t DELETED_HASH = 0;
+constexpr uint32_t INVALID_INDEX = (uint32_t)-1;
 
 //---------------------------------------------------------------------------
 
@@ -219,26 +220,39 @@ void AssetManager::WriteHeader() {
   const uint32_t hash = newEntry->idHash;
 
   uint32_t index = hash;
+  uint32_t deletedIndex = INVALID_INDEX;
   for (;;) {
     index &= AssetDirectory::HASH_TABLE_MASK;
-    const intptr_t value = directory->hashTable[index];
-    if (value == DELETED_HASH || value == EMPTY_HASH) {
-      Flash::Write(&directory->hashTable[index], &newEntry,
-                   sizeof(AssetEntry *), FlashWriteMode::PRESERVE);
-      return;
-    }
+    switch (const intptr_t value = directory->hashTable[index]; value) {
+    case DELETED_HASH:
+      if (deletedIndex == INVALID_INDEX) {
+        deletedIndex = index;
+      }
+      break;
 
-    const AssetEntry *entry = (const AssetEntry *)value;
-    if (entry->idHash == hash && Str::Eq(entry->id, newEntry->id)) {
-      Flash::Write(&directory->hashTable[index], &newEntry,
+    case EMPTY_HASH: {
+      const uint32_t newIndex =
+          deletedIndex != INVALID_INDEX ? deletedIndex : index;
+      Flash::Write(&directory->hashTable[newIndex], &newEntry,
                    sizeof(AssetEntry *), FlashWriteMode::PRESERVE);
+    }
       return;
+
+    default:
+      const AssetEntry *entry = (const AssetEntry *)value;
+      if (entry->idHash == hash && Str::Eq(entry->id, newEntry->id)) {
+        Flash::Write(&directory->hashTable[index], &newEntry,
+                     sizeof(AssetEntry *), FlashWriteMode::PRESERVE);
+        return;
+      }
+      break;
     }
 
     ++index;
   }
 }
 
+// Returns true if completed, false if more data to be written.
 bool AssetManager::Write(const uint8_t *data, size_t byteCount) {
   Flash::instance.AddData(data, byteCount);
 
@@ -259,18 +273,15 @@ void AssetManager::PrintFreeSize() {
 }
 
 void AssetManager::AddAsset_Binding(void *context, const char *commandLine) {
-  const char *p = strchr(commandLine, ' ');
-  if (!p) {
-    Console::Printf("ERR No size specified\n\n");
-    return;
-  }
-  ++p;
+  static constexpr const char *errors[] = {
+      "ERR Missing size\n\n",
+  };
   int size;
-  p = Str::ParseInteger(&size, p);
+  const char *p = Str::ParseCommandLine(&size, commandLine, 1, errors);
   if (!p) {
-    Console::Printf("ERR Unable to parse size\n\n");
     return;
   }
+
   if (*p != ' ') {
     Console::Printf("ERR No id specified\n\n");
     return;
@@ -335,7 +346,7 @@ void AssetManager::GetAsset_Binding(void *context, const char *commandLine) {
   const AssetManager *instance = (AssetManager *)context;
   const AssetEntry *entry = instance->GetAsset(p);
   if (entry == nullptr) {
-    Console::Printf("ERR assetId not found\n\n");
+    Console::Printf("ERR Missing assetId\n\n");
     return;
   }
   Console::Printf("%D\n\n", entry->GetData(), entry->size);

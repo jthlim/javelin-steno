@@ -474,8 +474,7 @@ void ContainerPatternComponent::Add(PatternComponent *component) {
 #if JAVELIN_USE_PATTERN_JIT
     PatternComponent **newComponents = (PatternComponent **)operator new(
         (capacity + 4) * sizeof(PatternComponent *));
-    memcpy(newComponents, components,
-           (capacity + 4) * sizeof(PatternComponent *));
+    memcpy(newComponents, components, capacity * sizeof(PatternComponent *));
     components = newComponents;
 #else
     components = (PatternComponent **)realloc(

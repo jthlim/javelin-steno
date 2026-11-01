@@ -1,6 +1,7 @@
 //---------------------------------------------------------------------------
 
 #include "str.h"
+#include "console.h"
 #include "unicode.h"
 #include "writer.h"
 #include <stdarg.h>
@@ -315,7 +316,7 @@ char *Str::Trim(const char *data) {
 
 char *Str::WriteJson(char *p, const char *text) {
   while (*text) {
-    const int c = *text++;
+    const int c = (uint8_t)*text++;
     if (c < 32) [[unlikely]] {
       switch (c) {
       case '\f':
@@ -435,6 +436,31 @@ const char *Str::AdvanceToNonWordCharacter(const char *p) {
   }
 }
 
+[[gnu::noinline]]
+const char *Str::ParseCommandLine(int *results, const char *commandLine,
+                                  size_t count,
+                                  const char *const *errorMessages) {
+  const char *p = strchr(commandLine, ' ');
+  if (!p) {
+    Console::Print(errorMessages[0]);
+    return nullptr;
+  }
+
+  for (size_t i = 0; i < count; ++i) {
+    if (!*p) {
+      Console::Print(errorMessages[i]);
+      return nullptr;
+    }
+    p = ParseInteger(&results[i], p + 1);
+    if (!p || (*p != ' ' && *p != '\0')) {
+      Console::Print(errorMessages[i]);
+      return nullptr;
+    }
+  }
+
+  return p;
+}
+
 //---------------------------------------------------------------------------
 
 #include "unit_test.h"
@@ -505,6 +531,14 @@ TEST_BEGIN("Str::IsFingerSpellingCommand returns correct results") {
   assert(!Str::IsFingerSpellingCommand("{&T"));
   assert(!Str::IsFingerSpellingCommand("{T}"));
   assert(!Str::IsFingerSpellingCommand("T"));
+}
+TEST_END
+
+TEST_BEGIN("Str::WriteJson returns correct results") {
+  char buffer[16];
+  char *p = Str::WriteJson(buffer, "😀");
+  *p = '\0';
+  assert(Str::Eq(buffer, "😀"));
 }
 TEST_END
 

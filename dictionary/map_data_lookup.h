@@ -12,7 +12,7 @@ public:
 
   bool HasData() const { return *p != 0xff; }
   const void *GetData(const uint8_t *baseAddress) const {
-    uint32_t offset = p[0] | (p[1] << 7) | (p[2] << 14) + (p[3] << 21);
+    const uint32_t offset = p[0] | (p[1] << 7) | (p[2] << 14) | (p[3] << 21);
     return baseAddress + offset;
   }
 
