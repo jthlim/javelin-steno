@@ -53,6 +53,11 @@ template <typename T> struct TypedMem {
 };
 
 struct Mem {
+  static void ForceClear(volatile void *data, size_t byteLength);
+  template <typename T> static void ForceClear(T &data) {
+    ForceClear(&data, sizeof(T));
+  }
+
   template <typename T> static void Clear(T *data, size_t byteLength) {
     TypedMem<T>::Clear(data, byteLength);
   }
@@ -72,6 +77,8 @@ struct Mem {
     TypedMem<T>::Fill(data, byteLength);
   }
   template <typename T> static void Fill(T &data) { Fill(&data, sizeof(T)); }
+
+  static void *Dup(const void *p, size_t length);
 };
 
 //---------------------------------------------------------------------------

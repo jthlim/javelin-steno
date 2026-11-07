@@ -3,6 +3,7 @@
 #include "mem.h"
 #include <assert.h>
 #include <stdint.h>
+#include <stdlib.h>
 
 //---------------------------------------------------------------------------
 
@@ -144,6 +145,22 @@ void AlignedMem<sizeof(size_t)>::Fill(void *p, size_t length) {
   while (sp < pEnd) {
     *sp++ = (size_t)-1;
   }
+}
+
+//---------------------------------------------------------------------------
+
+[[gnu::weak]] void Mem::ForceClear(volatile void *data, size_t byteLength) {
+  volatile uint8_t *p = (uint8_t *)data;
+  while (byteLength) {
+    *p++ = 0;
+    --byteLength;
+  }
+}
+
+void *Mem::Dup(const void *p, size_t length) {
+  void *result = malloc(length);
+  memcpy(result, p, length);
+  return result;
 }
 
 //---------------------------------------------------------------------------

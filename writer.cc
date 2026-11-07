@@ -453,7 +453,7 @@ void IWriter::Vprintf(const char *p, va_list args) {
     } else if (*p == 'h') {
       ++p;
     } else if (*p == 'z') {
-      if (sizeof(size_t) == sizeof(uint64_t)) {
+      if constexpr (sizeof(size_t) == sizeof(uint64_t)) {
         flags |= FLAG_LENGTH_64_BIT;
       }
       ++p;
